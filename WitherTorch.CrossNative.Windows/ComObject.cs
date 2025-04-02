@@ -47,11 +47,13 @@ namespace WitherTorch.CrossNative.Windows
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
             int hr = ((delegate*<void*, Guid*, void**, int>)functionPointer)(nativePointer, UnsafeHelper.AsPointerIn(in iid), &nativePointer);
-            if (hr == 0)
-                return FromNativePointer<T>(nativePointer, ReferenceType.Owned);
-            if (throwWhenQueryFailed)
-                throw Marshal.GetExceptionForHR(hr)!;
-            return null;
+            if (hr < 0)
+            {
+                if (throwWhenQueryFailed)
+                    Marshal.ThrowExceptionForHR(hr);
+                return null;
+            }
+            return FromNativePointer<T>(nativePointer, ReferenceType.Owned);
         }
 
         protected ulong AddRef() => AddRefCore(NativePointer);
