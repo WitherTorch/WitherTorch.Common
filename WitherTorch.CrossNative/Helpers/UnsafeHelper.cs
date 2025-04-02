@@ -10,8 +10,13 @@ using InlineMethod;
 #pragma warning disable CS8601
 #pragma warning disable IDE0060
 
-namespace WitherTorch.CrossNative
+namespace WitherTorch.CrossNative.Helpers
 {
+#if NET8_0_OR_GREATER
+    [SkipLocalsInit]
+#else
+    [LocalsInit.LocalsInit(false)]
+#endif
     public static unsafe class UnsafeHelper
     {
         public const int PointerSizeConstant_Indeterminate = 0;
@@ -298,25 +303,37 @@ namespace WitherTorch.CrossNative
             IL.Emit.Initblk();
         }
 
+#pragma warning disable CS8500
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* AsPointerRef<T>(ref T value) where T : unmanaged
+        public static unsafe T* AsPointerRef<T>(ref T value)
         {
             IL.Emit.Ldarg_0();
-            return IL.ReturnPointer<T>();
+            return (T*)IL.ReturnPointer();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* AsPointerIn<T>(in T value) where T : unmanaged
+        public static unsafe T* AsPointerIn<T>(in T value)
         {
             IL.Emit.Ldarg_0();
-            return IL.ReturnPointer<T>();
+            return (T*)IL.ReturnPointer();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* AsPointerOut<T>(out T value) where T : unmanaged
+        public static unsafe T* AsPointerOut<T>(out T value)
         {
             IL.PushOutRef(out value);
-            return IL.ReturnPointer<T>();
+            return (T*)IL.ReturnPointer();
+        }
+#pragma warning restore CS8500
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static void SkipInit<T>(out T value)
+        {
+#if NET8_0_OR_GREATER
+            Unsafe.SkipInit(out value);
+#else
+            _ = AsPointerOut(out value);
+#endif
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

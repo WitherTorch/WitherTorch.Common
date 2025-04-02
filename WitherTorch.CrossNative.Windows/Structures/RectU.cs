@@ -1,0 +1,180 @@
+﻿using System.Drawing;
+using System.Runtime.CompilerServices;
+
+using WitherTorch.CrossNative.Windows.Internals;
+
+namespace WitherTorch.CrossNative.Windows.Structures
+{
+    public struct RectU
+    {
+        public uint Left;
+        public uint Top;
+        public uint Right;
+        public uint Bottom;
+
+        public RectU(in RectU original) : this(original.Left, original.Top, original.Right, original.Bottom) { }
+
+        public RectU(uint left, uint top, uint right, uint bottom)
+        {
+            Left = left;
+            Top = top;
+            Right = right;
+            Bottom = bottom;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static RectU FromXYWH(uint x, uint y, uint width, uint height) => new RectU(x, y, x + width, y + height);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static implicit operator RectU(RectangleF rectangle) => new RectU((uint)rectangle.Left, (uint)rectangle.Top, (uint)rectangle.Right, (uint)rectangle.Bottom);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator RectU(Rectangle rectangle) => FromXYWH(rectangle.Left.MakeUnsigned(), rectangle.Top.MakeUnsigned(),
+            rectangle.Right.MakeUnsigned(), rectangle.Bottom.MakeUnsigned());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator RectU(Rect rectangle) => new RectU(rectangle.Left.MakeUnsigned(), rectangle.Top.MakeUnsigned(),
+            rectangle.Right.MakeUnsigned(), rectangle.Bottom.MakeUnsigned());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator RectangleF(RectU rectangle) => RectangleF.FromLTRB(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static explicit operator Rectangle(RectU rectangle) => Rectangle.FromLTRB((int)rectangle.Left, (int)rectangle.Top, (int)rectangle.Right, (int)rectangle.Bottom);
+
+        public uint X
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => Left;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Left = value;
+        }
+
+        public uint Y
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => Top;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Top = value;
+        }
+
+        public PointU Location
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => new PointU(Left, Top);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                Left = value.X;
+                Top = value.Y;
+            }
+        }
+
+        public SizeU Size
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => new SizeU(Width, Height);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                Width = value.Width;
+                Height = value.Height;
+            }
+        }
+
+        public readonly PointU TopLeft => new PointU(Left, Top);
+        public readonly PointU TopRight => new PointU(Right, Top);
+        public readonly PointU BottomLeft => new PointU(Left, Bottom);
+        public readonly PointU BottomRight => new PointU(Right, Bottom);
+
+        public uint Height
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => Bottom - Top;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Bottom = Top + value;
+        }
+
+        public uint Width
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get => Right - Left;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Right = Left + value;
+        }
+
+        public readonly bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => IsEmptyLocation && IsEmptySize;
+        }
+
+        public readonly bool IsEmptyLocation
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Left == 0 && Top == 0;
+        }
+
+        public readonly bool IsEmptySize
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Left == Right && Top == Bottom;
+        }
+
+        public readonly bool Contains(int x, int y) => x >= Left && y >= Top && x <= Right && y <= Bottom;
+
+        public readonly bool Contains(uint x, uint y) => x >= Left && y >= Top && x <= Right && y <= Bottom;
+
+        public readonly bool Contains(PointU point) => Contains(point.X, point.Y);
+
+        public readonly bool Contains(Point point) => Contains(point.X, point.Y);
+
+        public readonly bool Contains(in RectangleF rect)
+        {
+            if (X <= rect.X && rect.X + rect.Width <= Right && Y <= rect.Y)
+            {
+                return rect.Y + rect.Height <= Bottom;
+            }
+
+            return false;
+        }
+
+        public readonly bool Contains(in Rectangle rect)
+        {
+            if (X <= rect.X && rect.X + rect.Width <= Right && Y <= rect.Y)
+            {
+                return rect.Y + rect.Height <= Bottom;
+            }
+
+            return false;
+        }
+
+        public readonly bool Contains(in RectU rect)
+        {
+            if (X <= rect.X && rect.Right <= Right && Y <= rect.Y)
+            {
+                return rect.Bottom <= Bottom;
+            }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override readonly bool Equals(object? obj) => obj is RectU other && Equals(other);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Equals(in RectU other)
+            => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
+
+        public override readonly unsafe int GetHashCode() => unchecked((int)(Left ^ Top ^ Right ^ Bottom));
+
+        public override readonly string ToString()
+            => $"{{ {nameof(Left)} = {Left}, {nameof(Top)} = {Top}, {nameof(Right)} = {Right}, {nameof(Bottom)} = {Bottom}) }}";
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(in RectU a, in RectU b) => a.Equals(b);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(in RectU a, in RectU b) => !a.Equals(b);
+    }
+}

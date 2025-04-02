@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System;
 using WitherTorch.CrossNative.Windows.Internals;
+using WitherTorch.CrossNative.Helpers;
 
 namespace WitherTorch.CrossNative.Windows
 {

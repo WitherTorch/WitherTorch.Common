@@ -1,5 +1,7 @@
 ﻿using InlineMethod;
 
+using WitherTorch.CrossNative.Helpers;
+
 #if !DEBUG
 using InlineIL;
 #endif

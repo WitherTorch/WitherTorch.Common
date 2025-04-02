@@ -5,6 +5,7 @@ using System.Security;
 
 using InlineMethod;
 
+using WitherTorch.CrossNative.Helpers;
 using WitherTorch.CrossNative.Windows.Internals;
 
 namespace WitherTorch.CrossNative.Windows
