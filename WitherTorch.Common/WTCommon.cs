@@ -4,7 +4,7 @@ using WitherTorch.Common.Internals;
 
 namespace WitherTorch.Common
 {
-    public static class WTCrossNative
+    public static class WTCommon
     {
         private static IArrayPoolProvider? _arrayPoolProvider = null; 
 

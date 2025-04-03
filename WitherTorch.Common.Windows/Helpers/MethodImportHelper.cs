@@ -1,6 +1,4 @@
-﻿using System;
-
-using InlineMethod;
+﻿using InlineMethod;
 
 using WitherTorch.Common.Structures;
 using WitherTorch.Common.Windows.Internals;
@@ -13,7 +11,7 @@ namespace WitherTorch.Common.Windows.Helpers
         {
             nint module = Kernel32.LoadLibrary(dllName);
 
-            IArrayPool<byte> pool = WTCrossNative.ArrayPoolProvider.GetArrayPool<byte>();
+            IArrayPool<byte> pool = WTCommon.ArrayPoolProvider.GetArrayPool<byte>();
 
             return GetImportedMethodPointerCore(pool, module, methodName);
         }
@@ -38,7 +36,7 @@ namespace WitherTorch.Common.Windows.Helpers
         {
             nint module = Kernel32.LoadLibrary(dllName);
 
-            IArrayPool<byte> pool = WTCrossNative.ArrayPoolProvider.GetArrayPool<byte>();
+            IArrayPool<byte> pool = WTCommon.ArrayPoolProvider.GetArrayPool<byte>();
 
             int length = methodNames.Length;
             void*[] pointers = new void*[length];

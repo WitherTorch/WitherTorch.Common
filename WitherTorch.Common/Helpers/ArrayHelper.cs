@@ -1,9 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 using InlineMethod;
-
-using WitherTorch.CrossNative.Helpers;
 
 namespace WitherTorch.Common.Helpers
 {
