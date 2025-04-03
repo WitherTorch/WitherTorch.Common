@@ -1,11 +1,12 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.Common.Windows.Internals;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Windows.Structures
 {
-    public struct RectU
+    public struct RectU : IEquatable<RectU>
     {
         public uint Left;
         public uint Top;
@@ -29,12 +30,12 @@ namespace WitherTorch.Common.Windows.Structures
         public static implicit operator RectU(RectangleF rectangle) => new RectU((uint)rectangle.Left, (uint)rectangle.Top, (uint)rectangle.Right, (uint)rectangle.Bottom);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator RectU(Rectangle rectangle) => FromXYWH(rectangle.Left.MakeUnsigned(), rectangle.Top.MakeUnsigned(),
-            rectangle.Right.MakeUnsigned(), rectangle.Bottom.MakeUnsigned());
+        public static explicit operator RectU(Rectangle rectangle) => FromXYWH(MathHelper.MakeUnsigned(rectangle.Left), MathHelper.MakeUnsigned(rectangle.Top),
+            MathHelper.MakeUnsigned(rectangle.Right), MathHelper.MakeUnsigned(rectangle.Bottom));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator RectU(Rect rectangle) => new RectU(rectangle.Left.MakeUnsigned(), rectangle.Top.MakeUnsigned(),
-            rectangle.Right.MakeUnsigned(), rectangle.Bottom.MakeUnsigned());
+        public static explicit operator RectU(Rect rectangle) => new RectU(MathHelper.MakeUnsigned(rectangle.Left), MathHelper.MakeUnsigned(rectangle.Top),
+            MathHelper.MakeUnsigned(rectangle.Right), MathHelper.MakeUnsigned(rectangle.Bottom));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator RectangleF(RectU rectangle) => RectangleF.FromLTRB(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
@@ -163,7 +164,7 @@ namespace WitherTorch.Common.Windows.Structures
         public override readonly bool Equals(object? obj) => obj is RectU other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(in RectU other)
+        public readonly bool Equals(RectU other)
             => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
 
         public override readonly unsafe int GetHashCode() => unchecked((int)(Left ^ Top ^ Right ^ Bottom));

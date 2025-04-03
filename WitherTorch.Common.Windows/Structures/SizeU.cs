@@ -1,11 +1,12 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.Common.Windows.Internals;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Windows.Structures
 {
-    public struct SizeU
+    public struct SizeU : IEquatable<SizeU>
     {
         public uint Width;
         public uint Height;
@@ -18,9 +19,9 @@ namespace WitherTorch.Common.Windows.Structures
             Height = height;
         }
 
-        public static explicit operator SizeU(Size size) => new SizeU(size.Width.MakeUnsigned(), size.Height.MakeUnsigned());
+        public static explicit operator SizeU(Size size) => new SizeU(MathHelper.MakeUnsigned(size.Width), MathHelper.MakeUnsigned(size.Height));
 
-        public static explicit operator Size(SizeU size) => new Size(size.Width.MakeSigned(), size.Height.MakeSigned());
+        public static explicit operator Size(SizeU size) => new Size(MathHelper.MakeSigned(size.Width), MathHelper.MakeSigned(size.Height));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override bool Equals(object? obj) => obj is PointU other && Equals(other);

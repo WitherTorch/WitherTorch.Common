@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Native;
+
 namespace WitherTorch.Common
 {
     unsafe partial class NativeObject
@@ -52,6 +54,6 @@ namespace WitherTorch.Common
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe explicit operator nint(NativeObject comObject) 
-            => comObject is not null ? (nint)comObject._nativePointer : 0;
+            => comObject is not null ? (nint)comObject._nativePointer : default;
     }
 }

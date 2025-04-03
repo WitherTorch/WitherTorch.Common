@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Native;
+
 namespace WitherTorch.Common
 {
     /// <summary>

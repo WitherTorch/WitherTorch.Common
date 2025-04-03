@@ -557,6 +557,8 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static bool ContainsCore<T>(T* ptr, T* ptrEnd, T value, [InlineParameter] int offset) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return Core<byte>.Contains(WithOffset((byte*)ptr, offset), (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return Core<ushort>.Contains(WithOffset((ushort*)ptr, offset), (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -569,6 +571,8 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static bool ContainsExcludeCore<T>(T* ptr, T* ptrEnd, T value, [InlineParameter] int offset) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return Core<byte>.ContainsExclude(WithOffset((byte*)ptr, offset), (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return Core<ushort>.ContainsExclude(WithOffset((ushort*)ptr, offset), (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -581,6 +585,8 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static bool ContainsGreaterThanCore<T>(T* ptr, T* ptrEnd, T value, [InlineParameter] int offset) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return Core<byte>.ContainsGreaterThan(WithOffset((byte*)ptr, offset), (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return Core<ushort>.ContainsGreaterThan(WithOffset((ushort*)ptr, offset), (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -593,6 +599,8 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static bool ContainsGreaterOrEqualsThanCore<T>(T* ptr, T* ptrEnd, T value, [InlineParameter] int offset) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return Core<byte>.ContainsGreaterOrEqualsThan(WithOffset((byte*)ptr, offset), (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return Core<ushort>.ContainsGreaterOrEqualsThan(WithOffset((ushort*)ptr, offset), (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -605,6 +613,8 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static bool ContainsLessThanCore<T>(T* ptr, T* ptrEnd, T value, [InlineParameter] int offset) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return Core<byte>.ContainsLessThan(WithOffset((byte*)ptr, offset), (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return Core<ushort>.ContainsLessThan(WithOffset((ushort*)ptr, offset), (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -617,6 +627,8 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static bool ContainsLessOrEqualsThanCore<T>(T* ptr, T* ptrEnd, T value, [InlineParameter] int offset) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return Core<byte>.ContainsLessOrEqualsThan(WithOffset((byte*)ptr, offset), (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return Core<ushort>.ContainsLessOrEqualsThan(WithOffset((ushort*)ptr, offset), (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))

@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Windows
 {

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 using WitherTorch.Common.Windows.Internals;
 
 namespace WitherTorch.Common.Windows

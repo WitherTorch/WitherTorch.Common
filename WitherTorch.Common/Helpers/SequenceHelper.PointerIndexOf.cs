@@ -8,6 +8,8 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOf<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return (T*)Core<byte>.PointerIndexOf((byte*)ptr, (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return (T*)Core<ushort>.PointerIndexOf((ushort*)ptr, (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -20,6 +22,8 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfExclude<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return (T*)Core<byte>.PointerIndexOfExclude((byte*)ptr, (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return (T*)Core<ushort>.PointerIndexOfExclude((ushort*)ptr, (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -32,6 +36,8 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfGreaterThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return (T*)Core<byte>.PointerIndexOfGreaterThan((byte*)ptr, (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return (T*)Core<ushort>.PointerIndexOfGreaterThan((ushort*)ptr, (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -44,6 +50,8 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfGreaterOrEqualsThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return (T*)Core<byte>.PointerIndexOfGreaterOrEqualsThan((byte*)ptr, (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return (T*)Core<ushort>.PointerIndexOfGreaterOrEqualsThan((ushort*)ptr, (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -56,6 +64,8 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfLessThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return (T*)Core<byte>.PointerIndexOfLessThan((byte*)ptr, (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return (T*)Core<ushort>.PointerIndexOfLessThan((ushort*)ptr, (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(IntPtr))
@@ -68,6 +78,8 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfLessOrEqualsThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
         {
+            if (typeof(T) == typeof(bool))
+                return (T*)Core<byte>.PointerIndexOfLessOrEqualsThan((byte*)ptr, (byte*)ptrEnd, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(char))
                 return (T*)Core<ushort>.PointerIndexOfLessOrEqualsThan((ushort*)ptr, (ushort*)ptrEnd, UnsafeHelper.As<T, ushort>(value)); 
             if (typeof(T) == typeof(IntPtr))

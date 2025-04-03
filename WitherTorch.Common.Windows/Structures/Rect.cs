@@ -3,12 +3,12 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using WitherTorch.Common.Windows.Internals;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Windows.Structures
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct Rect
+    public struct Rect : IEquatable<Rect>
     {
         public int Left;
         public int Top;
@@ -38,8 +38,8 @@ namespace WitherTorch.Common.Windows.Structures
         public static explicit operator Rect(RectF rectangle) => new Rect((int)rectangle.Left, (int)rectangle.Top, (int)rectangle.Right, (int)rectangle.Bottom);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator Rect(RectU rectangle) => new Rect(rectangle.Left.MakeSigned(), rectangle.Top.MakeSigned(),
-            rectangle.Right.MakeSigned(), rectangle.Bottom.MakeSigned());
+        public static explicit operator Rect(RectU rectangle) => new Rect(MathHelper.MakeSigned(rectangle.Left), MathHelper.MakeSigned(rectangle.Top),
+            MathHelper.MakeSigned(rectangle.Right), MathHelper.MakeSigned(rectangle.Bottom));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Rectangle(Rect rectangle) => Rectangle.FromLTRB(rectangle.Left, rectangle.Top, rectangle.Right, rectangle.Bottom);
@@ -178,7 +178,7 @@ namespace WitherTorch.Common.Windows.Structures
         public override readonly bool Equals(object? obj) => obj is Rect other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(in Rect other)
+        public readonly bool Equals(Rect other)
             => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

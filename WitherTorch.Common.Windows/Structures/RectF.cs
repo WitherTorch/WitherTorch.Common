@@ -1,11 +1,12 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace WitherTorch.Common.Windows.Structures
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct RectF
+    public struct RectF : IEquatable<RectF>
     {
         public float Left;
         public float Top;
@@ -165,7 +166,7 @@ namespace WitherTorch.Common.Windows.Structures
         public override readonly bool Equals(object? obj) => obj is RectF other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(in RectF other)
+        public readonly bool Equals(RectF other)
             => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
 
         public override readonly unsafe int GetHashCode()

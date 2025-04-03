@@ -1,4 +1,4 @@
-﻿namespace WitherTorch.Common
+﻿namespace WitherTorch.Common.Native
 {
     public enum ReferenceType : long
     {

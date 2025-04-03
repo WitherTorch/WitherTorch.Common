@@ -1,5 +1,6 @@
 ﻿using InlineMethod;
 
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Structures;
 using WitherTorch.Common.Windows.Internals;
 
@@ -11,7 +12,7 @@ namespace WitherTorch.Common.Windows.Helpers
         {
             nint module = Kernel32.LoadLibrary(dllName);
 
-            IArrayPool<byte> pool = WTCommon.ArrayPoolProvider.GetArrayPool<byte>();
+            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 
             return GetImportedMethodPointerCore(pool, module, methodName);
         }
@@ -36,7 +37,7 @@ namespace WitherTorch.Common.Windows.Helpers
         {
             nint module = Kernel32.LoadLibrary(dllName);
 
-            IArrayPool<byte> pool = WTCommon.ArrayPoolProvider.GetArrayPool<byte>();
+            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 
             int length = methodNames.Length;
             void*[] pointers = new void*[length];
@@ -50,7 +51,7 @@ namespace WitherTorch.Common.Windows.Helpers
             return pointers;
         }
 
-        private static void* GetImportedMethodPointerCore(IArrayPool<byte> pool, nint module, string methodName)
+        private static void* GetImportedMethodPointerCore(ArrayPool<byte> pool, nint module, string methodName)
         {
             byte[] buffer = pool.Rent(methodName.Length);
             AsciiHelper.ToAsciiUnchecked(buffer, methodName);

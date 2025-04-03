@@ -1,11 +1,12 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.Common.Windows.Internals;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Windows.Structures
 {
-    public struct PointU
+    public struct PointU : IEquatable<PointU>
     {
         public uint X;
         public uint Y;
@@ -19,10 +20,10 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator PointU(Point point) => new PointU(point.X.MakeUnsigned(), point.Y.MakeUnsigned());
+        public static explicit operator PointU(Point point) => new PointU(MathHelper.MakeUnsigned(point.X), MathHelper.MakeUnsigned(point.Y));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static explicit operator Point(PointU point) => new Point(point.X.MakeSigned(), point.Y.MakeSigned());
+        public static explicit operator Point(PointU point) => new Point(MathHelper.MakeSigned(point.X), MathHelper.MakeSigned(point.Y));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override bool Equals(object? obj) => obj is PointU other && Equals(other);
