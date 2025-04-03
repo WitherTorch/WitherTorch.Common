@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace WitherTorch.CrossNative.Threading
+namespace WitherTorch.Common.Threading
 {
     /// <inheritdoc cref="Lazy{T}"/>
     [StructLayout(LayoutKind.Sequential, Pack = 8)]

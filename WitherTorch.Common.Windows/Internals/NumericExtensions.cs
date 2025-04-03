@@ -1,6 +1,6 @@
 ﻿using InlineMethod;
 
-namespace WitherTorch.CrossNative.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals
 {
     internal static class NumericExtensions
     {

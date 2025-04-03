@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 
-using WitherTorch.CrossNative.Windows.Internals;
+using WitherTorch.Common.Windows.Internals;
 
-namespace WitherTorch.CrossNative.Windows.Helpers
+namespace WitherTorch.Common.Windows.Helpers
 {
     public static unsafe class ThreadHelper
     {
@@ -16,11 +16,11 @@ namespace WitherTorch.CrossNative.Windows.Helpers
             void* methodPointer = _setThreadDescriptionMethodPointer;
             if (methodPointer == null)
                 return;
-            IntPtr handle = Kernel32.OpenThread(0x0400u, false, unchecked((uint)Kernel32.GetCurrentThreadId()));
-            if (handle == IntPtr.Zero)
+            nint handle = Kernel32.OpenThread(0x0400u, false, unchecked((uint)Kernel32.GetCurrentThreadId()));
+            if (handle == nint.Zero)
                 return;
             fixed (char* ptr = name)
-                ((delegate*<IntPtr, char*, void>)methodPointer)(handle, ptr);
+                ((delegate*<nint, char*, void>)methodPointer)(handle, ptr);
             Kernel32.CloseHandle(handle);
         }
     }

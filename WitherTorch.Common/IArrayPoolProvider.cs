@@ -1,4 +1,4 @@
-﻿namespace WitherTorch.CrossNative
+﻿namespace WitherTorch.Common
 {
     public interface IArrayPoolProvider
     {

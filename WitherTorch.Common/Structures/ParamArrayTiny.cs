@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WitherTorch.CrossNative.Structures
+namespace WitherTorch.Common.Structures
 {
     [StructLayout(LayoutKind.Sequential)]
     public readonly ref struct ParamArrayTiny<T>

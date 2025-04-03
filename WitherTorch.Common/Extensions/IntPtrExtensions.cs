@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 using InlineMethod;
 
-namespace WitherTorch.CrossNative.Extensions
+namespace WitherTorch.Common.Extensions
 {
     public static class IntPtrExtensions
     {
@@ -26,14 +26,14 @@ namespace WitherTorch.CrossNative.Extensions
             [FieldOffset(0)]
             public uint rawValue;
 
-            public static implicit operator IntPtr(Words words) => new IntPtr(words.rawValue);
+            public static implicit operator nint(Words words) => new nint(words.rawValue);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Words GetWords(this IntPtr _this)
+        public static unsafe Words GetWords(this nint _this)
         {
-            return new Words() { rawValue = unchecked(((UIntPtr)_this.ToPointer()).ToUInt32()) };
+            return new Words() { rawValue = unchecked(((nuint)_this.ToPointer()).ToUInt32()) };
         }
 
         public static nint One => 1;

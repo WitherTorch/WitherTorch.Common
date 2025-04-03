@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace WitherTorch.CrossNative.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals
 {
     [SuppressUnmanagedCodeSecurity]
     public static unsafe class Kernel32
@@ -11,22 +11,22 @@ namespace WitherTorch.CrossNative.Windows.Internals
         private const string KERNEL32_DLL = "kernel32.dll";
 
         [DllImport(KERNEL32_DLL)]
-        public static extern bool CloseHandle(IntPtr hObject);
+        public static extern bool CloseHandle(nint hObject);
 
         [DllImport(KERNEL32_DLL)]
-        public static extern void* GetProcAddress(IntPtr hModule, byte* lpProcName);
+        public static extern void* GetProcAddress(nint hModule, byte* lpProcName);
 
         [DllImport(KERNEL32_DLL)]
-        public static extern IntPtr LoadLibraryW(char* lpLibFileName);
+        public static extern nint LoadLibraryW(char* lpLibFileName);
 
         [DllImport(KERNEL32_DLL)]
-        public static extern IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+        public static extern nint OpenThread(uint dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
 
         [DllImport(KERNEL32_DLL)]
         public static extern int GetCurrentThreadId();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IntPtr LoadLibrary(string lpLibFileName)
+        public static nint LoadLibrary(string lpLibFileName)
         {
             fixed (char* ptr = lpLibFileName)
                 return LoadLibraryW(ptr);

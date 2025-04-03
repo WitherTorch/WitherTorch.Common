@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.CrossNative.Helpers
 {
     unsafe partial class SequenceHelper

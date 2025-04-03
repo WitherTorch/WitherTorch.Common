@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace WitherTorch.CrossNative.Threading
+namespace WitherTorch.Common.Threading
 {
     internal static class LazyTinyHelper
     {

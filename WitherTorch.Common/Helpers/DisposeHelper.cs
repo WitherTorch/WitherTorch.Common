@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace WitherTorch.CrossNative.Helpers
+namespace WitherTorch.Common.Helpers
 {
     public static class DisposeHelper
     {

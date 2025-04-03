@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace WitherTorch.CrossNative
+namespace WitherTorch.Common
 {
     public interface IUnwrappableList<T> : IList<T>
     {

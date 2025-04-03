@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.CrossNative.Helpers
 {
     unsafe partial class SequenceHelper

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace WitherTorch.CrossNative.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals
 {
     internal static class AsciiHelper
     {

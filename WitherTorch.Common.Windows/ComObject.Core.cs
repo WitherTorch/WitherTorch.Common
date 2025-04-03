@@ -1,6 +1,6 @@
 ﻿using InlineMethod;
 
-using WitherTorch.CrossNative.Helpers;
+using WitherTorch.Common.Helpers;
 
 #if !DEBUG
 using InlineIL;

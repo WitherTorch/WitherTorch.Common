@@ -1,9 +1,9 @@
 ﻿using System.Drawing;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.CrossNative.Windows.Internals;
+using WitherTorch.Common.Windows.Internals;
 
-namespace WitherTorch.CrossNative.Windows.Structures
+namespace WitherTorch.Common.Windows.Structures
 {
     public struct PointU
     {

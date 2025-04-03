@@ -6,7 +6,7 @@ using InlineMethod;
 using System.Runtime.CompilerServices;
 #endif
 
-namespace WitherTorch.CrossNative.Helpers
+namespace WitherTorch.Common.Helpers
 {
     public static class InterlockedHelper
     {

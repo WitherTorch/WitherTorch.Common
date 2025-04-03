@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace WitherTorch.CrossNative.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals
 {
     [SuppressUnmanagedCodeSecurity]
     public static unsafe class Ole32

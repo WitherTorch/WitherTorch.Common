@@ -1,8 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 
-using WitherTorch.CrossNative.Internals;
+using WitherTorch.Common.Internals;
 
-namespace WitherTorch.CrossNative
+namespace WitherTorch.Common
 {
     public static class WTCrossNative
     {

@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
-namespace WitherTorch.CrossNative.Helpers
+using WitherTorch.CrossNative.Helpers;
+
+namespace WitherTorch.Common.Helpers
 {
     public static partial class ArrayHelper
     {
@@ -16,7 +18,7 @@ namespace WitherTorch.CrossNative.Helpers
             int length = array.Length;
 #pragma warning disable CS8500
             fixed (T* ptr = array)
-                return SequenceHelper.Contains((IntPtr*)ptr, (IntPtr*)ptr + length, IntPtr.Zero);
+                return SequenceHelper.Contains((nint*)ptr, (nint*)ptr + length, nint.Zero);
 #pragma warning restore CS8500
         }
 
@@ -25,7 +27,7 @@ namespace WitherTorch.CrossNative.Helpers
         {
 #pragma warning disable CS8500
             fixed (T* ptr = array)
-                return SequenceHelper.ContainsExclude((IntPtr*)ptr, (IntPtr*)ptr + array.Length, IntPtr.Zero);
+                return SequenceHelper.ContainsExclude((nint*)ptr, (nint*)ptr + array.Length, nint.Zero);
 #pragma warning restore CS8500
         }
 
@@ -36,7 +38,7 @@ namespace WitherTorch.CrossNative.Helpers
 #pragma warning disable CS8500
             fixed (T* ptr = array)
             {
-                int index = SequenceHelper.IndexOf((IntPtr*)ptr, (IntPtr*)ptr + length, IntPtr.Zero);
+                int index = SequenceHelper.IndexOf((nint*)ptr, (nint*)ptr + length, nint.Zero);
                 return index == -1 ? null : array[index];
             }
 #pragma warning restore CS8500
@@ -49,7 +51,7 @@ namespace WitherTorch.CrossNative.Helpers
 #pragma warning disable CS8500
             fixed (T* ptr = array)
             {
-                int index = SequenceHelper.IndexOfExclude((IntPtr*)ptr, (IntPtr*)ptr + length, IntPtr.Zero);
+                int index = SequenceHelper.IndexOfExclude((nint*)ptr, (nint*)ptr + length, nint.Zero);
                 return index == -1 ? null : array[index];
             }
 #pragma warning restore CS8500

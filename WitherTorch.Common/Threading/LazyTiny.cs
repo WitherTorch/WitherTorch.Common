@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace WitherTorch.CrossNative.Threading
+namespace WitherTorch.Common.Threading
 {
     /// <inheritdoc cref="Lazy{T}"/>
     public sealed class LazyTiny<T> where T : class

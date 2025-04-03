@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common;
+
 namespace WitherTorch.CrossNative
 {
     unsafe partial class NativeObject

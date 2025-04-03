@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WitherTorch.CrossNative.Windows.Structures
+namespace WitherTorch.Common.Windows.Structures
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct RectF

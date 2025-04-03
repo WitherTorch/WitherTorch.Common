@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 
-namespace WitherTorch.CrossNative.Internals
+namespace WitherTorch.Common.Internals
 {
     internal sealed class FallbackArrayPoolProvider : IArrayPoolProvider
     {

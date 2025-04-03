@@ -10,7 +10,7 @@ using InlineMethod;
 #pragma warning disable CS8601
 #pragma warning disable IDE0060
 
-namespace WitherTorch.CrossNative.Helpers
+namespace WitherTorch.Common.Helpers
 {
 #if NET8_0_OR_GREATER
     [SkipLocalsInit]

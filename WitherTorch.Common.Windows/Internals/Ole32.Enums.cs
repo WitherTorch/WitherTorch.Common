@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WitherTorch.CrossNative.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals
 {
     [Flags]
     public enum ClassContextFlags : uint

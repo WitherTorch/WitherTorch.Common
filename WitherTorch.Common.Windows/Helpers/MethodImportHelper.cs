@@ -2,22 +2,23 @@
 
 using InlineMethod;
 
-using WitherTorch.CrossNative.Structures;
-using WitherTorch.CrossNative.Windows.Internals;
+using WitherTorch.Common;
+using WitherTorch.Common.Structures;
+using WitherTorch.Common.Windows.Internals;
 
-namespace WitherTorch.CrossNative.Windows.Helpers
+namespace WitherTorch.Common.Windows.Helpers
 {
     public static unsafe class MethodImportHelper
     {
         public static void* GetImportedMethodPointer(string dllName, int methodIndex)
         {
-            IntPtr module = Kernel32.LoadLibrary(dllName);
+            nint module = Kernel32.LoadLibrary(dllName);
             return Kernel32.GetProcAddress(module, (byte*)methodIndex);
         }
 
         public static void* GetImportedMethodPointer(string dllName, string methodName)
         {
-            IntPtr module = Kernel32.LoadLibrary(dllName);
+            nint module = Kernel32.LoadLibrary(dllName);
 
             IArrayPool<byte> pool = WTCrossNative.ArrayPoolProvider.GetArrayPool<byte>();
 
@@ -42,7 +43,7 @@ namespace WitherTorch.CrossNative.Windows.Helpers
 
         public static void*[] GetImportedMethodPointers(string dllName, ParamArrayTiny<string> methodNames)
         {
-            IntPtr module = Kernel32.LoadLibrary(dllName);
+            nint module = Kernel32.LoadLibrary(dllName);
 
             IArrayPool<byte> pool = WTCrossNative.ArrayPoolProvider.GetArrayPool<byte>();
 
@@ -58,7 +59,7 @@ namespace WitherTorch.CrossNative.Windows.Helpers
             return pointers;
         }
 
-        private static void* GetImportedMethodPointerCore(IArrayPool<byte> pool, IntPtr module, string methodName)
+        private static void* GetImportedMethodPointerCore(IArrayPool<byte> pool, nint module, string methodName)
         {
             byte[] buffer = pool.Rent(methodName.Length);
             AsciiHelper.ToAsciiUnchecked(buffer, methodName);

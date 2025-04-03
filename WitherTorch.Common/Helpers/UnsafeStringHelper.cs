@@ -11,7 +11,7 @@ using InlineIL;
 
 using InlineMethod;
 
-namespace WitherTorch.CrossNative.Helpers
+namespace WitherTorch.Common.Helpers
 {
     public static unsafe class UnsafeStringHelper
     {

@@ -2,8 +2,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System;
-using WitherTorch.CrossNative.Windows.Internals;
-using WitherTorch.CrossNative.Helpers;
+using WitherTorch.Common;
+using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Windows.Internals;
 
 namespace WitherTorch.CrossNative.Windows
 {

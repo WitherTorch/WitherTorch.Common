@@ -3,7 +3,7 @@
 using InlineIL;
 #endif
 
-namespace WitherTorch.CrossNative.Windows.Structures
+namespace WitherTorch.Common.Windows.Structures
 {
 
     [StructLayout(LayoutKind.Sequential, Pack = 2, Size = 260 * sizeof(char))]

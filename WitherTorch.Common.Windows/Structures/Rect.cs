@@ -3,9 +3,9 @@ using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using WitherTorch.CrossNative.Windows.Internals;
+using WitherTorch.Common.Windows.Internals;
 
-namespace WitherTorch.CrossNative.Windows.Structures
+namespace WitherTorch.Common.Windows.Structures
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct Rect
