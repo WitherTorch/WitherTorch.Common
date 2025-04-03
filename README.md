@@ -1,2 +1,2 @@
-# WitherTorch.CrossNative
-Cross-platform native library for WitherTorch
+# WitherTorch.Common
+Common library for WitherTorch UIs
