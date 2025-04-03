@@ -18,7 +18,7 @@ namespace WitherTorch.Common.Helpers
             int length = array.Length;
 #pragma warning disable CS8500
             fixed (T* ptr = array)
-                return SequenceHelper.Contains((nint*)ptr, (nint*)ptr + length, nint.Zero);
+                return SequenceHelper.Contains((nint*)ptr, (nint*)ptr + length, 0);
 #pragma warning restore CS8500
         }
 
@@ -27,31 +27,31 @@ namespace WitherTorch.Common.Helpers
         {
 #pragma warning disable CS8500
             fixed (T* ptr = array)
-                return SequenceHelper.ContainsExclude((nint*)ptr, (nint*)ptr + array.Length, nint.Zero);
+                return SequenceHelper.ContainsExclude((nint*)ptr, (nint*)ptr + array.Length, 0);
 #pragma warning restore CS8500
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe T FindFirstNullItem<T>(T[] array) where T : class
+        public static unsafe T? FindFirstNullItem<T>(T[] array) where T : class
         {
             int length = array.Length;
 #pragma warning disable CS8500
             fixed (T* ptr = array)
             {
-                int index = SequenceHelper.IndexOf((nint*)ptr, (nint*)ptr + length, nint.Zero);
+                int index = SequenceHelper.IndexOf((nint*)ptr, (nint*)ptr + length, 0);
                 return index == -1 ? null : array[index];
             }
 #pragma warning restore CS8500
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe T FindFirstNonNullItem<T>(T[] array) where T : class
+        public static unsafe T? FindFirstNonNullItem<T>(T[] array) where T : class
         {
             int length = array.Length;
 #pragma warning disable CS8500
             fixed (T* ptr = array)
             {
-                int index = SequenceHelper.IndexOfExclude((nint*)ptr, (nint*)ptr + length, nint.Zero);
+                int index = SequenceHelper.IndexOfExclude((nint*)ptr, (nint*)ptr + length, 0);
                 return index == -1 ? null : array[index];
             }
 #pragma warning restore CS8500

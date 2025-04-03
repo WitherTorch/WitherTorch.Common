@@ -6,7 +6,7 @@ using WitherTorch.Common.Helpers;
 using InlineIL;
 #endif
 
-namespace WitherTorch.CrossNative.Windows
+namespace WitherTorch.Common.Windows
 {
     unsafe partial class ComObject
     {

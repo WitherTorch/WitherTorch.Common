@@ -1,9 +1,6 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-using WitherTorch.Common;
-
-namespace WitherTorch.CrossNative
+namespace WitherTorch.Common
 {
     unsafe partial class NativeObject
     {
@@ -54,7 +51,7 @@ namespace WitherTorch.CrossNative
             => comObject is not null ? comObject.NativePointer : null;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe explicit operator IntPtr(NativeObject comObject) 
-            => comObject is not null ? (IntPtr)comObject._nativePointer : IntPtr.Zero;
+        public static unsafe explicit operator nint(NativeObject comObject) 
+            => comObject is not null ? (nint)comObject._nativePointer : 0;
     }
 }

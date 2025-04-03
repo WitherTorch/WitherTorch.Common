@@ -2,14 +2,11 @@
 using System.Numerics;
 
 using InlineMethod;
+
 using WitherTorch.Common.Helpers;
-
-
 
 #if NET472_OR_GREATER
 using LocalsInit;
-
-using WitherTorch.Common.Helpers;
 #else
 using System.Runtime.CompilerServices;
 #endif

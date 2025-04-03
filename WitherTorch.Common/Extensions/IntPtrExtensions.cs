@@ -26,14 +26,14 @@ namespace WitherTorch.Common.Extensions
             [FieldOffset(0)]
             public uint rawValue;
 
-            public static implicit operator nint(Words words) => new nint(words.rawValue);
+            public static implicit operator nint(Words words) => (nint)words.rawValue;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe Words GetWords(this nint _this)
         {
-            return new Words() { rawValue = unchecked(((nuint)_this.ToPointer()).ToUInt32()) };
+            return new Words() { rawValue = unchecked((uint)_this) };
         }
 
         public static nint One => 1;

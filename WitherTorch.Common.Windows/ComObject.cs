@@ -3,13 +3,9 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
-using InlineMethod;
-
-using WitherTorch.Common;
 using WitherTorch.Common.Helpers;
-using WitherTorch.CrossNative.Windows.Internals;
 
-namespace WitherTorch.CrossNative.Windows
+namespace WitherTorch.Common.Windows
 {
 #if NET8_0_OR_GREATER
     [SkipLocalsInit]

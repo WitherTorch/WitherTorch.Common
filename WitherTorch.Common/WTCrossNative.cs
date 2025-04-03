@@ -6,12 +6,12 @@ namespace WitherTorch.Common
 {
     public static class WTCrossNative
     {
-        private static IArrayPoolProvider _arrayPoolProvider = FallbackArrayPoolProvider.Instance; 
+        private static IArrayPoolProvider? _arrayPoolProvider = null; 
 
         public static IArrayPoolProvider ArrayPoolProvider
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _arrayPoolProvider;
+            get => _arrayPoolProvider ?? FallbackArrayPoolProvider.Instance;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _arrayPoolProvider = value;
         }

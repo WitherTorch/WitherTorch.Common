@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.Common;
-
-namespace WitherTorch.CrossNative
+namespace WitherTorch.Common
 {
     /// <summary>
     /// Represents a native object

@@ -1,12 +1,13 @@
-﻿using InlineMethod;
+﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System;
-using WitherTorch.Common;
+
+using InlineMethod;
+
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Windows.Internals;
 
-namespace WitherTorch.CrossNative.Windows
+namespace WitherTorch.Common.Windows
 {
     unsafe partial class ComObject
     {

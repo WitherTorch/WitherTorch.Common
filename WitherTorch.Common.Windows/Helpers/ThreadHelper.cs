@@ -17,7 +17,7 @@ namespace WitherTorch.Common.Windows.Helpers
             if (methodPointer == null)
                 return;
             nint handle = Kernel32.OpenThread(0x0400u, false, unchecked((uint)Kernel32.GetCurrentThreadId()));
-            if (handle == nint.Zero)
+            if (handle == default)
                 return;
             fixed (char* ptr = name)
                 ((delegate*<nint, char*, void>)methodPointer)(handle, ptr);
