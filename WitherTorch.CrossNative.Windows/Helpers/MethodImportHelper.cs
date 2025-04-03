@@ -9,6 +9,12 @@ namespace WitherTorch.CrossNative.Windows.Helpers
 {
     public static unsafe class MethodImportHelper
     {
+        public static void* GetImportedMethodPointer(string dllName, int methodIndex)
+        {
+            IntPtr module = Kernel32.LoadLibrary(dllName);
+            return Kernel32.GetProcAddress(module, (byte*)methodIndex);
+        }
+
         public static void* GetImportedMethodPointer(string dllName, string methodName)
         {
             IntPtr module = Kernel32.LoadLibrary(dllName);
