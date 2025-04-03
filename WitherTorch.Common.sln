@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35919.96 d17.13
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitherTorch.CrossNative", "WitherTorch.CrossNative\WitherTorch.CrossNative.csproj", "{3181F2F1-2253-475D-A254-897D32EC1E8A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitherTorch.Common", "WitherTorch.Common\WitherTorch.Common.csproj", "{3181F2F1-2253-475D-A254-897D32EC1E8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitherTorch.CrossNative.Windows", "WitherTorch.CrossNative.Windows\WitherTorch.CrossNative.Windows.csproj", "{61E07E0A-F4BA-4EBF-A03C-4395A3DB7F77}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WitherTorch.Common.Windows", "WitherTorch.Common.Windows\WitherTorch.Common.Windows.csproj", "{61E07E0A-F4BA-4EBF-A03C-4395A3DB7F77}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "方案項目", "方案項目", "{8DDC4786-5FC8-F15C-1CA5-9F41FD4BEB75}"
 	ProjectSection(SolutionItems) = preProject
