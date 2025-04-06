@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -17,7 +18,7 @@ namespace WitherTorch.Common.Helpers
 #else
     [LocalsInit.LocalsInit(false)]
 #endif
-    public static unsafe class UnsafeHelper
+    public static unsafe partial class UnsafeHelper
     {
         public const int PointerSizeConstant_Indeterminate = 0;
 
@@ -78,11 +79,19 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsUnmanagedType<T>()
-                => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer;
+                => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || (typeof(T).IsValueType && UnmanagedTypeChecker<T>.Instance.IsUnmanagedType());
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUnmanagedType(Type type)
-                => IsPrimitiveType(type) || type.IsEnum || type.IsPointer;
+        {
+            if (IsPrimitiveType(type) || type.IsEnum || type.IsPointer)
+                return true;
+            if (!type.IsValueType)
+                return false;
+            Type checkerType = typeof(UnmanagedTypeChecker<>).MakeGenericType(type);
+            IUnmanagedTypeChecker? instance = checkerType.GetProperty("Instance", BindingFlags.Static)?.GetValue(null) as IUnmanagedTypeChecker;
+            return instance is not null && instance.IsUnmanagedType();
+        }
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsGreaterThan<T>(T a, T b) where T : unmanaged

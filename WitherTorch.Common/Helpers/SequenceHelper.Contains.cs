@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Helpers
         public static bool Contains(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return ContainsCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsExclude(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsExcludeCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return ContainsExcludeCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,7 +132,7 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsGreaterThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsGreaterThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return ContainsGreaterThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -192,7 +192,7 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsGreaterOrEqualsThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsGreaterOrEqualsThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return ContainsGreaterOrEqualsThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -252,7 +252,7 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsLessThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsLessThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return ContainsLessThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,7 +312,7 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsLessOrEqualsThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsLessOrEqualsThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return ContainsLessOrEqualsThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

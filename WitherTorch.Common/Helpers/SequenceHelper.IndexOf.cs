@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Helpers
         public static int IndexOf(string str, char value)
         {
             fixed (char* ptr = str)
-                return IndexOfCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return IndexOfCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Helpers
         public static int IndexOfExclude(string str, char value)
         {
             fixed (char* ptr = str)
-                return IndexOfExcludeCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return IndexOfExcludeCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,7 +132,7 @@ namespace WitherTorch.Common.Helpers
         public static int IndexOfGreaterThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return IndexOfGreaterThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return IndexOfGreaterThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -192,7 +192,7 @@ namespace WitherTorch.Common.Helpers
         public static int IndexOfGreaterOrEqualsThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return IndexOfGreaterOrEqualsThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return IndexOfGreaterOrEqualsThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -252,7 +252,7 @@ namespace WitherTorch.Common.Helpers
         public static int IndexOfLessThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return IndexOfLessThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return IndexOfLessThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,7 +312,7 @@ namespace WitherTorch.Common.Helpers
         public static int IndexOfLessOrEqualsThan(string str, char value)
         {
             fixed (char* ptr = str)
-                return IndexOfLessOrEqualsThanCore(ptr, ptr + UnsafeStringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
+                return IndexOfLessOrEqualsThanCore(ptr, ptr + StringHelper.GetStringLengthByHeadPointer(ptr), value, 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
