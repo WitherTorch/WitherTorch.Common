@@ -23,11 +23,10 @@ namespace WitherTorch.Common.Helpers
         private static unsafe partial class Core<T> where T : unmanaged
         {
             [Inline(InlineBehavior.Remove)]
-            private static bool IsPrimitiveType()
-                => CheckTypeCanBeVectorized() || (typeof(T) == typeof(char));
-
-            [Inline(InlineBehavior.Remove)]
             private static bool CheckTypeCanBeVectorized()
+#if NET8_0_OR_GREATER
+                => Vector<T>.IsSupported;
+#else
                 => (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(short)) ||
                        (typeof(T) == typeof(int)) ||
@@ -38,6 +37,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(ulong)) ||
                        (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
+#endif
 
             [Inline(InlineBehavior.Remove)]
             private static bool IsUnsigned()

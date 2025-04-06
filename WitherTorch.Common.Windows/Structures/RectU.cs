@@ -24,6 +24,9 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static RectU FromXYWH(PointU location, SizeU size) => FromXYWH(location.X, location.Y, size.Width, size.Height);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RectU FromXYWH(uint x, uint y, uint width, uint height) => new RectU(x, y, x + width, y + height);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -120,6 +123,12 @@ namespace WitherTorch.Common.Windows.Structures
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Left == Right && Top == Bottom;
+        }
+
+        public readonly bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Left < Right && Top < Bottom;
         }
 
         public readonly bool Contains(int x, int y) => x >= Left && y >= Top && x <= Right && y <= Bottom;

@@ -704,17 +704,27 @@ namespace WitherTorch.Common.Helpers
                             return null;
                     }
                 }
-                if (IsPrimitiveType())
+                if (UnsafeHelper.IsPrimitiveType<T>())
                 {
                     for (; ptr < ptrEnd; ptr++)
                     {
                         if (LegacyIndexOfCoreFast(*ptr, value, method))
                             return ptr;
                     }
+                    return null;
+                }
+                if (method == IndexOfMethod.Include || method == IndexOfMethod.Exclude)
+                {
+                    EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+                    for (; ptr < ptrEnd; ptr++)
+                    {
+                        if (LegacyIndexOfCoreSlow(comparer, *ptr, value, method))
+                            return ptr;
+                    }
                 }
                 else
                 {
-                    ComparerImpl comparer = ComparerImpl.Instance;
+                    Comparer<T> comparer = Comparer<T>.Default;
                     for (; ptr < ptrEnd; ptr++)
                     {
                         if (LegacyIndexOfCoreSlow(comparer, *ptr, value, method))
@@ -751,17 +761,17 @@ namespace WitherTorch.Common.Helpers
                 };
 
             [Inline(InlineBehavior.Remove)]
-            private static bool LegacyIndexOfCoreSlow(ComparerImpl comparer, T item, T value, [InlineParameter] IndexOfMethod method)
-            {
-                if (method == IndexOfMethod.Include || method == IndexOfMethod.Exclude)
+            private static bool LegacyIndexOfCoreSlow(EqualityComparer<T> comparer, T item, T value, [InlineParameter] IndexOfMethod method)
+                => method switch
                 {
-                    return method switch
-                    {
-                        IndexOfMethod.Include => comparer.Equals(item, value),
-                        IndexOfMethod.Exclude => !comparer.Equals(item, value),
-                        _ => throw new InvalidOperationException(),
-                    };
-                }
+                    IndexOfMethod.Include => comparer.Equals(item, value),
+                    IndexOfMethod.Exclude => !comparer.Equals(item, value),
+                    _ => throw new InvalidOperationException(),
+                };
+
+            [Inline(InlineBehavior.Remove)]
+            private static bool LegacyIndexOfCoreSlow(Comparer<T> comparer, T item, T value, [InlineParameter] IndexOfMethod method)
+            {
                 int result = comparer.Compare(item, value);
                 return method switch
                 {

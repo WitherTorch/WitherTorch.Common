@@ -1,56 +1,21 @@
-﻿using InlineIL;
-
-using InlineMethod;
-
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+
+using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Collections
 {
-    public static class UnwrappableList
-    {
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static UnwrappableList<T> FromExistArray<T>(T[] array) => new UnwrappableList<T>(array);
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static UnwrappableList<T> FromExistArray<T>(T[] array, int initialCount) => new UnwrappableList<T>(array, initialCount);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnwrappableList<T> FromExistArray<T>(T[] array, bool trimNullItems) where T : class
-        {
-            int count = array.Length;
-            if (trimNullItems)
-            {
-                if (count > 0)
-                {
-                    if (array[0] is null)
-                        return new UnwrappableList<T>(array, initialCount: 0);
-                    for (; count > 0; count--)
-                    {
-                        if (array[count - 1] is null)
-                            continue;
-                        return new UnwrappableList<T>(array, count);
-                    }
-                }
-            }
-            return new UnwrappableList<T>(array, count);
-        }
-    }
-
     public sealed class UnwrappableList<T> : CustomListBase<T>
     {
-        public UnwrappableList(T[] array) : base(array) { }
-
-        public UnwrappableList(T[] array, int initialCount) : base(array, initialCount) { }
-
         public UnwrappableList(int capacity = 4) : base(CreateArray(capacity), initialCount: 0) { }
 
         public UnwrappableList(IEnumerable<T> items) : base(CreateArrayFromItems(items), initialCount: 0) { }
+
+        public UnwrappableList(T[] items) : base(CreateArrayFromItems(items), initialCount: 0) { }
 
         [Inline(InlineBehavior.Remove)]
         private static T[] CreateArray(int capacity)

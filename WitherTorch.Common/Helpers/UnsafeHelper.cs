@@ -43,6 +43,48 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPrimitiveType<T>()
+                => (typeof(T) == typeof(byte)) ||
+                       (typeof(T) == typeof(short)) ||
+                       (typeof(T) == typeof(int)) ||
+                       (typeof(T) == typeof(long)) ||
+                       (typeof(T) == typeof(sbyte)) ||
+                       (typeof(T) == typeof(ushort)) ||
+                       (typeof(T) == typeof(uint)) ||
+                       (typeof(T) == typeof(ulong)) ||
+                       (typeof(T) == typeof(float)) ||
+                       (typeof(T) == typeof(double)) ||
+                       (typeof(T) == typeof(decimal)) ||
+                       (typeof(T) == typeof(char)) ||
+                       (typeof(T) == typeof(nint)) ||
+                       (typeof(T) == typeof(nuint));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPrimitiveType(Type type)
+                => (type == typeof(byte)) ||
+                       (type == typeof(short)) ||
+                       (type == typeof(int)) ||
+                       (type == typeof(long)) ||
+                       (type == typeof(sbyte)) ||
+                       (type == typeof(ushort)) ||
+                       (type == typeof(uint)) ||
+                       (type == typeof(ulong)) ||
+                       (type == typeof(float)) ||
+                       (type == typeof(double)) ||
+                       (type == typeof(decimal)) ||
+                       (type == typeof(char)) ||
+                       (type == typeof(nint)) ||
+                       (type == typeof(nuint));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsUnmanagedType<T>()
+                => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer;
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsUnmanagedType(Type type)
+                => IsPrimitiveType(type) || type.IsEnum || type.IsPointer;
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsGreaterThan<T>(T a, T b) where T : unmanaged
         {
             IL.Push(a);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 using InlineMethod;
@@ -47,16 +48,16 @@ namespace WitherTorch.Common.Helpers
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return Core<int>.Equals((int*)ptr, (int*)ptrEnd, (int*)ptr2);
+                        return Core<uint>.Equals((uint*)ptr, (uint*)ptrEnd, (uint*)ptr2);
                     case sizeof(long):
-                        return Core<long>.Equals((long*)ptr, (long*)ptrEnd, (long*)ptr2);
+                        return Core<ulong>.Equals((ulong*)ptr, (ulong*)ptrEnd, (ulong*)ptr2);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
-                            case sizeof(int):
-                                return Core<int>.Equals((int*)ptr, (int*)ptrEnd, (int*)ptr2);
-                            case sizeof(long):
-                                return Core<long>.Equals((long*)ptr, (long*)ptrEnd, (long*)ptr2);
+                            case sizeof(uint):
+                                return Core<uint>.Equals((uint*)ptr, (uint*)ptrEnd, (uint*)ptr2);
+                            case sizeof(ulong):
+                                return Core<ulong>.Equals((ulong*)ptr, (ulong*)ptrEnd, (ulong*)ptr2);
                             default:
                                 break;
                         }
@@ -88,22 +89,20 @@ namespace WitherTorch.Common.Helpers
                             return true;
                     }
                 }
-                if (IsPrimitiveType())
+                if (UnsafeHelper.IsPrimitiveType<T>())
                 {
                     for (; ptr < ptrEnd; ptr++, ptr2++)
                     {
                         if (UnsafeHelper.NotEquals(*ptr, *ptr2))
                             return false;
                     }
+                    return true;
                 }
-                else
+                EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+                for (; ptr < ptrEnd; ptr++, ptr2++)
                 {
-                    ComparerImpl comparer = ComparerImpl.Instance;
-                    for (; ptr < ptrEnd; ptr++, ptr2++)
-                    {
-                        if (!comparer.Equals(*ptr, *ptr2))
-                            return false;
-                    }
+                    if (!comparer.Equals(*ptr, *ptr2))
+                        return false;
                 }
                 return true;
             }

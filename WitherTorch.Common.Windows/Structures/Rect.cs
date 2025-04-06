@@ -26,6 +26,9 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Rect FromXYWH(Point location, Size size) => FromXYWH(location.X, location.Y, size.Width, size.Height);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Rect FromXYWH(int x, int y, int width, int height) => new Rect(x, y, x + width, y + height);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

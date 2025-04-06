@@ -1,39 +1,32 @@
-﻿using InlineMethod;
-
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Security;
+
+using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Extensions
 {
-    public static class CollectionExtensions
+    public static partial class CollectionExtensions
     {
-        [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool HasAnyItem<T>(this IList<T> obj)
-        {
-            return obj.Count > 0;
-        }
+        public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> collection)
+            => collection as IReadOnlyCollection<T> ?? new ReadOnlyCollectionAdapter<T>(collection);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IReadOnlyList<T> AsReadOnly<T>(this IList<T> collection)
+            => collection as IReadOnlyList<T> ?? new ReadOnlyListAdapter<T>(collection);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool HasAnyItem<T>(this Stack<T> obj)
-        {
-            return obj.Count > 0;
-        }
+        public static bool HasAnyItem<T>(this IList<T> obj) => obj.Count > 0;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool HasAnyItem<T>(this Queue<T> obj)
-        {
-            return obj.Count > 0;
-        }
+        public static bool HasAnyItem<T>(this Stack<T> obj) => obj.Count > 0;
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool HasAnyItem<T>(this Queue<T> obj) => obj.Count > 0;
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static T? FirstOrDefault<T>(this T[] array) => FirstOrDefault(array, default);
@@ -100,7 +93,7 @@ namespace WitherTorch.Common.Extensions
             return ContainsCore(ptr, value, length);
         }
 
-        [Inline(InlineBehavior.Remove)]
+        
         private static unsafe bool ContainsCore<T>(T* ptr, T value, int length) where T : unmanaged
         {
             switch (sizeof(T))

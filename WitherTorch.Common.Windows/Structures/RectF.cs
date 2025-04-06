@@ -24,6 +24,9 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static RectF FromXYWH(PointF location, SizeF size) => FromXYWH(location.X, location.Y, size.Width, size.Height);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static RectF FromXYWH(float x, float y, float width, float height) => new RectF(x, y, x + width, y + height);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,7 +92,7 @@ namespace WitherTorch.Common.Windows.Structures
         public float Height
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            readonly get => Bottom - Top; 
+            readonly get => Bottom - Top;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Bottom = Top + value;
         }
@@ -120,6 +123,12 @@ namespace WitherTorch.Common.Windows.Structures
             get => Left == Right && Top == Bottom;
         }
 
+        public readonly bool IsValid
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Left < Right && Top < Bottom;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Contains(int x, int y) => x >= Left && y >= Top && x <= Right && y <= Bottom;
 
@@ -140,7 +149,7 @@ namespace WitherTorch.Common.Windows.Structures
             }
 
             return false;
-        }       
+        }
 
         public readonly bool Contains(in RectangleF rect)
         {

@@ -53,5 +53,10 @@ namespace WitherTorch.Common.Threading
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T? GetValueDirectly() => _value;
+
+        ~LazyTiny()
+        {
+            (_value as IDisposable)?.Dispose(); 
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using InlineMethod;
 
+using System;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Collections;
@@ -8,7 +9,7 @@ namespace WitherTorch.Common.Buffers
 {
     public abstract partial class ArrayPool<T> : IPool<T[]>
     {
-        protected const int MinimumArraySize = 16;
+        protected const uint MinimumArraySize = 16;
 
         private static readonly bool _isPrimitiveType = typeof(T).IsPrimitive;
 
@@ -17,9 +18,17 @@ namespace WitherTorch.Common.Buffers
         [Inline(InlineBehavior.Keep, export: true)]
         public T[] Rent() => Rent(MinimumArraySize);
 
-        public abstract T[] Rent(int capacity);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T[] Rent(int capacity)
+        {
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+            return Rent(capacity);
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]  
+        public abstract T[] Rent(uint capacity);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Return(T[] obj) => Return(obj, !_isPrimitiveType);
 
         public abstract void Return(T[] obj, bool clearArray);

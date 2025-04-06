@@ -36,33 +36,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOf(char[] array, char value)
-        {
-            fixed (char* ptr = array)
-                return IndexOfCore(ptr, ptr + array.Length, value, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOf(char[] array, char value, int startIndex)
-        {
-            int length = array.Length;
-            if (startIndex >= length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            fixed (char* ptr = array)
-                return IndexOfCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOf(char[] array, char value, int startIndex, int count)
-        {
-            int length = startIndex + count;
-            if (length > array.Length)
-                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (char* ptr = array)
-                return IndexOfCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOf<T>(T[] array, T value) where T : unmanaged
         {
             fixed (T* ptr = array)
@@ -88,10 +61,6 @@ namespace WitherTorch.Common.Helpers
             fixed (T* ptr = array)
                 return IndexOfCore(ptr, ptr + length, value, startIndex);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOf(char* ptr, char* ptrEnd, char value)
-            => IndexOfCore(ptr, ptrEnd, value, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOf<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
@@ -127,33 +96,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfExclude(char[] array, char value)
-        {
-            fixed (char* ptr = array)
-                return IndexOfExcludeCore(ptr, ptr + array.Length, value, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfExclude(char[] array, char value, int startIndex)
-        {
-            int length = array.Length;
-            if (startIndex >= length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            fixed (char* ptr = array)
-                return IndexOfExcludeCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfExclude(char[] array, char value, int startIndex, int count)
-        {
-            int length = startIndex + count;
-            if (length > array.Length)
-                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (char* ptr = array)
-                return IndexOfExcludeCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfExclude<T>(T[] array, T value) where T : unmanaged
         {
             fixed (T* ptr = array)
@@ -179,10 +121,6 @@ namespace WitherTorch.Common.Helpers
             fixed (T* ptr = array)
                 return IndexOfExcludeCore(ptr, ptr + length, value, startIndex);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfExclude(char* ptr, char* ptrEnd, char value)
-            => IndexOfExcludeCore(ptr, ptrEnd, value, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfExclude<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
@@ -218,33 +156,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterThan(char[] array, char value)
-        {
-            fixed (char* ptr = array)
-                return IndexOfGreaterThanCore(ptr, ptr + array.Length, value, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterThan(char[] array, char value, int startIndex)
-        {
-            int length = array.Length;
-            if (startIndex >= length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            fixed (char* ptr = array)
-                return IndexOfGreaterThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterThan(char[] array, char value, int startIndex, int count)
-        {
-            int length = startIndex + count;
-            if (length > array.Length)
-                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (char* ptr = array)
-                return IndexOfGreaterThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfGreaterThan<T>(T[] array, T value) where T : unmanaged
         {
             fixed (T* ptr = array)
@@ -270,10 +181,6 @@ namespace WitherTorch.Common.Helpers
             fixed (T* ptr = array)
                 return IndexOfGreaterThanCore(ptr, ptr + length, value, startIndex);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterThan(char* ptr, char* ptrEnd, char value)
-            => IndexOfGreaterThanCore(ptr, ptrEnd, value, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfGreaterThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
@@ -309,33 +216,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(char[] array, char value)
-        {
-            fixed (char* ptr = array)
-                return IndexOfGreaterOrEqualsThanCore(ptr, ptr + array.Length, value, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(char[] array, char value, int startIndex)
-        {
-            int length = array.Length;
-            if (startIndex >= length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            fixed (char* ptr = array)
-                return IndexOfGreaterOrEqualsThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(char[] array, char value, int startIndex, int count)
-        {
-            int length = startIndex + count;
-            if (length > array.Length)
-                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (char* ptr = array)
-                return IndexOfGreaterOrEqualsThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfGreaterOrEqualsThan<T>(T[] array, T value) where T : unmanaged
         {
             fixed (T* ptr = array)
@@ -361,10 +241,6 @@ namespace WitherTorch.Common.Helpers
             fixed (T* ptr = array)
                 return IndexOfGreaterOrEqualsThanCore(ptr, ptr + length, value, startIndex);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(char* ptr, char* ptrEnd, char value)
-            => IndexOfGreaterOrEqualsThanCore(ptr, ptrEnd, value, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfGreaterOrEqualsThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
@@ -400,33 +276,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessThan(char[] array, char value)
-        {
-            fixed (char* ptr = array)
-                return IndexOfLessThanCore(ptr, ptr + array.Length, value, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessThan(char[] array, char value, int startIndex)
-        {
-            int length = array.Length;
-            if (startIndex >= length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            fixed (char* ptr = array)
-                return IndexOfLessThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessThan(char[] array, char value, int startIndex, int count)
-        {
-            int length = startIndex + count;
-            if (length > array.Length)
-                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (char* ptr = array)
-                return IndexOfLessThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfLessThan<T>(T[] array, T value) where T : unmanaged
         {
             fixed (T* ptr = array)
@@ -452,10 +301,6 @@ namespace WitherTorch.Common.Helpers
             fixed (T* ptr = array)
                 return IndexOfLessThanCore(ptr, ptr + length, value, startIndex);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessThan(char* ptr, char* ptrEnd, char value)
-            => IndexOfLessThanCore(ptr, ptrEnd, value, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfLessThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged
@@ -491,33 +336,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(char[] array, char value)
-        {
-            fixed (char* ptr = array)
-                return IndexOfLessOrEqualsThanCore(ptr, ptr + array.Length, value, 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(char[] array, char value, int startIndex)
-        {
-            int length = array.Length;
-            if (startIndex >= length)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            fixed (char* ptr = array)
-                return IndexOfLessOrEqualsThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(char[] array, char value, int startIndex, int count)
-        {
-            int length = startIndex + count;
-            if (length > array.Length)
-                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (char* ptr = array)
-                return IndexOfLessOrEqualsThanCore(ptr, ptr + length, value, startIndex);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfLessOrEqualsThan<T>(T[] array, T value) where T : unmanaged
         {
             fixed (T* ptr = array)
@@ -543,10 +361,6 @@ namespace WitherTorch.Common.Helpers
             fixed (T* ptr = array)
                 return IndexOfLessOrEqualsThanCore(ptr, ptr + length, value, startIndex);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(char* ptr, char* ptrEnd, char value)
-            => IndexOfLessOrEqualsThanCore(ptr, ptrEnd, value, 0);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOfLessOrEqualsThan<T>(T* ptr, T* ptrEnd, T value) where T : unmanaged

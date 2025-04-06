@@ -1,4 +1,6 @@
 ﻿#if NET8_0_OR_GREATER
+using System;
+
 using WitherTorch.Common.Buffers;
 
 namespace WitherTorch.Common.Collections
@@ -16,9 +18,13 @@ namespace WitherTorch.Common.Collections
             _pool = pool;
         }
 
-        public override T[] Rent(int capacity)
+        public override T[] Rent(uint capacity)
         {
-            return _pool.Rent(capacity);
+            if (capacity == 0)
+                return Array.Empty<T>();    
+            if (capacity > int.MaxValue)
+                return new T[capacity];
+            return _pool.Rent(unchecked((int)capacity));
         }
 
         public override void Return(T[] obj, bool clearArray)

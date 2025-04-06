@@ -3,37 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-using InlineIL;
-
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Collections
 {
-    public abstract class CustomListBase<T> : IList<T>, ICollection<T>, IEnumerable<T>, IEnumerable, IReadOnlyList<T>, IReadOnlyCollection<T>
+    public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>
     {
-        private static readonly byte _listType;
         // Standard List Structure
         protected int _count;
         protected T[] _array;
-
-        static CustomListBase()
-        {
-            Type type = typeof(T);
-            if (type.IsPrimitive || type.IsEnum)
-            {
-                _listType = 0;
-                return;
-            }
-            if (type.IsValueType)
-            {
-                _listType = 1;
-                return;
-            }
-            _listType = 2;
-            return;
-        }
 
         public CustomListBase(T[] array)
         {
@@ -135,14 +115,17 @@ namespace WitherTorch.Common.Collections
         public void Clear()
         {
             _count = 0;
-            if (_listType == 2)
-                Array.Clear(_array, 0, _count);
+            if (UnsafeHelper.IsUnmanagedType<T>())
+                return;
+            Array.Clear(_array, 0, _count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
-            return IndexOf(item) >= 0;
+            if (UnsafeHelper.IsPrimitiveType<T>())
+                return ContainsCoreFast(_array, _count, item);
+            return ContainsCoreSlow(_array, _count, item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,16 +137,9 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
-            switch (_listType)
-            {
-                case 0: //primitive or enum
-                    return IndexOfForPrimitive(_array, _count, item);
-                case 1: //structures
-                    return IndexOfForValueType(_array, _count, item);
-                default:
-                    break;
-            }
-            return IndexOfForObject(_array, _count, item);
+            if (UnsafeHelper.IsPrimitiveType<T>())
+                return IndexOfCoreFast(_array, _count, item);
+            return IndexOfCoreSlow(_array, _count, item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -246,58 +222,102 @@ namespace WitherTorch.Common.Collections
 
 #pragma warning disable CS8500
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe int IndexOfForPrimitive(T[] array, int count, T item)
+        private static int IndexOfCoreFast(T[] array, int count, T item)
         {
-            fixed (T* ptr = array)
+            fixed(T* ptr = array)
             {
-                T* iterator = ptr;
-                int i = 0;
-                IL.MarkLabel("LoopStart");
-                IL.Push(i);
-                IL.Push(count);
-                IL.Emit.Bge_S("LoopEnd");
-                T iteratedItem = *iterator;
-                IL.EnsureLocal(iteratedItem);
-                IL.Push(iteratedItem);
-                IL.Push(item);
-                IL.Emit.Beq_S("ReturnVal");
-                iterator++;
-                i++;
-                IL.Emit.Br("LoopStart");
-                IL.MarkLabel("ReturnVal");
-                IL.Push(i);
-                IL.Emit.Ret();
-                IL.MarkLabel("LoopEnd");
+                if (typeof(T) == typeof(sbyte))
+                    return SequenceHelper.IndexOf((sbyte*)ptr, (sbyte*)ptr + count, UnsafeHelper.As<T, sbyte>(item));
+                if (typeof(T) == typeof(byte))
+                    return SequenceHelper.IndexOf((byte*)ptr, (byte*)ptr + count, UnsafeHelper.As<T, byte>(item)); 
+                if (typeof(T) == typeof(short))
+                    return SequenceHelper.IndexOf((short*)ptr, (short*)ptr + count, UnsafeHelper.As<T, short>(item)); 
+                if (typeof(T) == typeof(ushort))
+                    return SequenceHelper.IndexOf((ushort*)ptr, (ushort*)ptr + count, UnsafeHelper.As<T, ushort>(item)); 
+                if (typeof(T) == typeof(char))
+                    return SequenceHelper.IndexOf((char*)ptr, (char*)ptr + count, UnsafeHelper.As<T, char>(item)); 
+                if (typeof(T) == typeof(int))
+                    return SequenceHelper.IndexOf((int*)ptr, (int*)ptr + count, UnsafeHelper.As<T, int>(item)); 
+                if (typeof(T) == typeof(uint))
+                    return SequenceHelper.IndexOf((uint*)ptr, (uint*)ptr + count, UnsafeHelper.As<T, uint>(item)); 
+                if (typeof(T) == typeof(long))
+                    return SequenceHelper.IndexOf((long*)ptr, (long*)ptr + count, UnsafeHelper.As<T, long>(item)); 
+                if (typeof(T) == typeof(ulong))
+                    return SequenceHelper.IndexOf((ulong*)ptr, (ulong*)ptr + count, UnsafeHelper.As<T, ulong>(item)); 
+                if (typeof(T) == typeof(float))
+                    return SequenceHelper.IndexOf((float*)ptr, (float*)ptr + count, UnsafeHelper.As<T, float>(item)); 
+                if (typeof(T) == typeof(double))
+                    return SequenceHelper.IndexOf((double*)ptr, (double*)ptr + count, UnsafeHelper.As<T, double>(item)); 
+                if (typeof(T) == typeof(nint))
+                    return SequenceHelper.IndexOf((nint*)ptr, (nint*)ptr + count, UnsafeHelper.As<T, nint>(item)); 
+                if (typeof(T) == typeof(nuint))
+                    return SequenceHelper.IndexOf((nuint*)ptr, (nuint*)ptr + count, UnsafeHelper.As<T, nuint>(item)); 
+                if (typeof(T) == typeof(decimal))
+                    return SequenceHelper.IndexOf((decimal*)ptr, (decimal*)ptr + count, UnsafeHelper.As<T, decimal>(item)); 
             }
-            return -1;
+            throw new InvalidOperationException();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool ContainsCoreFast(T[] array, int count, T item)
+        {
+            fixed(T* ptr = array)
+            {
+                if (typeof(T) == typeof(sbyte))
+                    return SequenceHelper.Contains((sbyte*)ptr, (sbyte*)ptr + count, UnsafeHelper.As<T, sbyte>(item));
+                if (typeof(T) == typeof(byte))
+                    return SequenceHelper.Contains((byte*)ptr, (byte*)ptr + count, UnsafeHelper.As<T, byte>(item)); 
+                if (typeof(T) == typeof(short))
+                    return SequenceHelper.Contains((short*)ptr, (short*)ptr + count, UnsafeHelper.As<T, short>(item)); 
+                if (typeof(T) == typeof(ushort))
+                    return SequenceHelper.Contains((ushort*)ptr, (ushort*)ptr + count, UnsafeHelper.As<T, ushort>(item)); 
+                if (typeof(T) == typeof(char))
+                    return SequenceHelper.Contains((char*)ptr, (char*)ptr + count, UnsafeHelper.As<T, char>(item)); 
+                if (typeof(T) == typeof(int))
+                    return SequenceHelper.Contains((int*)ptr, (int*)ptr + count, UnsafeHelper.As<T, int>(item)); 
+                if (typeof(T) == typeof(uint))
+                    return SequenceHelper.Contains((uint*)ptr, (uint*)ptr + count, UnsafeHelper.As<T, uint>(item)); 
+                if (typeof(T) == typeof(long))
+                    return SequenceHelper.Contains((long*)ptr, (long*)ptr + count, UnsafeHelper.As<T, long>(item)); 
+                if (typeof(T) == typeof(ulong))
+                    return SequenceHelper.Contains((ulong*)ptr, (ulong*)ptr + count, UnsafeHelper.As<T, ulong>(item)); 
+                if (typeof(T) == typeof(float))
+                    return SequenceHelper.Contains((float*)ptr, (float*)ptr + count, UnsafeHelper.As<T, float>(item)); 
+                if (typeof(T) == typeof(double))
+                    return SequenceHelper.Contains((double*)ptr, (double*)ptr + count, UnsafeHelper.As<T, double>(item)); 
+                if (typeof(T) == typeof(nint))
+                    return SequenceHelper.Contains((nint*)ptr, (nint*)ptr + count, UnsafeHelper.As<T, nint>(item)); 
+                if (typeof(T) == typeof(nuint))
+                    return SequenceHelper.Contains((nuint*)ptr, (nuint*)ptr + count, UnsafeHelper.As<T, nuint>(item)); 
+                if (typeof(T) == typeof(decimal))
+                    return SequenceHelper.Contains((decimal*)ptr, (decimal*)ptr + count, UnsafeHelper.As<T, decimal>(item)); 
+            }
+            throw new InvalidOperationException();
         }
 #pragma warning restore CS8500
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int IndexOfForValueType(T[] array, int count, T item)
+        private static int IndexOfCoreSlow(T[] array, int count, T item)
         {
-            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
                 if (comparer.Equals(array[i], item))
-                {
                     return i;
-                }
             }
             return -1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int IndexOfForObject(T[] array, int count, T item)
+        private static bool ContainsCoreSlow(T[] array, int count, T item)
         {
+            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
-                if (Equals(array[i], item))
-                {
-                    return i;
-                }
+                if (comparer.Equals(array[i], item))
+                    return true;
             }
-            return -1;
+            return false;
         }
 
         [Inline(InlineBehavior.Remove)]

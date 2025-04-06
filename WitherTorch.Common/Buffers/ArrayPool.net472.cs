@@ -23,12 +23,12 @@ namespace WitherTorch.Common.Collections
 
         private sealed class DelayedArray : DelayedCollectingObject
         {
-            private readonly int _capacity;
+            private readonly uint _capacity;
             private T[]? _array;
 
             public T[] Array => NullSafetyHelper.ThrowIfNull(_array);
 
-            public DelayedArray(int capacity)
+            public DelayedArray(uint capacity)
             {
                 _capacity = capacity;
             }
@@ -67,9 +67,9 @@ namespace WitherTorch.Common.Collections
             _restoreListLocal = new ThreadLocal<List<DelayedArray>>(() => new List<DelayedArray>(2), false);
         }
 
-        public override T[] Rent(int capacity)
+        public override T[] Rent(uint capacity)
         {
-            if (capacity <= 0)
+            if (capacity == 0)
                 return Array.Empty<T>();
             if (capacity <= LocalArraySizeLimit)
                 return RentSmall(capacity);
@@ -79,7 +79,7 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T[] RentSmall(int capacity)
+        private T[] RentSmall(uint capacity)
         {
             int index;
             if (capacity <= MinimumArraySize)
@@ -100,12 +100,12 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T[] RentLarge(int capacity)
+        private T[] RentLarge(uint capacity)
         {
-            int index = unchecked((int)MathHelper.Log2((uint)capacity - 1 | 15) - 3 - LocalArrayQueueCount);
+            int index = unchecked((int)MathHelper.Log2(capacity - 1 | 15) - 3 - LocalArrayQueueCount);
             if (!_largeQueueLazy[index].Value.TryDequeue(out DelayedArray result))
             {
-                result = new DelayedArray(1 << (index + 4 + LocalArrayQueueCount));
+                result = new DelayedArray(1U << (index + 4 + LocalArrayQueueCount));
             }
             result.AddRef();
             _restoreListLocal.Value.Add(result);
@@ -152,7 +152,7 @@ namespace WitherTorch.Common.Collections
         private void ReturnSmall(DelayedArray array, T[] obj)
         {
             int index;
-            int capacity = obj.Length;
+            uint capacity = unchecked((uint)obj.Length);
             switch (capacity)
             {
                 case MinimumArraySize:
