@@ -233,9 +233,10 @@ namespace WitherTorch.Common.Extensions
                 return string.Empty;
             LazyTinyRefStruct<string> resultLazy = new LazyTinyRefStruct<string>(() =>
             {
-                string result = StringHelper.AllocateRawString(value.Length);
+                int length = value.Length;
+                string result = StringHelper.AllocateRawString(length);
                 fixed (char* ptr = value, ptr2 = result)
-                    UnsafeHelper.CopyBlock(ptr2, ptr, unchecked((uint)(value.Length * sizeof(char))));
+                    UnsafeHelper.CopyBlock(ptr2, ptr, unchecked((uint)(length * sizeof(char))));
                 return result;
             });
             fixed (char* ptr = value)
@@ -260,7 +261,7 @@ namespace WitherTorch.Common.Extensions
                         }
                         do
                         {
-                            Vector<ushort> valueVector = UnsafeHelper.Read<Vector<ushort>>(ptr);
+                            Vector<ushort> valueVector = UnsafeHelper.Read<Vector<ushort>>(iterator);
                             Vector<ushort> resultVector = Vector.GreaterThanOrEqual(valueVector, maskVector1) & Vector.LessThanOrEqual(valueVector, maskVector2);
                             if (resultVector.Equals(default))
                                 continue;
