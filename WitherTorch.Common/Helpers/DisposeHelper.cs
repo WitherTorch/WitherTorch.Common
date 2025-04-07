@@ -104,12 +104,32 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void NullSwapOrDispose<T>(ref T[]? location, T[] value) where T : class, IDisposable
+        {
+            T[]? oldObject = Interlocked.CompareExchange(ref location, value, null);
+            if (oldObject is null || ReferenceEquals(oldObject, value))
+                return;
+            foreach (T item in value)
+                item?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void NullSwapOrDisposeWeak<T>(ref T? location, T value) where T : class
         {
             T? oldObject = Interlocked.CompareExchange(ref location, value, null);
             if (oldObject is null || ReferenceEquals(oldObject, value))
                 return;
             (value as IDisposable)?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void NullSwapOrDisposeWeak<T>(ref T[]? location, T[] value) where T : class
+        {
+            T[]? oldObject = Interlocked.CompareExchange(ref location, value, null);
+            if (oldObject is null || ReferenceEquals(oldObject, value))
+                return;
+            foreach (T item in value)
+                (item as IDisposable)?.Dispose();
         }
     }
 }
