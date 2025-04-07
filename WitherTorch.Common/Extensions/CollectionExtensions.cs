@@ -133,24 +133,24 @@ namespace WitherTorch.Common.Extensions
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool TryPop<T>(this Stack<T> obj, out T? value)
         {
-            UnsafeHelper.SkipInit(out value);
             if (obj.Count > 0)
             {
                 value = obj.Pop();
                 return true;
             }
+            value = default;
             return false;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool TryDequeue<T>(this Queue<T> obj, out T value)
+        public static bool TryDequeue<T>(this Queue<T> obj, out T? value)
         {
-            UnsafeHelper.SkipInit(out value);
             if (obj.Count > 0)
             {
                 value = obj.Dequeue();
                 return true;
             }
+            value = default;
             return false;
         }
 

@@ -90,10 +90,8 @@ namespace WitherTorch.Common.Collections
                 index = 2;
             else
                 index = 3;
-            if (!_smallQueueLocal[index].Value.TryDequeue(out DelayedArray result))
-            {
+            if (!_smallQueueLocal[index].Value.TryDequeue(out DelayedArray? result) || result is null)
                 result = new DelayedArray(MinimumArraySize << index);
-            }
             result.AddRef();
             _restoreListLocal.Value.Add(result);
             return result.Array;

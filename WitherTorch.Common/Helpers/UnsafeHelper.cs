@@ -391,17 +391,6 @@ namespace WitherTorch.Common.Helpers
             IL.PushOutRef(out value);
             return (T*)IL.ReturnPointer();
         }
-#pragma warning restore CS8500
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void SkipInit<T>(out T value)
-        {
-#if NET8_0_OR_GREATER
-            Unsafe.SkipInit(out value);
-#else
-            _ = AsPointerOut(out value);
-#endif
-        }
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe int SizeOf<T>()
