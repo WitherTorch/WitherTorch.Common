@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 
 using InlineIL;
@@ -33,6 +35,8 @@ namespace WitherTorch.Common.Helpers
                 = PointerSizeConstant_Indeterminate;
 #endif
 
+        private static readonly ConcurrentDictionary<Type, bool> _unmanagedTypeCheckCacheDict = new ConcurrentDictionary<Type, bool>();
+
         public static int PointerSize
         {
             [Inline(InlineBehavior.Keep, export: true)]
@@ -45,7 +49,8 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsPrimitiveType<T>()
-                => (typeof(T) == typeof(byte)) ||
+                => (typeof(T) == typeof(bool)) ||
+                       (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(short)) ||
                        (typeof(T) == typeof(int)) ||
                        (typeof(T) == typeof(long)) ||
@@ -62,7 +67,8 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsPrimitiveType([InlineParameter] Type type)
-                => (type == typeof(byte)) ||
+                => (type == typeof(bool)) ||
+                       (type == typeof(byte)) ||
                        (type == typeof(short)) ||
                        (type == typeof(int)) ||
                        (type == typeof(long)) ||
@@ -77,20 +83,30 @@ namespace WitherTorch.Common.Helpers
                        (type == typeof(nint)) ||
                        (type == typeof(nuint));
 
+#pragma warning disable CS0618
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsUnmanagedType<T>()
-                => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || (typeof(T).IsValueType && UnmanagedTypeChecker<T>.Instance.IsUnmanagedType());
+                => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || IsUnmanageTypeSlow(typeof(T));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SecuritySafeCritical]
         public static bool IsUnmanagedType(Type type)
+            => IsPrimitiveType(type) || type.IsEnum || type.IsPointer || IsUnmanageTypeSlow(type);
+#pragma warning restore CS0618
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Obsolete("Don't call this method directly!")]
+        public static bool IsUnmanageTypeSlow(Type type)
+            => type.IsValueType && _unmanagedTypeCheckCacheDict.GetOrAdd(type, IsUnmanageTypeSlowCore);
+
+        private static bool IsUnmanageTypeSlowCore(Type type)
         {
-            if (IsPrimitiveType(type) || type.IsEnum || type.IsPointer)
-                return true;
-            if (!type.IsValueType)
-                return false;
-            Type checkerType = typeof(UnmanagedTypeChecker<>).MakeGenericType(type);
-            IUnmanagedTypeChecker? instance = checkerType.GetProperty("Instance", BindingFlags.Static)?.GetValue(null) as IUnmanagedTypeChecker;
-            return instance is not null && instance.IsUnmanagedType();
+            foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+            {
+                if (!IsUnmanagedType(field.FieldType))
+                    return false;
+            }
+            return true;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

@@ -84,7 +84,9 @@ namespace WitherTorch.Common.Helpers
                             Vector<T> valueVector2 = UnsafeHelper.Read<Vector<T>>(ptr2);
                             if (!valueVector.Equals(valueVector2))
                                 return false;
-                        } while ((ptr += Vector<T>.Count) < ptrLimit);
+                            ptr += Vector<T>.Count;
+                            ptr2 += Vector<T>.Count;
+                        } while (ptr < ptrLimit);
                         if (ptr == ptrEnd)
                             return true;
                     }

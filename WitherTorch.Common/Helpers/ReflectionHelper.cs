@@ -21,7 +21,7 @@ namespace WitherTorch.Common.Helpers
                 int j = 0;
                 for (j = 0; j < parameterTypeCount; j++)
                 {
-                    if (!parameterTypes![i].Equals(parameters[j].ParameterType))
+                    if (!parameterTypes![j].Equals(parameters[j].ParameterType))
                         break;
                 }
                 if (j < parameterTypeCount)

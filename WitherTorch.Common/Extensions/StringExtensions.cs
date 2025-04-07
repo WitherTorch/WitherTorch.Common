@@ -295,7 +295,7 @@ namespace WitherTorch.Common.Extensions
         public static string[] WithPrefix(this string[] array, string prefix)
         {
             for (int i = 0, length = array.Length; i < length; i++)
-                array[i] = WithPrefix(prefix, array[i]);
+                array[i] = array[i].WithPrefix(prefix);
             return array;
         }
 

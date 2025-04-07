@@ -137,9 +137,12 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
+            int count = _count;
+            if (count <= 0)
+                return -1;
             if (UnsafeHelper.IsPrimitiveType<T>())
-                return IndexOfCoreFast(_array, _count, item);
-            return IndexOfCoreSlow(_array, _count, item);
+                return IndexOfCoreFast(_array, count, item);
+            return IndexOfCoreSlow(_array, count, item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

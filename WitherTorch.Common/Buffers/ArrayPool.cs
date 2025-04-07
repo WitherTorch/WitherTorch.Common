@@ -22,7 +22,7 @@ namespace WitherTorch.Common.Buffers
         {
             if (capacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity));
-            return Rent(capacity);
+            return Rent(unchecked((uint)capacity));
         }
 
         public abstract T[] Rent(uint capacity);
