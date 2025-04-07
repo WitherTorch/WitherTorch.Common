@@ -4,14 +4,13 @@ using System;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Collections;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Buffers
 {
     public abstract partial class ArrayPool<T> : IPool<T[]>
     {
         protected const uint MinimumArraySize = 16;
-
-        private static readonly bool _isPrimitiveType = typeof(T).IsPrimitive;
 
         public static ArrayPool<T> Shared => SharedArrayPool<T>.Instance;
 
@@ -29,7 +28,7 @@ namespace WitherTorch.Common.Buffers
         public abstract T[] Rent(uint capacity);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Return(T[] obj) => Return(obj, !_isPrimitiveType);
+        public void Return(T[] obj) => Return(obj, !UnsafeHelper.IsUnmanagedType<T>());
 
         public abstract void Return(T[] obj, bool clearArray);
 

@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
+using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Extensions
@@ -18,6 +19,17 @@ namespace WitherTorch.Common.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IReadOnlyList<T> AsReadOnly<T>(this IList<T> collection)
             => collection as IReadOnlyList<T> ?? new ReadOnlyListAdapter<T>(collection);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HasNonNullItem<T>(this IEnumerable<T> enumerable) where T : class
+        {
+            return enumerable switch
+            {
+                T[] array => ArrayHelper.HasNonNullItem(array),
+                UnwrappableList<T> list => ArrayHelper.HasNonNullItem(list.Unwrap(), list.Count),
+                _ => enumerable.AsParallel().Where(val => val is not null).Any()
+            };
+        }
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool HasAnyItem<T>(this IList<T> obj) => obj.Count > 0;

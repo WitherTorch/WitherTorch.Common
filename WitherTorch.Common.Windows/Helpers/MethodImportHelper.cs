@@ -8,6 +8,12 @@ namespace WitherTorch.Common.Windows.Helpers
 {
     public static unsafe class MethodImportHelper
     {
+        public static void* GetImportedMethodPointer(string dllName, int methodIndex)
+        {
+            nint module = Kernel32.LoadLibrary(dllName);
+            return Kernel32.GetProcAddress(module, (byte*)methodIndex);
+        }
+
         public static void* GetImportedMethodPointer(string dllName, string methodName)
         {
             nint module = Kernel32.LoadLibrary(dllName);

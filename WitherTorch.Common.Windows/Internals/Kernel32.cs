@@ -1,12 +1,11 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
 namespace WitherTorch.Common.Windows.Internals
 {
     [SuppressUnmanagedCodeSecurity]
-    public static unsafe class Kernel32
+    internal static unsafe class Kernel32
     {
         private const string KERNEL32_DLL = "kernel32.dll";
 

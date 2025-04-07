@@ -3,7 +3,7 @@
 namespace WitherTorch.Common.Windows.Internals
 {
     [Flags]
-    public enum ClassContextFlags : uint
+    internal enum ClassContextFlags : uint
     {
         InProcessServer = 0x1,
         InProcessHandler = 0x2,

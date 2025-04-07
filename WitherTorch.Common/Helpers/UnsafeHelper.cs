@@ -61,7 +61,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(nuint));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsPrimitiveType(Type type)
+        public static bool IsPrimitiveType([InlineParameter] Type type)
                 => (type == typeof(byte)) ||
                        (type == typeof(short)) ||
                        (type == typeof(int)) ||

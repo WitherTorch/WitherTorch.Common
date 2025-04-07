@@ -8,7 +8,7 @@ using WitherTorch.Common.Extensions;
 
 namespace WitherTorch.Common.Collections
 {
-    internal sealed class TreeDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey?, TValue?>> where TKey : class where TValue : class
+    public sealed class TreeDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey?, TValue?>> where TKey : class where TValue : class
     {
         private readonly KeyValuePair<TKey?, object?>[] _bucket;
         private readonly IEqualityComparer<TKey> _comparer;

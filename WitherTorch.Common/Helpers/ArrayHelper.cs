@@ -19,12 +19,16 @@ namespace WitherTorch.Common.Helpers
 #pragma warning restore CS8500
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe bool HasNonNullItem<T>(T[] array) where T : class
+            => HasNonNullItem(array, array.Length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool HasNonNullItem<T>(T[] array, int length) where T : class
         {
 #pragma warning disable CS8500
             fixed (T* ptr = array)
-                return SequenceHelper.ContainsExclude((nint*)ptr, (nint*)ptr + array.Length, 0);
+                return SequenceHelper.ContainsExclude((nint*)ptr, (nint*)ptr + length, 0);
 #pragma warning restore CS8500
         }
 
