@@ -46,7 +46,7 @@ namespace WitherTorch.Common.Windows
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
-            int hr = ((delegate*<void*, Guid*, void**, int>)functionPointer)(nativePointer, UnsafeHelper.AsPointerIn(in iid), &nativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, Guid*, void**, int>)functionPointer)(nativePointer, UnsafeHelper.AsPointerIn(in iid), &nativePointer);
             if (hr < 0)
             {
                 if (throwWhenQueryFailed)

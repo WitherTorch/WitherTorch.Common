@@ -33,14 +33,14 @@ namespace WitherTorch.Common.Windows
         private static ulong AddRefCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddRef);
-            return ((delegate*<void*, ulong>)functionPointer)(nativePointer);
+            return ((delegate* unmanaged[Stdcall]<void*, ulong>)functionPointer)(nativePointer);
         }
 
         [Inline(InlineBehavior.Remove)]
         private static ulong ReleaseCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Release);
-            return ((delegate*<void*, ulong>)functionPointer)(nativePointer);
+            return ((delegate* unmanaged[Stdcall]<void*, ulong>)functionPointer)(nativePointer);
         }
     }
 }

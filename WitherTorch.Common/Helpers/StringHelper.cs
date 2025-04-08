@@ -19,7 +19,7 @@ namespace WitherTorch.Common.Helpers
                BindingFlags.Static | BindingFlags.NonPublic);
             if (method is null)
             {
-                _fastAllocateStringFuncPointer = (delegate*<int, string>)&LegacyAllocateRawString;
+                _fastAllocateStringFuncPointer = (delegate* managed<int, string>)&LegacyAllocateRawString;
                 Debug.WriteLine("Cannot find string.FastAllocateString method!, fallback to new string()");
             }
             else

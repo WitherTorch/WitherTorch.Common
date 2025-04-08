@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Windows.Helpers
             if (handle == default)
                 return;
             fixed (char* ptr = name)
-                ((delegate*<nint, char*, void>)methodPointer)(handle, ptr);
+                ((delegate* unmanaged[Stdcall]<nint, char*, void>)methodPointer)(handle, ptr);
             Kernel32.CloseHandle(handle);
         }
     }
