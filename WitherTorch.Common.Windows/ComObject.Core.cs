@@ -1,6 +1,10 @@
 ﻿using InlineMethod;
 
 using WitherTorch.Common.Helpers;
+using System.Runtime.CompilerServices;
+using System;
+
+
 
 #if !DEBUG
 using InlineIL;
@@ -10,22 +14,20 @@ namespace WitherTorch.Common.Windows
 {
     unsafe partial class ComObject
     {
-        [Inline(InlineBehavior.Remove)]
-        private static void* GetFunctionPointerCore(void* nativePointer, [InlineParameter] int offset)
-        {
-#if DEBUG
-            return *(void**)((nint)(*(void**)nativePointer) + offset * UnsafeHelper.PointerSize);
-#else
-            IL.Push(nativePointer);
-            IL.Emit.Ldind_I();
-            IL.Push(offset);
-            IL.Push(UnsafeHelper.PointerSize);
-            IL.Emit.Mul();
-            IL.Emit.Add();
-            IL.Emit.Ldind_I();
-            return IL.ReturnPointer();
-#endif
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void* GetFunctionPointerCore(void* nativePointer, int offset)
+            => UnsafeHelper.PointerSizeConstant switch
+            {
+                sizeof(uint) => *(void**)(*(uint**)nativePointer + offset),
+                sizeof(ulong) => *(void**)(*(ulong**)nativePointer + offset),
+                UnsafeHelper.PointerSizeConstant_Indeterminate => UnsafeHelper.PointerSize switch
+                {
+                    sizeof(uint) => *(void**)(*(uint**)nativePointer + offset),
+                    sizeof(ulong) => *(void**)(*(ulong**)nativePointer + offset),
+                    _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSize} is not supported.")
+                },
+                _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSizeConstant} is not supported.")
+            };
 
         [Inline(InlineBehavior.Remove)]
         private static ulong AddRefCore(void* nativePointer)

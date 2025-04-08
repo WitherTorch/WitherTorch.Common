@@ -13,9 +13,9 @@ namespace WitherTorch.Common.Collections
     {
         public UnwrappableList(int capacity = 4) : base(CreateArray(capacity), initialCount: 0) { }
 
-        public UnwrappableList(IEnumerable<T> items) : base(CreateArrayFromItems(items), initialCount: 0) { }
+        public UnwrappableList(IEnumerable<T> items) : base(CreateArrayFromItems(items)) { }
 
-        public UnwrappableList(T[] items) : base(CreateArrayFromItems(items), initialCount: 0) { }
+        public UnwrappableList(T[] items) : base(CreateArrayFromItems(items)) { }
 
         [Inline(InlineBehavior.Remove)]
         private static T[] CreateArray(int capacity)
