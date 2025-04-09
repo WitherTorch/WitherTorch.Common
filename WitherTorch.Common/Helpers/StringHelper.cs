@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -44,6 +45,27 @@ namespace WitherTorch.Common.Helpers
         }
 
         private static string LegacyAllocateRawString(int length) => new string('\0', length);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsNullOrEmpty([NotNullWhen(false)] string? str)
+            => str is null || str.Length <= 0;
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] string? str)
+            => IsNullOrEmpty(str) || IsNullOrWhiteSpaceSlow(str);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNullOrWhiteSpaceSlow(string str)
+        {
+            if (!SequenceHelper.ContainsExclude(str, ' '))
+                return false;
+            for (int i = 0, length =  str.Length; i < length; i++)
+            {
+                if (!char.IsWhiteSpace(str[i]))
+                    return false;
+            }
+            return true;
+        }
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static string GetStringFromUtf32Character([InlineParameter] uint unicodeValue)

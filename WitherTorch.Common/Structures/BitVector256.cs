@@ -5,15 +5,13 @@ using System.Security;
 
 using InlineMethod;
 
+using LocalsInit;
+
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Structures
 {
-#if NET8_0_OR_GREATER
-    [SkipLocalsInit]
-#else
-    [LocalsInit.LocalsInit(false)]
-#endif
+    [LocalsInit(false)]
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe struct BitVector256 : IComparable<BitVector256>, IEquatable<BitVector256>
     {

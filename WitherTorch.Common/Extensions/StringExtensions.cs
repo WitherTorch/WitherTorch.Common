@@ -15,72 +15,31 @@ namespace WitherTorch.Common.Extensions
         private const int UpperLowerDiff = 'a' - 'A';
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static char First(this string obj)
-        {
-            return string.IsNullOrEmpty(obj) ? '\0' : obj[0];
-        }
+        public static char FirstOrDefault(this string obj, char defaultValue = '\0') 
+            => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[0];
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static char Last(this string obj)
-        {
-            return string.IsNullOrEmpty(obj) ? '\0' : obj[obj.Length - 1];
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool HasAnyItem(this string obj)
-        {
-            return obj.Length > 0;
-        }
+        public static char LastOrDefault(this string obj, char defaultValue = '\0') 
+            => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[obj.Length - 1];
 
 #if NET472_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static unsafe bool Contains(this string obj, char value)
-        {
-            return StringHelper.Contains(obj, value);
-        }
+        public static unsafe bool Contains(this string obj, char value) => StringHelper.Contains(obj, value);
 #endif
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static unsafe bool Contains(this string obj, params char[] values)
-        {
-            return StringHelper.Contains(obj, values);
-        }
+        public static unsafe bool Contains(this string obj, params char[] values) => StringHelper.Contains(obj, values);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool Contains(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal)
-        {
-            return array.IndexOf(value, 0, array.Length, comparison) < 0;
-        }
+        public static bool Contains(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal) => array.IndexOf(value, 0, array.Length, comparison) < 0;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool Contains(this string[] array, string value, int startIndex, int length, StringComparison comparison = StringComparison.Ordinal)
-        {
-            return array.IndexOf(value, startIndex, length, comparison) < 0;
-        }
+        public static bool Contains(this string[] array, string value, int startIndex, int length, StringComparison comparison = StringComparison.Ordinal) => array.IndexOf(value, startIndex, length, comparison) < 0;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static int IndexOf(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal)
-        {
-            return array.IndexOf(value, 0, array.Length, comparison);
-        }
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static int IndexOf(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal) => array.IndexOf(value, 0, array.Length, comparison);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static int IndexOf(this string[] array, string value, int startIndex, int length, StringComparison comparison = StringComparison.Ordinal)
         {
             for (int i = startIndex; i < length; i++)
@@ -91,21 +50,16 @@ namespace WitherTorch.Common.Extensions
             return -1;
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public static bool EndsWith(this string str, char c)
         {
             int count = str.Length;
             if (count > 0)
-            {
                 return str[count - 1] == c;
-            }
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public static bool EndsWith(this string str, params char[] chars)
         {
             int count = str.Length;
@@ -122,28 +76,16 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static unsafe bool StartsWith(this string str, char c)
-        {
-            fixed (char* ptr = str)
-                return *ptr == c;
-        }
+        public static bool StartsWith(this string str, char c)
+            => !StringHelper.IsNullOrEmpty(str) && str[0] == c;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecuritySafeCritical]
-        public static unsafe bool StartsWith(this string str, params char[] chars)
+        public static bool StartsWith(this string str, params char[] chars)
         {
-            fixed (char* ptr = str)
-            {
-                char c = *ptr;
-                for (int i = 0, length = chars.Length; i < length; i++)
-                {
-                    if (c == chars[i])
-                        return true;
-                }
-            }
-            return false;
+            if (StringHelper.IsNullOrEmpty(str))
+                return false;
+            return chars.Contains(str[0]);
         }
 
         public static string[] ToUpperAscii(this string[] array)

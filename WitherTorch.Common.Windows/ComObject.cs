@@ -3,16 +3,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
+using LocalsInit;
+
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Windows
 {
-#if NET8_0_OR_GREATER
-    [SkipLocalsInit]
-#else
-    [LocalsInit.LocalsInit(false)]
-#endif
+    [LocalsInit(false)]
     [SuppressUnmanagedCodeSecurity]
     public unsafe partial class ComObject : NativeObject
     {
@@ -47,12 +45,10 @@ namespace WitherTorch.Common.Windows
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
             int hr = ((delegate* unmanaged[Stdcall]<void*, Guid*, void**, int>)functionPointer)(nativePointer, UnsafeHelper.AsPointerIn(in iid), &nativePointer);
-            if (hr < 0)
-            {
-                if (throwWhenQueryFailed)
-                    Marshal.ThrowExceptionForHR(hr);
-                return null;
-            }
+            if (throwWhenQueryFailed)
+                ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
+            else
+                ThrowHelper.ResetPointerForHR(hr, ref nativePointer);
             return FromNativePointer<T>(nativePointer, ReferenceType.Owned);
         }
 

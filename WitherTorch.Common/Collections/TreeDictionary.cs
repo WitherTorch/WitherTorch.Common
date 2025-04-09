@@ -306,15 +306,15 @@ namespace WitherTorch.Common.Collections
             return new Enumerator(_bucket);
         }
 
-        public unsafe struct Enumerator : IEnumerator<KeyValuePair<TKey?, TValue?>>
+        public unsafe struct Enumerator : IEnumerator<KeyValuePair<TKey, TValue>>
         {
             private readonly KeyValuePair<TKey?, object?>[] _bucket;
 
-            private KeyValuePair<TKey?, TValue?> _current;
+            private KeyValuePair<TKey, TValue> _current;
 
             private fixed int _path[BucketDepth + 1];
 
-            public KeyValuePair<TKey?, TValue?> Current => _current;
+            public KeyValuePair<TKey, TValue> Current => _current;
 
             object IEnumerator.Current => _current;
 
@@ -336,9 +336,9 @@ namespace WitherTorch.Common.Collections
                 fixed (int* path = _path)
                 {
                     KeyValuePair<TKey?, TValue?> result = GetNextItem(_bucket, path);
-                    if (result.Key is null && result.Value is null)
+                    if (result.Key is null || result.Value is null)
                         return false;
-                    _current = result;
+                    _current = result!;
                 }
                 return true;
             }

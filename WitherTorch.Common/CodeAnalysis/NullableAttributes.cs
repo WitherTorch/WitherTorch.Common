@@ -1,5 +1,5 @@
-﻿#pragma warning disable IDE0130
-#if NET472_OR_GREATER
+﻿#if NET472_OR_GREATER
+#pragma warning disable IDE0130
 namespace System.Diagnostics.CodeAnalysis
 {
     /// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>

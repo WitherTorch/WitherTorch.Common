@@ -3,13 +3,6 @@ using System.Collections.Generic;
 using System.Numerics;
 
 using InlineMethod;
-
-#if NET472_OR_GREATER
-using LocalsInit;
-#else
-using System.Runtime.CompilerServices;
-#endif
-
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper

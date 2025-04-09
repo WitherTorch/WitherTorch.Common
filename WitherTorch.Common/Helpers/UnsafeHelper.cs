@@ -2,12 +2,13 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security;
 
 using InlineIL;
 
 using InlineMethod;
+
+using LocalsInit;
 
 #pragma warning disable CS0162
 #pragma warning disable CS8601
@@ -15,11 +16,7 @@ using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
 {
-#if NET8_0_OR_GREATER
-    [SkipLocalsInit]
-#else
-    [LocalsInit.LocalsInit(false)]
-#endif
+    [LocalsInit(false)]
     public static unsafe partial class UnsafeHelper
     {
         public const int PointerSizeConstant_Indeterminate = 0;

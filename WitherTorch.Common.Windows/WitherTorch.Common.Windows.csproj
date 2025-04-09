@@ -26,17 +26,7 @@
 		<DebugType>none</DebugType>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net8'">
-		<WeaverConfiguration>
-			<Weavers>
-				<InlineIL />
-				<InlineMethod />
-				<Absence />
-			</Weavers>
-		</WeaverConfiguration>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|net472'">
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<WeaverConfiguration>
 			<Weavers>
 				<InlineIL />
@@ -65,9 +55,6 @@
 		<PackageReference Include="Absence.Fody" Version="2.0.10">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net472'">
 		<PackageReference Include="LocalsInit.Fody" Version="1.1.0">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>

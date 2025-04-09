@@ -35,11 +35,11 @@ namespace WitherTorch.Common.Windows
         {
             void* nativePointer;
             int hr = Ole32.CoCreateInstance(rclsid, null, ClassContextFlags.InProcessServer, riid, &nativePointer);
-            if (hr >= 0)
-                return nativePointer;
-            if (!throwWhenFailed)
-                return null;
-            throw Marshal.GetExceptionForHR(hr)!;
+            if (throwWhenFailed)
+                ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
+            else
+                ThrowHelper.ResetPointerForHR(hr, ref nativePointer);
+            return nativePointer;
         }
     }
 }

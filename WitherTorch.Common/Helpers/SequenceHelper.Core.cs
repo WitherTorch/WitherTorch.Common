@@ -1,13 +1,6 @@
-﻿using System;
-using System.Numerics;
+﻿using InlineMethod;
 
-using InlineMethod;
-
-#if NET472_OR_GREATER
 using LocalsInit;
-#else
-using System.Runtime.CompilerServices;
-#endif
 
 namespace WitherTorch.Common.Helpers
 {
@@ -15,17 +8,13 @@ namespace WitherTorch.Common.Helpers
     {
         private static unsafe partial class Core { }
 
-#if NET5_0_OR_GREATER
-        [SkipLocalsInit]
-#else
         [LocalsInit(false)]
-#endif
         private static unsafe partial class Core<T> where T : unmanaged
         {
             [Inline(InlineBehavior.Remove)]
             private static bool CheckTypeCanBeVectorized()
 #if NET8_0_OR_GREATER
-                => Vector<T>.IsSupported;
+                => System.Numerics.Vector<T>.IsSupported;
 #else
                 => (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(short)) ||

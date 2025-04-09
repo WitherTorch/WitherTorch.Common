@@ -10,10 +10,8 @@ namespace WitherTorch.Common.Extensions
     public static class DictionaryExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TValue GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> _this, TKey key, TValue defaultValue)
-        {
-            return _this.TryGetValue(key, out TValue? result) ? result : defaultValue;
-        }
+        public static TValue? GetOrDefault<TKey, TValue>(this IDictionary<TKey, TValue> _this, TKey key, TValue? defaultValue) 
+            => _this.TryGetValue(key, out TValue? result) ? result : defaultValue;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryRemoveAndDispose<TKey, TValue>(this ConcurrentDictionary<TKey, TValue> _this, TKey key) where TKey : notnull where TValue : IDisposable
@@ -26,9 +24,6 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsEmpty<TKey, TValue>(this IDictionary<TKey, TValue> _this)
-        {
-            return _this.Count <= 0;
-        }
+        public static bool IsEmpty<TKey, TValue>(this IDictionary<TKey, TValue> _this) => _this.Count <= 0;
     }
 }
