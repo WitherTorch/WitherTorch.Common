@@ -1,11 +1,9 @@
 ﻿#if NET472_OR_GREATER
-using System;
-using System.Runtime.CompilerServices;
-using System.Security;
-
 using InlineMethod;
 
-namespace WitherTorch.Common.Helpers
+#pragma warning disable IDE0130
+namespace System
+#pragma warning restore IDE0130
 {
     public static class MathF
     {

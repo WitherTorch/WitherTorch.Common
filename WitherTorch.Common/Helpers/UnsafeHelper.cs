@@ -321,8 +321,12 @@ namespace WitherTorch.Common.Helpers
         [SecuritySafeCritical]
         public static unsafe ref TTo As<TFrom, TTo>(ref TFrom source)
         {
+#if NET8_0_OR_GREATER
+            return ref Unsafe.As<TFrom, TTo>(ref source);
+#else
             IL.PushInRef(ref source);
             return ref IL.ReturnRef<TTo>();
+#endif
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -330,8 +334,12 @@ namespace WitherTorch.Common.Helpers
         [SecuritySafeCritical]
         public static unsafe TTo As<TFrom, TTo>(TFrom source)
         {
+#if NET8_0_OR_GREATER
+            return Unsafe.As<TFrom, TTo>(ref source);
+#else
             IL.Push(source);
             return IL.Return<TTo>();
+#endif
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -339,12 +347,16 @@ namespace WitherTorch.Common.Helpers
         [SecuritySafeCritical]
         public static unsafe T As<T>(object source) where T : class
         {
+#if NET8_0_OR_GREATER
+            return Unsafe.As<T>(source);
+#else
             IL.Push(source);
             return IL.Return<T>();
+#endif
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void Fill<T>(T* ptr, T value, int count) where T : unmanaged
+        public static unsafe void Fill<T>(T* ptr, T value, [InlineParameter] int count) where T : unmanaged
         {
             for (int i = 0; i < count; i++)
                 ptr[i] = value;

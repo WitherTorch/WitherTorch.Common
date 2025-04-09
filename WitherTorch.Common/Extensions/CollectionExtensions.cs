@@ -13,11 +13,11 @@ namespace WitherTorch.Common.Extensions
     public static partial class CollectionExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IReadOnlyCollection<T> AsReadOnly<T>(this ICollection<T> collection)
+        public static IReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
             => collection as IReadOnlyCollection<T> ?? new ReadOnlyCollectionAdapter<T>(collection);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IReadOnlyList<T> AsReadOnly<T>(this IList<T> collection)
+        public static IReadOnlyList<T> AsReadOnlyList<T>(this IList<T> collection)
             => collection as IReadOnlyList<T> ?? new ReadOnlyListAdapter<T>(collection);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
