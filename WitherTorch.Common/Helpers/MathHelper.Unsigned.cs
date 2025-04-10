@@ -1,22 +1,19 @@
 ﻿using InlineMethod;
 
-using System.Runtime.CompilerServices;
-using System.Security;
-
 namespace WitherTorch.Common.Helpers
 {
     partial class MathHelper
     {
         [Inline(InlineBehavior.Keep, export: true)]
-        public static byte MakeUnsigned(sbyte value) => unchecked((byte)(value & sbyte.MaxValue));
+        public static byte MakeUnsigned([InlineParameter] sbyte value) => unchecked((byte)(value & sbyte.MaxValue));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ushort MakeUnsigned(short value) => unchecked((ushort)(value & short.MaxValue));
+        public static ushort MakeUnsigned([InlineParameter] short value) => unchecked((ushort)(value & short.MaxValue));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static uint MakeUnsigned(int value) => unchecked((uint)(value & int.MaxValue));
+        public static uint MakeUnsigned([InlineParameter] int value) => unchecked((uint)(value & int.MaxValue));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ulong MakeUnsigned(long value) => unchecked((ulong)(value & long.MaxValue));
+        public static ulong MakeUnsigned([InlineParameter] long value) => unchecked((ulong)(value & long.MaxValue));
     }
 }
