@@ -113,6 +113,12 @@ namespace WitherTorch.Common.Helpers
         public static long Read(ref long location) => Interlocked.CompareExchange(ref location, default, default);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static float Read(ref float location) => Interlocked.CompareExchange(ref location, default, default);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static double Read(ref double location) => Interlocked.CompareExchange(ref location, default, default);
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static T? Read<T>(ref T? location) where T : class
             => Interlocked.CompareExchange(ref location, default, default);
     }
