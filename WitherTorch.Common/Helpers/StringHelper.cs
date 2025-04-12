@@ -59,7 +59,7 @@ namespace WitherTorch.Common.Helpers
         {
             if (!SequenceHelper.ContainsExclude(str, ' '))
                 return false;
-            for (int i = 0, length =  str.Length; i < length; i++)
+            for (int i = 0, length = str.Length; i < length; i++)
             {
                 if (!char.IsWhiteSpace(str[i]))
                     return false;
@@ -104,17 +104,65 @@ namespace WitherTorch.Common.Helpers
             buffer[1] = unchecked((char)((unicodeValue & 0x3FF) + 0xDC00)); //Low surrogate
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ParseOrDefault(string str, int defaultValue)
+        public static int ParseOrDefault(string? str, int defaultValue)
         {
             if (str is null)
                 return defaultValue;
             return int.TryParse(str, out int result) ? result : defaultValue;
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool StartsWith(string str, string value)
+        {
+            int length = value.Length;
+            if (value.Length < length)
+                return false;
+            fixed (char* ptr = str, ptr2 = value)
+                return SequenceHelper.Equals(ptr, ptr + length, ptr2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool StartsWith(string str, string value, StringComparison comparison)
+        {
+            int length = value.Length;
+            if (value.Length < length)
+                return false;
+            if (comparison == StringComparison.Ordinal)
+            {
+                fixed (char* ptr = str, ptr2 = value)
+                    return SequenceHelper.Equals(ptr, ptr + length, ptr2);
+            }
+            return str.StartsWith(value, comparison);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EndsWith(string str, string value)
+        {
+            int aLength = str.Length;
+            int bLength = value.Length;
+            if (aLength < bLength)
+                return false;
+            fixed (char* ptr = str, ptr2 = value)
+                return SequenceHelper.Equals(ptr + aLength - bLength, ptr + aLength, ptr2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool EndsWith(string str, string value, StringComparison comparison)
+        {
+            int aLength = str.Length;
+            int bLength = value.Length;
+            if (aLength < bLength)
+                return false;
+            if (comparison == StringComparison.Ordinal)
+            {
+                fixed (char* ptr = str, ptr2 = value)
+                    return SequenceHelper.Equals(ptr + aLength - bLength, ptr + aLength, ptr2);
+            }
+            return str.EndsWith(value, comparison);
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static string Join(char separator, params string[] values)
         {
 #if NET5_0_OR_GREATER
@@ -125,13 +173,11 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Join(string separator, params string[] values)
         {
             return string.Join(separator, values);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string FilteredJoin(char separator, Func<string, bool> filter, params string[] values)
         {
             if (values is null)

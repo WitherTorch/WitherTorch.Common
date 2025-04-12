@@ -12,8 +12,6 @@ namespace WitherTorch.Common.Helpers
     {
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static int Or(ref int location, int value)
         {
@@ -36,8 +34,6 @@ namespace WitherTorch.Common.Helpers
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static long Or(ref long location, long value)
         {
@@ -60,8 +56,6 @@ namespace WitherTorch.Common.Helpers
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static int And(ref int location, int value)
         {
@@ -84,8 +78,6 @@ namespace WitherTorch.Common.Helpers
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static long And(ref long location, long value)
         {
@@ -104,6 +96,70 @@ namespace WitherTorch.Common.Helpers
             }
             while (true);
 #endif
+        }
+
+        public static int Min(ref int location, int value)
+        {
+            int oldValue = Read(ref location);
+            if (oldValue <= value)
+                return oldValue;
+            do
+            {
+                int currentValue = Interlocked.CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue > value);
+            return oldValue;
+        }
+
+        public static long Min(ref long location, long value)
+        {
+            long oldValue = Read(ref location);
+            if (oldValue <= value)
+                return oldValue;
+            do
+            {
+                long currentValue = Interlocked.CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue > value);
+            return oldValue;
+        }
+
+        public static int Max(ref int location, int value)
+        {
+            int oldValue = Read(ref location);
+            if (oldValue >= value)
+                return oldValue;
+            do
+            {
+                int currentValue = Interlocked.CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue < value);
+            return oldValue;
+        }
+
+        public static long Max(ref long location, long value)
+        {
+            long oldValue = Read(ref location);
+            if (oldValue >= value)
+                return oldValue;
+            do
+            {
+                long currentValue = Interlocked.CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue < value);
+            return oldValue;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
