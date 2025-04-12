@@ -191,5 +191,12 @@ namespace WitherTorch.Common.Extensions
                 return true;
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddRange<T>(this IList<T> _this, IEnumerable<T> items)
+        {
+            foreach (T item in items)
+                _this.Add(item);    
+        }
     }
 }
