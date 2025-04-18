@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-using InlineMethod;
-
 namespace WitherTorch.Common.Helpers
 {
     unsafe partial class SequenceHelper
@@ -17,6 +15,22 @@ namespace WitherTorch.Common.Helpers
                 return false;
             fixed (char* ptr = str, ptr2 = str2)
                 return EqualsCore(ptr, ptr + length, ptr2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Equals(string str, string str2, StringComparison comparison)
+        {
+            if (ReferenceEquals(str, str2))
+                return true;
+            int length = str.Length;
+            if (length != str2.Length)
+                return false;
+            if (comparison == StringComparison.Ordinal)
+            {
+                fixed (char* ptr = str, ptr2 = str2)
+                    return EqualsCore(ptr, ptr + length, ptr2);
+            }
+            return str.Equals(str2, comparison);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

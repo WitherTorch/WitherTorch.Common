@@ -15,11 +15,11 @@ namespace WitherTorch.Common.Extensions
         private const int UpperLowerDiff = 'a' - 'A';
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static char FirstOrDefault(this string obj, char defaultValue = '\0') 
+        public static char FirstOrDefault(this string obj, char defaultValue = '\0')
             => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[0];
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static char LastOrDefault(this string obj, char defaultValue = '\0') 
+        public static char LastOrDefault(this string obj, char defaultValue = '\0')
             => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[obj.Length - 1];
 
 #if NET472_OR_GREATER
@@ -39,12 +39,12 @@ namespace WitherTorch.Common.Extensions
         [Inline(InlineBehavior.Keep, export: true)]
         public static int IndexOf(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal) => array.IndexOf(value, 0, array.Length, comparison);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOf(this string[] array, string value, int startIndex, int length, StringComparison comparison = StringComparison.Ordinal)
         {
             for (int i = startIndex; i < length; i++)
             {
-                if (value.Equals(array[i], comparison))
+                if (SequenceHelper.Equals(array[i], value, comparison))
                     return i;
             }
             return -1;
