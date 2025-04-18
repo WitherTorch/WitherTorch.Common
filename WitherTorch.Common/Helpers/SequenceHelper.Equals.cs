@@ -1,47 +1,59 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
 {
     unsafe partial class SequenceHelper
     {
+        /// <inheritdoc cref="string.Equals(string?, string?)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Equals(string str, string str2)
+        public static bool Equals(string? a, string? b)
         {
-            if (ReferenceEquals(str, str2))
+            if (ReferenceEquals(a, b))
                 return true;
-            int length = str.Length;
-            if (length != str2.Length)
+            if (a is null || b is null)
+                return false;   
+            int length = a.Length;
+            if (length != b.Length)
                 return false;
-            fixed (char* ptr = str, ptr2 = str2)
-                return EqualsCore(ptr, ptr + length, ptr2);
+            return EqualsCore(a, b, length);
         }
 
+        /// <inheritdoc cref="string.Equals(string?, string?, StringComparison)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Equals(string str, string str2, StringComparison comparison)
+        public static bool Equals(string? a, string? b, StringComparison comparisonType)
         {
-            if (ReferenceEquals(str, str2))
+            if (ReferenceEquals(a, b))
                 return true;
-            int length = str.Length;
-            if (length != str2.Length)
+            if (a is null || b is null)
                 return false;
-            if (comparison == StringComparison.Ordinal)
+            int length = a.Length;
+            if (length != b.Length)
+                return false;
+            return comparisonType switch
             {
-                fixed (char* ptr = str, ptr2 = str2)
-                    return EqualsCore(ptr, ptr + length, ptr2);
-            }
-            return str.Equals(str2, comparison);
+                StringComparison.CurrentCulture => CultureInfo.CurrentCulture.CompareInfo.Compare(a, b, CompareOptions.None) == 0,
+                StringComparison.CurrentCultureIgnoreCase => CultureInfo.CurrentCulture.CompareInfo.Compare(a, b, CompareOptions.IgnoreCase) == 0,
+                StringComparison.InvariantCulture => CultureInfo.InvariantCulture.CompareInfo.Compare(a, b, CompareOptions.None) == 0,
+                StringComparison.InvariantCultureIgnoreCase => CultureInfo.InvariantCulture.CompareInfo.Compare(a, b, CompareOptions.IgnoreCase) == 0,
+                StringComparison.OrdinalIgnoreCase => string.Equals(a, b, StringComparison.OrdinalIgnoreCase),
+                StringComparison.Ordinal => EqualsCore(a, b, length),
+                _ => throw new ArgumentOutOfRangeException(nameof(comparisonType))
+            };
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Equals<T>(T[] array1, T[] array2) where T : unmanaged
+        public static bool Equals<T>(T[]? a, T[]? b) where T : unmanaged
         {
-            if (ReferenceEquals(array1, array2))
+            if (ReferenceEquals(a, b))
                 return true;
-            int length = array1.Length;
-            if (length != array2.Length)
+            if (a is null || b is null)
                 return false;
-            fixed (T* ptr = array1, ptr2 = array2)
+            int length = a.Length;
+            if (length != b.Length)
+                return false;
+            fixed (T* ptr = a, ptr2 = b)
                 return EqualsCore(ptr, ptr + length, ptr2);
         }
 
@@ -51,6 +63,13 @@ namespace WitherTorch.Common.Helpers
             if (ptr == ptr2)
                 return true;
             return EqualsCore(ptr, ptrEnd, ptr2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool EqualsCore(string str1, string str2, int length)
+        {
+            fixed (char* ptr = str1, ptr2 = str2)
+                return Core<ushort>.Equals((ushort*)ptr, (ushort*)ptr + length, (ushort*)ptr2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
