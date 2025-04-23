@@ -2,6 +2,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Structures
 {
@@ -41,6 +44,31 @@ namespace WitherTorch.Common.Structures
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set() => _data = ulong.MaxValue;
 
+        public bool InterlockedGet(int index)
+        {
+            if (index < 0 || index > 63)
+                throw new IndexOutOfRangeException();
+            ulong mask = 1UL << index;
+            return (InterlockedHelper.Read(ref _data) & mask) == mask;
+        }
+
+        public bool InterlockedSet(int index, bool value)
+        {
+            if (index < 0 || index > 63)
+                throw new IndexOutOfRangeException();
+            ulong mask = 1UL << index;
+            if (value)
+                return (InterlockedHelper.Or(ref _data, mask) & mask) == mask;
+            else
+                return (InterlockedHelper.And(ref _data, ~mask) & mask) == mask;
+        }
+
+        public void InterlockedReset()
+            => InterlockedHelper.Exchange(ref _data, ulong.MinValue);
+
+        public void InterlockedSet()
+            => InterlockedHelper.Exchange(ref _data, ulong.MaxValue);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong Exchange(ulong value)
         {
@@ -48,6 +76,9 @@ namespace WitherTorch.Common.Structures
             _data = value;
             return result;
         }
+
+        public ulong InterlockedExchange(ulong value)
+            => InterlockedHelper.Exchange(ref _data, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator ulong(BitVector64 bitVector) => bitVector._data;
