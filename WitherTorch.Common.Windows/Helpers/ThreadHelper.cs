@@ -12,7 +12,12 @@ namespace WitherTorch.Common.Windows.Helpers
 
         public static void SetCurrentThreadName(string name)
         {
-            Thread.CurrentThread.Name = name;
+            Thread.CurrentThread.Name = name; 
+            SetCurrentThreadNameInWin32(name);
+        }
+
+        public static void SetCurrentThreadNameInWin32(string name)
+        {
             void* methodPointer = _setThreadDescriptionMethodPointer;
             if (methodPointer == null)
                 return;
