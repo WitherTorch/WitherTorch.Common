@@ -9,7 +9,7 @@ namespace WitherTorch.Common.Threading
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T InitializeAndReturn<T>(ref T? location, Func<T>? factory, bool threadSafe, object? syncRoot) where T : class
         {
-            T result;
+            T? result;
             if (!threadSafe)
             {
                 result = InitializeOrThrow(factory);
@@ -26,14 +26,19 @@ namespace WitherTorch.Common.Threading
                 return oldValue;
             }
             Monitor.Enter(syncRoot);
-            try
+            result = location;
+            if (result is null)
             {
-                result = InitializeOrThrow(factory);
-            }
-            catch (Exception)
-            {
-                Monitor.Exit(syncRoot);
-                throw;
+                try
+                {
+                    result = InitializeOrThrow(factory);
+                }
+                catch (Exception)
+                {
+                    Monitor.Exit(syncRoot);
+                    throw;
+                }
+                location = result;
             }
             Monitor.Exit(syncRoot);
             return result;

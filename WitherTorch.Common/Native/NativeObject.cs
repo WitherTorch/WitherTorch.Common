@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
+using System.Threading;
 
 using WitherTorch.Common.Native;
 
@@ -8,7 +10,7 @@ namespace WitherTorch.Common
     /// <summary>
     /// Represents a native object
     /// </summary>
-    public abstract unsafe partial class NativeObject : IDisposable
+    public abstract unsafe partial class NativeObject : CriticalFinalizerObject, IDisposable
     {
         private ReferenceType _referenceType;
         private void* _nativePointer;
