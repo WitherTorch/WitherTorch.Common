@@ -59,8 +59,10 @@ namespace WitherTorch.Common.Windows.Helpers
 
         private static void* GetImportedMethodPointerCore(ArrayPool<byte> pool, nint module, string methodName)
         {
-            byte[] buffer = pool.Rent(methodName.Length);
+            int length = methodName.Length;
+            byte[] buffer = pool.Rent(length + 1);
             AsciiHelper.ToAsciiUnchecked(buffer, methodName);
+            buffer[length] = 0;
 
             void* result;
             fixed (byte* ptr = buffer)
