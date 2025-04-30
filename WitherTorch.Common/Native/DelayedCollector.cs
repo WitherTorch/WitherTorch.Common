@@ -13,7 +13,6 @@ namespace WitherTorch.Common.Native
         private const int DelayedCollectingPeriod = 5000;
         private const int DelayedCollectingNoRefTime = DelayedCollectingPeriod / 2;
 
-
         private static readonly DelayedCollector _instance = new DelayedCollector();
 
         private readonly Thread _thread;
@@ -21,19 +20,20 @@ namespace WitherTorch.Common.Native
         private readonly ConcurrentQueue<DelayedCollectingObject> _queue;
         private readonly HashSet<DelayedCollectingObject> _innerSet;
 
-        private long state;
+        private long _state;
 
         public static DelayedCollector Instance => _instance;
 
         private DelayedCollector()
         {
-            state = 0;
+            _state = 0;
             _innerSet = new HashSet<DelayedCollectingObject>();
             _queue = new ConcurrentQueue<DelayedCollectingObject>();
             _thread = new Thread(DoTick)
             {
                 IsBackground = true,
-                Name = nameof(DelayedCollector) + " Thread"
+                Name = nameof(DelayedCollector) + " Thread",
+                Priority = ThreadPriority.Lowest
             };
         }
 
@@ -42,7 +42,7 @@ namespace WitherTorch.Common.Native
             if (obj is null || CheckDisposed())
                 return;
 
-            long state = Interlocked.CompareExchange(ref this.state, 1L, 0L);
+            long state = Interlocked.CompareExchange(ref _state, 1L, 0L);
             if (state >= 2L)
                 return;
 
@@ -58,7 +58,7 @@ namespace WitherTorch.Common.Native
                     thread.Start();
                 }
 
-                Interlocked.CompareExchange(ref this.state, 0L, 1L);
+                Interlocked.CompareExchange(ref _state, 0L, 1L);
             }
         }
 
@@ -135,29 +135,27 @@ namespace WitherTorch.Common.Native
         [Inline(InlineBehavior.Remove)]
         private bool CheckDisposed()
         {
-            return Interlocked.Read(ref state) >= 2;
+            return Interlocked.Read(ref _state) >= 2;
         }
 
-        private void DisposeInternal()
+        private void DisposeCore()
         {
-            if (Interlocked.Exchange(ref state, 2) < 2)
-            {
-                _waitingEvent.Set();
+            if (Interlocked.Exchange(ref _state, 2) >= 2)
+                return;
+            AutoResetEvent waitingEvent = _waitingEvent;
 
-                _waitingEvent.Dispose();
-            }
+            waitingEvent.Set();
+            waitingEvent.Dispose();
         }
 
         ~DelayedCollector()
         {
-            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-            DisposeInternal();
+            DisposeCore();
         }
 
         public void Dispose()
         {
-            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-            DisposeInternal();
+            DisposeCore();
             GC.SuppressFinalize(this);
         }
     }
