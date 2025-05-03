@@ -381,6 +381,20 @@ namespace WitherTorch.Common.Helpers
 
 #pragma warning disable CS8500
         [Inline(InlineBehavior.Keep, export: true)]
+        public static ref T AsRefIn<T>(in T value)
+        {
+            IL.Emit.Ldarg_0();
+            return ref IL.ReturnRef<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ref T AsRefOut<T>(out T value)
+        {
+            IL.PushOutRef(out value);
+            return ref IL.ReturnRef<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe T* AsPointerRef<T>(ref T value)
         {
             IL.Emit.Ldarg_0();
