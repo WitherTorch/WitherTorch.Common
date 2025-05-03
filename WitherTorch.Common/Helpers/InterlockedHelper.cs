@@ -273,8 +273,8 @@ namespace WitherTorch.Common.Helpers
         public static nuint Read(ref readonly nuint location) => CompareExchange(ref UnsafeHelper.AsRefIn(in location), default, default);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T? Read<T>(ref T? location) where T : class
-            => Interlocked.CompareExchange(ref location, default, default);
+        public static T? Read<T>(ref readonly T? location) where T : class
+            => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), default, default);
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]

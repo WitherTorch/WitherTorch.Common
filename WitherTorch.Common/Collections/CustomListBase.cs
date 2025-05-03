@@ -117,7 +117,7 @@ namespace WitherTorch.Common.Collections
             _count = 0;
             if (UnsafeHelper.IsUnmanagedType<T>())
                 return;
-            Array.Clear(_array, 0, _count);
+            SequenceHelper.Clear(_array, 0, _count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

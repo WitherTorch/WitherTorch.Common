@@ -7,6 +7,24 @@ namespace WitherTorch.Common.Helpers
     public static class DisposeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeAll<T>(T[]? array) where T : IDisposable
+        {
+            if (array is null)
+                return;
+            for (int i = 0, length = array.Length; i < length; i++)
+                array[i]?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeAllWeak<T>(T[]? array)
+        {
+            if (array is null)
+                return;
+            for (int i = 0, length = array.Length; i < length; i++)
+                (array[i] as IDisposable)?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SwapDispose<T>(ref T? location, T? value = null) where T : class?, IDisposable?
         {
             T? oldObject = location;
@@ -21,7 +39,7 @@ namespace WitherTorch.Common.Helpers
         {
             T? oldObject = location;
             location = value;
-            if (ReferenceEquals(oldObject, value) || !(oldObject is IDisposable disposable))
+            if (ReferenceEquals(oldObject, value) || oldObject is not IDisposable disposable)
                 return;
             disposable.Dispose();
         }
@@ -65,7 +83,7 @@ namespace WitherTorch.Common.Helpers
         public static void SwapDisposeInterlockedWeak<T>(ref T? location, T? value = null) where T : class?
         {
             T? oldObject = Interlocked.Exchange(ref location, value);
-            if (ReferenceEquals(oldObject, value) || !(oldObject is IDisposable disposable))
+            if (ReferenceEquals(oldObject, value) || oldObject is not IDisposable disposable)
                 return;
             disposable.Dispose();
         }
@@ -107,7 +125,7 @@ namespace WitherTorch.Common.Helpers
         public static void NullSwapOrDispose<T>(ref T[]? location, T[]? value) where T : class?, IDisposable?
         {
             T[]? oldObject = Interlocked.CompareExchange(ref location, value, null);
-            if (oldObject is null || value is null || ReferenceEquals(oldObject, value) )
+            if (oldObject is null || value is null || ReferenceEquals(oldObject, value))
                 return;
             foreach (T item in value)
                 item?.Dispose();
