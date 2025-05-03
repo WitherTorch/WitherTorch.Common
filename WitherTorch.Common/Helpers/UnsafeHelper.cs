@@ -379,6 +379,16 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Initblk();
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void InitBlockUnaligned(void* ptr, byte value, uint size)
+        {
+            IL.Push(ptr);
+            IL.Push(value);
+            IL.Push(size);
+            IL.Emit.Unaligned(sizeof(byte));
+            IL.Emit.Initblk();
+        }
+
 #pragma warning disable CS8500
         [Inline(InlineBehavior.Keep, export: true)]
         public static ref T AsRefIn<T>(in T value)
