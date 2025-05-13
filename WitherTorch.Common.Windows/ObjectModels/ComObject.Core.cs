@@ -1,16 +1,11 @@
-﻿using InlineMethod;
+﻿using System;
+using System.Runtime.CompilerServices;
+
+using InlineMethod;
 
 using WitherTorch.Common.Helpers;
-using System.Runtime.CompilerServices;
-using System;
 
-
-
-#if !DEBUG
-using InlineIL;
-#endif
-
-namespace WitherTorch.Common.Windows
+namespace WitherTorch.Common.Windows.ObjectModels
 {
     unsafe partial class ComObject
     {
@@ -28,6 +23,14 @@ namespace WitherTorch.Common.Windows
                 },
                 _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSizeConstant} is not supported.")
             };
+
+        [Inline(InlineBehavior.Remove)]
+        private static int QueryInterfaceCore(ref void* nativePointer, in Guid iid)
+        {
+            void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
+            return ((delegate* unmanaged[Stdcall]<void*, Guid*, void**, int>)functionPointer)(nativePointer, 
+                UnsafeHelper.AsPointerIn(in iid), UnsafeHelper.AsPointerRef(ref nativePointer));
+        }
 
         [Inline(InlineBehavior.Remove)]
         private static ulong AddRefCore(void* nativePointer)

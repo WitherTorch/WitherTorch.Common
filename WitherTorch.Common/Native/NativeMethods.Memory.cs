@@ -19,6 +19,13 @@ namespace WitherTorch.Common.Native
             return result;
         }
 
+        public static unsafe T* AllocUnmanagedStructure<T>(T value) where T : unmanaged
+        {
+            T* result = (T*)_methodInstance.AllocMemory(sizeof(T));
+            *result = value;
+            return result;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecurityCritical]
         public static unsafe void* AllocMemory(int size)

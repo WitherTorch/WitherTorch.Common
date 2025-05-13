@@ -412,6 +412,13 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void** AsPointerRef(ref void* value)
+        {
+            IL.Emit.Ldarg_0();
+            return (void**)IL.ReturnPointer();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe T* AsPointerIn<T>(in T value)
         {
             IL.Emit.Ldarg_0();

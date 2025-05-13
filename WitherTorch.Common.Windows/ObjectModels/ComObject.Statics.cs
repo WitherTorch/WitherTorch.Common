@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 using InlineMethod;
 
@@ -8,7 +7,7 @@ using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
 using WitherTorch.Common.Windows.Internals;
 
-namespace WitherTorch.Common.Windows
+namespace WitherTorch.Common.Windows.ObjectModels
 {
     unsafe partial class ComObject
     {
