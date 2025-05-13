@@ -80,7 +80,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             pcbRead = 0;
             pcbWritten = 0;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            if (cb > TransferBufferSize)
+            if (cb >= TransferBufferSize)
             {
                 byte[] buffer = pool.Rent(TransferBufferSize);
                 do
@@ -89,15 +89,21 @@ namespace WitherTorch.Common.Windows.ObjectModels
                     {
                         ulong bytesRead = Read(ptr, TransferBufferSize);
                         if (bytesRead == 0)
-                            break;
+                        {
+                            pool.Return(buffer);
+                            return;
+                        }
                         ulong bytesWritten = pstm.Write(ptr, bytesRead);
-                        if (bytesWritten != bytesRead)
-                            throw new InvalidOperationException();
                         pcbRead += bytesRead;
                         pcbWritten += bytesWritten;
+                        if (bytesWritten != bytesRead)
+                        {
+                            pool.Return(buffer);
+                            throw new InvalidOperationException();
+                        }
                     }
                     cb -= TransferBufferSize;
-                } while (cb > TransferBufferSize);
+                } while (cb >= TransferBufferSize);
                 pool.Return(buffer);
             }
             if (cb == 0)
@@ -106,15 +112,22 @@ namespace WitherTorch.Common.Windows.ObjectModels
                 byte[] buffer = pool.Rent(unchecked((uint)cb));
                 fixed (byte* ptr = buffer)
                 {
-                    ulong bytesRead = Read(ptr, TransferBufferSize);
+                    ulong bytesRead = Read(ptr, cb);
                     if (bytesRead == 0)
+                    {
+                        pool.Return(buffer);
                         return;
+                    }
                     ulong bytesWritten = pstm.Write(ptr, bytesRead);
-                    if (bytesWritten != bytesRead)
-                        throw new InvalidOperationException();
                     pcbRead += bytesRead;
                     pcbWritten += bytesWritten;
+                    if (bytesWritten != bytesRead)
+                    {
+                        pool.Return(buffer);
+                        throw new InvalidOperationException();
+                    }
                 }
+                pool.Return(buffer);
             }
         }
 
