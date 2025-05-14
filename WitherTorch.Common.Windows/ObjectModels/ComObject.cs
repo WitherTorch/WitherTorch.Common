@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
 {
     [LocalsInit(false)]
     [SuppressUnmanagedCodeSecurity]
-    public unsafe partial class ComObject : NativeObject, IUnknown
+    public unsafe partial class ComObject : NativeObject, IUnknown, IWin32HandleHolder
     {
         // IID_IUnknown = {00000000-0000-0000-C000-000000000046}
         public static readonly Guid IID_IUnknown = new Guid(0x00000000, 0x0000, 0x0000, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46);
@@ -71,5 +71,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         protected override void AfterPointerCopied() => AddRefCore(NativePointer);
 
         protected override unsafe void ReleasePointer(void* pointer) => ReleaseCore(pointer);
+
+        unsafe void* IWin32HandleHolder.GetWin32Handle() => NativePointer;
     }
 }

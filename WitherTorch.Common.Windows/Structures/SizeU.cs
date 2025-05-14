@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Windows.Structures
         public static explicit operator Size(SizeU size) => new Size(MathHelper.MakeSigned(size.Width), MathHelper.MakeSigned(size.Height));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly override bool Equals(object? obj) => obj is PointU other && Equals(other);
+        public readonly override bool Equals(object? obj) => obj is SizeU other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Equals(SizeU other) => Width == other.Width && Height == other.Height;

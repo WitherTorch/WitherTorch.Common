@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
 
         private ulong _refCount;
 
-        public NativeDataHolder(void* methodTable, ComObjectAdapter adapter)
+        public NativeDataHolder(void* methodTable, CustomUnknownAdapterBase adapter)
         {
             _methodTable = methodTable;
             _handle = GCHandle.Alloc(adapter, GCHandleType.Normal);
@@ -42,7 +42,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return refCount;
         }
 
-        public readonly bool TryGetAdapter<T>([NotNullWhen(true)] out T? adapter) where T : ComObjectAdapter
+        public readonly bool TryGetAdapter<T>([NotNullWhen(true)] out T? adapter) where T : CustomUnknownAdapterBase
         {
             adapter = _handle.Target as T;
             return adapter is not null;

@@ -2,7 +2,7 @@
 
 namespace WitherTorch.Common.Windows.ObjectModels.Adapters
 {
-    partial class ComObjectAdapter
+    partial class CustomUnknownAdapterBase
     {
         protected unsafe ref struct VTableStack
         {

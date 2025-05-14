@@ -119,7 +119,7 @@ namespace WitherTorch.Common.Windows.Internals
 
             _lastAccessTime = DateTime.Now;
 
-            if (dlibMove == 0)
+            if (dlibMove == 0 && dwOrigin == StreamSeekType.Cursor)
                 return MathHelper.MakeUnsigned(stream.Position);
 
             _lastModifiedTime = DateTime.Now;

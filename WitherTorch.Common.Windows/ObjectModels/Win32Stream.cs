@@ -171,8 +171,8 @@ namespace WitherTorch.Common.Windows.ObjectModels
             StructuredStorageStat stat;
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Stat);
-            int hr = ((delegate* unmanaged[Stdcall]<void*, StructuredStorageStatFlags, StructuredStorageStat*, int>)functionPointer)(nativePointer,
-                grfStatFlag, &stat);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, StructuredStorageStat*, StructuredStorageStatFlags, int>)functionPointer)(nativePointer,
+                &stat, grfStatFlag);
             ThrowHelper.ThrowExceptionForHR(hr);
             return stat;
         }

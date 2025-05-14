@@ -43,7 +43,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             table.Push((delegate*<NativeDataHolder*, uint>)&Revert);
             table.Push((delegate*<NativeDataHolder*, ulong, ulong, LockType, uint>)&LockRegion);
             table.Push((delegate*<NativeDataHolder*, ulong, ulong, LockType, uint>)&UnlockRegion);
-            table.Push((delegate*<NativeDataHolder*, StructuredStorageStatFlags, StructuredStorageStat*, uint>)&Stat);
+            table.Push((delegate*<NativeDataHolder*, StructuredStorageStat*, StructuredStorageStatFlags, uint>)&Stat);
             table.Push((delegate*<NativeDataHolder*, void**, uint>)&Clone);
         }
 
@@ -207,7 +207,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
-        private static uint Stat(NativeDataHolder* nativePointer, StructuredStorageStatFlags grfStatFlag, StructuredStorageStat* pStatstg)
+        private static uint Stat(NativeDataHolder* nativePointer, StructuredStorageStat* pStatstg, StructuredStorageStatFlags grfStatFlag)
         {
             const uint S_OK = 0x00000000;
             const uint STG_E_INVALIDPOINTER = 0x80030009;

@@ -3,7 +3,7 @@ using System.IO;
 
 namespace WitherTorch.Common.Windows.ObjectModels.Adapters
 {
-    public unsafe class Win32SequentialStreamAdapter : ComObjectAdapter, IWin32SequentialStream
+    public unsafe class Win32SequentialStreamAdapter : CustomUnknownAdapterBase, IWin32SequentialStream
     {
         private readonly IWin32SequentialStream _stream;
 

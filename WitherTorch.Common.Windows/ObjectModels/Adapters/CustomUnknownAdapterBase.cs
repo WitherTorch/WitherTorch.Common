@@ -6,13 +6,13 @@ using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Windows.ObjectModels.Adapters
 {
-    public abstract unsafe partial class ComObjectAdapter : CriticalFinalizerObject, IUnknown
+    public abstract unsafe partial class CustomUnknownAdapterBase : CriticalFinalizerObject, IUnknown
     {
         private readonly Lazy<nint> _handleLazy;
 
         private bool _disposed;
 
-        public ComObjectAdapter()
+        public CustomUnknownAdapterBase()
         {
             _handleLazy = new Lazy<nint>(CreateUnsafeHandle);
         }
@@ -69,7 +69,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             if (ppvObject == null)
                 return E_POINTER;
 
-            if (nativePointer->TryGetAdapter(out ComObjectAdapter? adapter) && adapter.IsGuidSupported(in *riid))
+            if (nativePointer->TryGetAdapter(out CustomUnknownAdapterBase? adapter) && adapter.IsGuidSupported(in *riid))
             {
                 *ppvObject = nativePointer;
                 return S_OK;
@@ -95,7 +95,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             Release();
         }
 
-        ~ComObjectAdapter()
+        ~CustomUnknownAdapterBase()
         {
             Dispose(disposing: false);
         }
