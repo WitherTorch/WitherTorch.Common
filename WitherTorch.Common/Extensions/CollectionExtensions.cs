@@ -26,7 +26,7 @@ namespace WitherTorch.Common.Extensions
             return enumerable switch
             {
                 T[] array => ArrayHelper.HasNonNullItem(array),
-                UnwrappableList<T> list => ArrayHelper.HasNonNullItem(list.Unwrap(), list.Count),
+                UnwrappableList<T> list => ArrayHelper.HasNonNullItem(list.Unwrap(), 0, list.Count),
                 _ => enumerable.AsParallel().Where(val => val is not null).Any()
             };
         }

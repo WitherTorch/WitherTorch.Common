@@ -9,10 +9,11 @@ namespace WitherTorch.Common.Buffers
         private static readonly bool _needDisposing = typeof(IDisposable).IsAssignableFrom(typeof(T));
         private readonly ConcurrentBag<T> _bag;
 
-        private bool disposedValue;
+        private bool _disposed;
 
         public Pool(int initialLength)
         {
+            _disposed = false;
             if (initialLength > 0)
             {
                 T[] array = new T[initialLength];
@@ -40,33 +41,39 @@ namespace WitherTorch.Common.Buffers
             _bag.Add(obj);
         }
 
-        private void DisposeCore()
+        private void Dispose(bool disposing)
         {
-            if (disposedValue)
+            if (_disposed)
                 return;
-            disposedValue = true;
-            if (!_needDisposing)
-                return;
-            ConcurrentBag<T> bag = _bag;
-            while (bag.TryTake(out T? obj))
+            _disposed = true;
+            if (disposing)
             {
-                if (obj is null)
-                    continue;
-                ((IDisposable)obj).Dispose();
+                if (!_needDisposing)
+                    return;
+                ConcurrentBag<T> bag = _bag;
+                while (bag.TryTake(out T? obj))
+                {
+                    if (obj is null)
+                        continue;
+                    ((IDisposable)obj).Dispose();
+                }
+            }
+            else
+            {
+#if NET8_0_OR_GREATER
+                _bag.Clear();
+#endif
             }
         }
 
-        // TODO: 僅有當 'Dispose(bool disposing)' 具有會釋出非受控資源的程式碼時，才覆寫完成項
         ~Pool()
         {
-            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-            DisposeCore();
+            Dispose(disposing: false);
         }
 
         public void Dispose()
         {
-            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-            DisposeCore();
+            Dispose(disposing: false);
             GC.SuppressFinalize(this);
         }
     }
