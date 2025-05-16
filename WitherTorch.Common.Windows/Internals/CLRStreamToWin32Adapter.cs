@@ -11,6 +11,8 @@ namespace WitherTorch.Common.Windows.Internals
 {
     internal sealed unsafe class CLRStreamToWin32Adapter : IWin32Stream, IDisposable
     {
+        private const uint TransferBufferSize = 81920;
+
         private readonly Stream _stream;
         private readonly DateTime _creationTime;
         private DateTime _lastModifiedTime, _lastAccessTime;
@@ -25,8 +27,6 @@ namespace WitherTorch.Common.Windows.Internals
 
         public ulong Read(byte* ptr, ulong length)
         {
-            const int TransferBufferSize = 8192;
-
             Stream stream = _stream;
             if (!stream.CanRead)
                 throw new InvalidOperationException();
@@ -40,42 +40,48 @@ namespace WitherTorch.Common.Windows.Internals
                 byte[] buffer = pool.Rent(TransferBufferSize);
                 do
                 {
-                    int bytesRead = stream.Read(buffer, 0, TransferBufferSize);
-                    if (bytesRead <= 0)
+                    uint bytesRead = ReadCore(stream, buffer, ptr, TransferBufferSize);
+                    if (bytesRead == 0u)
                     {
                         pool.Return(buffer);
                         return result;
                     }
-                    result += unchecked((uint)bytesRead);
-                    fixed (byte* pBuffer = buffer)
-                        UnsafeHelper.CopyBlockUnaligned(ptr, pBuffer, TransferBufferSize);
-                    ptr += TransferBufferSize;
+                    ptr += bytesRead;
+                    result += bytesRead;
+                    length -= bytesRead;
                 } while (length >= TransferBufferSize);
                 pool.Return(buffer);
             }
             if (length == 0)
                 return result;
-            {
-                byte[] buffer = pool.Rent(unchecked((uint)length));
-                int bytesRead = stream.Read(buffer, 0, unchecked((int)length));
-                if (bytesRead <= 0)
-                {
-                    pool.Return(buffer);
-                    return result;
-                }
-                result += unchecked((uint)bytesRead);
-                fixed (byte* pBuffer = buffer)
-                    UnsafeHelper.CopyBlockUnaligned(ptr, pBuffer, unchecked((uint)bytesRead));
-                pool.Return(buffer);
-            }
+            return result + ReadSmall(pool, stream, ptr, unchecked((uint)length));
+        }
 
-            return result;
+        private static uint ReadSmall(ArrayPool<byte> pool, Stream stream, byte* ptr, uint length)
+        {
+            byte[] buffer = pool.Rent(length);
+            uint bytesRead = ReadCore(stream, buffer, ptr, length);
+            if (bytesRead == 0u)
+            {
+                pool.Return(buffer);
+                return 0u;
+            }
+            pool.Return(buffer);
+            return bytesRead;
+        }
+
+        private static uint ReadCore(Stream stream, byte[] transferBuffer, byte* destination, uint length)
+        {
+            int bytesRead = stream.Read(transferBuffer, 0, unchecked((int)length));
+            if (bytesRead <= 0)
+                return 0;
+            fixed (byte* ptr = transferBuffer)
+                UnsafeHelper.CopyBlockUnaligned(destination, ptr, length);
+            return unchecked((uint)bytesRead);
         }
 
         public ulong Write(byte* ptr, ulong length)
         {
-            const int TransferBufferSize = 8192;
-
             Stream stream = _stream;
             if (!stream.CanWrite)
                 throw new InvalidOperationException();
@@ -84,31 +90,36 @@ namespace WitherTorch.Common.Windows.Internals
 
             ulong result = 0;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            byte[] buffer;
             if (length >= TransferBufferSize)
             {
-                byte[] buffer = pool.Rent(TransferBufferSize);
+                buffer = pool.Rent(TransferBufferSize);
                 do
                 {
-                    fixed (byte* pBuffer = buffer)
-                        UnsafeHelper.CopyBlockUnaligned(pBuffer, ptr, TransferBufferSize);
-                    stream.Write(buffer, 0, TransferBufferSize);
+                    WriteCore(stream, buffer, ptr, TransferBufferSize);
                     ptr += TransferBufferSize;
                     result += TransferBufferSize;
-                } while (length >= TransferBufferSize);
+                } while ((length -= TransferBufferSize) >= TransferBufferSize);
                 pool.Return(buffer);
             }
             if (length == 0)
                 return result;
-            {
-                byte[] buffer = pool.Rent(unchecked((uint)length));
-                fixed (byte* pBuffer = buffer)
-                    UnsafeHelper.CopyBlockUnaligned(pBuffer, ptr, unchecked((uint)length));
-                result += TransferBufferSize;
-                stream.Write(buffer, 0, unchecked((int)length));
-                pool.Return(buffer);
-            }
+            return result + WriteSmall(pool, stream, ptr, unchecked((uint)length));
+        }
 
-            return result;
+        private static uint WriteSmall(ArrayPool<byte> pool, Stream stream, byte* ptr, uint length)
+        {
+            byte[] buffer = pool.Rent(length);
+            WriteCore(stream, buffer, ptr, length);
+            pool.Return(buffer);
+            return length;
+        }
+
+        private static void WriteCore(Stream stream, byte[] transferBuffer, byte* source, uint length)
+        {
+            fixed (byte* ptr = transferBuffer)
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, length);
+            stream.Write(transferBuffer, 0, unchecked((int)length));
         }
 
         public ulong Seek(long dlibMove, StreamSeekType dwOrigin)
@@ -148,8 +159,6 @@ namespace WitherTorch.Common.Windows.Internals
 
         public void CopyTo(IWin32Stream pstm, ulong cb, out ulong pcbRead, out ulong pcbWritten)
         {
-            const int TransferBufferSize = 8192;
-
             Stream stream = _stream;
             if (!stream.CanRead)
                 throw new InvalidOperationException();
@@ -159,53 +168,54 @@ namespace WitherTorch.Common.Windows.Internals
             pcbRead = 0;
             pcbWritten = 0;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            if (cb > TransferBufferSize)
+            if (cb >= TransferBufferSize)
             {
                 byte[] buffer = pool.Rent(TransferBufferSize);
                 do
                 {
-                    uint bytesRead = MathHelper.MakeUnsigned(stream.Read(buffer, 0, TransferBufferSize));
-                    if (bytesRead == 0)
+                    CopyToCore(stream, buffer, pstm, TransferBufferSize, out uint bytesRead, out uint bytesWritten);
+                    if (bytesRead == 0u)
                     {
                         pool.Return(buffer);
                         return;
                     }
-                    ulong bytesWritten;
-                    fixed (byte* ptr = buffer)
-                        bytesWritten = pstm.Write(ptr, bytesRead);
-                    pcbRead += bytesRead;
-                    pcbWritten += bytesWritten;
-                    if (bytesWritten != bytesRead)
+                    if (bytesRead != bytesWritten)
                     {
                         pool.Return(buffer);
                         throw new InvalidOperationException();
                     }
-                    cb -= TransferBufferSize;
-                } while (cb > TransferBufferSize);
+                    pcbRead += bytesRead;
+                    pcbWritten += bytesWritten;
+                    cb -= bytesRead;
+                } while (cb >= TransferBufferSize);
                 pool.Return(buffer);
             }
             if (cb == 0)
                 return;
+            CopyToSmall(pool, stream, pstm, unchecked((uint)cb), ref pcbRead, ref pcbWritten);
+        }
+
+        private static void CopyToSmall(ArrayPool<byte> pool, Stream source, IWin32Stream destination, uint length, ref ulong pcbRead, ref ulong pcbWritten)
+        {
+            byte[] buffer = pool.Rent(length);
+            CopyToCore(source, buffer, destination, length, out uint bytesRead, out uint bytesWritten);
+            pool.Return(buffer);
+            if (bytesRead != bytesWritten)
+                throw new InvalidOperationException();
+            pcbRead += bytesRead;
+            pcbWritten += bytesWritten;
+        }
+
+        private static void CopyToCore(Stream source, byte[] buffer, IWin32Stream destination, uint length, out uint bytesRead, out uint bytesWritten)
+        {
+            bytesRead = MathHelper.MakeUnsigned(source.Read(buffer, 0, unchecked((int)length)));
+            if (bytesRead == 0)
             {
-                byte[] buffer = pool.Rent(unchecked((uint)cb));
-                uint bytesRead = MathHelper.MakeUnsigned(stream.Read(buffer, 0, unchecked((int)cb)));
-                if (bytesRead == 0)
-                {
-                    pool.Return(buffer);
-                    return;
-                }
-                ulong bytesWritten;
-                fixed (byte* ptr = buffer)
-                    bytesWritten = pstm.Write(ptr, bytesRead);
-                pcbRead += bytesRead;
-                pcbWritten += bytesWritten;
-                if (bytesWritten != bytesRead)
-                {
-                    pool.Return(buffer);
-                    throw new InvalidOperationException();
-                }
-                pool.Return(buffer);
+                bytesWritten = 0;
+                return;
             }
+            fixed (byte* ptr = buffer)
+                bytesWritten = unchecked((uint)destination.Write(ptr, length));
         }
 
         public void Revert() { }
