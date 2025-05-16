@@ -100,7 +100,7 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private T[] RentLarge(uint capacity)
         {
-            int index = unchecked((int)MathHelper.Log2(capacity - 1 | 15) - 3 - LocalArrayQueueCount);
+            int index = MathHelper.Log2(capacity - 1 | 15) - 3 - LocalArrayQueueCount;
             if (!_largeQueueLazy[index].Value.TryDequeue(out DelayedArray result))
             {
                 result = new DelayedArray(1U << (index + 4 + LocalArrayQueueCount));
@@ -175,7 +175,7 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ReturnLarge(DelayedArray array, T[] obj)
         {
-            int index = unchecked((int)MathHelper.Log2((uint)obj.Length - 1 | 15) - 3 - LocalArrayQueueCount);
+            int index = MathHelper.Log2((uint)obj.Length - 1 | 15) - 3 - LocalArrayQueueCount;
             if (index < 0)
                 return;
             _largeQueueLazy[index].Value.Enqueue(array);

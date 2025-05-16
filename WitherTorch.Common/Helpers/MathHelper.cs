@@ -4,10 +4,6 @@ using System.Security;
 
 using InlineMethod;
 
-#if NETCOREAPP3_0_OR_GREATER
-using System.Numerics;
-#endif
-
 namespace WitherTorch.Common.Helpers
 {
     public static partial class MathHelper
@@ -89,12 +85,10 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
-        [SecuritySafeCritical]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LeadingZeroCount(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
-            return BitOperations.LeadingZeroCount(value);
+            return System.Numerics.BitOperations.LeadingZeroCount(value);
 #else
             return LeadingZeroCountCore(value);
 #endif
@@ -103,12 +97,10 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
-        [SecuritySafeCritical]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LeadingZeroCount(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
-            return BitOperations.LeadingZeroCount(value);
+            return System.Numerics.BitOperations.LeadingZeroCount(value);
 #else
             return LeadingZeroCountCore(value);
 #endif
@@ -116,25 +108,49 @@ namespace WitherTorch.Common.Helpers
 
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static int TrailingZeroCount(ulong value)
         {
-            return BitOperations.TrailingZeroCount(value);
-        }
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.TrailingZeroCount(value);
+#else
+            return TrailingZeroCountCore(value);
 #endif
+        }
 
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
-        [SecuritySafeCritical]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int TrailingZeroCount(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
-            return BitOperations.TrailingZeroCount(value);
+            return System.Numerics.BitOperations.TrailingZeroCount(value);
 #else
             return TrailingZeroCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
+        public static int Log2(ulong value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.Log2(value);
+#else
+            return Log2Core(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
+        public static int Log2(uint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.Log2(value);
+#else
+            return Log2Core(value);
 #endif
         }
     }
