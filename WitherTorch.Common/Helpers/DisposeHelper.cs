@@ -7,7 +7,7 @@ namespace WitherTorch.Common.Helpers
     public static class DisposeHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeAll<T>(T[]? array) where T : IDisposable
+        public static void DisposeAll<T>(T?[]? array) where T : IDisposable
         {
             if (array is null)
                 return;
