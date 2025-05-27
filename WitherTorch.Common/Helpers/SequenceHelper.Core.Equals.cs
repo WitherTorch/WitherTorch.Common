@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 
 using InlineMethod;
+
+#if NET6_0_OR_GREATER
+using System.Runtime.Intrinsics;
+#else
+using System.Numerics;
+#endif
+
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
@@ -66,24 +72,8 @@ namespace WitherTorch.Common.Helpers
         {
             public static bool Equals(T* ptr, T* ptrEnd, T* ptr2)
             {
-                if (CheckTypeCanBeVectorized() && Vector.IsHardwareAccelerated)
-                {
-                    T* ptrLimit = ptrEnd - Vector<T>.Count;
-                    if (ptr < ptrLimit)
-                    {
-                        do
-                        {
-                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                            Vector<T> valueVector2 = UnsafeHelper.Read<Vector<T>>(ptr2);
-                            if (!valueVector.Equals(valueVector2))
-                                return false;
-                            ptr += Vector<T>.Count;
-                            ptr2 += Vector<T>.Count;
-                        } while (ptr < ptrLimit);
-                        if (ptr == ptrEnd)
-                            return true;
-                    }
-                }
+                if (CheckTypeCanBeVectorized())
+                    return VectorizedEquals(ptr, ptrEnd, ptr2);
                 if (UnsafeHelper.IsPrimitiveType<T>())
                 {
                     for (; ptr < ptrEnd; ptr++, ptr2++)
@@ -97,6 +87,123 @@ namespace WitherTorch.Common.Helpers
                 for (; ptr < ptrEnd; ptr++, ptr2++)
                 {
                     if (!comparer.Equals(*ptr, *ptr2))
+                        return false;
+                }
+                return true;
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static bool VectorizedEquals(T* ptr, T* ptrEnd, T* ptr2)
+            {
+#if NET6_0_OR_GREATER
+                if (Vector512.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector512<T>.Count < ptrEnd)
+                    {
+                        do
+                        {
+                            Vector512<T> valueVector = UnsafeHelper.Read<Vector512<T>>(ptr);
+                            Vector512<T> valueVector2 = UnsafeHelper.Read<Vector512<T>>(ptr2);
+                            if (!valueVector.Equals(valueVector2))
+                                return false;
+                            ptr += Vector512<T>.Count;
+                            ptr2 += Vector512<T>.Count;
+                        } while (ptr + Vector512<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return true;
+                    }
+                }
+                if (Vector256.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector256<T>.Count < ptrEnd)
+                    {
+                        do
+                        {
+                            Vector256<T> valueVector = UnsafeHelper.Read<Vector256<T>>(ptr);
+                            Vector256<T> valueVector2 = UnsafeHelper.Read<Vector256<T>>(ptr2);
+                            if (!valueVector.Equals(valueVector2))
+                                return false;
+                            ptr += Vector256<T>.Count;
+                            ptr2 += Vector256<T>.Count;
+                        } while (ptr + Vector256<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return true;
+                    }
+                }
+                if (Vector128.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector128<T>.Count < ptrEnd)
+                    {
+                        do
+                        {
+                            Vector128<T> valueVector = UnsafeHelper.Read<Vector128<T>>(ptr);
+                            Vector128<T> valueVector2 = UnsafeHelper.Read<Vector128<T>>(ptr2);
+                            if (!valueVector.Equals(valueVector2))
+                                return false;
+                            ptr += Vector128<T>.Count;
+                            ptr2 += Vector128<T>.Count;
+                        } while (ptr + Vector128<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return true;
+                    }
+                }
+                if (Vector64.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector64<T>.Count < ptrEnd)
+                    {
+                        do
+                        {
+                            Vector64<T> valueVector = UnsafeHelper.Read<Vector64<T>>(ptr);
+                            Vector64<T> valueVector2 = UnsafeHelper.Read<Vector64<T>>(ptr2);
+                            if (!valueVector.Equals(valueVector2))
+                                return false;
+                            ptr += Vector64<T>.Count;
+                            ptr2 += Vector64<T>.Count;
+                        } while (ptr + Vector64<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return true;
+                    }
+                    if (ptr + 2 < ptrEnd)
+                    {
+                        Vector64<T> valueVector = default;
+                        Vector64<T> valueVector2 = default;
+                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                        UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
+                        return valueVector.Equals(valueVector2);
+                    }
+                }
+#else
+                if (Vector.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector<T>.Count < ptrEnd)
+                    {
+                        do
+                        {
+                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                            Vector<T> valueVector2 = UnsafeHelper.Read<Vector<T>>(ptr2);
+                            if (!valueVector.Equals(valueVector2))
+                                return false;
+                            ptr += Vector<T>.Count;
+                            ptr2 += Vector<T>.Count;
+                        } while (ptr + Vector<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return true;
+                    }
+                    if (ptr + 2 < ptrEnd)
+                    {
+                        Vector<T> valueVector = default;
+                        Vector<T> valueVector2 = default;
+                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                        UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
+                        return valueVector.Equals(valueVector2);
+                    }
+                }
+#endif
+                for (; ptr < ptrEnd; ptr++, ptr2++)
+                {
+                    if (UnsafeHelper.NotEquals(*ptr, *ptr2))
                         return false;
                 }
                 return true;

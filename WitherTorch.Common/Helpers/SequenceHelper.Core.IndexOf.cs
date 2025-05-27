@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
-using System.Reflection;
 
 using InlineMethod;
-
-#if NET472_OR_GREATER
-using LocalsInit;
-#else
 using System.Runtime.CompilerServices;
+
+
+#if NET6_0_OR_GREATER
+using System.Runtime.Intrinsics;
+#else
+using System.Numerics;
 #endif
 
 namespace WitherTorch.Common.Helpers
@@ -673,37 +673,8 @@ namespace WitherTorch.Common.Helpers
             private static T* PointerIndexOfCore(T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
                 // Vector.IsHardwareAccelerated 與 Vector<T>.Count 會在執行時期被優化成常數，故不需要變數快取 (反而會妨礙 JIT 進行迴圈及條件展開)
-                if (CheckTypeCanBeVectorized() && Vector.IsHardwareAccelerated)
-                {
-                    T* ptrLimit = ptrEnd - Vector<T>.Count;
-                    if (ptr < ptrLimit)
-                    {
-                        Vector<T> maskVector = default;
-                        {
-                            T* pMask = (T*)UnsafeHelper.AsPointerRef(ref maskVector); // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector<T>.Count; i++)
-                                pMask[i] = value;
-                        }
-
-                        do
-                        {
-                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                            Vector<T> resultVector = SimdIndexOfCore(valueVector, maskVector, method);
-                            if (resultVector.Equals(default))
-                                continue;
-                            if (!accurateResult)
-                                return ptr;
-                            T* pResult = (T*)UnsafeHelper.AsPointerRef(ref resultVector);
-                            for (int i = 0; i < Vector<T>.Count; i++)
-                            {
-                                if (*(byte*)(pResult + i) == 0xFF)
-                                    return ptr + i;
-                            }
-                        } while ((ptr += Vector<T>.Count) < ptrLimit);
-                        if (ptr == ptrEnd)
-                            return null;
-                    }
-                }
+                if (CheckTypeCanBeVectorized())
+                    return VectorizedPointerIndexOfCore(ptr, ptrEnd, value, method, accurateResult);
                 if (UnsafeHelper.IsPrimitiveType<T>())
                 {
                     for (; ptr < ptrEnd; ptr++)
@@ -735,7 +706,284 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector<T> SimdIndexOfCore(in Vector<T> valueVector, in Vector<T> maskVector, [InlineParameter] IndexOfMethod method)
+            private static T* VectorizedPointerIndexOfCore(T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
+            {
+#if NET6_0_OR_GREATER
+                if (Vector512.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector512<T>.Count < ptrEnd)
+                    {
+                        Vector512<T> maskVector;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector512<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        do
+                        {
+                            Vector512<T> valueVector = UnsafeHelper.Read<Vector512<T>>(ptr);
+                            Vector512<T> resultVector = VectorizedIndexOfCore_512(valueVector, maskVector, method);
+                            if (resultVector.Equals(default))
+                            {
+                                ptr += Vector512<T>.Count;
+                                continue;
+                            }
+                            return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
+                        }
+                        while (ptr + Vector512<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
+                    }
+                }
+                if (Vector256.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector256<T>.Count < ptrEnd)
+                    {
+                        Vector256<T> maskVector;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector256<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        do
+                        {
+                            Vector256<T> valueVector = UnsafeHelper.Read<Vector256<T>>(ptr);
+                            Vector256<T> resultVector = VectorizedIndexOfCore_256(valueVector, maskVector, method);
+                            if (resultVector.Equals(default))
+                            {
+                                ptr += Vector256<T>.Count;
+                                continue;
+                            }
+                            return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
+                        }
+                        while (ptr + Vector256<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
+                    }
+                }
+                if (Vector128.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector128<T>.Count < ptrEnd)
+                    {
+                        Vector128<T> maskVector;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector128<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        do
+                        {
+                            Vector128<T> valueVector = UnsafeHelper.Read<Vector128<T>>(ptr);
+                            Vector128<T> resultVector = VectorizedIndexOfCore_128(valueVector, maskVector, method);
+                            if (resultVector.Equals(default))
+                            {
+                                ptr += Vector128<T>.Count;
+                                continue;
+                            }
+                            return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
+                        }
+                        while (ptr + Vector128<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
+                    }
+                }
+                if (Vector64.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector64<T>.Count < ptrEnd)
+                    {
+                        Vector64<T> maskVector;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector64<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        do
+                        {
+                            Vector64<T> valueVector = UnsafeHelper.Read<Vector64<T>>(ptr);
+                            Vector64<T> resultVector = VectorizedIndexOfCore_64(valueVector, maskVector, method);
+                            if (resultVector.Equals(default))
+                            {
+                                ptr += Vector64<T>.Count;
+                                continue;
+                            }
+                            return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
+                        }
+                        while (ptr + Vector64<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
+                    }
+                    if (ptr + 2 < ptrEnd)
+                    {
+                        Vector64<T> maskVector = default, valueVector = default, resultVector = default;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector64<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                        UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                        resultVector &= VectorizedIndexOfCore_64(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
+                            return null;
+                        return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
+                    }
+                }
+#else
+                if (Vector.IsHardwareAccelerated)
+                {
+                    if (ptr + Vector<T>.Count < ptrEnd)
+                    {
+                        Vector<T> maskVector;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        do
+                        {
+                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                            Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
+                            if (resultVector.Equals(default))
+                            {
+                                ptr += Vector<T>.Count;
+                                continue;
+                            }
+                            return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
+                        }
+                        while (ptr + Vector<T>.Count < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
+                    }
+                    if (ptr + 2 < ptrEnd)
+                    {
+                        Vector<T> maskVector = default, valueVector = default, resultVector = default;
+                        {
+                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
+                            for (int i = 0; i < Vector<T>.Count; i++)
+                                pMask[i] = value;
+                        }
+                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                        UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                        resultVector &= VectorizedIndexOfCore(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
+                            return null;
+                        return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
+                    }
+                }
+#endif
+                for (; ptr < ptrEnd; ptr++)
+                {
+                    if (LegacyIndexOfCoreFast(*ptr, value, method))
+                        return ptr;
+                }
+                return null;
+            }
+
+#if NET6_0_OR_GREATER
+            [Inline(InlineBehavior.Remove)]
+            private static Vector512<T> VectorizedIndexOfCore_512(in Vector512<T> valueVector, in Vector512<T> maskVector, [InlineParameter] IndexOfMethod method)
+                => method switch
+                {
+                    IndexOfMethod.Include => Vector512.Equals(valueVector, maskVector),
+                    IndexOfMethod.Exclude => ~Vector512.Equals(valueVector, maskVector),
+                    IndexOfMethod.GreaterThan => Vector512.GreaterThan(valueVector, maskVector),
+                    IndexOfMethod.GreaterOrEqualsThan => Vector512.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThan => Vector512.LessThan(valueVector, maskVector),
+                    IndexOfMethod.LessOrEqualsThan => Vector512.LessThanOrEqual(valueVector, maskVector),
+                    _ => throw new InvalidOperationException(),
+                };
+
+            [Inline(InlineBehavior.Remove)]
+            private static Vector256<T> VectorizedIndexOfCore_256(in Vector256<T> valueVector, in Vector256<T> maskVector, [InlineParameter] IndexOfMethod method)
+                => method switch
+                {
+                    IndexOfMethod.Include => Vector256.Equals(valueVector, maskVector),
+                    IndexOfMethod.Exclude => ~Vector256.Equals(valueVector, maskVector),
+                    IndexOfMethod.GreaterThan => Vector256.GreaterThan(valueVector, maskVector),
+                    IndexOfMethod.GreaterOrEqualsThan => Vector256.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThan => Vector256.LessThan(valueVector, maskVector),
+                    IndexOfMethod.LessOrEqualsThan => Vector256.LessThanOrEqual(valueVector, maskVector),
+                    _ => throw new InvalidOperationException(),
+                };
+
+            [Inline(InlineBehavior.Remove)]
+            private static Vector128<T> VectorizedIndexOfCore_128(in Vector128<T> valueVector, in Vector128<T> maskVector, [InlineParameter] IndexOfMethod method)
+                => method switch
+                {
+                    IndexOfMethod.Include => Vector128.Equals(valueVector, maskVector),
+                    IndexOfMethod.Exclude => ~Vector128.Equals(valueVector, maskVector),
+                    IndexOfMethod.GreaterThan => Vector128.GreaterThan(valueVector, maskVector),
+                    IndexOfMethod.GreaterOrEqualsThan => Vector128.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThan => Vector128.LessThan(valueVector, maskVector),
+                    IndexOfMethod.LessOrEqualsThan => Vector128.LessThanOrEqual(valueVector, maskVector),
+                    _ => throw new InvalidOperationException(),
+                };
+
+            [Inline(InlineBehavior.Remove)]
+            private static Vector64<T> VectorizedIndexOfCore_64(in Vector64<T> valueVector, in Vector64<T> maskVector, [InlineParameter] IndexOfMethod method)
+                => method switch
+                {
+                    IndexOfMethod.Include => Vector64.Equals(valueVector, maskVector),
+                    IndexOfMethod.Exclude => ~Vector64.Equals(valueVector, maskVector),
+                    IndexOfMethod.GreaterThan => Vector64.GreaterThan(valueVector, maskVector),
+                    IndexOfMethod.GreaterOrEqualsThan => Vector64.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThan => Vector64.LessThan(valueVector, maskVector),
+                    IndexOfMethod.LessOrEqualsThan => Vector64.LessThanOrEqual(valueVector, maskVector),
+                    _ => throw new InvalidOperationException(),
+                };
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static byte FindIndexForResultVector_512(in Vector512<T> vector)
+            {
+                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
+                for (byte i = 0; i < Vector512<T>.Count; i++)
+                {
+                    if (*(byte*)&result[i] == 0xFF)
+                        return i;
+                }
+                throw new InvalidOperationException("Shoudn't happened!");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static byte FindIndexForResultVector_256(in Vector256<T> vector)
+            {
+                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
+                for (byte i = 0; i < Vector256<T>.Count; i++)
+                {
+                    if (*(byte*)&result[i] == 0xFF)
+                        return i;
+                }
+                throw new InvalidOperationException("Shoudn't happened!");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static byte FindIndexForResultVector_128(in Vector128<T> vector)
+            {
+                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
+                for (byte i = 0; i < Vector128<T>.Count; i++)
+                {
+                    if (*(byte*)&result[i] == 0xFF)
+                        return i;
+                }
+                throw new InvalidOperationException("Shoudn't happened!");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static byte FindIndexForResultVector_64(in Vector64<T> vector)
+            {
+                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
+                for (byte i = 0; i < Vector64<T>.Count; i++)
+                {
+                    if (*(byte*)&result[i] == 0xFF)
+                        return i;
+                }
+                throw new InvalidOperationException("Shoudn't happened!");
+            }
+#else
+            [Inline(InlineBehavior.Remove)]
+            private static Vector<T> VectorizedIndexOfCore(in Vector<T> valueVector, in Vector<T> maskVector, [InlineParameter] IndexOfMethod method)
                 => method switch
                 {
                     IndexOfMethod.Include => Vector.Equals(valueVector, maskVector),
@@ -746,6 +994,19 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.LessOrEqualsThan => Vector.LessThanOrEqual(valueVector, maskVector),
                     _ => throw new InvalidOperationException(),
                 };
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static byte FindIndexForResultVector(in Vector<T> vector)
+            {
+                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
+                for (byte i = 0; i < Vector<T>.Count; i++)
+                {
+                    if (*(byte*)&result[i] == 0xFF)
+                        return i;
+                }
+                throw new InvalidOperationException("Shoudn't happened!");
+            }
+#endif
 
             [Inline(InlineBehavior.Remove)]
             private static bool LegacyIndexOfCoreFast(T item, T value, [InlineParameter] IndexOfMethod method)
