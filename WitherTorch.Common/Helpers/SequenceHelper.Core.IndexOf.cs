@@ -713,15 +713,10 @@ namespace WitherTorch.Common.Helpers
                 {
                     if (ptr + Vector512<T>.Count < ptrEnd)
                     {
-                        Vector512<T> maskVector;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector512<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
                         do
                         {
-                            Vector512<T> valueVector = UnsafeHelper.Read<Vector512<T>>(ptr);
+                            Vector512<T> valueVector = Vector512.Load(ptr);
                             Vector512<T> resultVector = VectorizedIndexOfCore_512(valueVector, maskVector, method);
                             if (resultVector.Equals(default))
                             {
@@ -739,15 +734,10 @@ namespace WitherTorch.Common.Helpers
                 {
                     if (ptr + Vector256<T>.Count < ptrEnd)
                     {
-                        Vector256<T> maskVector;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector256<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
                         do
                         {
-                            Vector256<T> valueVector = UnsafeHelper.Read<Vector256<T>>(ptr);
+                            Vector256<T> valueVector = Vector256.Load(ptr);
                             Vector256<T> resultVector = VectorizedIndexOfCore_256(valueVector, maskVector, method);
                             if (resultVector.Equals(default))
                             {
@@ -765,15 +755,10 @@ namespace WitherTorch.Common.Helpers
                 {
                     if (ptr + Vector128<T>.Count < ptrEnd)
                     {
-                        Vector128<T> maskVector;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector128<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
                         do
                         {
-                            Vector128<T> valueVector = UnsafeHelper.Read<Vector128<T>>(ptr);
+                            Vector128<T> valueVector = Vector128.Load(ptr);
                             Vector128<T> resultVector = VectorizedIndexOfCore_128(valueVector, maskVector, method);
                             if (resultVector.Equals(default))
                             {
@@ -791,15 +776,10 @@ namespace WitherTorch.Common.Helpers
                 {
                     if (ptr + Vector64<T>.Count < ptrEnd)
                     {
-                        Vector64<T> maskVector;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector64<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
                         do
                         {
-                            Vector64<T> valueVector = UnsafeHelper.Read<Vector64<T>>(ptr);
+                            Vector64<T> valueVector = Vector64.Load(ptr);
                             Vector64<T> resultVector = VectorizedIndexOfCore_64(valueVector, maskVector, method);
                             if (resultVector.Equals(default))
                             {
@@ -814,12 +794,8 @@ namespace WitherTorch.Common.Helpers
                     }
                     if (ptr + 2 < ptrEnd)
                     {
-                        Vector64<T> maskVector = default, valueVector = default, resultVector = default;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector64<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                        Vector64<T> valueVector = default, resultVector = default;
                         uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
                         UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
                         UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
@@ -828,18 +804,21 @@ namespace WitherTorch.Common.Helpers
                             return null;
                         return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
                     }
+                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
+                    {
+                        if (LegacyIndexOfCoreFast(*ptr, value, method))
+                            return ptr;
+                        if (++ptr >= ptrEnd)
+                            break;
+                    }
+                    return null;
                 }
 #else
                 if (Vector.IsHardwareAccelerated)
                 {
                     if (ptr + Vector<T>.Count < ptrEnd)
                     {
-                        Vector<T> maskVector;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
                         do
                         {
                             Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
@@ -857,12 +836,8 @@ namespace WitherTorch.Common.Helpers
                     }
                     if (ptr + 2 < ptrEnd)
                     {
-                        Vector<T> maskVector = default, valueVector = default, resultVector = default;
-                        {
-                            T* pMask = (T*)&maskVector; // 將要比對的項目擴充成向量
-                            for (int i = 0; i < Vector<T>.Count; i++)
-                                pMask[i] = value;
-                        }
+                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                        Vector<T> valueVector = default, resultVector = default;
                         uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
                         UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
                         UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
@@ -871,6 +846,14 @@ namespace WitherTorch.Common.Helpers
                             return null;
                         return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
                     }
+                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
+                    {
+                        if (LegacyIndexOfCoreFast(*ptr, value, method))
+                            return ptr;
+                        if (++ptr >= ptrEnd)
+                            break;
+                    }
+                    return null;
                 }
 #endif
                 for (; ptr < ptrEnd; ptr++)

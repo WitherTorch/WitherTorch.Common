@@ -172,6 +172,14 @@ namespace WitherTorch.Common.Helpers
                         UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
                         return valueVector.Equals(valueVector2);
                     }
+                    for (int i = 0; i < 2; i++, ptr2++) // CLR 編譯時會展開
+                    {
+                        if (UnsafeHelper.NotEquals(*ptr, *ptr2))
+                            return false;
+                        if (++ptr >= ptrEnd)
+                            break;
+                    }
+                    return true;
                 }
 #else
                 if (Vector.IsHardwareAccelerated)
@@ -199,6 +207,14 @@ namespace WitherTorch.Common.Helpers
                         UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
                         return valueVector.Equals(valueVector2);
                     }
+                    for (int i = 0; i < 2; i++, ptr2++) // CLR 編譯時會展開
+                    {
+                        if (UnsafeHelper.NotEquals(*ptr, *ptr2))
+                            return false;
+                        if (++ptr >= ptrEnd)
+                            break;
+                    }
+                    return true;
                 }
 #endif
                 for (; ptr < ptrEnd; ptr++, ptr2++)
