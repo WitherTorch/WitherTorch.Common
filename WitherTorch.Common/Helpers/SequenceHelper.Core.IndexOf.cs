@@ -917,28 +917,19 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new InvalidOperationException(),
                 };
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static int FindIndexForResultVector_512(in Vector512<T> vector)
-            {
-                ulong bits = vector.ExtractMostSignificantBits();
-                return MathHelper.TrailingZeroCount(bits);
-            }
+            [Inline(InlineBehavior.Remove)]
+            private static int FindIndexForResultVector_512(in Vector512<T> vector) 
+                => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Inline(InlineBehavior.Remove)]
             private static int FindIndexForResultVector_256(in Vector256<T> vector)
-            {
-                uint bits = vector.ExtractMostSignificantBits();
-                return MathHelper.TrailingZeroCount(bits);
-            }
+                => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Inline(InlineBehavior.Remove)]
             private static int FindIndexForResultVector_128(in Vector128<T> vector)
-            {
-                uint bits = vector.ExtractMostSignificantBits();
-                return MathHelper.TrailingZeroCount(bits);
-            }
+                => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Inline(InlineBehavior.Remove)]
             private static int FindIndexForResultVector_64(in Vector64<T> vector)
                 => MathHelper.TrailingZeroCount(*(ulong*)UnsafeHelper.AsPointerIn(in vector)) / sizeof(T) / 8;
 #else
