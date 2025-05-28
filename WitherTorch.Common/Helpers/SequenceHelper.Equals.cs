@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Helpers
             if (ReferenceEquals(a, b))
                 return true;
             if (a is null || b is null)
-                return false;   
+                return false;
             int length = a.Length;
             if (length != b.Length)
                 return false;
@@ -37,7 +37,7 @@ namespace WitherTorch.Common.Helpers
                 StringComparison.CurrentCultureIgnoreCase => CultureInfo.CurrentCulture.CompareInfo.Compare(a, b, CompareOptions.IgnoreCase) == 0,
                 StringComparison.InvariantCulture => CultureInfo.InvariantCulture.CompareInfo.Compare(a, b, CompareOptions.None) == 0,
                 StringComparison.InvariantCultureIgnoreCase => CultureInfo.InvariantCulture.CompareInfo.Compare(a, b, CompareOptions.IgnoreCase) == 0,
-                StringComparison.OrdinalIgnoreCase => string.Equals(a, b, StringComparison.OrdinalIgnoreCase),
+                StringComparison.OrdinalIgnoreCase => EqualsIgnoreCaseCore(a, b, length),
                 StringComparison.Ordinal => EqualsCore(a, b, length),
                 _ => throw new ArgumentOutOfRangeException(nameof(comparisonType))
             };
@@ -70,6 +70,13 @@ namespace WitherTorch.Common.Helpers
         {
             fixed (char* ptr = str1, ptr2 = str2)
                 return Core<ushort>.Equals((ushort*)ptr, (ushort*)ptr + length, (ushort*)ptr2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool EqualsIgnoreCaseCore(string str1, string str2, int length)
+        {
+            fixed (char* ptr = str1, ptr2 = str2)
+                return Core<ushort>.RangedAddAndEquals((ushort*)ptr, (ushort*)ptr + length, (ushort*)ptr2, 'A', 'Z', 'a' - 'A');
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
