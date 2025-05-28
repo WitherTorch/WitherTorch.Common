@@ -918,52 +918,35 @@ namespace WitherTorch.Common.Helpers
                 };
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static byte FindIndexForResultVector_512(in Vector512<T> vector)
+            private static int FindIndexForResultVector_512(in Vector512<T> vector)
             {
-                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
-                for (byte i = 0; i < Vector512<T>.Count; i++)
-                {
-                    if (*(byte*)&result[i] == 0xFF)
-                        return i;
-                }
-                throw new InvalidOperationException("Shoudn't happened!");
+                int result = FindIndexForResultVector_256(vector.GetUpper());
+                if (result < Vector256<T>.Count)
+                    return result;
+                return Vector256<T>.Count + FindIndexForResultVector_256(vector.GetLower());
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static byte FindIndexForResultVector_256(in Vector256<T> vector)
+            private static int FindIndexForResultVector_256(in Vector256<T> vector)
             {
-                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
-                for (byte i = 0; i < Vector256<T>.Count; i++)
-                {
-                    if (*(byte*)&result[i] == 0xFF)
-                        return i;
-                }
-                throw new InvalidOperationException("Shoudn't happened!");
+                int result = FindIndexForResultVector_128(vector.GetUpper());
+                if (result < Vector128<T>.Count)
+                    return result;
+                return Vector128<T>.Count + FindIndexForResultVector_128(vector.GetLower());
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static byte FindIndexForResultVector_128(in Vector128<T> vector)
+            private static int FindIndexForResultVector_128(in Vector128<T> vector)
             {
-                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
-                for (byte i = 0; i < Vector128<T>.Count; i++)
-                {
-                    if (*(byte*)&result[i] == 0xFF)
-                        return i;
-                }
-                throw new InvalidOperationException("Shoudn't happened!");
+                int result = FindIndexForResultVector_64(vector.GetUpper());
+                if (result < Vector64<T>.Count)
+                    return result;
+                return Vector64<T>.Count + FindIndexForResultVector_64(vector.GetLower());
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static byte FindIndexForResultVector_64(in Vector64<T> vector)
-            {
-                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
-                for (byte i = 0; i < Vector64<T>.Count; i++)
-                {
-                    if (*(byte*)&result[i] == 0xFF)
-                        return i;
-                }
-                throw new InvalidOperationException("Shoudn't happened!");
-            }
+            private static int FindIndexForResultVector_64(in Vector64<T> vector)
+                => MathHelper.LeadingZeroCount(*(ulong*)UnsafeHelper.AsPointerIn(in vector)) / sizeof(T);
 #else
             [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedIndexOfCore(in Vector<T> valueVector, in Vector<T> maskVector, [InlineParameter] IndexOfMethod method)
@@ -979,15 +962,17 @@ namespace WitherTorch.Common.Helpers
                 };
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static byte FindIndexForResultVector(in Vector<T> vector)
+            private static int FindIndexForResultVector(in Vector<T> vector)
             {
-                T* result = (T*)UnsafeHelper.AsPointerIn(in vector);
-                for (byte i = 0; i < Vector<T>.Count; i++)
+                ulong* ptrVector = (ulong*)UnsafeHelper.AsPointerIn(in vector);
+                for (int i = 0; i < Vector<ulong>.Count; i++)
                 {
-                    if (*(byte*)&result[i] == 0xFF)
-                        return i;
+                    int result = MathHelper.LeadingZeroCount(ptrVector[i]);
+                    if (result == sizeof(ulong))
+                        continue;
+                    return i * (sizeof(ulong) / sizeof(T)) + result / sizeof(T);
                 }
-                throw new InvalidOperationException("Shoudn't happened!");
+                return Vector<T>.Count;
             }
 #endif
 
