@@ -940,7 +940,7 @@ namespace WitherTorch.Common.Helpers
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int FindIndexForResultVector_64(in Vector64<T> vector)
-                => MathHelper.TrailingZeroCount(*(ulong*)UnsafeHelper.AsPointerIn(in vector)) / sizeof(T);
+                => MathHelper.TrailingZeroCount(*(ulong*)UnsafeHelper.AsPointerIn(in vector)) / sizeof(T) / 8;
 #else
             [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedIndexOfCore(in Vector<T> valueVector, in Vector<T> maskVector, [InlineParameter] IndexOfMethod method)
