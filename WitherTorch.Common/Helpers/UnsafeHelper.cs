@@ -63,6 +63,20 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(nuint));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsIntegerType<T>()
+                => (typeof(T) == typeof(byte)) ||
+                       (typeof(T) == typeof(short)) ||
+                       (typeof(T) == typeof(int)) ||
+                       (typeof(T) == typeof(long)) ||
+                       (typeof(T) == typeof(sbyte)) ||
+                       (typeof(T) == typeof(ushort)) ||
+                       (typeof(T) == typeof(uint)) ||
+                       (typeof(T) == typeof(ulong)) ||
+                       (typeof(T) == typeof(char)) ||
+                       (typeof(T) == typeof(nint)) ||
+                       (typeof(T) == typeof(nuint));
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsPrimitiveType([InlineParameter] Type type)
                 => (type == typeof(bool)) ||
                        (type == typeof(byte)) ||
@@ -107,7 +121,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsGreaterThan<T>(T a, T b) where T : unmanaged
+        public static bool IsGreaterThan<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -116,7 +130,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsGreaterThanUnsigned<T>(T a, T b) where T : unmanaged
+        public static bool IsGreaterThanUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -125,7 +139,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsGreaterOrEqualsThan<T>(T a, T b) where T : unmanaged
+        public static bool IsGreaterOrEqualsThan<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -136,7 +150,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsGreaterOrEqualsThanUnsigned<T>(T a, T b) where T : unmanaged
+        public static bool IsGreaterOrEqualsThanUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -147,7 +161,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsLessThan<T>(T a, T b) where T : unmanaged
+        public static bool IsLessThan<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -156,7 +170,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsLessThanUnsigned<T>(T a, T b) where T : unmanaged
+        public static bool IsLessThanUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -165,7 +179,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsLessOrEqualsThan<T>(T a, T b) where T : unmanaged
+        public static bool IsLessOrEqualsThan<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -176,7 +190,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsLessOrEqualsThanUnsigned<T>(T a, T b) where T : unmanaged
+        public static bool IsLessOrEqualsThanUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -187,7 +201,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool Equals<T>(T a, T b) where T : unmanaged
+        public static bool Equals<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -196,7 +210,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool NotEquals<T>(T a, T b) where T : unmanaged
+        public static bool NotEquals<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -207,7 +221,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T Add<T>(T a, T b) where T : unmanaged
+        public static T Add<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -216,7 +230,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T Substract<T>(T a, T b) where T : unmanaged
+        public static T Substract<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -225,7 +239,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T Multiply<T>(T a, T b) where T : unmanaged
+        public static T Multiply<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -234,7 +248,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T Divide<T>(T a, T b) where T : unmanaged
+        public static T Divide<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -243,7 +257,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T DivideUnsigned<T>(T a, T b) where T : unmanaged
+        public static T DivideUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);

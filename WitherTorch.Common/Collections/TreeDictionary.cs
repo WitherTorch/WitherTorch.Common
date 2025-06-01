@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Collections
         [Inline(InlineBehavior.Remove)]
         private static object? TryGetValueOrSubBucketInBucket(KeyValuePair<TKey?, object?>[] bucket, int index, IEqualityComparer<TKey> comparer, TKey key)
         {
-            bucket[index].Destruct(out TKey? pairKey, out object? pairValue);
+            bucket[index].Deconstruct(out TKey? pairKey, out object? pairValue);
             if (pairKey is null)
                 return pairValue as KeyValuePair<TKey?, object?>[];
             if (comparer.Equals(pairKey, key))
@@ -83,7 +83,7 @@ namespace WitherTorch.Common.Collections
         [Inline(InlineBehavior.Remove)]
         private static TValue? GetValueInBottomBucket(KeyValuePair<TKey?, object?>[] bucket, int index, IEqualityComparer<TKey> comparer, TKey key)
         {
-            bucket[index].Destruct(out TKey? pairKey, out object? pairValue);
+            bucket[index].Deconstruct(out TKey? pairKey, out object? pairValue);
             if (pairKey is null)
             {
                 if (pairValue is null)
@@ -92,7 +92,7 @@ namespace WitherTorch.Common.Collections
                 {
                     for (int i = 0, count = objectList.Count; i < count; i++)
                     {
-                        objectList[i].Destruct(out pairKey, out TValue? value);
+                        objectList[i].Deconstruct(out pairKey, out TValue? value);
                         if (pairKey is not null && comparer.Equals(pairKey, key))
                             return value;
                     }
@@ -125,7 +125,7 @@ namespace WitherTorch.Common.Collections
         private static KeyValuePair<TKey?, object?>[]? TrySetItemInBucket(KeyValuePair<TKey?, object?>[] bucket, int index, int i, int hash,
             IEqualityComparer<TKey> comparer ,TKey key, TValue? value)
         {
-            bucket[index].Destruct(out TKey? pairKey, out object? pairValue);
+            bucket[index].Deconstruct(out TKey? pairKey, out object? pairValue);
             if (pairKey is null)
             {
                 if (pairValue is null) //There is no entry
@@ -161,7 +161,7 @@ namespace WitherTorch.Common.Collections
         [Inline(InlineBehavior.Remove)]
         private static void SetItemInBottomBucket(KeyValuePair<TKey?, object?>[] bucket, int index, IEqualityComparer<TKey> comparer, TKey key, TValue? value)
         {
-            bucket[index].Destruct(out TKey? pairKey, out object? pairValue);
+            bucket[index].Deconstruct(out TKey? pairKey, out object? pairValue);
             if (pairKey is null)
             {
                 if (pairValue is null) //There is no entry
@@ -219,7 +219,7 @@ namespace WitherTorch.Common.Collections
         [Inline(InlineBehavior.Remove)]
         private static object? TryRemoveValueOrReturnSubBucketInBucket(KeyValuePair<TKey?, object?>[] bucket, int index, IEqualityComparer<TKey> comparer, TKey key)
         {
-            bucket[index].Destruct(out TKey? pairKey, out object? pairValue);
+            bucket[index].Deconstruct(out TKey? pairKey, out object? pairValue);
             if (pairKey is null)
                 return pairValue as KeyValuePair<TKey?, object?>[];
             if (comparer.Equals(pairKey, key))
@@ -233,7 +233,7 @@ namespace WitherTorch.Common.Collections
         [Inline(InlineBehavior.Remove)]
         private static TValue? RemoveValueInBottomBucket(KeyValuePair<TKey?, object?>[] bucket, int index, IEqualityComparer<TKey> comparer, TKey key)
         {
-            bucket[index].Destruct(out TKey? pairKey, out object? pairValue);
+            bucket[index].Deconstruct(out TKey? pairKey, out object? pairValue);
             if (pairKey is null)
             {
                 if (pairValue is null)
@@ -244,7 +244,7 @@ namespace WitherTorch.Common.Collections
                     TValue? value = null;
                     for (i = 0, count = objectList.Count; i < count; i++)
                     {
-                        objectList[i].Destruct(out pairKey, out value);
+                        objectList[i].Deconstruct(out pairKey, out value);
                         if (pairKey is not null && comparer.Equals(pairKey, key))
                             break;
                     }
@@ -274,7 +274,7 @@ namespace WitherTorch.Common.Collections
         {
             for (int i = 0; i < BucketCount; i++)
             {
-                bucket[i].Destruct(out TKey? key, out object? value);
+                bucket[i].Deconstruct(out TKey? key, out object? value);
                 if (key is null)
                 {
                     if (value is KeyValuePair<TKey?, object?>[] subBucket)
@@ -348,7 +348,7 @@ namespace WitherTorch.Common.Collections
             {
                 for (int i = *path + 1; i < BucketCount; i++)
                 {
-                    bucket[i].Destruct(out TKey? key, out object? value);
+                    bucket[i].Deconstruct(out TKey? key, out object? value);
                     if (key is null)
                     {
                         if (value is null)
@@ -418,7 +418,7 @@ namespace WitherTorch.Common.Collections
                             bucket[path[i - 1]] = default;
                             return;
                         }
-                        bucket[subPath].Destruct(out TKey? key, out object? value);
+                        bucket[subPath].Deconstruct(out TKey? key, out object? value);
                         if (key is null)
                         {
                             if (value is KeyValuePair<TKey?, object?>[] subBucket)

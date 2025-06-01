@@ -216,6 +216,38 @@ namespace WitherTorch.Common.Helpers
             return oldValue;
         }
 
+        public static uint Min(ref uint location, uint value)
+        {
+            uint oldValue = Read(ref location);
+            if (oldValue <= value)
+                return oldValue;
+            do
+            {
+                uint currentValue = CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue > value);
+            return oldValue;
+        }
+
+        public static ulong Min(ref ulong location, ulong value)
+        {
+            ulong oldValue = Read(ref location);
+            if (oldValue <= value)
+                return oldValue;
+            do
+            {
+                ulong currentValue = CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue > value);
+            return oldValue;
+        }
+
         public static int Max(ref int location, int value)
         {
             int oldValue = Read(ref location);
@@ -240,6 +272,38 @@ namespace WitherTorch.Common.Helpers
             do
             {
                 long currentValue = Interlocked.CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue < value);
+            return oldValue;
+        }
+
+        public static uint Max(ref uint location, uint value)
+        {
+            uint oldValue = Read(ref location);
+            if (oldValue >= value)
+                return oldValue;
+            do
+            {
+                uint currentValue = CompareExchange(ref location, value, oldValue);
+                if (currentValue == oldValue)
+                    break;
+                oldValue = currentValue;
+            }
+            while (oldValue < value);
+            return oldValue;
+        }
+
+        public static ulong Max(ref ulong location, ulong value)
+        {
+            ulong oldValue = Read(ref location);
+            if (oldValue >= value)
+                return oldValue;
+            do
+            {
+                ulong currentValue = CompareExchange(ref location, value, oldValue);
                 if (currentValue == oldValue)
                     break;
                 oldValue = currentValue;

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+using InlineIL;
+
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
@@ -112,6 +114,23 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int BinarySearch(T item) => Array.BinarySearch(_array, 0, _count, item);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int BinarySearchForNextGreaterOrEquals(T item)
+        {
+            int index = BinarySearch(item);
+            return index < 0 ? ~index : index;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int BinarySearchForNextLessOrEquals(T item)
+        {
+            int index = BinarySearch(item);
+            return index < 0 ? (~index) - 1 : index;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
             _count = 0;
@@ -131,7 +150,7 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(T[] array, int arrayIndex)
         {
-            Array.Copy(_array, arrayIndex, array, 0, _count - arrayIndex);
+            Array.Copy(_array, 0, array, arrayIndex, _count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -308,7 +327,7 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int IndexOfCoreSlow(T[] array, int count, T item)
         {
-            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
                 if (comparer.Equals(array[i], item))
@@ -320,7 +339,7 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool ContainsCoreSlow(T[] array, int count, T item)
         {
-            IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
                 if (comparer.Equals(array[i], item))

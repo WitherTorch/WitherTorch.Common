@@ -113,7 +113,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NullSwapOrDispose<T>(ref T? location, T value) where T : class?, IDisposable?
+        public static void NullSwapOrDispose<T>(ref T? location, T value) where T : class, IDisposable
         {
             T? oldObject = Interlocked.CompareExchange(ref location, value, null);
             if (oldObject is null || value is null || ReferenceEquals(oldObject, value))
@@ -122,7 +122,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NullSwapOrDispose<T>(ref T[]? location, T[]? value) where T : class?, IDisposable?
+        public static void NullSwapOrDispose<T>(ref T[]? location, T[] value) where T : class, IDisposable
         {
             T[]? oldObject = Interlocked.CompareExchange(ref location, value, null);
             if (oldObject is null || value is null || ReferenceEquals(oldObject, value))
@@ -132,7 +132,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NullSwapOrDisposeWeak<T>(ref T? location, T value) where T : class?
+        public static void NullSwapOrDisposeWeak<T>(ref T? location, T value) where T : class
         {
             T? oldObject = Interlocked.CompareExchange(ref location, value, null);
             if (oldObject is null || ReferenceEquals(oldObject, value))
@@ -141,7 +141,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void NullSwapOrDisposeWeak<T>(ref T[]? location, T[] value) where T : class?
+        public static void NullSwapOrDisposeWeak<T>(ref T[]? location, T[] value) where T : class
         {
             T[]? oldObject = Interlocked.CompareExchange(ref location, value, null);
             if (oldObject is null || ReferenceEquals(oldObject, value))
