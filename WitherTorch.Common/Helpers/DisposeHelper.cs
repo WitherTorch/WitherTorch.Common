@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -25,7 +26,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SwapDispose<T>(ref T? location, T? value = null) where T : class?, IDisposable?
+        public static void SwapDispose<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value = null) where T : class?, IDisposable?
         {
             T? oldObject = location;
             location = value;
@@ -35,7 +36,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SwapDisposeWeak<T>(ref T? location, T? value = null) where T : class?
+        public static void SwapDisposeWeak<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value = null) where T : class?
         {
             T? oldObject = location;
             location = value;
@@ -45,7 +46,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SwapDispose<T>(ref T[]? location, T[]? value = null) where T : class?, IDisposable?
+        public static void SwapDispose<T>([NotNullIfNotNull(nameof(value))] ref T[]? location, T[]? value = null) where T : class?, IDisposable?
         {
             T[]? oldObject = location;
             location = value;
@@ -58,7 +59,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SwapDisposeWeak<T>(ref T[]? location, T[]? value = null) where T : class?
+        public static void SwapDisposeWeak<T>([NotNullIfNotNull(nameof(value))] ref T[]? location, T[]? value = null) where T : class?
         {
             T[]? oldObject = location;
             location = value;
