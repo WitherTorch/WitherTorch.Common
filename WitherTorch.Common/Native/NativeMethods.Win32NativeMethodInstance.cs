@@ -1,6 +1,4 @@
-﻿using InlineIL;
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Security;
 
@@ -20,48 +18,31 @@ namespace WitherTorch.Common.Native
             private static extern IntPtr GetProcessHeap();
 
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
-            private static extern void* HeapAlloc(IntPtr hHeap, int dwFlags, UIntPtr size);
+            private static extern void* HeapAlloc(IntPtr hHeap, int dwFlags, nuint size);
 
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void HeapFree(IntPtr hHeap, int dwFlags, void* ptr);
 
-            [DllImport("msvcrt", CallingConvention = CallingConvention.Cdecl)]
-            private static extern void qsort(void* ptr, IntPtr number, IntPtr width, void* compareFunc);
+            [DllImport("ntdll", CallingConvention = CallingConvention.StdCall)]
+            private static extern void RtlMoveMemory(void* dest, void* src, nuint sizeInBytes);
+
+            [DllImport("ntdll", CallingConvention = CallingConvention.StdCall)]
+            private static extern void RtlCopyMemory(void* dest, void* src, nuint sizeInBytes);
 
             public Win32NativeMethodInstance()
             {
                 _heap = GetProcessHeap();
             }
 
-            int INativeMethodInstance.GetCurrentThreadId()
-            {
-                return GetCurrentThreadId();
-            }
+            int INativeMethodInstance.GetCurrentThreadId() => GetCurrentThreadId();
 
-            void* INativeMethodInstance.AllocMemory(int size)
-            {
-                return HeapAlloc(_heap, 0, new UIntPtr(unchecked((uint)size)));
-            }
+            void* INativeMethodInstance.AllocMemory(nuint size) => HeapAlloc(_heap, 0, size);
 
-            void* INativeMethodInstance.AllocMemory(uint size)
-            {
-                return HeapAlloc(_heap, 0, new UIntPtr(size));
-            }
+            void INativeMethodInstance.FreeMemory(void* ptr) => HeapFree(_heap, 0, ptr);
 
-            void* INativeMethodInstance.AllocMemory(IntPtr size)
-            {
-                return HeapAlloc(_heap, 0, new UIntPtr(size.ToPointer()));
-            }
+            void INativeMethodInstance.CopyMemory(void* destination, void* source, nuint sizeInBytes) => RtlCopyMemory(destination, source, sizeInBytes);
 
-            void* INativeMethodInstance.AllocMemory(UIntPtr size)
-            {
-                return HeapAlloc(_heap, 0, size);
-            }
-
-            void INativeMethodInstance.FreeMemory(void* ptr)
-            {
-                HeapFree(_heap, 0, ptr);
-            }
+            void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes) => RtlMoveMemory(destination, source, sizeInBytes);
         }
     }
 }

@@ -8,6 +8,7 @@ using InlineIL;
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Collections
 {
@@ -173,14 +174,13 @@ namespace WitherTorch.Common.Collections
             if (index == oldCount)
             {
                 Add(item);
+                return;
             }
-            else
-            {
-                _count = newCount;
-                EnsureCapacity();
-                MoveArray(_array, index, index + 1, oldCount);
-                _array[index] = item;
-            }
+            _count = newCount;
+            EnsureCapacity();
+            T[] array = _array;
+            MoveArray(array, index, index + 1, oldCount - index);
+            array[index] = item;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -204,7 +204,7 @@ namespace WitherTorch.Common.Collections
             _array[index] = default!;
             if (index < newCount)
             {
-                MoveArray(_array, index + 1, index, oldCount);
+                MoveArray(_array, index + 1, index, oldCount - index - 1);
             }
         }
 
@@ -348,28 +348,67 @@ namespace WitherTorch.Common.Collections
             return false;
         }
 
-        [Inline(InlineBehavior.Remove)]
-        private static void MoveArray(T[] array, int oldIndex, int newIndex, int oldArraySize)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MoveArray(T[] array, int oldIndex, int newIndex, int count)
         {
-            int indexDiff = newIndex - oldIndex;
-            if (indexDiff == 0)
+            if (newIndex == oldIndex || count <= 0)
                 return;
-            else if (indexDiff > 0)
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
-                for (int i = oldArraySize - 1, j = i + indexDiff; i >= oldIndex; i--, j--)
-                {
-                    array[j] = array[i];
-                    array[i] = default!;
-                }
+                MoveArrayFast(array, oldIndex, newIndex, count);
+                return;
             }
-            else
+            MoveArraySlow(array, oldIndex, newIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MoveArrayFast(T[] array, int oldIndex, int newIndex, int count)
+        {
+#pragma warning disable CS8500
+            fixed (T* ptr = array)
             {
-                for (int i = oldIndex, j = newIndex; i < oldArraySize; i++, j++)
+                if (MathHelper.Abs(oldIndex - newIndex) < count)
                 {
-                    array[j] = array[i];
-                    array[i] = default!;
+                    NativeMethods.MoveMemory(ptr + newIndex, ptr + oldIndex, count * sizeof(T));
+                    return;
                 }
+                NativeMethods.CopyMemory(ptr + newIndex, ptr + oldIndex, count * sizeof(T));    
             }
+#pragma warning restore CS8500
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MoveArraySlow(T[] array, int oldIndex, int newIndex, int count)
+        {
+            if (MathHelper.MakeUnsigned(oldIndex - newIndex) < count)
+            {
+                MoveArrayCoreVerySlow(array, oldIndex, newIndex, count);
+                return;
+            }
+            MoveArrayCoreSlow(array, oldIndex, newIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MoveArrayCoreSlow(T[] array, int oldIndex, int newIndex, int count)
+        {
+            Array.Copy(array, oldIndex, array, newIndex, count);
+#pragma warning disable CS8500
+            fixed (T* ptr = array)
+                UnsafeHelper.InitBlock(ptr + oldIndex, 0, unchecked((uint)(count * sizeof(T))));
+#pragma warning restore CS8500
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MoveArrayCoreVerySlow(T[] array, int oldIndex, int newIndex, int count)
+        {
+            if (newIndex > oldIndex)
+            {
+                for (int i = oldIndex, j = newIndex, limit = count; i < limit; i++, j++)
+                    (array[j], array[i]) = (array[i], default!);
+                return;
+            }
+            for (int i = oldIndex + count - 1, j = newIndex + count - 1; i >= oldIndex; i--, j--)
+                (array[j], array[i]) = (array[i], default!);
         }
 
         public struct Enumerator : IEnumerator<T>

@@ -24,5 +24,29 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Conv_I4();
             return IL.Return<int>();
         }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static uint BooleanToUInt32(bool value)
+        {
+            IL.Push(value);
+            IL.Emit.Conv_U4();
+            return IL.Return<uint>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static long BooleanToInt64(bool value)
+        {
+            IL.Push(value);
+            IL.Emit.Conv_I8();
+            return IL.Return<long>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ulong BooleanToUInt64(bool value)
+        {
+            IL.Push(value);
+            IL.Emit.Conv_U8();
+            return IL.Return<ulong>();
+        }
     }
 }

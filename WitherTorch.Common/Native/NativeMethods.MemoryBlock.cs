@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Native
         [SecurityCritical]
         public static unsafe NativeMemoryBlock AllocMemoryBlock(int size)
         {
-            void* ptr = _methodInstance.AllocMemory(size);
+            void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
             GC.AddMemoryPressure(size);
@@ -23,7 +23,7 @@ namespace WitherTorch.Common.Native
         [SecurityCritical]
         public static unsafe NativeMemoryBlock AllocMemoryBlock(uint size)
         {
-            void* ptr = _methodInstance.AllocMemory(new UIntPtr(size));
+            void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
             GC.AddMemoryPressure(size);
@@ -34,7 +34,7 @@ namespace WitherTorch.Common.Native
         [SecurityCritical]
         public static unsafe NativeMemoryBlock AllocMemoryBlock(long size)
         {
-            void* ptr = _methodInstance.AllocMemory(new IntPtr(size));
+            void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
             GC.AddMemoryPressure(size);
@@ -45,7 +45,7 @@ namespace WitherTorch.Common.Native
         [SecurityCritical]
         public static unsafe NativeMemoryBlock AllocMemoryBlock(ulong size)
         {
-            void* ptr = _methodInstance.AllocMemory(new UIntPtr(size));
+            void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
             GC.AddMemoryPressure(MathHelper.MakeSigned(size));
@@ -54,24 +54,24 @@ namespace WitherTorch.Common.Native
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecurityCritical]
-        public static unsafe NativeMemoryBlock AllocMemoryBlock(IntPtr size)
+        public static unsafe NativeMemoryBlock AllocMemoryBlock(nint size)
         {
-            void* ptr = _methodInstance.AllocMemory(size);
+            void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            GC.AddMemoryPressure(size.ToInt64());
-            return new NativeMemoryBlock(ptr, size.ToPointer());
+            GC.AddMemoryPressure(size);
+            return new NativeMemoryBlock(ptr, (void*)size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecurityCritical]
-        public static unsafe NativeMemoryBlock AllocMemoryBlock(UIntPtr size)
+        public static unsafe NativeMemoryBlock AllocMemoryBlock(nuint size)
         {
-            void* ptr = _methodInstance.AllocMemory(size);
+            void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            GC.AddMemoryPressure(MathHelper.MakeSigned(size.ToUInt64()));
-            return new NativeMemoryBlock(ptr, size.ToPointer());
+            GC.AddMemoryPressure(MathHelper.MakeSigned(size));
+            return new NativeMemoryBlock(ptr, (void*)size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

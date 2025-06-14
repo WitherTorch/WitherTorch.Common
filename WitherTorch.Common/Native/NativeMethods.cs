@@ -4,6 +4,8 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.Common.Native
 {
     public static unsafe partial class NativeMethods
@@ -36,10 +38,54 @@ namespace WitherTorch.Common.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static int GetCurrentThreadId()
-        {
-            return _methodInstance.GetCurrentThreadId();
-        }
+        public static int GetCurrentThreadId() => _methodInstance.GetCurrentThreadId();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyMemory(void* destination, void* source, int sizeInBytes) 
+            => _methodInstance.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyMemory(void* destination, void* source, uint sizeInBytes) 
+            => _methodInstance.CopyMemory(destination, source, sizeInBytes);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyMemory(void* destination, void* source, long sizeInBytes) 
+            => _methodInstance.CopyMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyMemory(void* destination, void* source, ulong sizeInBytes) 
+            => _methodInstance.CopyMemory(destination, source, unchecked((nuint)sizeInBytes));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyMemory(void* destination, void* source, nint sizeInBytes) 
+            => _methodInstance.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyMemory(void* destination, void* source, nuint sizeInBytes) 
+            => _methodInstance.CopyMemory(destination, source, sizeInBytes);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MoveMemory(void* destination, void* source, int sizeInBytes) 
+            => _methodInstance.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MoveMemory(void* destination, void* source, uint sizeInBytes) 
+            => _methodInstance.MoveMemory(destination, source, sizeInBytes);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MoveMemory(void* destination, void* source, long sizeInBytes) 
+            => _methodInstance.MoveMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MoveMemory(void* destination, void* source, ulong sizeInBytes) 
+            => _methodInstance.MoveMemory(destination, source, unchecked((nuint)sizeInBytes));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MoveMemory(void* destination, void* source, nint sizeInBytes) 
+            => _methodInstance.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void MoveMemory(void* destination, void* source, nuint sizeInBytes) 
+            => _methodInstance.MoveMemory(destination, source, sizeInBytes);
     }
 }

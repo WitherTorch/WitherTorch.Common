@@ -21,65 +21,33 @@ namespace WitherTorch.Common.Native
 
         public static unsafe T* AllocUnmanagedStructure<T>(T value) where T : unmanaged
         {
-            T* result = (T*)_methodInstance.AllocMemory(sizeof(T));
+            T* result = (T*)_methodInstance.AllocMemory(unchecked((nuint)sizeof(T)));
             *result = value;
             return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void* AllocMemory(int size)
-        {
-            return _methodInstance.AllocMemory(size);
-        }
+        public static unsafe void* AllocMemory(int size) => _methodInstance.AllocMemory(MathHelper.MakeUnsigned(size));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void* AllocMemory(uint size)
-        {
-            return _methodInstance.AllocMemory(new UIntPtr(size));
-        }
+        public static unsafe void* AllocMemory(uint size) => _methodInstance.AllocMemory(size);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void* AllocMemory(long size)
-        {
-            return _methodInstance.AllocMemory(new IntPtr(size));
-        }
+        public static unsafe void* AllocMemory(long size) => _methodInstance.AllocMemory(unchecked((nuint)MathHelper.MakeUnsigned(size)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void* AllocMemory(ulong size)
-        {
-            return _methodInstance.AllocMemory(new UIntPtr(size));
-        }
+        public static unsafe void* AllocMemory(ulong size) => _methodInstance.AllocMemory(unchecked((nuint)size));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void* AllocMemory(IntPtr size)
-        {
-            return _methodInstance.AllocMemory(size);
-        }
+        public static unsafe void* AllocMemory(nint size) => _methodInstance.AllocMemory(MathHelper.MakeUnsigned(size));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void* AllocMemory(UIntPtr size)
-        {
-            return _methodInstance.AllocMemory(size);
-        }
+        public static unsafe void* AllocMemory(nuint size) => _methodInstance.AllocMemory(size);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void FreeMemory(IntPtr ptr)
-        {
-            _methodInstance.FreeMemory(ptr.ToPointer());
-        }
+        public static unsafe void FreeMemory(IntPtr ptr) => _methodInstance.FreeMemory(ptr.ToPointer());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecurityCritical]
-        public static unsafe void FreeMemory(void* ptr)
-        {
-            _methodInstance.FreeMemory(ptr);
-        }
+        public static unsafe void FreeMemory(void* ptr) => _methodInstance.FreeMemory(ptr);
     }
 }

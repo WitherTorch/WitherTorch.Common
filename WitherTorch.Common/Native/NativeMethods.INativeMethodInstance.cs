@@ -14,23 +14,19 @@ namespace WitherTorch.Common.Native
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [SecurityCritical]
-            void* AllocMemory(int size);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
-            void* AllocMemory(uint size);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
-            void* AllocMemory(IntPtr size);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
-            void* AllocMemory(UIntPtr size);
+            void* AllocMemory(nuint size);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [SecurityCritical]
             void FreeMemory(void* ptr);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [SecurityCritical]
+            void CopyMemory(void* destination, void* source, nuint sizeInBytes);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [SecurityCritical]
+            void MoveMemory(void* destination, void* source, nuint sizeInBytes);
         }
     }
 }

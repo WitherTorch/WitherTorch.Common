@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security;
 
 namespace WitherTorch.Common.Native
@@ -13,43 +12,26 @@ namespace WitherTorch.Common.Native
             private static extern int gettid();
 
             [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
-            private static extern void* malloc(UIntPtr size);
+            private static extern void* malloc(nuint size);
 
             [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
             private static extern void free(void* memblock);
 
             [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
-            private static extern void qsort(void* ptr, IntPtr number, IntPtr width, void* compareFunc);
+            private static extern void* memmove(void* dest, void* src, nuint sizeInBytes);
 
-            int INativeMethodInstance.GetCurrentThreadId()
-            {
-                return gettid();
-            }
+            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            private static extern void* memcpy(void* dest, void* src, nuint sizeInBytes);
 
-            void* INativeMethodInstance.AllocMemory(int size)
-            {
-                return malloc(new UIntPtr(unchecked((uint)size)));
-            }
+            int INativeMethodInstance.GetCurrentThreadId() => gettid();
 
-            void* INativeMethodInstance.AllocMemory(uint size)
-            {
-                return malloc(new UIntPtr(size));
-            }
+            void* INativeMethodInstance.AllocMemory(nuint size) => malloc(size);
 
-            void* INativeMethodInstance.AllocMemory(IntPtr size)
-            {
-                return malloc(new UIntPtr(size.ToPointer()));
-            }
+            void INativeMethodInstance.FreeMemory(void* ptr) => free(ptr);
 
-            void* INativeMethodInstance.AllocMemory(UIntPtr size)
-            {
-                return malloc(size);
-            }
+            void INativeMethodInstance.CopyMemory(void* destination, void* source, nuint sizeInBytes) => memcpy(destination, source, sizeInBytes);
 
-            void INativeMethodInstance.FreeMemory(void* ptr)
-            {
-                free(ptr);
-            }
+            void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes) => memmove(destination, source, sizeInBytes);
         }
     }
 }
