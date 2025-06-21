@@ -5,158 +5,84 @@ using InlineIL;
 
 using InlineMethod;
 
+using LocalsInit;
+
 namespace WitherTorch.Common.Helpers
 {
     public static partial class MathHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static sbyte Abs(sbyte value)
-        {
-            IL.Push(value);
-            IL.Push(sizeof(sbyte) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Dup();
-            IL.Push(value);
-            IL.Emit.Add();
-            IL.Emit.Xor();
-            IL.Emit.Conv_I1();
-            return IL.Return<sbyte>();
-        }
+        public static sbyte Abs(sbyte value) => unchecked((sbyte)AbsCore(value, sizeof(sbyte) * 8 - 1));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static short Abs(short value)
-        {
-            IL.Push(value);
-            IL.Push(sizeof(short) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Dup();
-            IL.Push(value);
-            IL.Emit.Add();
-            IL.Emit.Xor();
-            IL.Emit.Conv_I2();
-            return IL.Return<short>();
-        }
+        public static short Abs(short value) => unchecked((short)AbsCore(value, sizeof(short) * 8 - 1));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int Abs(int value)
-        {
-            IL.Push(value);
-            IL.Push(sizeof(int) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Dup();
-            IL.Push(value);
-            IL.Emit.Add();
-            IL.Emit.Xor();
-            return IL.Return<int>();
-        }
+        public static int Abs(int value) => AbsCore(value, sizeof(int) * 8 - 1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long Abs(long value)
-        {
-            IL.Push(value);
-            IL.Push(sizeof(long) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Dup();
-            IL.Push(value);
-            IL.Emit.Add();
-            IL.Emit.Xor();
-            return IL.Return<long>();
-        }
+        public static long Abs(long value) => AbsCore(value, sizeof(long) * 8 - 1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe nint Abs(nint value)
-        {
-            nint mask = value >> (sizeof(nint) * 8 - 1);
-            return mask ^ (mask + value);
-        }
+        public static unsafe nint Abs(nint value) => AbsCore(value, sizeof(nint) * 8 - 1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int DivRem(int a, int b, out int rem)
-        {
-            int result = a / b;
-            rem = a - (result * b); // Multiply operation faster than modulo operation
-            return result;
-        }
+        public static int DivRem(int a, int b, out int rem) => DivRemCore(a, b, out rem);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long DivRem(long a, long b, out long rem)
-        {
-            long result = a / b;
-            rem = a - (result * b); // Multiply operation faster than modulo operation
-            return result;
-        }
+        public static long DivRem(long a, long b, out long rem) => DivRemCoreUnsigned(a, b, out rem);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint DivRem(uint a, uint b, out uint rem)
-        {
-            uint result = a / b;
-            rem = a - (result * b); // Multiply operation faster than modulo operation
-            return result;
-        }
+        public static uint DivRem(uint a, uint b, out uint rem) => DivRemCore(a, b, out rem);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong DivRem(ulong a, ulong b, out ulong rem)
-        {
-            ulong result = a / b;
-            rem = a - (result * b); // Multiply operation faster than modulo operation
-            return result;
-        }
+        public static ulong DivRem(ulong a, ulong b, out ulong rem) => DivRemCoreUnsigned(a, b, out rem);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint DivRem(nint a, nint b, out nint rem)
-        {
-            nint result = a / b;
-            rem = a - (result * b); // Multiply operation faster than modulo operation
-            return result;
-        }
+        public static nint DivRem(nint a, nint b, out nint rem) => DivRemCore(a, b, out rem);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint DivRem(nuint a, nuint b, out nuint rem)
-        {
-            nuint result = a / b;
-            rem = a - (result * b); // Multiply operation faster than modulo operation
-            return result;
-        }
+        public static nuint DivRem(nuint a, nuint b, out nuint rem) => DivRemCoreUnsigned(a, b, out rem);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int CeilDiv(int a, int b)
         {
-            int result = DivRem(a, b, out int rem);
+            int result = DivRemCore(a, b, out int rem);
             return result + Sign(rem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint CeilDiv(uint a, uint b)
         {
-            uint result = DivRem(a, b, out uint rem);
+            uint result = DivRemCoreUnsigned(a, b, out uint rem);
             return result + BooleanToUInt32(rem > 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long CeilDiv(long a, long b)
         {
-            long result = DivRem(a, b, out long rem);
+            long result = DivRemCore(a, b, out long rem);
             return result + Sign(rem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong CeilDiv(ulong a, ulong b)
         {
-            ulong result = DivRem(a, b, out ulong rem);
+            ulong result = DivRemCoreUnsigned(a, b, out ulong rem);
             return result + BooleanToUInt64(rem > 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nint CeilDiv(nint a, nint b)
         {
-            nint result = DivRem(a, b, out nint rem);
+            nint result = DivRemCore(a, b, out nint rem);
             return result + Sign(rem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint CeilDiv(nuint a, nuint b)
         {
-            nuint result = DivRem(a, b, out nuint rem);
+            nuint result = DivRemCoreUnsigned(a, b, out nuint rem);
             return result + BooleanToUInt32(rem > 0);
         }
 
@@ -250,6 +176,37 @@ namespace WitherTorch.Common.Helpers
 #else
             return Log2Core(value);
 #endif
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private static T AbsCore<T>(T value, T offset) where T : unmanaged
+        {
+            IL.Push(value);
+            IL.Push(offset);
+            IL.Emit.Shr();
+            IL.Emit.Dup();
+            IL.Push(value);
+            IL.Emit.Add();
+            IL.Emit.Xor();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        [LocalsInit(false)]
+        private static T DivRemCore<T>(T a, T b, out T rem) where T : unmanaged
+        {
+            T quantity = UnsafeHelper.Divide(a, b);
+            rem = UnsafeHelper.Substract(a, UnsafeHelper.Multiply(b, quantity));
+            return quantity;
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        [LocalsInit(false)]
+        private static T DivRemCoreUnsigned<T>(T a, T b, out T rem) where T : unmanaged
+        {
+            T quantity = UnsafeHelper.DivideUnsigned(a, b);
+            rem = UnsafeHelper.Substract(a, UnsafeHelper.Multiply(b, quantity));
+            return quantity;
         }
     }
 }
