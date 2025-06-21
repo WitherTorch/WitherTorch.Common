@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using InlineIL;
+
 using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
@@ -8,24 +10,64 @@ namespace WitherTorch.Common.Helpers
     public static partial class MathHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte Abs(sbyte value)
+        {
+            IL.Push(value);
+            IL.Push(sizeof(sbyte) * 8 - 1);
+            IL.Emit.Shr();
+            IL.Emit.Dup();
+            IL.Push(value);
+            IL.Emit.Add();
+            IL.Emit.Xor();
+            IL.Emit.Conv_I1();
+            return IL.Return<sbyte>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short Abs(short value)
+        {
+            IL.Push(value);
+            IL.Push(sizeof(short) * 8 - 1);
+            IL.Emit.Shr();
+            IL.Emit.Dup();
+            IL.Push(value);
+            IL.Emit.Add();
+            IL.Emit.Xor();
+            IL.Emit.Conv_I2();
+            return IL.Return<short>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Abs(int value)
         {
-            int mask = value >> (sizeof(int) * 8 - 1);
-            return (value + mask) ^ mask;
+            IL.Push(value);
+            IL.Push(sizeof(int) * 8 - 1);
+            IL.Emit.Shr();
+            IL.Emit.Dup();
+            IL.Push(value);
+            IL.Emit.Add();
+            IL.Emit.Xor();
+            return IL.Return<int>();
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long Abs(long value)
         {
-            long mask = value >> (sizeof(long) * 8 - 1);
-            return (value + mask) ^ mask;
+            IL.Push(value);
+            IL.Push(sizeof(long) * 8 - 1);
+            IL.Emit.Shr();
+            IL.Emit.Dup();
+            IL.Push(value);
+            IL.Emit.Add();
+            IL.Emit.Xor();
+            return IL.Return<long>();
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe nint Abs(nint value)
         {
             nint mask = value >> (sizeof(nint) * 8 - 1);
-            return (value + mask) ^ mask;
+            return mask ^ (mask + value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
