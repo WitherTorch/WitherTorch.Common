@@ -5,13 +5,11 @@ using InlineIL;
 
 using InlineMethod;
 
-using LocalsInit;
-
 namespace WitherTorch.Common.Helpers
 {
     partial class MathHelper
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static byte MakeUnsigned(sbyte value)
         {
             IL.Push(value);
@@ -24,7 +22,7 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<byte>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static ushort MakeUnsigned(short value)
         {
             IL.Push(value);
@@ -37,7 +35,7 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<ushort>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static uint MakeUnsigned(int value)
         {
             IL.Push(value);
@@ -49,7 +47,7 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<uint>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static ulong MakeUnsigned(long value)
         {
             IL.Push(value);

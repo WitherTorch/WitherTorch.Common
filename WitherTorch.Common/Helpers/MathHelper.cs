@@ -122,7 +122,7 @@ namespace WitherTorch.Common.Helpers
         public static int CeilDiv(int a, int b)
         {
             int result = DivRem(a, b, out int rem);
-            return result + Math.Sign(rem);
+            return result + Sign(rem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -136,7 +136,7 @@ namespace WitherTorch.Common.Helpers
         public static long CeilDiv(long a, long b)
         {
             long result = DivRem(a, b, out long rem);
-            return result + Math.Sign(rem);
+            return result + Sign(rem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -150,7 +150,7 @@ namespace WitherTorch.Common.Helpers
         public static nint CeilDiv(nint a, nint b)
         {
             nint result = DivRem(a, b, out nint rem);
-            return result + Math.Sign(rem);
+            return result + Sign(rem);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
