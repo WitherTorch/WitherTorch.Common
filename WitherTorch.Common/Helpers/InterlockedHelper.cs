@@ -447,5 +447,35 @@ namespace WitherTorch.Common.Helpers
                 },
                 _ => throw new InvalidOperationException()
             };
+
+        /// <inheritdoc cref="Interlocked.Increment(ref int)"/>
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static int Increment(ref int location) => Interlocked.Increment(ref location);
+
+        /// <inheritdoc cref="Interlocked.Increment(ref int)"/>
+#if NET5_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static uint Increment(ref uint location)
+            => Interlocked.Increment(ref location);
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint Increment(ref uint location)
+            => unchecked((uint)Interlocked.Increment(ref UnsafeHelper.As<uint, int>(ref location)));
+#endif
+
+        /// <inheritdoc cref="Interlocked.Increment(ref long)"/>
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static long Increment(ref long location) => Interlocked.Increment(ref location);
+
+        /// <inheritdoc cref="Interlocked.Increment(ref long)"/>
+#if NET5_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ulong Increment(ref ulong location)
+            => Interlocked.Increment(ref location);
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong Increment(ref ulong location)
+            => unchecked((ulong)Interlocked.Increment(ref UnsafeHelper.As<ulong, long>(ref location)));
+#endif
     }
 }
