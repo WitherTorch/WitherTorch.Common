@@ -40,7 +40,7 @@ namespace WitherTorch.Common.Text
         public void Append(char value)
         {
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 builder.GetObject().Append(value);
                 return;
@@ -63,7 +63,7 @@ namespace WitherTorch.Common.Text
             if (repeatCount < 1)
                 return;
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 builder.GetObject().Append(value, repeatCount);
                 return;
@@ -128,7 +128,7 @@ namespace WitherTorch.Common.Text
         private void AppendCore(char* ptr, [InlineParameter] int count)
         {
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 builder.GetObject().Append(ptr, count);
                 return;
@@ -234,7 +234,7 @@ namespace WitherTorch.Common.Text
         public void Insert(int index, char value)
         {
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 builder.GetObject().Insert(index, value);
                 return;
@@ -264,7 +264,7 @@ namespace WitherTorch.Common.Text
             if (valueLength <= 0)
                 return;
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 builder.GetObject().Insert(index, value);
                 return;
@@ -298,7 +298,7 @@ namespace WitherTorch.Common.Text
             if (length <= 0)
                 return;
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 builder.GetObject().Remove(startIndex, length);
                 return;
@@ -322,7 +322,7 @@ namespace WitherTorch.Common.Text
         public void RemoveLast()
         {
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
             {
                 StringBuilder inlineBuilder = builder.GetObject();
                 inlineBuilder.Remove(inlineBuilder.Length - 1, 1);
@@ -339,7 +339,7 @@ namespace WitherTorch.Common.Text
         public override readonly string ToString()
         {
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
                 return builder.GetObject().ToString();
             char* start = _start;
             char* iterator = _iterator;
@@ -355,7 +355,7 @@ namespace WitherTorch.Common.Text
             if (length <= 0)
                 return string.Empty;
             DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is object)
+            if (builder is not null)
                 return builder.GetObject().ToString(startIndex, length);
             char* start = _start + startIndex;
             char* end = start + length;

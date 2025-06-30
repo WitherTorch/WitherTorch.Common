@@ -140,8 +140,9 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector512<T> valueVector = Vector512.Load(ptr);
                             VectorizedUnaryOperationCore_512(valueVector, method).Store(ptr);
+                            ptr += Vector512<T>.Count;
                         }
-                        while ((ptr += Vector512<T>.Count) < ptrEnd);
+                        while (ptr + Vector512<T>.Count < ptrEnd);
                         if (ptr >= ptrEnd)
                             return;
                     }
@@ -154,8 +155,9 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector256<T> valueVector = Vector256.Load(ptr);
                             VectorizedUnaryOperationCore_256(valueVector, method).Store(ptr);
+                            ptr += Vector256<T>.Count;
                         }
-                        while ((ptr += Vector256<T>.Count) < ptrEnd);
+                        while (ptr + Vector256<T>.Count < ptrEnd);
                         if (ptr >= ptrEnd)
                             return;
                     }
@@ -168,8 +170,9 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector128<T> valueVector = Vector128.Load(ptr);
                             VectorizedUnaryOperationCore_128(valueVector, method).Store(ptr);
+                            ptr += Vector128<T>.Count;
                         }
-                        while ((ptr += Vector128<T>.Count) < ptrEnd);
+                        while (ptr + Vector128<T>.Count < ptrEnd);
                         if (ptr >= ptrEnd)
                             return;
                     }
@@ -182,8 +185,9 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector64<T> valueVector = Vector64.Load(ptr);
                             VectorizedUnaryOperationCore_64(valueVector, method).Store(ptr);
+                            ptr += Vector64<T>.Count;
                         }
-                        while ((ptr += Vector64<T>.Count) < ptrEnd);
+                        while (ptr + Vector64<T>.Count < ptrEnd);
                         if (ptr >= ptrEnd)
                             return;
                     }
@@ -209,8 +213,9 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
                             UnsafeHelper.Write(ptr, VectorizedUnaryOperationCore(valueVector, method));
+                            ptr += Vector<T>.Count;
                         }
-                        while ((ptr += Vector<T>.Count) < ptrEnd);
+                        while (ptr + Vector<T>.Count < ptrEnd);
                         if (ptr >= ptrEnd)
                             return;
                     }
