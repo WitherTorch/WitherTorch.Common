@@ -112,7 +112,7 @@ namespace WitherTorch.Common.Helpers
             public static bool RangedAddAndEquals(T* ptr, T* ptrEnd, T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
             {
                 if (CheckTypeCanBeVectorized())
-                    return VectorizedRangedAddAndEquals(ptr, ptrEnd, ptr2, lowerBound, higherBound, valueToAddInRange);
+                    return VectorizedRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange);
                 if (UnsafeHelper.IsPrimitiveType<T>())
                 {
                     for (; ptr < ptrEnd; ptr++, ptr2++)
@@ -127,7 +127,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static bool VectorizedRangedAddAndEquals(T* ptr, T* ptrEnd, T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
+            private static bool VectorizedRangedAddAndEquals(ref T* ptr, in T* ptrEnd, ref T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
             {
 #if NET6_0_OR_GREATER
                 if (Vector512.IsHardwareAccelerated && ptr + Vector512<T>.Count < ptrEnd)

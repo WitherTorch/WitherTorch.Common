@@ -18,7 +18,7 @@ namespace WitherTorch.Common.Helpers
                 ParameterInfo[] parameters = method.GetParameters();
                 if (parameters.Length != parameterTypeCount)
                     continue;
-                int j = 0;
+                int j;
                 for (j = 0; j < parameterTypeCount; j++)
                 {
                     if (!parameterTypes![j].Equals(parameters[j].ParameterType))

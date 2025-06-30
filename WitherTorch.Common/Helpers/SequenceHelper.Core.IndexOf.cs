@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Helpers
         unsafe partial class Core
         {
             [Inline(InlineBehavior.Remove)]
-            public static bool Contains(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static bool Contains(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -55,7 +55,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsExclude(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static bool ContainsExclude(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -80,7 +80,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsGreaterThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static bool ContainsGreaterThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -105,7 +105,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsGreaterOrEqualsThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static bool ContainsGreaterOrEqualsThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -130,7 +130,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsLessThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static bool ContainsLessThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -155,7 +155,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsLessOrEqualsThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static bool ContainsLessOrEqualsThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -180,7 +180,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool Contains(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static bool Contains(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -205,7 +205,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsExclude(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static bool ContainsExclude(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -230,7 +230,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsGreaterThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static bool ContainsGreaterThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -255,7 +255,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsGreaterOrEqualsThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static bool ContainsGreaterOrEqualsThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -280,7 +280,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsLessThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static bool ContainsLessThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -305,7 +305,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsLessOrEqualsThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static bool ContainsLessOrEqualsThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
@@ -330,21 +330,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static IntPtr* PointerIndexOf(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static nint* PointerIndexOf(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (IntPtr*)Core<int>.PointerIndexOf((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                        return (nint*)Core<int>.PointerIndexOf((int*)ptr, (int*)ptrEnd, *(int*)&value);
                     case sizeof(long):
-                        return (IntPtr*)Core<long>.PointerIndexOf((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                        return (nint*)Core<long>.PointerIndexOf((long*)ptr, (long*)ptrEnd, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (IntPtr*)Core<int>.PointerIndexOf((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                                return (nint*)Core<int>.PointerIndexOf((int*)ptr, (int*)ptrEnd, *(int*)&value);
                             case sizeof(long):
-                                return (IntPtr*)Core<long>.PointerIndexOf((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                                return (nint*)Core<long>.PointerIndexOf((long*)ptr, (long*)ptrEnd, *(long*)&value);
                             default:
                                 break;
                         }
@@ -355,21 +355,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static IntPtr* PointerIndexOfExclude(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static nint* PointerIndexOfExclude(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (IntPtr*)Core<int>.PointerIndexOfExclude((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                        return (nint*)Core<int>.PointerIndexOfExclude((int*)ptr, (int*)ptrEnd, *(int*)&value);
                     case sizeof(long):
-                        return (IntPtr*)Core<long>.PointerIndexOfExclude((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                        return (nint*)Core<long>.PointerIndexOfExclude((long*)ptr, (long*)ptrEnd, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (IntPtr*)Core<int>.PointerIndexOfExclude((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                                return (nint*)Core<int>.PointerIndexOfExclude((int*)ptr, (int*)ptrEnd, *(int*)&value);
                             case sizeof(long):
-                                return (IntPtr*)Core<long>.PointerIndexOfExclude((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                                return (nint*)Core<long>.PointerIndexOfExclude((long*)ptr, (long*)ptrEnd, *(long*)&value);
                             default:
                                 break;
                         }
@@ -380,21 +380,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static IntPtr* PointerIndexOfGreaterThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static nint* PointerIndexOfGreaterThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (IntPtr*)Core<int>.PointerIndexOfGreaterThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                        return (nint*)Core<int>.PointerIndexOfGreaterThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                     case sizeof(long):
-                        return (IntPtr*)Core<long>.PointerIndexOfGreaterThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                        return (nint*)Core<long>.PointerIndexOfGreaterThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (IntPtr*)Core<int>.PointerIndexOfGreaterThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                                return (nint*)Core<int>.PointerIndexOfGreaterThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                             case sizeof(long):
-                                return (IntPtr*)Core<long>.PointerIndexOfGreaterThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                                return (nint*)Core<long>.PointerIndexOfGreaterThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                             default:
                                 break;
                         }
@@ -405,21 +405,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static IntPtr* PointerIndexOfGreaterOrEqualsThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static nint* PointerIndexOfGreaterOrEqualsThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (IntPtr*)Core<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                        return (nint*)Core<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                     case sizeof(long):
-                        return (IntPtr*)Core<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                        return (nint*)Core<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (IntPtr*)Core<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                                return (nint*)Core<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                             case sizeof(long):
-                                return (IntPtr*)Core<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                                return (nint*)Core<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                             default:
                                 break;
                         }
@@ -430,21 +430,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static IntPtr* PointerIndexOfLessThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static nint* PointerIndexOfLessThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (IntPtr*)Core<int>.PointerIndexOfLessThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                        return (nint*)Core<int>.PointerIndexOfLessThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                     case sizeof(long):
-                        return (IntPtr*)Core<long>.PointerIndexOfLessThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                        return (nint*)Core<long>.PointerIndexOfLessThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (IntPtr*)Core<int>.PointerIndexOfLessThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                                return (nint*)Core<int>.PointerIndexOfLessThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                             case sizeof(long):
-                                return (IntPtr*)Core<long>.PointerIndexOfLessThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                                return (nint*)Core<long>.PointerIndexOfLessThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                             default:
                                 break;
                         }
@@ -455,21 +455,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static IntPtr* PointerIndexOfLessOrEqualsThan(IntPtr* ptr, IntPtr* ptrEnd, IntPtr value)
+            public static nint* PointerIndexOfLessOrEqualsThan(nint* ptr, nint* ptrEnd, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (IntPtr*)Core<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                        return (nint*)Core<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                     case sizeof(long):
-                        return (IntPtr*)Core<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                        return (nint*)Core<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (IntPtr*)Core<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
+                                return (nint*)Core<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, (int*)ptrEnd, *(int*)&value);
                             case sizeof(long):
-                                return (IntPtr*)Core<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
+                                return (nint*)Core<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, (long*)ptrEnd, *(long*)&value);
                             default:
                                 break;
                         }
@@ -480,21 +480,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static UIntPtr* PointerIndexOf(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static nuint* PointerIndexOf(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (UIntPtr*)Core<uint>.PointerIndexOf((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                        return (nuint*)Core<uint>.PointerIndexOf((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                     case sizeof(ulong):
-                        return (UIntPtr*)Core<ulong>.PointerIndexOf((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                        return (nuint*)Core<ulong>.PointerIndexOf((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (UIntPtr*)Core<uint>.PointerIndexOf((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                                return (nuint*)Core<uint>.PointerIndexOf((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                             case sizeof(ulong):
-                                return (UIntPtr*)Core<ulong>.PointerIndexOf((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                                return (nuint*)Core<ulong>.PointerIndexOf((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -505,21 +505,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static UIntPtr* PointerIndexOfExclude(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static nuint* PointerIndexOfExclude(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (UIntPtr*)Core<uint>.PointerIndexOfExclude((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                        return (nuint*)Core<uint>.PointerIndexOfExclude((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                     case sizeof(ulong):
-                        return (UIntPtr*)Core<ulong>.PointerIndexOfExclude((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                        return (nuint*)Core<ulong>.PointerIndexOfExclude((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (UIntPtr*)Core<uint>.PointerIndexOfExclude((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                                return (nuint*)Core<uint>.PointerIndexOfExclude((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                             case sizeof(ulong):
-                                return (UIntPtr*)Core<ulong>.PointerIndexOfExclude((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                                return (nuint*)Core<ulong>.PointerIndexOfExclude((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -530,21 +530,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static UIntPtr* PointerIndexOfGreaterThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static nuint* PointerIndexOfGreaterThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (UIntPtr*)Core<uint>.PointerIndexOfGreaterThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                        return (nuint*)Core<uint>.PointerIndexOfGreaterThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                     case sizeof(ulong):
-                        return (UIntPtr*)Core<ulong>.PointerIndexOfGreaterThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                        return (nuint*)Core<ulong>.PointerIndexOfGreaterThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (UIntPtr*)Core<uint>.PointerIndexOfGreaterThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                                return (nuint*)Core<uint>.PointerIndexOfGreaterThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                             case sizeof(ulong):
-                                return (UIntPtr*)Core<ulong>.PointerIndexOfGreaterThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                                return (nuint*)Core<ulong>.PointerIndexOfGreaterThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -555,21 +555,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static UIntPtr* PointerIndexOfGreaterOrEqualsThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static nuint* PointerIndexOfGreaterOrEqualsThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (UIntPtr*)Core<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                        return (nuint*)Core<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                     case sizeof(ulong):
-                        return (UIntPtr*)Core<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                        return (nuint*)Core<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (UIntPtr*)Core<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                                return (nuint*)Core<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                             case sizeof(ulong):
-                                return (UIntPtr*)Core<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                                return (nuint*)Core<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -580,21 +580,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static UIntPtr* PointerIndexOfLessThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static nuint* PointerIndexOfLessThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (UIntPtr*)Core<uint>.PointerIndexOfLessThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                        return (nuint*)Core<uint>.PointerIndexOfLessThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                     case sizeof(ulong):
-                        return (UIntPtr*)Core<ulong>.PointerIndexOfLessThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                        return (nuint*)Core<ulong>.PointerIndexOfLessThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (UIntPtr*)Core<uint>.PointerIndexOfLessThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                                return (nuint*)Core<uint>.PointerIndexOfLessThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                             case sizeof(ulong):
-                                return (UIntPtr*)Core<ulong>.PointerIndexOfLessThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                                return (nuint*)Core<ulong>.PointerIndexOfLessThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -605,21 +605,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static UIntPtr* PointerIndexOfLessOrEqualsThan(UIntPtr* ptr, UIntPtr* ptrEnd, UIntPtr value)
+            public static nuint* PointerIndexOfLessOrEqualsThan(nuint* ptr, nuint* ptrEnd, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (UIntPtr*)Core<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                        return (nuint*)Core<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                     case sizeof(ulong):
-                        return (UIntPtr*)Core<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                        return (nuint*)Core<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (UIntPtr*)Core<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
+                                return (nuint*)Core<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, (uint*)ptrEnd, *(uint*)&value);
                             case sizeof(ulong):
-                                return (UIntPtr*)Core<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
+                                return (nuint*)Core<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, (ulong*)ptrEnd, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -634,47 +634,47 @@ namespace WitherTorch.Common.Helpers
         unsafe partial class Core<T>
         {
             public static bool Contains(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.Include, accurateResult: false) != null;
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.Include, accurateResult: false) != null;
 
             public static bool ContainsExclude(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.Exclude, accurateResult: false) != null;
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.Exclude, accurateResult: false) != null;
 
             public static bool ContainsGreaterThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.GreaterThan, accurateResult: false) != null;
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.GreaterThan, accurateResult: false) != null;
 
             public static bool ContainsLessThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.LessThan, accurateResult: false) != null;
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.LessThan, accurateResult: false) != null;
 
             public static bool ContainsGreaterOrEqualsThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: false) != null;
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: false) != null;
 
             public static bool ContainsLessOrEqualsThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.LessOrEqualsThan, accurateResult: false) != null;
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.LessOrEqualsThan, accurateResult: false) != null;
 
             public static T* PointerIndexOf(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.Include, accurateResult: true);
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.Include, accurateResult: true);
 
             public static T* PointerIndexOfExclude(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.Exclude, accurateResult: true);
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.Exclude, accurateResult: true);
 
             public static T* PointerIndexOfGreaterThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.GreaterThan, accurateResult: true);
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.GreaterThan, accurateResult: true);
 
             public static T* PointerIndexOfLessThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.LessThan, accurateResult: true);
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.LessThan, accurateResult: true);
 
             public static T* PointerIndexOfGreaterOrEqualsThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: true);
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: true);
 
             public static T* PointerIndexOfLessOrEqualsThan(T* ptr, T* ptrEnd, T value)
-                => PointerIndexOfCore(ptr, ptrEnd, value, IndexOfMethod.LessOrEqualsThan, accurateResult: true);
+                => PointerIndexOfCore(ref ptr, ptrEnd, value, IndexOfMethod.LessOrEqualsThan, accurateResult: true);
 
             [Inline(InlineBehavior.Remove)]
-            private static T* PointerIndexOfCore(T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
+            private static T* PointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
                 // Vector.IsHardwareAccelerated 與 Vector<T>.Count 會在執行時期被優化成常數，故不需要變數快取 (反而會妨礙 JIT 進行迴圈及條件展開)
                 if (CheckTypeCanBeVectorized())
-                    return VectorizedPointerIndexOfCore(ptr, ptrEnd, value, method, accurateResult);
+                    return VectorizedPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
                 if (UnsafeHelper.IsPrimitiveType<T>())
                 {
                     for (; ptr < ptrEnd; ptr++)
@@ -706,7 +706,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T* VectorizedPointerIndexOfCore(T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
+            private static T* VectorizedPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
 #if NET6_0_OR_GREATER
                 if (Vector512.IsHardwareAccelerated)
@@ -918,7 +918,7 @@ namespace WitherTorch.Common.Helpers
                 };
 
             [Inline(InlineBehavior.Remove)]
-            private static int FindIndexForResultVector_512(in Vector512<T> vector) 
+            private static int FindIndexForResultVector_512(in Vector512<T> vector)
                 => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
 
             [Inline(InlineBehavior.Remove)]

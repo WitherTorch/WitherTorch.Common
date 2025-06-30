@@ -1,4 +1,6 @@
-﻿using InlineMethod;
+﻿using System.Reflection;
+
+using InlineMethod;
 
 using LocalsInit;
 
@@ -34,6 +36,14 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(ushort)) ||
                        (typeof(T) == typeof(uint)) ||
                        (typeof(T) == typeof(ulong));
+
+            [Inline(InlineBehavior.Remove)]
+            private static nint GetFunctionPointerSafely(MethodInfo? methodInfo)
+            {
+                if (methodInfo is null)
+                    return default;
+                return methodInfo.MethodHandle.GetFunctionPointer();
+            }
         }
     }
 }

@@ -44,6 +44,27 @@ namespace WitherTorch.Common.Helpers
             };
         }
 
+        public static void* PointerMinValue
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
+            get => null;
+        }
+
+        public static void* PointerMaxValue
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
+#if NET6_0_OR_GREATER
+            get => (void*)nint.MaxValue;
+#else
+            get => PointerSizeConstant switch
+            {
+                sizeof(uint) => (void*)uint.MaxValue,
+                sizeof(ulong) => unchecked((void*)ulong.MaxValue),
+                _ => unchecked((void*)ulong.MaxValue),
+            };
+#endif
+        }
+
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsPrimitiveType<T>()
                 => (typeof(T) == typeof(bool)) ||
@@ -218,6 +239,49 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Ldc_I4_0();
             IL.Emit.Ceq();
             return IL.Return<bool>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T Or<T>(T a, T b)
+        {
+            IL.Push(a);
+            IL.Push(b);
+            IL.Emit.Or();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T And<T>(T a, T b)
+        {
+            IL.Push(a);
+            IL.Push(b);
+            IL.Emit.And();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T Xor<T>(T a, T b)
+        {
+            IL.Push(a);
+            IL.Push(b);
+            IL.Emit.Xor();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T Negate<T>(T value)
+        {
+            IL.Push(value);
+            IL.Emit.Neg();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T Not<T>(T value)
+        {
+            IL.Push(value);
+            IL.Emit.Not();
+            return IL.Return<T>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
