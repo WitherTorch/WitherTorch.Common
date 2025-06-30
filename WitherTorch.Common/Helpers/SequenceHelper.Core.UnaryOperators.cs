@@ -109,7 +109,6 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void UnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
             {
-                // Vector.IsHardwareAccelerated 與 Vector<T>.Count 會在執行時期被優化成常數，故不需要變數快取 (反而會妨礙 JIT 進行迴圈及條件展開)
                 if (CheckTypeCanBeVectorized())
                 {
                     VectorizedUnaryOperationCore(ref ptr, ptrEnd, method);
@@ -117,15 +116,10 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (UnsafeHelper.IsPrimitiveType<T>())
                 {
-                    for (; ptr < ptrEnd; ptr++)
-                        *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                    FastUnaryOperationCore(ref ptr, ptrEnd, method);
                     return;
                 }
-                nint functionPointer = _unaryOperatorsLazy.Value[(int)method];
-                if (functionPointer == default)
-                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyUnaryOperationCoreSlow(*ptr, functionPointer);
+                SlowUnaryOperationCore(ref ptr, ptrEnd, method);
             }
 
             [Inline(InlineBehavior.Remove)]
@@ -133,120 +127,189 @@ namespace WitherTorch.Common.Helpers
             {
 #if NET6_0_OR_GREATER
                 if (Vector512.IsHardwareAccelerated)
+                    goto Vector512;
+                if (Vector256.IsHardwareAccelerated)
+                    goto Vector256;
+                if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (Vector64.IsHardwareAccelerated)
+                    goto Vector64;
+
+                FastUnaryOperationCore(ref ptr, ptrEnd, method);
+                return;
+
+                Vector512:
+                if (ptr + Vector512<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector512<T>.Count < ptrEnd)
+                    do
                     {
-                        do
-                        {
-                            Vector512<T> valueVector = Vector512.Load(ptr);
-                            VectorizedUnaryOperationCore_512(valueVector, method).Store(ptr);
-                            ptr += Vector512<T>.Count;
-                        }
-                        while (ptr + Vector512<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector512<T> valueVector = Vector512.Load(ptr);
+                        VectorizedUnaryOperationCore_512(valueVector, method).Store(ptr);
+                        ptr += Vector512<T>.Count;
                     }
+                    while (ptr + Vector512<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
                 }
                 if (Vector256.IsHardwareAccelerated)
+                    goto Vector256;
+                if (ptr + Vector512<int>.Count < ptrEnd)
                 {
-                    if (ptr + Vector256<T>.Count < ptrEnd)
+                    Vector512<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedUnaryOperationCore_512(valueVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    return;
+                }
+                for (int i = 0; i < Vector512<int>.Count; i++)
+                {
+                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                return;
+
+            Vector256:
+                if (ptr + Vector256<T>.Count < ptrEnd)
+                {
+                    do
                     {
-                        do
-                        {
-                            Vector256<T> valueVector = Vector256.Load(ptr);
-                            VectorizedUnaryOperationCore_256(valueVector, method).Store(ptr);
-                            ptr += Vector256<T>.Count;
-                        }
-                        while (ptr + Vector256<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector256<T> valueVector = Vector256.Load(ptr);
+                        VectorizedUnaryOperationCore_256(valueVector, method).Store(ptr);
+                        ptr += Vector256<T>.Count;
                     }
+                    while (ptr + Vector256<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
                 }
                 if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (ptr + Vector256<int>.Count < ptrEnd)
                 {
-                    if (ptr + Vector128<T>.Count < ptrEnd)
+                    Vector256<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedUnaryOperationCore_256(valueVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    return;
+                }
+                for (int i = 0; i < Vector256<int>.Count; i++)
+                {
+                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                return;
+
+            Vector128:
+                if (ptr + Vector128<T>.Count < ptrEnd)
+                {
+                    do
                     {
-                        do
-                        {
-                            Vector128<T> valueVector = Vector128.Load(ptr);
-                            VectorizedUnaryOperationCore_128(valueVector, method).Store(ptr);
-                            ptr += Vector128<T>.Count;
-                        }
-                        while (ptr + Vector128<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector128<T> valueVector = Vector128.Load(ptr);
+                        VectorizedUnaryOperationCore_128(valueVector, method).Store(ptr);
+                        ptr += Vector128<T>.Count;
                     }
+                    while (ptr + Vector128<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
                 }
                 if (Vector64.IsHardwareAccelerated)
+                    goto Vector64;
+                if (ptr + Vector128<int>.Count < ptrEnd)
                 {
-                    if (ptr + Vector64<T>.Count < ptrEnd)
-                    {
-                        do
-                        {
-                            Vector64<T> valueVector = Vector64.Load(ptr);
-                            VectorizedUnaryOperationCore_64(valueVector, method).Store(ptr);
-                            ptr += Vector64<T>.Count;
-                        }
-                        while (ptr + Vector64<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
-                    }
-                    if (ptr + 2 < ptrEnd)
-                    {
-                        Vector64<T> valueVector = default;
-                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                        valueVector = VectorizedUnaryOperationCore_64(valueVector, method);
-                        UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
-                        return;
-                    }
-                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
-                        *ptr++ = LegacyUnaryOperationCoreFast(*ptr, method);
+                    Vector128<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedUnaryOperationCore_128(valueVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
+                for (int i = 0; i < Vector128<int>.Count; i++)
+                {
+                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                return;
+
+            Vector64:
+                if (ptr + Vector64<T>.Count < ptrEnd)
+                {
+                    do
+                    {
+                        Vector64<T> valueVector = Vector64.Load(ptr);
+                        VectorizedUnaryOperationCore_64(valueVector, method).Store(ptr);
+                        ptr += Vector64<T>.Count;
+                    }
+                    while (ptr + Vector64<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
+                }
+                if (ptr + Vector64<int>.Count < ptrEnd)
+                {
+                    Vector64<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedUnaryOperationCore_64(valueVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    return;
+                }
+                for (int i = 0; i < Vector64<int>.Count; i++)
+                {
+                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                return;
 #else
                 if (Vector.IsHardwareAccelerated)
+                    goto Vector;
+
+                FastUnaryOperationCore(ref ptr, ptrEnd, method);
+                return;
+
+            Vector:
+                if (ptr + Vector<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector<T>.Count < ptrEnd)
+                    do
                     {
-                        do
-                        {
-                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                            UnsafeHelper.Write(ptr, VectorizedUnaryOperationCore(valueVector, method));
-                            ptr += Vector<T>.Count;
-                        }
-                        while (ptr + Vector<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                        UnsafeHelper.Write(ptr, VectorizedUnaryOperationCore(valueVector, method));
+                        ptr += Vector<T>.Count;
                     }
-                    if (ptr + 2 < ptrEnd)
-                    {
-                        Vector<T> valueVector = default;
-                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                        valueVector = VectorizedUnaryOperationCore(valueVector, method);
-                        UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    while (ptr + Vector<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
                         return;
-                    }
-                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
-                        *ptr++ = LegacyUnaryOperationCoreFast(*ptr, method);
+                }
+                if (ptr + Vector<int>.Count < ptrEnd)
+                {
+                    Vector<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedUnaryOperationCore(valueVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-#endif
-                for (; ptr < ptrEnd; ptr++)
+                for (int i = 0; i < Vector<int>.Count; i++)
+                {
                     *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
-                return;
+                    if (++ptr >= ptrEnd)
+                        return;
+                }
+#endif
             }
 
 #if NET6_0_OR_GREATER
             [Inline(InlineBehavior.Remove)]
             private static Vector512<T> VectorizedUnaryOperationCore_512(in Vector512<T> valueVector,
-                [InlineParameter] UnaryOperationMethod method)
-                => method switch
-                {
-                    UnaryOperationMethod.Not => ~valueVector,
-                    _ => throw new InvalidOperationException(),
-                };
+            [InlineParameter] UnaryOperationMethod method)
+            => method switch
+            {
+                UnaryOperationMethod.Not => ~valueVector,
+                _ => throw new InvalidOperationException(),
+            };
 
             [Inline(InlineBehavior.Remove)]
             private static Vector256<T> VectorizedUnaryOperationCore_256(in Vector256<T> valueVector,
@@ -276,6 +339,11 @@ namespace WitherTorch.Common.Helpers
                 };
 #else
             [Inline(InlineBehavior.Remove)]
+            private static void VectorizedUnaryOperationCore_Internal(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
+            {
+            }
+
+            [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedUnaryOperationCore(in Vector<T> valueVector,
                 [InlineParameter] UnaryOperationMethod method)
                 => method switch
@@ -284,6 +352,23 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new InvalidOperationException(),
                 };
 #endif
+
+            [Inline(InlineBehavior.Remove)]
+            private static void FastUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
+            {
+                for (; ptr < ptrEnd; ptr++)
+                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void SlowUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
+            {
+                nint functionPointer = _unaryOperatorsLazy.Value[(int)method];
+                if (functionPointer == default)
+                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
+                for (; ptr < ptrEnd; ptr++)
+                    *ptr = LegacyUnaryOperationCoreSlow(*ptr, functionPointer);
+            }
 
             [Inline(InlineBehavior.Remove)]
             private static T LegacyUnaryOperationCoreFast(T item, [InlineParameter] UnaryOperationMethod method)

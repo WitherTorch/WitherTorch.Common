@@ -487,7 +487,6 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void BinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method)
             {
-                // Vector.IsHardwareAccelerated 與 Vector<T>.Count 會在執行時期被優化成常數，故不需要變數快取 (反而會妨礙 JIT 進行迴圈及條件展開)
                 if (CheckTypeCanBeVectorized())
                 {
                     VectorizedBinaryOperationCore(ref ptr, ptrEnd, value, method);
@@ -495,15 +494,10 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (UnsafeHelper.IsPrimitiveType<T>())
                 {
-                    for (; ptr < ptrEnd; ptr++)
-                        *ptr = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    FastBinaryOperationCore(ref ptr, ptrEnd, value, method);
                     return;
                 }
-                nint functionPointer = _binaryOperatorsLazy.Value[(int)method];
-                if (functionPointer == default)
-                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyBinaryOperationCoreSlow(*ptr, value, functionPointer);
+                SlowBinaryOperationCore(ref ptr, ptrEnd, value, method);
             }
 
             [Inline(InlineBehavior.Remove)]
@@ -511,116 +505,190 @@ namespace WitherTorch.Common.Helpers
             {
 #if NET6_0_OR_GREATER
                 if (Vector512.IsHardwareAccelerated)
+                    goto Vector512;
+                if (Vector256.IsHardwareAccelerated)
+                    goto Vector256;
+                if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (Vector64.IsHardwareAccelerated)
+                    goto Vector64;
+
+                FastBinaryOperationCore(ref ptr, ptrEnd, value, method);
+                return;
+
+            Vector512:
+                if (ptr + Vector512<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector512<T>.Count < ptrEnd)
+                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                    do
                     {
-                        Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector512<T> valueVector = Vector512.Load(ptr);
-                            VectorizedBinaryOperationCore_512(valueVector, maskVector, method).Store(ptr);
-                            ptr += Vector512<T>.Count;
-                        }
-                        while (ptr + Vector512<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector512<T> valueVector = Vector512.Load(ptr);
+                        VectorizedBinaryOperationCore_512(valueVector, maskVector, method).Store(ptr);
+                        ptr += Vector512<T>.Count;
                     }
+                    while (ptr + Vector512<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
                 }
                 if (Vector256.IsHardwareAccelerated)
+                    goto Vector256;
+                if (ptr + Vector512<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector256<T>.Count < ptrEnd)
+                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                    Vector512<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedBinaryOperationCore_512(valueVector, maskVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    return;
+                }
+                for (int i = 0; i < Vector512<T>.Count; i++)
+                {
+                    *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    if (++ptr >= ptrEnd)
+                        return;
+                }
+                return;
+
+            Vector256:
+                if (ptr + Vector256<T>.Count < ptrEnd)
+                {
+                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                    do
                     {
-                        Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector256<T> valueVector = Vector256.Load(ptr);
-                            VectorizedBinaryOperationCore_256(valueVector, maskVector, method).Store(ptr);
-                            ptr += Vector256<T>.Count;
-                        }
-                        while (ptr + Vector256<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector256<T> valueVector = Vector256.Load(ptr);
+                        VectorizedBinaryOperationCore_256(valueVector, maskVector, method).Store(ptr);
+                        ptr += Vector256<T>.Count;
                     }
+                    while (ptr + Vector256<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
                 }
                 if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (ptr + Vector256<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector128<T>.Count < ptrEnd)
+                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                    Vector256<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedBinaryOperationCore_256(valueVector, maskVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    return;
+                }
+                for (int i = 0; i < Vector256<T>.Count; i++)
+                {
+                    *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    if (++ptr >= ptrEnd)
+                        return;
+                }
+                return;
+
+            Vector128:
+                if (ptr + Vector128<T>.Count < ptrEnd)
+                {
+                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                    do
                     {
-                        Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector128<T> valueVector = Vector128.Load(ptr);
-                            VectorizedBinaryOperationCore_128(valueVector, maskVector, method).Store(ptr);
-                            ptr += Vector128<T>.Count;
-                        }
-                        while (ptr + Vector128<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector128<T> valueVector = Vector128.Load(ptr);
+                        VectorizedBinaryOperationCore_128(valueVector, maskVector, method).Store(ptr);
+                        ptr += Vector128<T>.Count;
                     }
+                    while (ptr + Vector128<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
                 }
                 if (Vector64.IsHardwareAccelerated)
+                    goto Vector64;
+                if (ptr + Vector128<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector64<T>.Count < ptrEnd)
-                    {
-                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector64<T> valueVector = Vector64.Load(ptr);
-                            VectorizedBinaryOperationCore_64(valueVector, maskVector, method).Store(ptr);
-                            ptr += Vector64<T>.Count;
-                        }
-                        while (ptr + Vector64<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
-                    }
-                    if (ptr + 2 < ptrEnd)
-                    {
-                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                        Vector64<T> valueVector = default;
-                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                        valueVector = VectorizedBinaryOperationCore_64(valueVector, maskVector, method);
-                        UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
-                        return;
-                    }
-                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
-                        *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                    Vector128<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedBinaryOperationCore_128(valueVector, maskVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
+                for (int i = 0; i < Vector128<T>.Count; i++)
+                {
+                    *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    if (++ptr >= ptrEnd)
+                        return;
+                }
+                return;
+
+            Vector64:
+                if (ptr + Vector64<T>.Count < ptrEnd)
+                {
+                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                    do
+                    {
+                        Vector64<T> valueVector = Vector64.Load(ptr);
+                        VectorizedBinaryOperationCore_64(valueVector, maskVector, method).Store(ptr);
+                        ptr += Vector64<T>.Count;
+                    }
+                    while (ptr + Vector64<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return;
+                }
+                if (ptr + Vector64<T>.Count < ptrEnd)
+                {
+                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                    Vector64<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedBinaryOperationCore_64(valueVector, maskVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    return;
+                }
+                for (int i = 0; i < Vector64<T>.Count; i++)
+                {
+                    *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    if (++ptr >= ptrEnd)
+                        return;
+                }
+                return;
+
 #else
                 if (Vector.IsHardwareAccelerated)
+                    goto Vector;
+
+                FastBinaryOperationCore(ref ptr, ptrEnd, value, method);
+                return;
+
+            Vector:
+                if (ptr + Vector<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector<T>.Count < ptrEnd)
+                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                    do
                     {
-                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                            UnsafeHelper.Write(ptr, VectorizedBinaryOperationCore(valueVector, maskVector, method));
-                            ptr += Vector<T>.Count;
-                        }
-                        while (ptr + Vector<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                        UnsafeHelper.Write(ptr, VectorizedBinaryOperationCore(valueVector, maskVector, method));
+                        ptr += Vector<T>.Count;
                     }
-                    if (ptr + 2 < ptrEnd)
-                    {
-                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                        Vector<T> valueVector = default;
-                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                        valueVector = VectorizedBinaryOperationCore(valueVector, maskVector, method);
-                        UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
+                    while (ptr + Vector<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
                         return;
-                    }
-                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
-                        *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                }
+                if (ptr + Vector<int>.Count < ptrEnd)
+                {
+                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                    Vector<T> valueVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    valueVector = VectorizedBinaryOperationCore(valueVector, maskVector, method);
+                    UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-#endif
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                for (int i = 0; i < Vector<T>.Count; i++)
+                {
+                    *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
+                    if (++ptr >= ptrEnd)
+                        return;
+                }
                 return;
+#endif
             }
 
 #if NET6_0_OR_GREATER
@@ -699,6 +767,23 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new InvalidOperationException(),
                 };
 #endif
+
+            [Inline(InlineBehavior.Remove)]
+            private static void FastBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method)
+            {
+                for (; ptr < ptrEnd; ptr++)
+                    *ptr = LegacyBinaryOperationCoreFast(*ptr, value, method);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void SlowBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method)
+            {
+                nint functionPointer = _binaryOperatorsLazy.Value[(int)method];
+                if (functionPointer == default)
+                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
+                for (; ptr < ptrEnd; ptr++)
+                    *ptr = LegacyBinaryOperationCoreSlow(*ptr, value, functionPointer);
+            }
 
             [Inline(InlineBehavior.Remove)]
             private static T LegacyBinaryOperationCoreFast(T item, T value, [InlineParameter] BinaryOperationMethod method)

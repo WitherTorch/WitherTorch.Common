@@ -672,37 +672,13 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
-                // Vector.IsHardwareAccelerated 與 Vector<T>.Count 會在執行時期被優化成常數，故不需要變數快取 (反而會妨礙 JIT 進行迴圈及條件展開)
                 if (CheckTypeCanBeVectorized())
                     return VectorizedPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
+
                 if (UnsafeHelper.IsPrimitiveType<T>())
-                {
-                    for (; ptr < ptrEnd; ptr++)
-                    {
-                        if (LegacyIndexOfCoreFast(*ptr, value, method))
-                            return ptr;
-                    }
-                    return null;
-                }
-                if (method == IndexOfMethod.Include || method == IndexOfMethod.Exclude)
-                {
-                    EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-                    for (; ptr < ptrEnd; ptr++)
-                    {
-                        if (LegacyIndexOfCoreSlow(comparer, *ptr, value, method))
-                            return ptr;
-                    }
-                }
-                else
-                {
-                    Comparer<T> comparer = Comparer<T>.Default;
-                    for (; ptr < ptrEnd; ptr++)
-                    {
-                        if (LegacyIndexOfCoreSlow(comparer, *ptr, value, method))
-                            return ptr;
-                    }
-                }
-                return null;
+                    return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
+
+                return SlowPointerIndexOfCore(ref ptr, ptrEnd, value, method);
             }
 
             [Inline(InlineBehavior.Remove)]
@@ -710,173 +686,244 @@ namespace WitherTorch.Common.Helpers
             {
 #if NET6_0_OR_GREATER
                 if (Vector512.IsHardwareAccelerated)
+                    goto Vector512;
+                if (Vector256.IsHardwareAccelerated)
+                    goto Vector256;
+                if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (Vector64.IsHardwareAccelerated)
+                    goto Vector64;
+
+                return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
+
+            Vector512:
+                if (ptr + Vector512<T>.Count < ptrEnd)
                 {
-                    if (ptr + Vector512<T>.Count < ptrEnd)
+                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                    do
                     {
-                        Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
-                        do
+                        Vector512<T> valueVector = Vector512.Load(ptr);
+                        Vector512<T> resultVector = VectorizedIndexOfCore_512(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
                         {
-                            Vector512<T> valueVector = Vector512.Load(ptr);
-                            Vector512<T> resultVector = VectorizedIndexOfCore_512(valueVector, maskVector, method);
-                            if (resultVector.Equals(default))
-                            {
-                                ptr += Vector512<T>.Count;
-                                continue;
-                            }
-                            return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
+                            ptr += Vector512<T>.Count;
+                            continue;
                         }
-                        while (ptr + Vector512<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return null;
+                        return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
                     }
+                    while (ptr + Vector512<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        goto NotFound;
                 }
                 if (Vector256.IsHardwareAccelerated)
+                    goto Vector256;
+                if (ptr + Vector512<int>.Count < ptrEnd)
                 {
-                    if (ptr + Vector256<T>.Count < ptrEnd)
-                    {
-                        Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector256<T> valueVector = Vector256.Load(ptr);
-                            Vector256<T> resultVector = VectorizedIndexOfCore_256(valueVector, maskVector, method);
-                            if (resultVector.Equals(default))
-                            {
-                                ptr += Vector256<T>.Count;
-                                continue;
-                            }
-                            return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
-                        }
-                        while (ptr + Vector256<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return null;
-                    }
+                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                    Vector512<T> valueVector = default, resultVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                    resultVector &= VectorizedIndexOfCore_512(valueVector, maskVector, method);
+                    if (resultVector.Equals(default))
+                        goto NotFound;
+                    return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
                 }
-                if (Vector128.IsHardwareAccelerated)
-                {
-                    if (ptr + Vector128<T>.Count < ptrEnd)
-                    {
-                        Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector128<T> valueVector = Vector128.Load(ptr);
-                            Vector128<T> resultVector = VectorizedIndexOfCore_128(valueVector, maskVector, method);
-                            if (resultVector.Equals(default))
-                            {
-                                ptr += Vector128<T>.Count;
-                                continue;
-                            }
-                            return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
-                        }
-                        while (ptr + Vector128<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return null;
-                    }
-                }
-                if (Vector64.IsHardwareAccelerated)
-                {
-                    if (ptr + Vector64<T>.Count < ptrEnd)
-                    {
-                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector64<T> valueVector = Vector64.Load(ptr);
-                            Vector64<T> resultVector = VectorizedIndexOfCore_64(valueVector, maskVector, method);
-                            if (resultVector.Equals(default))
-                            {
-                                ptr += Vector64<T>.Count;
-                                continue;
-                            }
-                            return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
-                        }
-                        while (ptr + Vector64<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return null;
-                    }
-                    if (ptr + 2 < ptrEnd)
-                    {
-                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                        Vector64<T> valueVector = default, resultVector = default;
-                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                        UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                        resultVector &= VectorizedIndexOfCore_64(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
-                            return null;
-                        return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
-                    }
-                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
-                    {
-                        if (LegacyIndexOfCoreFast(*ptr, value, method))
-                            return ptr;
-                        if (++ptr >= ptrEnd)
-                            break;
-                    }
-                    return null;
-                }
-#else
-                if (Vector.IsHardwareAccelerated)
-                {
-                    if (ptr + Vector<T>.Count < ptrEnd)
-                    {
-                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                            Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (resultVector.Equals(default))
-                            {
-                                ptr += Vector<T>.Count;
-                                continue;
-                            }
-                            return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
-                        }
-                        while (ptr + Vector<T>.Count < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return null;
-                    }
-                    if (ptr + 2 < ptrEnd)
-                    {
-                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                        Vector<T> valueVector = default, resultVector = default;
-                        uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                        UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                        UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                        resultVector &= VectorizedIndexOfCore(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
-                            return null;
-                        return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
-                    }
-                    for (int i = 0; i < 2; i++) // CLR 編譯時會展開
-                    {
-                        if (LegacyIndexOfCoreFast(*ptr, value, method))
-                            return ptr;
-                        if (++ptr >= ptrEnd)
-                            break;
-                    }
-                    return null;
-                }
-#endif
-                for (; ptr < ptrEnd; ptr++)
+                for (int i = 0; i < Vector512<int>.Count; i++) // CLR 編譯時會展開
                 {
                     if (LegacyIndexOfCoreFast(*ptr, value, method))
                         return ptr;
+                    if (++ptr >= ptrEnd)
+                        break;
                 }
+                return null;
+
+            Vector256:
+                if (ptr + Vector256<T>.Count < ptrEnd)
+                {
+                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                    do
+                    {
+                        Vector256<T> valueVector = Vector256.Load(ptr);
+                        Vector256<T> resultVector = VectorizedIndexOfCore_256(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
+                        {
+                            ptr += Vector256<T>.Count;
+                            continue;
+                        }
+                        return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
+                    }
+                    while (ptr + Vector256<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        goto NotFound;
+                }
+                if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (ptr + Vector256<int>.Count < ptrEnd)
+                {
+                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                    Vector256<T> valueVector = default, resultVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                    resultVector &= VectorizedIndexOfCore_256(valueVector, maskVector, method);
+                    if (resultVector.Equals(default))
+                        goto NotFound;
+                    return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
+                }
+                for (int i = 0; i < Vector256<int>.Count; i++) // CLR 編譯時會展開
+                {
+                    if (LegacyIndexOfCoreFast(*ptr, value, method))
+                        return ptr;
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                goto NotFound;
+
+            Vector128:
+                if (ptr + Vector128<T>.Count < ptrEnd)
+                {
+                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                    do
+                    {
+                        Vector128<T> valueVector = Vector128.Load(ptr);
+                        Vector128<T> resultVector = VectorizedIndexOfCore_128(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
+                        {
+                            ptr += Vector128<T>.Count;
+                            continue;
+                        }
+                        return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
+                    }
+                    while (ptr + Vector128<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        goto NotFound;
+                }
+                if (Vector64.IsHardwareAccelerated)
+                    goto Vector64;
+                if (ptr + Vector128<int>.Count < ptrEnd)
+                {
+                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                    Vector128<T> valueVector = default, resultVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                    resultVector &= VectorizedIndexOfCore_128(valueVector, maskVector, method);
+                    if (resultVector.Equals(default))
+                        goto NotFound;
+                    return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
+                }
+                for (int i = 0; i < Vector128<int>.Count; i++) // CLR 編譯時會展開
+                {
+                    if (LegacyIndexOfCoreFast(*ptr, value, method))
+                        return ptr;
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                goto NotFound;
+
+            Vector64:
+                if (ptr + Vector64<T>.Count < ptrEnd)
+                {
+                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                    do
+                    {
+                        Vector64<T> valueVector = Vector64.Load(ptr);
+                        Vector64<T> resultVector = VectorizedIndexOfCore_64(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
+                        {
+                            ptr += Vector64<T>.Count;
+                            continue;
+                        }
+                        return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
+                    }
+                    while (ptr + Vector64<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        goto NotFound;
+                }
+                if (ptr + Vector64<int>.Count < ptrEnd)
+                {
+                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                    Vector64<T> valueVector = default, resultVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                    resultVector &= VectorizedIndexOfCore_64(valueVector, maskVector, method);
+                    if (resultVector.Equals(default))
+                        goto NotFound;
+                    return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
+                }
+                for (int i = 0; i < Vector64<int>.Count; i++) // CLR 編譯時會展開
+                {
+                    if (LegacyIndexOfCoreFast(*ptr, value, method))
+                        return ptr;
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                goto NotFound;
+#else
+                if (Vector.IsHardwareAccelerated)
+                    goto Vector;
+
+                return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
+
+            Vector:
+                if (ptr + Vector<T>.Count < ptrEnd)
+                {
+                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                    do
+                    {
+                        Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                        Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
+                        if (resultVector.Equals(default))
+                        {
+                            ptr += Vector<T>.Count;
+                            continue;
+                        }
+                        return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
+                    }
+                    while (ptr + Vector<T>.Count < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        goto NotFound;
+                }
+                if (ptr + Vector<int>.Count < ptrEnd)
+                {
+                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                    Vector<T> valueVector = default, resultVector = default;
+                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
+                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
+                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
+                    resultVector &= VectorizedIndexOfCore(valueVector, maskVector, method);
+                    if (resultVector.Equals(default))
+                        goto NotFound;
+                    return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
+                }
+                for (int i = 0; i < Vector<int>.Count; i++) // CLR 編譯時會展開
+                {
+                    if (LegacyIndexOfCoreFast(*ptr, value, method))
+                        return ptr;
+                    if (++ptr >= ptrEnd)
+                        break;
+                }
+                goto NotFound;
+#endif
+            NotFound:
                 return null;
             }
 
 #if NET6_0_OR_GREATER
             [Inline(InlineBehavior.Remove)]
             private static Vector512<T> VectorizedIndexOfCore_512(in Vector512<T> valueVector, in Vector512<T> maskVector, [InlineParameter] IndexOfMethod method)
-                => method switch
-                {
-                    IndexOfMethod.Include => Vector512.Equals(valueVector, maskVector),
-                    IndexOfMethod.Exclude => ~Vector512.Equals(valueVector, maskVector),
-                    IndexOfMethod.GreaterThan => Vector512.GreaterThan(valueVector, maskVector),
-                    IndexOfMethod.GreaterOrEqualsThan => Vector512.GreaterThanOrEqual(valueVector, maskVector),
-                    IndexOfMethod.LessThan => Vector512.LessThan(valueVector, maskVector),
-                    IndexOfMethod.LessOrEqualsThan => Vector512.LessThanOrEqual(valueVector, maskVector),
-                    _ => throw new InvalidOperationException(),
-                };
+            => method switch
+            {
+                IndexOfMethod.Include => Vector512.Equals(valueVector, maskVector),
+                IndexOfMethod.Exclude => ~Vector512.Equals(valueVector, maskVector),
+                IndexOfMethod.GreaterThan => Vector512.GreaterThan(valueVector, maskVector),
+                IndexOfMethod.GreaterOrEqualsThan => Vector512.GreaterThanOrEqual(valueVector, maskVector),
+                IndexOfMethod.LessThan => Vector512.LessThan(valueVector, maskVector),
+                IndexOfMethod.LessOrEqualsThan => Vector512.LessThanOrEqual(valueVector, maskVector),
+                _ => throw new InvalidOperationException(),
+            };
 
             [Inline(InlineBehavior.Remove)]
             private static Vector256<T> VectorizedIndexOfCore_256(in Vector256<T> valueVector, in Vector256<T> maskVector, [InlineParameter] IndexOfMethod method)
@@ -960,6 +1007,41 @@ namespace WitherTorch.Common.Helpers
                 return Vector<T>.Count;
             }
 #endif
+
+            [Inline(InlineBehavior.Remove)]
+            private static T* FastPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method)
+            {
+                for (; ptr < ptrEnd; ptr++)
+                {
+                    if (LegacyIndexOfCoreFast(*ptr, value, method))
+                        return ptr;
+                }
+                return null;
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static T* SlowPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method)
+            {
+                if (method == IndexOfMethod.Include || method == IndexOfMethod.Exclude)
+                {
+                    EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+                    for (; ptr < ptrEnd; ptr++)
+                    {
+                        if (LegacyIndexOfCoreSlow(comparer, *ptr, value, method))
+                            return ptr;
+                    }
+                }
+                else
+                {
+                    Comparer<T> comparer = Comparer<T>.Default;
+                    for (; ptr < ptrEnd; ptr++)
+                    {
+                        if (LegacyIndexOfCoreSlow(comparer, *ptr, value, method))
+                            return ptr;
+                    }
+                }
+                return null;
+            }
 
             [Inline(InlineBehavior.Remove)]
             private static bool LegacyIndexOfCoreFast(T item, T value, [InlineParameter] IndexOfMethod method)
