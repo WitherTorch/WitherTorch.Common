@@ -1,7 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
-using InlineMethod;
-
 namespace WitherTorch.Common
 {
     public static class Limits

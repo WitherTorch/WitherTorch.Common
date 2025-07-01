@@ -33,12 +33,20 @@ namespace WitherTorch.Common.Helpers
                 pResult[VectorClassCount] = count;
             }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [Inline(InlineBehavior.Remove)]
             private static nuint CalculateOperationCountCore(ref nuint count, int batchSize)
             {
-                if (batchSize > 2)
-                    return MathHelper.DivRem(count, unchecked((nuint)batchSize), out count);
-                return 0;
+                if (batchSize <= 2)
+                    return 0;
+                return CalculateOperationCountCore(ref count, unchecked((nuint)batchSize));
+            }        
+            
+            [Inline(InlineBehavior.Remove)]
+            private static nuint CalculateOperationCountCore(ref nuint count, nuint batchSize)
+            {
+                nuint result = count / batchSize;
+                count %= batchSize;
+                return result;
             }
         }
     }
