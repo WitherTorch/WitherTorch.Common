@@ -157,7 +157,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector128;
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector512<int>.Count < ptrEnd)
+                if (ptr + Vector512<T>.Count / 2 < ptrEnd)
                 {
                     Vector512<T> valueVector = default;
                     uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
@@ -166,7 +166,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector512<int>.Count; i++)
+                for (int i = 0; i < Vector512<T>.Count / 2; i++)
                 {
                     *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
                     if (++ptr >= ptrEnd)
@@ -191,7 +191,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector128;
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector256<int>.Count < ptrEnd)
+                if (ptr + Vector256<T>.Count / 2 < ptrEnd)
                 {
                     Vector256<T> valueVector = default;
                     uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
@@ -200,7 +200,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector256<int>.Count; i++)
+                for (int i = 0; i < Vector256<T>.Count / 2; i++)
                 {
                     *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
                     if (++ptr >= ptrEnd)
@@ -223,7 +223,7 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector128<int>.Count < ptrEnd)
+                if (ptr + Vector128<T>.Count / 2 < ptrEnd)
                 {
                     Vector128<T> valueVector = default;
                     uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
@@ -232,7 +232,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector128<int>.Count; i++)
+                for (int i = 0; i < Vector128<T>.Count / 2; i++)
                 {
                     *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
                     if (++ptr >= ptrEnd)
@@ -253,7 +253,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return;
                 }
-                if (ptr + Vector64<int>.Count < ptrEnd)
+                if (ptr + Vector64<T>.Count / 2 < ptrEnd)
                 {
                     Vector64<T> valueVector = default;
                     uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
@@ -262,7 +262,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector64<int>.Count; i++)
+                for (int i = 0; i < Vector64<T>.Count / 2; i++)
                 {
                     *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
                     if (++ptr >= ptrEnd)
@@ -289,7 +289,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return;
                 }
-                if (ptr + Vector<int>.Count < ptrEnd)
+                if (ptr + Vector<T>.Count / 2 < ptrEnd)
                 {
                     Vector<T> valueVector = default;
                     uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
@@ -298,7 +298,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector<int>.Count; i++)
+                for (int i = 0; i < Vector<T>.Count / 2; i++)
                 {
                     *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
                     if (++ptr >= ptrEnd)

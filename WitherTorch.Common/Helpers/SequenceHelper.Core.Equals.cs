@@ -159,7 +159,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector128;
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector512<int>.Count < ptrEnd)
+                if (ptr + Vector512<T>.Count / 2 < ptrEnd)
                 {
                     Vector512<T> vectorToAddInRange = Vector512.Create(valueToAddInRange);
                     Vector512<T> lowerBoundVector = Vector512.Create(lowerBound);
@@ -175,7 +175,7 @@ namespace WitherTorch.Common.Helpers
                         lowerBoundVector, higherBoundVector);
                     return valueVector.Equals(valueVector2);
                 }
-                for (int i = 0; i < Vector512<int>.Count; i++, ptr2++)
+                for (int i = 0; i < Vector512<T>.Count / 2; i++, ptr2++)
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
@@ -209,7 +209,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector128;
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector256<int>.Count < ptrEnd)
+                if (ptr + Vector256<T>.Count / 2 < ptrEnd)
                 {
                     Vector256<T> vectorToAddInRange = Vector256.Create(valueToAddInRange);
                     Vector256<T> lowerBoundVector = Vector256.Create(lowerBound);
@@ -225,7 +225,7 @@ namespace WitherTorch.Common.Helpers
                         lowerBoundVector, higherBoundVector);
                     return valueVector.Equals(valueVector2);
                 }
-                for (int i = 0; i < Vector256<int>.Count; i++, ptr2++)
+                for (int i = 0; i < Vector256<T>.Count / 2; i++, ptr2++)
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
@@ -257,7 +257,7 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector128<int>.Count < ptrEnd)
+                if (ptr + Vector128<T>.Count / 2 < ptrEnd)
                 {
                     Vector128<T> vectorToAddInRange = Vector128.Create(valueToAddInRange);
                     Vector128<T> lowerBoundVector = Vector128.Create(lowerBound);
@@ -273,7 +273,7 @@ namespace WitherTorch.Common.Helpers
                         lowerBoundVector, higherBoundVector);
                     return valueVector.Equals(valueVector2);
                 }
-                for (int i = 0; i < Vector128<int>.Count; i++, ptr2++)
+                for (int i = 0; i < Vector128<T>.Count / 2; i++, ptr2++)
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
@@ -303,7 +303,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return true;
                 }
-                if (ptr + Vector64<int>.Count < ptrEnd)
+                if (ptr + Vector64<T>.Count / 2 < ptrEnd)
                 {
                     Vector64<T> vectorToAddInRange = Vector64.Create(valueToAddInRange);
                     Vector64<T> lowerBoundVector = Vector64.Create(lowerBound);
@@ -319,7 +319,7 @@ namespace WitherTorch.Common.Helpers
                         lowerBoundVector, higherBoundVector);
                     return valueVector.Equals(valueVector2);
                 }
-                for (int i = 0; i < Vector64<int>.Count; i++, ptr2++)
+                for (int i = 0; i < Vector64<T>.Count / 2; i++, ptr2++)
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
@@ -353,7 +353,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return true;
                 }
-                if (ptr + Vector<int>.Count < ptrEnd)
+                if (ptr + Vector<T>.Count / 2 < ptrEnd)
                 {
                     Vector<T> vectorToAddInRange = new Vector<T>(valueToAddInRange);
                     Vector<T> lowerBoundVector = new Vector<T>(lowerBound);
@@ -367,7 +367,7 @@ namespace WitherTorch.Common.Helpers
                     valueVector2 = VectorizedRangedAdd(valueVector2, vectorToAddInRange, lowerBoundVector, higherBoundVector);
                     return valueVector.Equals(valueVector2);
                 }
-                for (int i = 0; i < Vector<int>.Count; i++, ptr2++) // CLR 編譯時會展開
+                for (int i = 0; i < Vector<T>.Count / 2; i++, ptr2++) // CLR 編譯時會展開
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))

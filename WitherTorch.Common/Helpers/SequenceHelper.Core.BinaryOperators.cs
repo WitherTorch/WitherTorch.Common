@@ -536,7 +536,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector128;
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector512<T>.Count < ptrEnd)
+                if (ptr + Vector512<T>.Count / 2 < ptrEnd)
                 {
                     Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
                     Vector512<T> valueVector = default;
@@ -546,7 +546,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector512<T>.Count; i++)
+                for (int i = 0; i < Vector512<T>.Count / 2; i++)
                 {
                     *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
                     if (++ptr >= ptrEnd)
@@ -572,7 +572,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector128;
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector256<T>.Count < ptrEnd)
+                if (ptr + Vector256<T>.Count / 2 < ptrEnd)
                 {
                     Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
                     Vector256<T> valueVector = default;
@@ -582,7 +582,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector256<T>.Count; i++)
+                for (int i = 0; i < Vector256<T>.Count / 2; i++)
                 {
                     *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
                     if (++ptr >= ptrEnd)
@@ -606,7 +606,7 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
-                if (ptr + Vector128<T>.Count < ptrEnd)
+                if (ptr + Vector128<T>.Count / 2 < ptrEnd)
                 {
                     Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
                     Vector128<T> valueVector = default;
@@ -616,7 +616,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector128<T>.Count; i++)
+                for (int i = 0; i < Vector128<T>.Count / 2; i++)
                 {
                     *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
                     if (++ptr >= ptrEnd)
@@ -638,7 +638,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return;
                 }
-                if (ptr + Vector64<T>.Count < ptrEnd)
+                if (ptr + Vector64<T>.Count / 2 < ptrEnd)
                 {
                     Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
                     Vector64<T> valueVector = default;
@@ -648,7 +648,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector64<T>.Count; i++)
+                for (int i = 0; i < Vector64<T>.Count / 2; i++)
                 {
                     *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
                     if (++ptr >= ptrEnd)
@@ -677,7 +677,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return;
                 }
-                if (ptr + Vector<int>.Count < ptrEnd)
+                if (ptr + Vector<T>.Count / 2 < ptrEnd)
                 {
                     Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
                     Vector<T> valueVector = default;
@@ -687,7 +687,7 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.CopyBlockUnaligned(ptr, &valueVector, byteCount);
                     return;
                 }
-                for (int i = 0; i < Vector<T>.Count; i++)
+                for (int i = 0; i < Vector<T>.Count / 2; i++)
                 {
                     *ptr++ = LegacyBinaryOperationCoreFast(*ptr, value, method);
                     if (++ptr >= ptrEnd)

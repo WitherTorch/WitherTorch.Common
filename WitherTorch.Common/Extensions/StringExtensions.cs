@@ -191,7 +191,7 @@ namespace WitherTorch.Common.Extensions
                 goto Vector128;
             if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                 goto Vector64;
-            if (ptr + Vector512<int>.Count < ptrEnd)
+            if (ptr + Vector512<ushort>.Count / 2 < ptrEnd)
             {
                 Vector512<ushort> maskVectorLow = Vector512.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector512<ushort> maskVectorHigh = Vector512.Create<ushort>(isUpper ? 'z' : 'Z');
@@ -208,7 +208,7 @@ namespace WitherTorch.Common.Extensions
                 }
                 return resultLazy.GetValueDirectly();
             }
-            for (int i = 0; i < Vector512<int>.Count; i++) // CLR 會自動展開這個迴圈
+            for (int i = 0; i < Vector512<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
             {
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
                 if (++ptr >= ptrEnd)
@@ -241,7 +241,7 @@ namespace WitherTorch.Common.Extensions
                 goto Vector128;
             if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                 goto Vector64;
-            if (ptr + Vector256<int>.Count < ptrEnd)
+            if (ptr + Vector256<ushort>.Count / 2 < ptrEnd)
             {
                 Vector256<ushort> maskVectorLow = Vector256.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector256<ushort> maskVectorHigh = Vector256.Create<ushort>(isUpper ? 'z' : 'Z');
@@ -258,7 +258,7 @@ namespace WitherTorch.Common.Extensions
                 }
                 return resultLazy.GetValueDirectly();
             }
-            for (int i = 0; i < Vector256<int>.Count; i++) // CLR 會自動展開這個迴圈
+            for (int i = 0; i < Vector256<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
             {
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
                 if (++ptr >= ptrEnd)
@@ -289,7 +289,7 @@ namespace WitherTorch.Common.Extensions
             }
             if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                 goto Vector64;
-            if (ptr + Vector128<int>.Count < ptrEnd)
+            if (ptr + Vector128<ushort>.Count / 2 < ptrEnd)
             {
                 Vector128<ushort> maskVectorLow = Vector128.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector128<ushort> maskVectorHigh = Vector128.Create<ushort>(isUpper ? 'z' : 'Z');
@@ -306,7 +306,7 @@ namespace WitherTorch.Common.Extensions
                 }
                 return resultLazy.GetValueDirectly();
             }
-            for (int i = 0; i < Vector128<int>.Count; i++) // CLR 會自動展開這個迴圈
+            for (int i = 0; i < Vector128<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
             {
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
                 if (++ptr >= ptrEnd)
@@ -335,7 +335,7 @@ namespace WitherTorch.Common.Extensions
                 if (ptr >= ptrEnd)
                     return resultLazy.GetValueDirectly();
             }
-            if (ptr + Vector64<int>.Count < ptrEnd)
+            if (ptr + Vector64<ushort>.Count / 2 < ptrEnd)
             {
                 Vector64<ushort> maskVectorLow = Vector64.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector64<ushort> maskVectorHigh = Vector64.Create<ushort>(isUpper ? 'z' : 'Z');
@@ -352,7 +352,7 @@ namespace WitherTorch.Common.Extensions
                 }
                 return resultLazy.GetValueDirectly();
             }
-            for (int i = 0; i < Vector64<int>.Count; i++) // CLR 會自動展開這個迴圈
+            for (int i = 0; i < Vector64<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
             {
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
                 if (++ptr >= ptrEnd)
@@ -386,7 +386,7 @@ namespace WitherTorch.Common.Extensions
                 if (ptr >= ptrEnd)
                     return resultLazy.GetValueDirectly();
             }
-            if (ptr + Vector<int>.Count < ptrEnd)
+            if (ptr + Vector<ushort>.Count / 2 < ptrEnd)
             {
                 Vector<ushort> maskVectorLow = new Vector<ushort>(isUpper ? 'a' : 'A');
                 Vector<ushort> maskVectorHigh = new Vector<ushort>(isUpper ? 'z' : 'Z');
@@ -403,7 +403,7 @@ namespace WitherTorch.Common.Extensions
                 }
                 return resultLazy.GetValueDirectly();
             }
-            for (int i = 0; i < Vector<int>.Count; i++) // CLR 會自動展開這個迴圈
+            for (int i = 0; i < Vector<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
             {
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
                 if (++ptr >= ptrEnd)
