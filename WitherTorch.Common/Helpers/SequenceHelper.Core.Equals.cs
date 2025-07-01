@@ -155,6 +155,10 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (Vector256.IsHardwareAccelerated)
                     goto Vector256;
+                if (Vector128.IsHardwareAccelerated)
+                    goto Vector128;
+                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
+                    goto Vector64;
                 if (ptr + Vector512<int>.Count < ptrEnd)
                 {
                     Vector512<T> vectorToAddInRange = Vector512.Create(valueToAddInRange);
@@ -203,6 +207,8 @@ namespace WitherTorch.Common.Helpers
                 }
                 if (Vector128.IsHardwareAccelerated)
                     goto Vector128;
+                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
+                    goto Vector64;
                 if (ptr + Vector256<int>.Count < ptrEnd)
                 {
                     Vector256<T> vectorToAddInRange = Vector256.Create(valueToAddInRange);

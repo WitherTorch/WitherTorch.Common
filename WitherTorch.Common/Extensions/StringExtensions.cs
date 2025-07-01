@@ -187,6 +187,10 @@ namespace WitherTorch.Common.Extensions
             }
             if (Vector256.IsHardwareAccelerated)
                 goto Vector256;
+            if (Vector128.IsHardwareAccelerated)
+                goto Vector128;
+            if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
+                goto Vector64;
             if (ptr + Vector512<int>.Count < ptrEnd)
             {
                 Vector512<ushort> maskVectorLow = Vector512.Create<ushort>(isUpper ? 'a' : 'A');
@@ -235,6 +239,8 @@ namespace WitherTorch.Common.Extensions
             }
             if (Vector128.IsHardwareAccelerated)
                 goto Vector128;
+            if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
+                goto Vector64;
             if (ptr + Vector256<int>.Count < ptrEnd)
             {
                 Vector256<ushort> maskVectorLow = Vector256.Create<ushort>(isUpper ? 'a' : 'A');
