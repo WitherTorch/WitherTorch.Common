@@ -132,7 +132,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector256;
                 if (Vector128.IsHardwareAccelerated)
                     goto Vector128;
-                if (Vector64.IsHardwareAccelerated)
+                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
 
                 FastUnaryOperationCore(ref ptr, ptrEnd, method);
@@ -215,7 +215,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         return;
                 }
-                if (Vector64.IsHardwareAccelerated)
+                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
                 if (ptr + Vector128<int>.Count < ptrEnd)
                 {

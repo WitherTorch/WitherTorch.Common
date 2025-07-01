@@ -691,7 +691,7 @@ namespace WitherTorch.Common.Helpers
                     goto Vector256;
                 if (Vector128.IsHardwareAccelerated)
                     goto Vector128;
-                if (Vector64.IsHardwareAccelerated)
+                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
 
                 return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
@@ -799,7 +799,7 @@ namespace WitherTorch.Common.Helpers
                     if (ptr >= ptrEnd)
                         goto NotFound;
                 }
-                if (Vector64.IsHardwareAccelerated)
+                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
                     goto Vector64;
                 if (ptr + Vector128<int>.Count < ptrEnd)
                 {
