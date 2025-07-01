@@ -48,25 +48,25 @@ namespace WitherTorch.Common
 
 #if NET6_0_OR_GREATER       
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseAnyVector() => UseVector512() || UseVector256() || UseVector128() || UseVector64();
+        public static bool UseAnyVector() => UseVector512() || UseVector256() || UseVector128() || UseVector64();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseVector512() => UseVector512Acceleration && System.Runtime.Intrinsics.Vector512.IsHardwareAccelerated;
+        public static bool UseVector512() => UseVector512Acceleration && System.Runtime.Intrinsics.Vector512.IsHardwareAccelerated;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseVector256() => UseVector256Acceleration && System.Runtime.Intrinsics.Vector256.IsHardwareAccelerated;
+        public static bool UseVector256() => UseVector256Acceleration && System.Runtime.Intrinsics.Vector256.IsHardwareAccelerated;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseVector128() => UseVector128Acceleration && System.Runtime.Intrinsics.Vector128.IsHardwareAccelerated;
+        public static bool UseVector128() => UseVector128Acceleration && System.Runtime.Intrinsics.Vector128.IsHardwareAccelerated;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseVector64() => UseVector64Acceleration && System.Runtime.Intrinsics.Vector64.IsHardwareAccelerated;
+        public static bool UseVector64() => UseVector64Acceleration && System.Runtime.Intrinsics.Vector64.IsHardwareAccelerated;
 #else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseAnyVector() => UseVector();
+        public static bool UseAnyVector() => UseVector();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool UseVector() => UseVectorAcceleration && System.Numerics.Vector.IsHardwareAccelerated;
+        public static bool UseVector() => UseVectorAcceleration && System.Numerics.Vector.IsHardwareAccelerated;
 #endif
     }
 }
