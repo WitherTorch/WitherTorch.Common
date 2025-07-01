@@ -338,6 +338,15 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T ReadUnaligned<T>(void* source)
+        {
+            IL.Push(source);
+            IL.Emit.Unaligned(1);
+            IL.Emit.Ldobj(typeof(T));
+            return IL.Return<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Write<T>(void* destination, T value)
         {
             IL.Push(destination);

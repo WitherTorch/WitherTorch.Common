@@ -1,4 +1,8 @@
-﻿namespace WitherTorch.Common
+﻿using System.Runtime.CompilerServices;
+
+using InlineMethod;
+
+namespace WitherTorch.Common
 {
     public static class Limits
     {
@@ -8,9 +12,26 @@
         public const bool UseStackallocStringBuilder = true;
 #if NET6_0_OR_GREATER
         /// <summary>
+        /// 是否啟用基於 <see cref="System.Runtime.Intrinsics.Vector512{T}"/> 的 512-bit 向量化加速
+        /// </summary>
+        public const bool UseVector512Acceleration = true;
+        /// <summary>
+        /// 是否啟用基於 <see cref="System.Runtime.Intrinsics.Vector256{T}"/> 的 256-bit 向量化加速
+        /// </summary>
+        public const bool UseVector256Acceleration = true;
+        /// <summary>
+        /// 是否啟用基於 <see cref="System.Runtime.Intrinsics.Vector128{T}"/> 的 128-bit 向量化加速
+        /// </summary>
+        public const bool UseVector128Acceleration = true;
+        /// <summary>
         /// 是否啟用基於 <see cref="System.Runtime.Intrinsics.Vector64{T}"/> 的 64-bit 向量化加速
         /// </summary>
         public const bool UseVector64Acceleration = false;
+#else
+        /// <summary>
+        /// 是否啟用基於 <see cref="System.Numerics.Vector{T}"/> 的向量化加速
+        /// </summary>
+        public const bool UseVectorAcceleration = true;
 #endif
         /// <summary>
         /// 在堆疊上配置位元組區塊的上限值
@@ -24,5 +45,28 @@
         /// 陣列的最大容許大小
         /// </summary>
         public const int MaxArrayLength = 0x7FEFFFFF;
+
+#if NET6_0_OR_GREATER       
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseAnyVector() => UseVector512() || UseVector256() || UseVector128() || UseVector64();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseVector512() => UseVector512Acceleration && System.Runtime.Intrinsics.Vector512.IsHardwareAccelerated;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseVector256() => UseVector256Acceleration && System.Runtime.Intrinsics.Vector256.IsHardwareAccelerated;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseVector128() => UseVector128Acceleration && System.Runtime.Intrinsics.Vector128.IsHardwareAccelerated;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseVector64() => UseVector64Acceleration && System.Runtime.Intrinsics.Vector64.IsHardwareAccelerated;
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseAnyVector() => UseVector();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool UseVector() => UseVectorAcceleration && System.Numerics.Vector.IsHardwareAccelerated;
+#endif
     }
 }

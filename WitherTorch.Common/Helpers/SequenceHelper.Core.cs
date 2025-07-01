@@ -1,6 +1,4 @@
-﻿using System.Reflection;
-
-using InlineMethod;
+﻿using InlineMethod;
 
 using LocalsInit;
 
@@ -8,13 +6,14 @@ namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
     {
+        [LocalsInit(false)]
         private static unsafe partial class Core { }
 
         [LocalsInit(false)]
         private static unsafe partial class Core<T> where T : unmanaged
         {
             [Inline(InlineBehavior.Remove)]
-            private static bool CheckTypeCanBeVectorized()
+            internal static bool CheckTypeCanBeVectorized()
 #if NET8_0_OR_GREATER
                 => System.Numerics.Vector<T>.IsSupported;
 #else
@@ -31,19 +30,11 @@ namespace WitherTorch.Common.Helpers
 #endif
 
             [Inline(InlineBehavior.Remove)]
-            private static bool IsUnsigned()
+            internal static bool IsUnsigned()
                 => (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(ushort)) ||
                        (typeof(T) == typeof(uint)) ||
                        (typeof(T) == typeof(ulong));
-
-            [Inline(InlineBehavior.Remove)]
-            private static nint GetFunctionPointerSafely(MethodInfo? methodInfo)
-            {
-                if (methodInfo is null)
-                    return default;
-                return methodInfo.MethodHandle.GetFunctionPointer();
-            }
         }
     }
 }

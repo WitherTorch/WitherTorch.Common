@@ -673,7 +673,11 @@ namespace WitherTorch.Common.Helpers
             private static T* PointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
                 if (CheckTypeCanBeVectorized())
-                    return VectorizedPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
+                {
+                    nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
+                    InternalShared.CalculateOperationCount<T>(unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr)), vectorOperationCounts);
+                    return VectorizedPointerIndexOfCore(ref ptr, ptrEnd, value, vectorOperationCounts, method, accurateResult);
+                }
 
                 if (UnsafeHelper.IsPrimitiveType<T>())
                     return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
@@ -682,24 +686,14 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T* VectorizedPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
+            private static T* VectorizedPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, nuint* vectorOperationCounts, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
+                nuint operationCount;
 #if NET6_0_OR_GREATER
-                if (Vector512.IsHardwareAccelerated)
-                    goto Vector512;
-                if (Vector256.IsHardwareAccelerated)
-                    goto Vector256;
-                if (Vector128.IsHardwareAccelerated)
-                    goto Vector128;
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-
-                return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
-
-            Vector512:
-                if (ptr + Vector512<T>.Count < ptrEnd)
+                if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
                 {
                     Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                    nuint i = 0;
                     do
                     {
                         Vector512<T> valueVector = Vector512.Load(ptr);
@@ -711,39 +705,12 @@ namespace WitherTorch.Common.Helpers
                         }
                         return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
                     }
-                    while (ptr + Vector512<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        goto NotFound;
+                    while (++i < operationCount);
                 }
-                if (Vector128.IsHardwareAccelerated)
-                    goto Vector128;
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-                if (ptr + Vector512<T>.Count / 2 < ptrEnd)
-                {
-                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
-                    Vector512<T> valueVector = default, resultVector = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                    resultVector &= VectorizedIndexOfCore_512(valueVector, maskVector, method);
-                    if (resultVector.Equals(default))
-                        goto NotFound;
-                    return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
-                }
-                for (int i = 0; i < Vector512<T>.Count / 2; i++) // CLR 編譯時會展開
-                {
-                    if (LegacyIndexOfCoreFast(*ptr, value, method))
-                        return ptr;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                return null;
-
-            Vector256:
-                if (ptr + Vector256<T>.Count < ptrEnd)
+                if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
                 {
                     Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                    nuint i = 0;
                     do
                     {
                         Vector256<T> valueVector = Vector256.Load(ptr);
@@ -755,39 +722,12 @@ namespace WitherTorch.Common.Helpers
                         }
                         return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
                     }
-                    while (ptr + Vector256<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        goto NotFound;
+                    while (++i < operationCount);
                 }
-                if (Vector128.IsHardwareAccelerated)
-                    goto Vector128;
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-                if (ptr + Vector256<T>.Count / 2 < ptrEnd)
-                {
-                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
-                    Vector256<T> valueVector = default, resultVector = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                    resultVector &= VectorizedIndexOfCore_256(valueVector, maskVector, method);
-                    if (resultVector.Equals(default))
-                        goto NotFound;
-                    return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
-                }
-                for (int i = 0; i < Vector256<T>.Count / 2; i++) // CLR 編譯時會展開
-                {
-                    if (LegacyIndexOfCoreFast(*ptr, value, method))
-                        return ptr;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                goto NotFound;
-
-            Vector128:
-                if (ptr + Vector128<T>.Count < ptrEnd)
+                if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
                 {
                     Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                    nuint i = 0;
                     do
                     {
                         Vector128<T> valueVector = Vector128.Load(ptr);
@@ -799,37 +739,12 @@ namespace WitherTorch.Common.Helpers
                         }
                         return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
                     }
-                    while (ptr + Vector128<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        goto NotFound;
+                    while (++i < operationCount);
                 }
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-                if (ptr + Vector128<T>.Count / 2 < ptrEnd)
-                {
-                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
-                    Vector128<T> valueVector = default, resultVector = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                    resultVector &= VectorizedIndexOfCore_128(valueVector, maskVector, method);
-                    if (resultVector.Equals(default))
-                        goto NotFound;
-                    return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
-                }
-                for (int i = 0; i < Vector128<T>.Count / 2; i++) // CLR 編譯時會展開
-                {
-                    if (LegacyIndexOfCoreFast(*ptr, value, method))
-                        return ptr;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                goto NotFound;
-
-            Vector64:
-                if (ptr + Vector64<T>.Count < ptrEnd)
+                if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
                 {
                     Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                    nuint i = 0;
                     do
                     {
                         Vector64<T> valueVector = Vector64.Load(ptr);
@@ -841,40 +756,13 @@ namespace WitherTorch.Common.Helpers
                         }
                         return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
                     }
-                    while (ptr + Vector64<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        goto NotFound;
+                    while (++i < operationCount);
                 }
-                if (ptr + Vector64<T>.Count / 2 < ptrEnd)
-                {
-                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                    Vector64<T> valueVector = default, resultVector = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                    resultVector &= VectorizedIndexOfCore_64(valueVector, maskVector, method);
-                    if (resultVector.Equals(default))
-                        goto NotFound;
-                    return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
-                }
-                for (int i = 0; i < Vector64<T>.Count / 2; i++) // CLR 編譯時會展開
-                {
-                    if (LegacyIndexOfCoreFast(*ptr, value, method))
-                        return ptr;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                goto NotFound;
 #else
-                if (Vector.IsHardwareAccelerated)
-                    goto Vector;
-
-                return FastPointerIndexOfCore(ref ptr, ptrEnd, value, method);
-
-            Vector:
-                if (ptr + Vector<T>.Count < ptrEnd)
+                if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
                 {
                     Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                    nuint i = 0;
                     do
                     {
                         Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
@@ -886,32 +774,15 @@ namespace WitherTorch.Common.Helpers
                         }
                         return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
                     }
-                    while (ptr + Vector<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        goto NotFound;
+                    while (++i < operationCount);
                 }
-                if (ptr + Vector<T>.Count / 2 < ptrEnd)
-                {
-                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                    Vector<T> valueVector = default, resultVector = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.InitBlockUnaligned(&resultVector, 0xFF, byteCount);
-                    resultVector &= VectorizedIndexOfCore(valueVector, maskVector, method);
-                    if (resultVector.Equals(default))
-                        goto NotFound;
-                    return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
-                }
-                for (int i = 0; i < Vector<T>.Count / 2; i++) // CLR 編譯時會展開
+#endif
+                operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
+                for (nuint i = 0; i < operationCount; i++, ptr++)
                 {
                     if (LegacyIndexOfCoreFast(*ptr, value, method))
                         return ptr;
-                    if (++ptr >= ptrEnd)
-                        break;
                 }
-                goto NotFound;
-#endif
-            NotFound:
                 return null;
             }
 

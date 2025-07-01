@@ -24,9 +24,6 @@
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<Optimize>True</Optimize>
 		<DebugType>none</DebugType>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<WeaverConfiguration>
 			<Weavers>
 				<InlineIL />

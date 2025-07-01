@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -10,6 +9,8 @@ using WitherTorch.Common.Threading;
 
 #if NET6_0_OR_GREATER
 using System.Runtime.Intrinsics;
+#else
+using System.Numerics;
 #endif
 
 namespace WitherTorch.Common.Extensions
@@ -145,31 +146,33 @@ namespace WitherTorch.Common.Extensions
         private static unsafe string? ToLowerOrUpperAsciiCore(char* ptr, char* ptrEnd, [InlineParameter] bool isUpper)
         {
             char* ptrStart = ptr;
+            nuint length = unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr));
+
             LazyTinyRefStruct<string> resultLazy = new LazyTinyRefStruct<string>(() =>
             {
-                int length = unchecked((int)(ptrEnd - ptrStart));
-                string result = StringHelper.AllocateRawString(length);
+                int resultLength = unchecked((int)(length & int.MaxValue));
+                string result = StringHelper.AllocateRawString(resultLength);
                 fixed (char* ptrResult = result)
-                    UnsafeHelper.CopyBlock(ptrResult, ptrStart, unchecked((uint)(length * sizeof(char))));
+                    UnsafeHelper.CopyBlock(ptrResult, ptrStart, unchecked((uint)(resultLength * sizeof(char))));
                 return result;
             });
-#if NET6_0_OR_GREATER
-            if (Vector512.IsHardwareAccelerated)
-                goto Vector512;
-            if (Vector256.IsHardwareAccelerated)
-                goto Vector256;
-            if (Vector128.IsHardwareAccelerated)
-                goto Vector128;
-            if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                goto Vector64;
-            goto Fallback;
 
-        Vector512:
-            if (ptr + Vector512<ushort>.Count < ptrEnd)
+#if NET6_0_OR_GREATER
+            const int VectorClassCount = 4;
+#else
+            const int VectorClassCount = 1;
+#endif
+            nuint* vectorOperationCounts = stackalloc nuint[VectorClassCount + 1];
+            SequenceHelper.InternalShared.CalculateOperationCount<ushort>(length, vectorOperationCounts);
+            nuint operationCount;
+#if NET6_0_OR_GREATER
+            if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
             {
                 Vector512<ushort> maskVectorLow = Vector512.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector512<ushort> maskVectorHigh = Vector512.Create<ushort>(isUpper ? 'z' : 'Z');
                 Vector512<ushort> operationVector = Vector512.Create<ushort>(UpperLowerDiff);
+
+                nuint i = 0;
                 do
                 {
                     Vector512<ushort> valueVector = Vector512.Load((ushort*)ptr);
@@ -181,47 +184,16 @@ namespace WitherTorch.Common.Extensions
                             valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
                     }
                     ptr += Vector512<ushort>.Count;
-                } while (ptr + Vector512<ushort>.Count < ptrEnd);
-                if (ptr >= ptrEnd)
-                    return resultLazy.GetValueDirectly();
-            }
-            if (Vector256.IsHardwareAccelerated)
-                goto Vector256;
-            if (Vector128.IsHardwareAccelerated)
-                goto Vector128;
-            if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                goto Vector64;
-            if (ptr + Vector512<ushort>.Count / 2 < ptrEnd)
-            {
-                Vector512<ushort> maskVectorLow = Vector512.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector512<ushort> maskVectorHigh = Vector512.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector512<ushort> operationVector = Vector512.Create<ushort>(UpperLowerDiff);
-                Vector512<ushort> valueVector = default;
-                uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                Vector512<ushort> resultVector = Vector512.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector512.LessThanOrEqual(valueVector, maskVectorHigh);
-                if (!resultVector.Equals(default))
-                {
-                    valueVector = VectorizedToLowerOrUpperAsciiCore_512(valueVector, operationVector, resultVector, isUpper);
-                    fixed (char* ptrResult = resultLazy.Value)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult + (ptr - ptrStart), &valueVector, byteCount);
                 }
-                return resultLazy.GetValueDirectly();
-            }
-            for (int i = 0; i < Vector512<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
-            {
-                LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
-                if (++ptr >= ptrEnd)
-                    break;
-            }
-            goto Return;
-
-        Vector256:
-            if (ptr + Vector256<ushort>.Count < ptrEnd)
+                while (++i < operationCount);
+            }            
+            if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
             {
                 Vector256<ushort> maskVectorLow = Vector256.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector256<ushort> maskVectorHigh = Vector256.Create<ushort>(isUpper ? 'z' : 'Z');
                 Vector256<ushort> operationVector = Vector256.Create<ushort>(UpperLowerDiff);
+
+                nuint i = 0;
                 do
                 {
                     Vector256<ushort> valueVector = Vector256.Load((ushort*)ptr);
@@ -233,45 +205,16 @@ namespace WitherTorch.Common.Extensions
                             valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
                     }
                     ptr += Vector256<ushort>.Count;
-                } while (ptr + Vector256<ushort>.Count < ptrEnd);
-                if (ptr >= ptrEnd)
-                    return resultLazy.GetValueDirectly();
-            }
-            if (Vector128.IsHardwareAccelerated)
-                goto Vector128;
-            if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                goto Vector64;
-            if (ptr + Vector256<ushort>.Count / 2 < ptrEnd)
-            {
-                Vector256<ushort> maskVectorLow = Vector256.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector256<ushort> maskVectorHigh = Vector256.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector256<ushort> operationVector = Vector256.Create<ushort>(UpperLowerDiff);
-                Vector256<ushort> valueVector = default;
-                uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                Vector256<ushort> resultVector = Vector256.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector256.LessThanOrEqual(valueVector, maskVectorHigh);
-                if (!resultVector.Equals(default))
-                {
-                    valueVector = VectorizedToLowerOrUpperAsciiCore_256(valueVector, operationVector, resultVector, isUpper);
-                    fixed (char* ptrResult = resultLazy.Value)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult + (ptr - ptrStart), &valueVector, byteCount);
                 }
-                return resultLazy.GetValueDirectly();
+                while (++i < operationCount);
             }
-            for (int i = 0; i < Vector256<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
-            {
-                LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
-                if (++ptr >= ptrEnd)
-                    break;
-            }
-            goto Return;
-
-        Vector128:
-            if (ptr + Vector128<ushort>.Count < ptrEnd)
+            if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
             {
                 Vector128<ushort> maskVectorLow = Vector128.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector128<ushort> maskVectorHigh = Vector128.Create<ushort>(isUpper ? 'z' : 'Z');
                 Vector128<ushort> operationVector = Vector128.Create<ushort>(UpperLowerDiff);
+
+                nuint i = 0;
                 do
                 {
                     Vector128<ushort> valueVector = Vector128.Load((ushort*)ptr);
@@ -283,43 +226,16 @@ namespace WitherTorch.Common.Extensions
                             valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
                     }
                     ptr += Vector128<ushort>.Count;
-                } while (ptr + Vector128<ushort>.Count < ptrEnd);
-                if (ptr >= ptrEnd)
-                    return resultLazy.GetValueDirectly();
-            }
-            if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                goto Vector64;
-            if (ptr + Vector128<ushort>.Count / 2 < ptrEnd)
-            {
-                Vector128<ushort> maskVectorLow = Vector128.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector128<ushort> maskVectorHigh = Vector128.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector128<ushort> operationVector = Vector128.Create<ushort>(UpperLowerDiff);
-                Vector128<ushort> valueVector = default;
-                uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                Vector128<ushort> resultVector = Vector128.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector128.LessThanOrEqual(valueVector, maskVectorHigh);
-                if (!resultVector.Equals(default))
-                {
-                    valueVector = VectorizedToLowerOrUpperAsciiCore_128(valueVector, operationVector, resultVector, isUpper);
-                    fixed (char* ptrResult = resultLazy.Value)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult + (ptr - ptrStart), &valueVector, byteCount);
                 }
-                return resultLazy.GetValueDirectly();
-            }
-            for (int i = 0; i < Vector128<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
-            {
-                LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
-                if (++ptr >= ptrEnd)
-                    break;
-            }
-            goto Return;
-
-        Vector64:
-            if (ptr + Vector64<ushort>.Count < ptrEnd)
+                while (++i < operationCount);
+            }     
+            if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
             {
                 Vector64<ushort> maskVectorLow = Vector64.Create<ushort>(isUpper ? 'a' : 'A');
                 Vector64<ushort> maskVectorHigh = Vector64.Create<ushort>(isUpper ? 'z' : 'Z');
                 Vector64<ushort> operationVector = Vector64.Create<ushort>(UpperLowerDiff);
+
+                nuint i = 0;
                 do
                 {
                     Vector64<ushort> valueVector = Vector64.Load((ushort*)ptr);
@@ -331,46 +247,17 @@ namespace WitherTorch.Common.Extensions
                             valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
                     }
                     ptr += Vector64<ushort>.Count;
-                } while (ptr + Vector64<ushort>.Count < ptrEnd);
-                if (ptr >= ptrEnd)
-                    return resultLazy.GetValueDirectly();
-            }
-            if (ptr + Vector64<ushort>.Count / 2 < ptrEnd)
-            {
-                Vector64<ushort> maskVectorLow = Vector64.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector64<ushort> maskVectorHigh = Vector64.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector64<ushort> operationVector = Vector64.Create<ushort>(UpperLowerDiff);
-                Vector64<ushort> valueVector = default;
-                uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                Vector64<ushort> resultVector = Vector64.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector64.LessThanOrEqual(valueVector, maskVectorHigh);
-                if (!resultVector.Equals(default))
-                {
-                    valueVector = VectorizedToLowerOrUpperAsciiCore_64(valueVector, operationVector, resultVector, isUpper);
-                    fixed (char* ptrResult = resultLazy.Value)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult + (ptr - ptrStart), &valueVector, byteCount);
                 }
-                return resultLazy.GetValueDirectly();
+                while (++i < operationCount);
             }
-            for (int i = 0; i < Vector64<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
-            {
-                LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
-                if (++ptr >= ptrEnd)
-                    break;
-            }
-            goto Return;
-
 #else
-            if (Vector.IsHardwareAccelerated)
-                goto Vector;
-            goto Fallback;
-
-        Vector:
-            if (ptr + Vector<ushort>.Count < ptrEnd)
+            if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
             {
                 Vector<ushort> maskVectorLow = new Vector<ushort>(isUpper ? 'a' : 'A');
                 Vector<ushort> maskVectorHigh = new Vector<ushort>(isUpper ? 'z' : 'Z');
                 Vector<ushort> operationVector = new Vector<ushort>(UpperLowerDiff);
+
+                nuint i = 0;
                 do
                 {
                     Vector<ushort> valueVector = UnsafeHelper.Read<Vector<ushort>>(ptr);
@@ -382,40 +269,13 @@ namespace WitherTorch.Common.Extensions
                             UnsafeHelper.Write(ptrResult + (ptr - ptrStart), valueVector);
                     }
                     ptr += Vector<ushort>.Count;
-                } while (ptr + Vector<ushort>.Count < ptrEnd);
-                if (ptr >= ptrEnd)
-                    return resultLazy.GetValueDirectly();
-            }
-            if (ptr + Vector<ushort>.Count / 2 < ptrEnd)
-            {
-                Vector<ushort> maskVectorLow = new Vector<ushort>(isUpper ? 'a' : 'A');
-                Vector<ushort> maskVectorHigh = new Vector<ushort>(isUpper ? 'z' : 'Z');
-                Vector<ushort> operationVector = new Vector<ushort>(UpperLowerDiff);
-                Vector<ushort> valueVector = default;
-                uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                Vector<ushort> resultVector = Vector.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector.LessThanOrEqual(valueVector, maskVectorHigh);
-                if (!resultVector.Equals(default))
-                {
-                    valueVector = VectorizedToLowerOrUpperAsciiCore(valueVector, operationVector, resultVector, isUpper);
-                    fixed (char* ptrResult = resultLazy.Value)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult + (ptr - ptrStart), &valueVector, byteCount);
                 }
-                return resultLazy.GetValueDirectly();
+                while (++i < operationCount);
             }
-            for (int i = 0; i < Vector<ushort>.Count / 2; i++) // CLR 會自動展開這個迴圈
-            {
-                LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
-                if (++ptr >= ptrEnd)
-                    break;
-            }
-            goto Return;
 #endif
-        Fallback:
-            for (; ptr < ptrEnd; ptr++)
+            operationCount = vectorOperationCounts[VectorClassCount];
+            for (nuint i = 0; i < operationCount; i++, ptr++)
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
-            goto Return;
-        Return:
             return resultLazy.GetValueDirectly();
         }
 

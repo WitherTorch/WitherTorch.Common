@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using InlineMethod;
 using System.Runtime.CompilerServices;
 
+using InlineMethod;
+
+using LocalsInit;
 
 #if NET6_0_OR_GREATER
 using System.Runtime.Intrinsics;
@@ -17,93 +18,131 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class Core
         {
+            [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(byte* ptr, byte* ptrEnd, byte* ptr2)
             {
+                nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
+                InternalShared.CalculateOperationCount<byte>(unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr)), vectorOperationCounts);
+                nuint operationCount;
 #if NET6_0_OR_GREATER
-                if (Vector512.IsHardwareAccelerated && ptr + Vector512<byte>.Count < ptrEnd)
+                if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
                 {
+                    nuint i = 0;
                     do
                     {
-                        Vector512<ulong> valueVector = Vector512.Load((ulong*)ptr);
-                        Vector512<ulong> valueVector2 = Vector512.Load((ulong*)ptr2);
+                        Vector512<byte> valueVector = Vector512.Load(ptr);
+                        Vector512<byte> valueVector2 = Vector512.Load(ptr2);
                         if (valueVector != valueVector2)
                             return false;
                         ptr += Vector512<byte>.Count;
                         ptr2 += Vector512<byte>.Count;
-                    }
-                    while (ptr + Vector512<byte>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (Vector256.IsHardwareAccelerated && ptr + Vector256<byte>.Count < ptrEnd)
+                if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
                 {
+                    nuint i = 0;
                     do
                     {
-                        Vector256<ulong> valueVector = Vector256.Load((ulong*)ptr);
-                        Vector256<ulong> valueVector2 = Vector256.Load((ulong*)ptr2);
+                        Vector256<byte> valueVector = Vector256.Load(ptr);
+                        Vector256<byte> valueVector2 = Vector256.Load(ptr2);
                         if (valueVector != valueVector2)
                             return false;
                         ptr += Vector256<byte>.Count;
                         ptr2 += Vector256<byte>.Count;
-                    }
-                    while (ptr + Vector256<byte>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (Vector128.IsHardwareAccelerated && ptr + Vector128<byte>.Count < ptrEnd)
+                if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
                 {
+                    nuint i = 0;
                     do
                     {
-                        Vector128<ulong> valueVector = Vector128.Load((ulong*)ptr);
-                        Vector128<ulong> valueVector2 = Vector128.Load((ulong*)ptr2);
+                        Vector128<byte> valueVector = Vector128.Load(ptr);
+                        Vector128<byte> valueVector2 = Vector128.Load(ptr2);
                         if (valueVector != valueVector2)
                             return false;
                         ptr += Vector128<byte>.Count;
                         ptr2 += Vector128<byte>.Count;
-                    }
-                    while (ptr + Vector128<byte>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-#else
-                if (Vector.IsHardwareAccelerated && ptr + Vector<byte>.Count < ptrEnd)
+                if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
                 {
+                    nuint i = 0;
                     do
                     {
-                        Vector<ulong> valueVector = UnsafeHelper.Read<Vector<ulong>>(ptr);
-                        Vector<ulong> valueVector2 = UnsafeHelper.Read<Vector<ulong>>(ptr2);
+                        if (UnsafeHelper.Read<ulong>(ptr) != UnsafeHelper.Read<ulong>(ptr2))
+                            return false;
+                        ptr += 8;
+                        ptr2 += 8;
+                    } while (++i < operationCount);
+                }
+#else
+                if (Limits.UseVector()&& (operationCount = vectorOperationCounts[0]) > 0)
+                {
+                    nuint i = 0;
+                    do
+                    {
+                        Vector<byte> valueVector = UnsafeHelper.Read<Vector<byte>>(ptr);
+                        Vector<byte> valueVector2 = UnsafeHelper.Read<Vector<byte>>(ptr2);
                         if (valueVector != valueVector2)
                             return false;
                         ptr += Vector<byte>.Count;
                         ptr2 += Vector<byte>.Count;
-                    }
-                    while (ptr + Vector<byte>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
 #endif
-                if (ptr + sizeof(nuint) < ptrEnd)
+                operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
+                do
                 {
-                    do
+                    switch (operationCount)
                     {
-                        nuint valueVector = UnsafeHelper.Read<nuint>(ptr);
-                        nuint valueVector2 = UnsafeHelper.Read<nuint>(ptr2);
-                        if (valueVector != valueVector2)
-                            return false;
-                        ptr += sizeof(nuint);
-                        ptr2 += sizeof(nuint);
-                    } while (ptr + sizeof(nuint) < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
-                }
-                {
-                    nuint valueVector = 0, valueVector2 = 0;
-                    uint byteCount = unchecked((uint)(ptrEnd - ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
-                    return valueVector == valueVector2;
-                }
+                        case 7:
+                            if (ptr != ptr2)
+                                return false;
+                            ptr++;
+                            ptr2++;
+                            goto case 6;
+                        case 6:
+                            if (UnsafeHelper.ReadUnaligned<ushort>(ptr) != UnsafeHelper.ReadUnaligned<ushort>(ptr2))
+                                return false;
+                            ptr += 2;
+                            ptr2 += 2;
+                            goto case 4;
+                        case 5:
+                            if (ptr != ptr2)
+                                return false;
+                            ptr++;
+                            ptr2++;
+                            goto case 4;
+                        case 4:
+                            if (UnsafeHelper.ReadUnaligned<uint>(ptr) != UnsafeHelper.ReadUnaligned<uint>(ptr2))
+                                return false;
+                            goto case 0;
+                        case 3:
+                            if (ptr != ptr2)
+                                return false;
+                            ptr++;
+                            ptr2++;
+                            goto case 2;
+                        case 2:
+                            if (UnsafeHelper.ReadUnaligned<ushort>(ptr) != UnsafeHelper.ReadUnaligned<ushort>(ptr2))
+                                return false;
+                            goto case 0;
+                        case 1:
+                            if (ptr != ptr2)
+                                return false;
+                            goto case 0;
+                        case 0:
+                            return true;
+                        default:
+                            if (UnsafeHelper.ReadUnaligned<ulong>(ptr) != UnsafeHelper.ReadUnaligned<ulong>(ptr2))
+                                return false;
+                            operationCount -= 8;
+                            ptr += 8;
+                            ptrEnd += 8;
+                            continue;
+                    }
+                } while (true);
             }
         }
 
@@ -112,33 +151,28 @@ namespace WitherTorch.Common.Helpers
             public static bool RangedAddAndEquals(T* ptr, T* ptrEnd, T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
             {
                 if (CheckTypeCanBeVectorized())
-                    return VectorizedRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange);
+                {
+                    nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
+                    InternalShared.CalculateOperationCount<T>(unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr)), vectorOperationCounts);
+                    return VectorizedRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange, vectorOperationCounts);
+                }
                 if (UnsafeHelper.IsPrimitiveType<T>())
                     return FastRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange);
                 throw new InvalidOperationException();
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static bool VectorizedRangedAddAndEquals(ref T* ptr, in T* ptrEnd, ref T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
+            private static bool VectorizedRangedAddAndEquals(ref T* ptr, in T* ptrEnd, ref T* ptr2, T lowerBound, T higherBound, T valueToAddInRange,
+                nuint* vectorOperationCounts)
             {
+                nuint operationCount;
 #if NET6_0_OR_GREATER
-                if (Vector512.IsHardwareAccelerated)
-                    goto Vector512;
-                if (Vector256.IsHardwareAccelerated)
-                    goto Vector256;
-                if (Vector128.IsHardwareAccelerated)
-                    goto Vector128;
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-
-                return FastRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange);
-
-            Vector512:
-                if (ptr + Vector512<T>.Count < ptrEnd)
+                if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
                 {
                     Vector512<T> vectorToAddInRange = Vector512.Create(valueToAddInRange);
                     Vector512<T> lowerBoundVector = Vector512.Create(lowerBound);
                     Vector512<T> higherBoundVector = Vector512.Create(higherBound);
+                    nuint i = 0;
                     do
                     {
                         Vector512<T> valueVector = VectorizedRangedAdd_512(Vector512.Load(ptr), vectorToAddInRange,
@@ -149,48 +183,14 @@ namespace WitherTorch.Common.Helpers
                             return false;
                         ptr += Vector512<T>.Count;
                         ptr2 += Vector512<T>.Count;
-                    } while (ptr + Vector512<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (Vector256.IsHardwareAccelerated)
-                    goto Vector256;
-                if (Vector128.IsHardwareAccelerated)
-                    goto Vector128;
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-                if (ptr + Vector512<T>.Count / 2 < ptrEnd)
-                {
-                    Vector512<T> vectorToAddInRange = Vector512.Create(valueToAddInRange);
-                    Vector512<T> lowerBoundVector = Vector512.Create(lowerBound);
-                    Vector512<T> higherBoundVector = Vector512.Create(higherBound);
-                    Vector512<T> valueVector = default;
-                    Vector512<T> valueVector2 = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
-                    valueVector = VectorizedRangedAdd_512(valueVector, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    valueVector2 = VectorizedRangedAdd_512(valueVector2, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    return valueVector.Equals(valueVector2);
-                }
-                for (int i = 0; i < Vector512<T>.Count / 2; i++, ptr2++)
-                {
-                    if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
-                        RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
-                        return false;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                return true;
-
-            Vector256:
-                if (ptr + Vector256<T>.Count < ptrEnd)
+                if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
                 {
                     Vector256<T> vectorToAddInRange = Vector256.Create(valueToAddInRange);
                     Vector256<T> lowerBoundVector = Vector256.Create(lowerBound);
                     Vector256<T> higherBoundVector = Vector256.Create(higherBound);
+                    nuint i = 0;
                     do
                     {
                         Vector256<T> valueVector = VectorizedRangedAdd_256(Vector256.Load(ptr), vectorToAddInRange,
@@ -201,46 +201,14 @@ namespace WitherTorch.Common.Helpers
                             return false;
                         ptr += Vector256<T>.Count;
                         ptr2 += Vector256<T>.Count;
-                    } while (ptr + Vector256<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (Vector128.IsHardwareAccelerated)
-                    goto Vector128;
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-                if (ptr + Vector256<T>.Count / 2 < ptrEnd)
-                {
-                    Vector256<T> vectorToAddInRange = Vector256.Create(valueToAddInRange);
-                    Vector256<T> lowerBoundVector = Vector256.Create(lowerBound);
-                    Vector256<T> higherBoundVector = Vector256.Create(higherBound);
-                    Vector256<T> valueVector = default;
-                    Vector256<T> valueVector2 = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
-                    valueVector = VectorizedRangedAdd_256(valueVector, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    valueVector2 = VectorizedRangedAdd_256(valueVector2, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    return valueVector.Equals(valueVector2);
-                }
-                for (int i = 0; i < Vector256<T>.Count / 2; i++, ptr2++)
-                {
-                    if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
-                        RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
-                        return false;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                return true;
-
-            Vector128:
-                if (ptr + Vector128<T>.Count < ptrEnd)
+                if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
                 {
                     Vector128<T> vectorToAddInRange = Vector128.Create(valueToAddInRange);
                     Vector128<T> lowerBoundVector = Vector128.Create(lowerBound);
                     Vector128<T> higherBoundVector = Vector128.Create(higherBound);
+                    nuint i = 0;
                     do
                     {
                         Vector128<T> valueVector = VectorizedRangedAdd_128(Vector128.Load(ptr), vectorToAddInRange,
@@ -251,44 +219,14 @@ namespace WitherTorch.Common.Helpers
                             return false;
                         ptr += Vector128<T>.Count;
                         ptr2 += Vector128<T>.Count;
-                    } while (ptr + Vector128<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (Limits.UseVector64Acceleration && Vector64.IsHardwareAccelerated)
-                    goto Vector64;
-                if (ptr + Vector128<T>.Count / 2 < ptrEnd)
-                {
-                    Vector128<T> vectorToAddInRange = Vector128.Create(valueToAddInRange);
-                    Vector128<T> lowerBoundVector = Vector128.Create(lowerBound);
-                    Vector128<T> higherBoundVector = Vector128.Create(higherBound);
-                    Vector128<T> valueVector = default;
-                    Vector128<T> valueVector2 = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
-                    valueVector = VectorizedRangedAdd_128(valueVector, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    valueVector2 = VectorizedRangedAdd_128(valueVector2, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    return valueVector.Equals(valueVector2);
-                }
-                for (int i = 0; i < Vector128<T>.Count / 2; i++, ptr2++)
-                {
-                    if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
-                        RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
-                        return false;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                return true;
-
-            Vector64:
-                if (ptr + Vector64<T>.Count < ptrEnd)
+                if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
                 {
                     Vector64<T> vectorToAddInRange = Vector64.Create(valueToAddInRange);
                     Vector64<T> lowerBoundVector = Vector64.Create(lowerBound);
                     Vector64<T> higherBoundVector = Vector64.Create(higherBound);
+                    nuint i = 0;
                     do
                     {
                         Vector64<T> valueVector = VectorizedRangedAdd_64(Vector64.Load(ptr), vectorToAddInRange,
@@ -299,84 +237,34 @@ namespace WitherTorch.Common.Helpers
                             return false;
                         ptr += Vector64<T>.Count;
                         ptr2 += Vector64<T>.Count;
-                    } while (ptr + Vector64<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (ptr + Vector64<T>.Count / 2 < ptrEnd)
-                {
-                    Vector64<T> vectorToAddInRange = Vector64.Create(valueToAddInRange);
-                    Vector64<T> lowerBoundVector = Vector64.Create(lowerBound);
-                    Vector64<T> higherBoundVector = Vector64.Create(higherBound);
-                    Vector64<T> valueVector = default;
-                    Vector64<T> valueVector2 = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
-                    valueVector = VectorizedRangedAdd_64(valueVector, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    valueVector2 = VectorizedRangedAdd_64(valueVector2, vectorToAddInRange,
-                        lowerBoundVector, higherBoundVector);
-                    return valueVector.Equals(valueVector2);
-                }
-                for (int i = 0; i < Vector64<T>.Count / 2; i++, ptr2++)
-                {
-                    if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
-                        RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
-                        return false;
-                    if (++ptr >= ptrEnd)
-                        break;
-                }
-                return true;
-
 #else
-                if (Vector.IsHardwareAccelerated)
-                    goto Vector;
-
-                return FastRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange);
-
-            Vector:
-                if (ptr + Vector<T>.Count < ptrEnd)
+                if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
                 {
                     Vector<T> vectorToAddInRange = new Vector<T>(valueToAddInRange);
                     Vector<T> lowerBoundVector = new Vector<T>(lowerBound);
                     Vector<T> higherBoundVector = new Vector<T>(higherBound);
+                    nuint i = 0;
                     do
                     {
-                        Vector<T> valueVector = VectorizedRangedAdd(UnsafeHelper.Read<Vector<T>>(ptr), vectorToAddInRange, lowerBoundVector, higherBoundVector);
-                        Vector<T> valueVector2 = VectorizedRangedAdd(UnsafeHelper.Read<Vector<T>>(ptr2), vectorToAddInRange, lowerBoundVector, higherBoundVector);
+                        Vector<T> valueVector = VectorizedRangedAdd(UnsafeHelper.ReadUnaligned<Vector<T>>(ptr), vectorToAddInRange, lowerBoundVector, higherBoundVector);
+                        Vector<T> valueVector2 = VectorizedRangedAdd(UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2), vectorToAddInRange, lowerBoundVector, higherBoundVector);
                         if (!valueVector.Equals(valueVector2))
                             return false;
                         ptr += Vector<T>.Count;
                         ptr2 += Vector<T>.Count;
-                    } while (ptr + Vector<T>.Count < ptrEnd);
-                    if (ptr >= ptrEnd)
-                        return true;
+                    } while (++i < operationCount);
                 }
-                if (ptr + Vector<T>.Count / 2 < ptrEnd)
-                {
-                    Vector<T> vectorToAddInRange = new Vector<T>(valueToAddInRange);
-                    Vector<T> lowerBoundVector = new Vector<T>(lowerBound);
-                    Vector<T> higherBoundVector = new Vector<T>(higherBound);
-                    Vector<T> valueVector = default;
-                    Vector<T> valueVector2 = default;
-                    uint byteCount = unchecked((uint)((byte*)ptrEnd - (byte*)ptr));
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector, ptr, byteCount);
-                    UnsafeHelper.CopyBlockUnaligned(&valueVector2, ptr2, byteCount);
-                    valueVector = VectorizedRangedAdd(valueVector, vectorToAddInRange, lowerBoundVector, higherBoundVector);
-                    valueVector2 = VectorizedRangedAdd(valueVector2, vectorToAddInRange, lowerBoundVector, higherBoundVector);
-                    return valueVector.Equals(valueVector2);
-                }
-                for (int i = 0; i < Vector<T>.Count / 2; i++, ptr2++) // CLR 編譯時會展開
+#endif
+                operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
+                for (nuint i = 0; i < operationCount; i++, ptr++)
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
                         return false;
-                    if (++ptr >= ptrEnd)
-                        break;
                 }
                 return true;
-#endif
             }
 
 #if NET6_0_OR_GREATER

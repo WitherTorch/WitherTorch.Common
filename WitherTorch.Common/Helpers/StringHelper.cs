@@ -16,16 +16,16 @@ namespace WitherTorch.Common.Helpers
 
         static StringHelper()
         {
-            MethodInfo? method = ReflectionHelper.GetMethod(typeof(string), "FastAllocateString", [typeof(int)], typeof(string),
+            nint methodPointer = ReflectionHelper.GetMethodPointer(typeof(string), "FastAllocateString", [typeof(int)], typeof(string),
                BindingFlags.Static | BindingFlags.NonPublic);
-            if (method is null)
+            if (methodPointer == default)
             {
                 _fastAllocateStringFuncPointer = (delegate* managed<int, string>)&LegacyAllocateRawString;
                 Debug.WriteLine("Cannot find string.FastAllocateString method!, fallback to new string()");
             }
             else
             {
-                _fastAllocateStringFuncPointer = (void*)method.MethodHandle.GetFunctionPointer();
+                _fastAllocateStringFuncPointer = (void*)methodPointer;
             }
         }
 

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+
+using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -29,6 +32,16 @@ namespace WitherTorch.Common.Helpers
                 return method;
             }
             return null;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint GetMethodPointer(Type type, string methodName, Type[]? parameterTypes, Type returnType,
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
+        {
+            MethodInfo? method = GetMethod(type, methodName, parameterTypes, returnType, flags);
+            if (method is null)
+                return default;
+            return method.MethodHandle.GetFunctionPointer();
         }
     }
 }
