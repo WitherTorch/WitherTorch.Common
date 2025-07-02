@@ -67,12 +67,24 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Equals(void* ptr, void* ptrEnd, void* ptr2)
+        public static bool Equals(void* ptrStart, void* ptrEnd, void* ptr2)
         {
-            if (ptr == ptr2 || ptrEnd <= ptr)
+            if (ptrStart == ptr2 || ptrEnd <= ptrStart)
                 return true;
-            return EqualsCore((byte*)ptr, (byte*)ptrEnd, (byte*)ptr2);
+            return EqualsCore((byte*)ptrStart, (byte*)ptrEnd, (byte*)ptr2);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Equals(void* ptr, void* ptr2, int length)
+        {
+            if (ptr == ptr2 || length <= 0)
+                return true;
+            return EqualsCore(ptr, ptr2, unchecked((nuint)length));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Equals(void* ptr, void* ptr2, nuint length)
+            => EqualsCore(ptr, ptr2, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool EqualsCore(string str1, string str2)
