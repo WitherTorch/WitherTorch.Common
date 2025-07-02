@@ -22,33 +22,29 @@ namespace WitherTorch.Common.Helpers
             _Last
         }
 
+#pragma warning disable CS8500
 #pragma warning disable CS0162
-        unsafe partial class Core
+        unsafe partial class FastCore
         {
-            internal static readonly string[] UnaryOperatorNames = new string[(int)UnaryOperationMethod._Last]
-            {
-                "op_OnesComplement",
-            };
-
             [Inline(InlineBehavior.Remove)]
-            public static void Not(nint* ptr, nint* ptrEnd)
+            public static void Not(nint* ptr, nuint length)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        Core<int>.Not((int*)ptr, (int*)ptrEnd);
+                        FastCore<int>.Not((int*)ptr, length);
                         return;
                     case sizeof(long):
-                        Core<long>.Not((long*)ptr, (long*)ptrEnd);
+                        FastCore<long>.Not((long*)ptr, length);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                Core<int>.Not((int*)ptr, (int*)ptrEnd);
+                                FastCore<int>.Not((int*)ptr, length);
                                 return;
                             case sizeof(long):
-                                Core<long>.Not((long*)ptr, (long*)ptrEnd);
+                                FastCore<long>.Not((long*)ptr, length);
                                 return;
                             default:
                                 break;
@@ -60,24 +56,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void Not(nuint* ptr, nuint* ptrEnd)
+            public static void Not(nuint* ptr, nuint length)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        Core<uint>.Not((uint*)ptr, (uint*)ptrEnd);
+                        FastCore<uint>.Not((uint*)ptr, length);
                         return;
                     case sizeof(long):
-                        Core<ulong>.Not((ulong*)ptr, (ulong*)ptrEnd);
+                        FastCore<ulong>.Not((ulong*)ptr, length);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                Core<uint>.Not((uint*)ptr, (uint*)ptrEnd);
+                                FastCore<uint>.Not((uint*)ptr, length);
                                 return;
                             case sizeof(ulong):
-                                Core<ulong>.Not((ulong*)ptr, (ulong*)ptrEnd);
+                                FastCore<ulong>.Not((ulong*)ptr, length);
                                 return;
                             default:
                                 break;
@@ -90,42 +86,26 @@ namespace WitherTorch.Common.Helpers
         }
 #pragma warning restore CS0162
 
-        unsafe partial class Core<T>
+        unsafe partial class FastCore<T>
         {
-            private static readonly LazyTinyStruct<nint[]> _unaryOperatorsLazy = new LazyTinyStruct<nint[]>(InitializeUnaryOperators);
-
-            private static nint[] InitializeUnaryOperators()
-            {
-                nint[] result = new nint[(int)UnaryOperationMethod._Last];
-                for (int i = 0; i < (int)UnaryOperationMethod._Last; i++)
-                    result[i] = ReflectionHelper.GetMethodPointer(typeof(T), Core.UnaryOperatorNames[i], [typeof(T)], typeof(T),
-                        BindingFlags.Public | BindingFlags.Static);
-                return result;
-            }
-
-            public static void Not(T* ptr, T* ptrEnd)
-                => UnaryOperationCore(ref ptr, ptrEnd, UnaryOperationMethod.Not);
+            public static void Not(T* ptr, nuint length)
+                => UnaryOperationCore(ref ptr, length, UnaryOperationMethod.Not);
 
             [Inline(InlineBehavior.Remove)]
-            private static void UnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
+            private static void UnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
             {
                 if (CheckTypeCanBeVectorized())
                 {
                     nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
-                    InternalShared.CalculateOperationCount<T>(unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr)), vectorOperationCounts);
-                    VectorizedUnaryOperationCore(ref ptr, ptrEnd, vectorOperationCounts, method);
+                    InternalShared.CalculateOperationCount<T>(length, vectorOperationCounts);
+                    VectorizedUnaryOperationCore(ref ptr, vectorOperationCounts, method);
                     return;
                 }
-                if (UnsafeHelper.IsPrimitiveType<T>())
-                {
-                    FastUnaryOperationCore(ref ptr, ptrEnd, method);
-                    return;
-                }
-                SlowUnaryOperationCore(ref ptr, ptrEnd, method);
+                LegacyUnaryOperationCore(ref ptr, length, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore(ref T* ptr, T* ptrEnd, nuint* vectorOperationCounts, [InlineParameter] UnaryOperationMethod method)
+            private static void VectorizedUnaryOperationCore(ref T* ptr, nuint* vectorOperationCounts, [InlineParameter] UnaryOperationMethod method)
             {
                 nuint operationCount;
 #if NET6_0_OR_GREATER
@@ -183,7 +163,7 @@ namespace WitherTorch.Common.Helpers
 #endif
                 operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
                 for (nuint i = 0; i < operationCount; i++, ptr++)
-                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                    *ptr = LegacyUnaryOperationCore(*ptr, method);
             }
 
 #if NET6_0_OR_GREATER
@@ -223,10 +203,6 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new InvalidOperationException(),
                 };
 #else
-            [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore_Internal(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
-            {
-            }
 
             [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedUnaryOperationCore(in Vector<T> valueVector,
@@ -239,29 +215,54 @@ namespace WitherTorch.Common.Helpers
 #endif
 
             [Inline(InlineBehavior.Remove)]
-            private static void FastUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
+            private static void LegacyUnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
             {
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyUnaryOperationCoreFast(*ptr, method);
+                for (nuint i = 0; i < length; i++, ptr++)
+                    *ptr = LegacyUnaryOperationCore(*ptr, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void SlowUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
-            {
-                nint functionPointer = _unaryOperatorsLazy.Value[(int)method];
-                if (functionPointer == default)
-                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyUnaryOperationCoreSlow(*ptr, functionPointer);
-            }
-
-            [Inline(InlineBehavior.Remove)]
-            private static T LegacyUnaryOperationCoreFast(T item, [InlineParameter] UnaryOperationMethod method)
+            private static T LegacyUnaryOperationCore(T item, [InlineParameter] UnaryOperationMethod method)
                 => method switch
                 {
                     UnaryOperationMethod.Not => UnsafeHelper.Not(item),
                     _ => throw new InvalidOperationException(),
                 };
+        }
+
+        unsafe partial class SlowCore
+        {
+            internal static readonly string[] UnaryOperatorNames = new string[(int)UnaryOperationMethod._Last]
+            {
+                "op_OnesComplement",
+            };
+        }
+
+        unsafe partial class SlowCore<T>
+        {
+            private static readonly LazyTinyStruct<nint[]> _unaryOperatorsLazy = new LazyTinyStruct<nint[]>(InitializeUnaryOperators);
+
+            private static nint[] InitializeUnaryOperators()
+            {
+                nint[] result = new nint[(int)UnaryOperationMethod._Last];
+                for (int i = 0; i < (int)UnaryOperationMethod._Last; i++)
+                    result[i] = ReflectionHelper.GetMethodPointer(typeof(T), SlowCore.UnaryOperatorNames[i], [typeof(T)], typeof(T),
+                        BindingFlags.Public | BindingFlags.Static);
+                return result;
+            }
+
+            public static void Not(T* ptr, nuint length)
+                => UnaryOperationCore(ref ptr, length, UnaryOperationMethod.Not);
+
+            [Inline(InlineBehavior.Remove)]
+            private static void UnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
+            {
+                nint functionPointer = _unaryOperatorsLazy.Value[(int)method];
+                if (functionPointer == default)
+                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
+                for (nuint i = 0; i < length; i++, ptr++)
+                    *ptr = LegacyUnaryOperationCoreSlow(*ptr, functionPointer);
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static T LegacyUnaryOperationCoreSlow(T item, nint functionPointer)

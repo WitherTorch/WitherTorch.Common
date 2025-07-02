@@ -14,16 +14,17 @@ using System.Numerics;
 
 namespace WitherTorch.Common.Helpers
 {
+    #pragma warning disable CS8500
     partial class SequenceHelper
     {
-        unsafe partial class Core
+        unsafe partial class FastCore
         {
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool Equals(byte* ptr, byte* ptrEnd, byte* ptr2)
+            public static bool Equals(byte* ptr, byte* ptr2, nuint length)
             {
                 nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
-                InternalShared.CalculateOperationCount<byte>(unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr)), vectorOperationCounts);
+                InternalShared.CalculateOperationCount<byte>(length, vectorOperationCounts);
                 nuint operationCount;
 #if NET6_0_OR_GREATER
                 if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
@@ -77,7 +78,7 @@ namespace WitherTorch.Common.Helpers
                     } while (++i < operationCount);
                 }
 #else
-                if (Limits.UseVector()&& (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
                 {
                     nuint i = 0;
                     do
@@ -139,31 +140,30 @@ namespace WitherTorch.Common.Helpers
                                 return false;
                             operationCount -= 8;
                             ptr += 8;
-                            ptrEnd += 8;
+                            ptr2 += 8;
                             continue;
                     }
                 } while (true);
             }
         }
 
-        unsafe partial class Core<T>
+        unsafe partial class FastCore<T>
         {
-            public static bool RangedAddAndEquals(T* ptr, T* ptrEnd, T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
+            public static bool RangedAddAndEquals(T* ptr, T* ptr2, nuint length, T lowerBound, T higherBound, T valueToAddInRange)
             {
                 if (CheckTypeCanBeVectorized())
                 {
                     nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
-                    InternalShared.CalculateOperationCount<T>(unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr)), vectorOperationCounts);
-                    return VectorizedRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange, vectorOperationCounts);
+                    InternalShared.CalculateOperationCount<T>(length, vectorOperationCounts);
+                    return VectorizedRangedAddAndEquals(ref ptr, ref ptr2, vectorOperationCounts, lowerBound, higherBound, valueToAddInRange);
                 }
                 if (UnsafeHelper.IsPrimitiveType<T>())
-                    return FastRangedAddAndEquals(ref ptr, ptrEnd, ref ptr2, lowerBound, higherBound, valueToAddInRange);
+                    return FastRangedAddAndEquals(ref ptr, ref ptr2, length, lowerBound, higherBound, valueToAddInRange);
                 throw new InvalidOperationException();
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static bool VectorizedRangedAddAndEquals(ref T* ptr, in T* ptrEnd, ref T* ptr2, T lowerBound, T higherBound, T valueToAddInRange,
-                nuint* vectorOperationCounts)
+            private static bool VectorizedRangedAddAndEquals(ref T* ptr, ref T* ptr2, nuint* vectorOperationCounts, T lowerBound, T higherBound, T valueToAddInRange)
             {
                 nuint operationCount;
 #if NET6_0_OR_GREATER
@@ -301,9 +301,9 @@ namespace WitherTorch.Common.Helpers
 #endif
 
             [Inline(InlineBehavior.Remove)]
-            private static bool FastRangedAddAndEquals(ref T* ptr, in T* ptrEnd, ref T* ptr2, T lowerBound, T higherBound, T valueToAddInRange)
+            private static bool FastRangedAddAndEquals(ref T* ptr, ref T* ptr2, nuint length, T lowerBound, T higherBound, T valueToAddInRange)
             {
-                for (; ptr < ptrEnd; ptr++, ptr2++)
+                for (nuint i = 0; i < length; i++, ptr++, ptr2++)
                 {
                     if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
                         RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
@@ -323,7 +323,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static bool IsGreaterOrEqualsFast(T a, T b)
             {
-                if (IsUnsigned())
+                if (UnsafeHelper.IsUnsigned<T>())
                     return UnsafeHelper.IsGreaterOrEqualsThanUnsigned(a, b);
                 return UnsafeHelper.IsGreaterOrEqualsThan(a, b);
             }
@@ -335,7 +335,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static bool IsLessOrEqualsFast(T a, T b)
             {
-                if (IsUnsigned())
+                if (UnsafeHelper.IsUnsigned<T>())
                     return UnsafeHelper.IsLessOrEqualsThanUnsigned(a, b);
                 return UnsafeHelper.IsLessOrEqualsThan(a, b);
             }
@@ -343,6 +343,22 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static bool IsLessOrEqualsSlow(T a, T b, IComparer<T> comparer)
                 => comparer.Compare(a, b) <= 0;
+        }
+    }
+
+    unsafe partial class SlowCore<T>
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Equals(T* ptr, T* ptr2, nuint length)
+        {
+            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+            for (nuint i = 0; i < length; i++)
+            {
+                if (comparer.Equals(ptr[i], ptr2[i]))
+                    continue;
+                return false;
+            }
+            return true;
         }
     }
 }

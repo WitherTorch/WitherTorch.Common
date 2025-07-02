@@ -7,10 +7,10 @@ namespace WitherTorch.Common.Helpers
     partial class SequenceHelper
     {
         [LocalsInit(false)]
-        private static unsafe partial class Core { }
+        private static unsafe partial class FastCore { }
 
         [LocalsInit(false)]
-        private static unsafe partial class Core<T> where T : unmanaged
+        private static unsafe partial class FastCore<T> where T : unmanaged
         {
             [Inline(InlineBehavior.Remove)]
             internal static bool CheckTypeCanBeVectorized()
@@ -28,13 +28,12 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
 #endif
-
-            [Inline(InlineBehavior.Remove)]
-            internal static bool IsUnsigned()
-                => (typeof(T) == typeof(byte)) ||
-                       (typeof(T) == typeof(ushort)) ||
-                       (typeof(T) == typeof(uint)) ||
-                       (typeof(T) == typeof(ulong));
         }
+
+        [LocalsInit(false)]
+        private static unsafe partial class SlowCore { }
+
+        [LocalsInit(false)]
+        private static unsafe partial class SlowCore<T> { }
     }
 }

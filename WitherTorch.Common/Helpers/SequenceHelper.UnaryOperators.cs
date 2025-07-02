@@ -5,109 +5,159 @@ namespace WitherTorch.Common.Helpers
 {
     unsafe partial class SequenceHelper
     {
-        #region Divide
+#pragma warning disable CS8500
+
+        #region Not
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T[] array) where T : unmanaged
+        public static void Not<T>(T[] array) 
         {
             fixed (T* ptr = array)
-                NotCore(ptr, ptr + array.Length);
+                NotCore(ptr, MathHelper.MakeUnsigned(array.Length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T[] array, int startIndex) where T : unmanaged
+        public static void Not<T>(T[] array, int startIndex) 
         {
             int length = array.Length;
-            if (startIndex >= length)
+            if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                NotCore(ptr + startIndex, ptr + length);
+                NotCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T[] array, int startIndex, int count) where T : unmanaged
+        public static void Not<T>(T[] array, int startIndex, int count) 
         {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
             int length = startIndex + count;
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                NotCore(ptr + startIndex, ptr + length);
+                NotCore(ptr + startIndex, unchecked((nuint)count));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T* ptr, T* ptrEnd) where T : unmanaged
-            => NotCore(ptr, ptrEnd);
+        public static void Not<T>(T* ptr, T* ptrEnd)
+        {
+            if (ptrEnd <= ptr)
+                return;
+            NotCore(ptr, unchecked((nuint)(ptrEnd - ptr)));
+        }
         #endregion
 
         #region Core Methods
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void NotCore<T>(T* ptr, T* ptrEnd) where T : unmanaged
+        private static void NotCore<T>(T* ptr, nuint length)
         {
-            if (typeof(T) == typeof(bool))
+            if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
             {
-                Core<byte>.Not((byte*)ptr, (byte*)ptrEnd);
+                FastCore<byte>.Not((byte*)ptr, length);
                 return;
             }
-            if (typeof(T) == typeof(char))
+            if (typeof(T) == typeof(sbyte))
             {
-                Core<ushort>.Not((ushort*)ptr, (ushort*)ptrEnd);
+                FastCore<sbyte>.Not((sbyte*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(short))
+            {
+                FastCore<short>.Not((short*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
+            {
+                FastCore<ushort>.Not((ushort*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(int))
+            {
+                FastCore<int>.Not((int*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(uint))
+            {
+                FastCore<uint>.Not((uint*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(long))
+            {
+                FastCore<long>.Not((long*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(ulong))
+            {
+                FastCore<ulong>.Not((ulong*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(float))
+            {
+                FastCore<float>.Not((float*)ptr, length);
+                return;
+            }
+            if (typeof(T) == typeof(double))
+            {
+                FastCore<double>.Not((double*)ptr, length);
                 return;
             }
             if (typeof(T) == typeof(nint))
             {
-                Core.Not((nint*)ptr, (nint*)ptrEnd);
+                FastCore.Not((nint*)ptr, length);
                 return;
             }
-            if (typeof(T) == typeof(nint))
+            if (typeof(T) == typeof(nuint))
             {
-                Core.Not((nuint*)ptr, (nuint*)ptrEnd);
+                FastCore.Not((nuint*)ptr, length);
                 return;
             }
-            if (UnsafeHelper.IsPrimitiveType<T>())
-            {
-                Core<T>.Not(ptr, ptrEnd);
-                return;
-            }
+            NotCoreSlow(ptr, length);
+        }
+
+        private static void NotCoreSlow<T>(T* ptr, nuint length)
+        {
             Type type = typeof(T);
             if (type.IsEnum)
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
                     case TypeCode.Boolean or TypeCode.Byte:
-                        Core<byte>.Not((byte*)ptr, (byte*)ptrEnd);
+                        FastCore<byte>.Not((byte*)ptr, length);
                         return;
                     case TypeCode.SByte:
-                        Core<sbyte>.Not((sbyte*)ptr, (sbyte*)ptrEnd);
+                        FastCore<sbyte>.Not((sbyte*)ptr, length);
                         return;
                     case TypeCode.Int16:
-                        Core<short>.Not((short*)ptr, (short*)ptrEnd);
+                        FastCore<short>.Not((short*)ptr, length);
                         return;
                     case TypeCode.Char or TypeCode.UInt16:
-                        Core<ushort>.Not((ushort*)ptr, (ushort*)ptrEnd);
+                        FastCore<ushort>.Not((ushort*)ptr, length);
                         return;
                     case TypeCode.Int32:
-                        Core<int>.Not((int*)ptr, (int*)ptrEnd);
+                        FastCore<int>.Not((int*)ptr, length);
                         return;
                     case TypeCode.UInt32:
-                        Core<uint>.Not((uint*)ptr, (uint*)ptrEnd);
+                        FastCore<uint>.Not((uint*)ptr, length);
                         return;
                     case TypeCode.Int64:
-                        Core<long>.Not((long*)ptr, (long*)ptrEnd);
+                        FastCore<long>.Not((long*)ptr, length);
                         return;
                     case TypeCode.UInt64:
-                        Core<ulong>.Not((ulong*)ptr, (ulong*)ptrEnd);
+                        FastCore<ulong>.Not((ulong*)ptr, length);
                         return;
                     case TypeCode.Single:
-                        Core<float>.Not((float*)ptr, (float*)ptrEnd);
+                        FastCore<float>.Not((float*)ptr, length);
                         return;
                     case TypeCode.Double:
-                        Core<double>.Not((double*)ptr, (double*)ptrEnd);
+                        FastCore<double>.Not((double*)ptr, length);
                         return;
                     default:
-                        Core<T>.Not(ptr, ptrEnd);
+                        SlowCore<T>.Not(ptr, length);
                         return;
                 }
             }
-            Core<T>.Not(ptr, ptrEnd);
+            SlowCore<T>.Not(ptr, length);
         }
         #endregion
     }

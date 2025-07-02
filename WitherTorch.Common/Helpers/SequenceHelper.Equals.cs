@@ -54,7 +54,7 @@ namespace WitherTorch.Common.Helpers
             {
 #pragma warning disable CS8500
                 fixed (T* ptr = a, ptr2 = b)
-                    return EqualsCore(ptr, ptr + length, ptr2);
+                    return EqualsCore(ptr, ptr2, MathHelper.MakeUnsigned(length));
 #pragma warning restore CS8500
             }
             IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
@@ -69,9 +69,9 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(void* ptr, void* ptrEnd, void* ptr2)
         {
-            if (ptr == ptr2)
+            if (ptr == ptr2 || ptrEnd <= ptr)
                 return true;
-            return EqualsCore(ptr, ptrEnd, ptr2);
+            return EqualsCore((byte*)ptr, (byte*)ptrEnd, (byte*)ptr2);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -81,7 +81,7 @@ namespace WitherTorch.Common.Helpers
             if (length != str2.Length)
                 return false;
             fixed (char* ptr = str1, ptr2 = str2)
-                return EqualsCore(ptr, ptr + length, ptr2);
+                return EqualsCore(ptr, ptr2, MathHelper.MakeUnsigned(length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -95,10 +95,13 @@ namespace WitherTorch.Common.Helpers
             if (ContainsGreaterThan(str2, '\u007F'))
                 return false;
             fixed (char* ptr = str1, ptr2 = str2)
-                return Core<ushort>.RangedAddAndEquals((ushort*)ptr, (ushort*)ptr + length, (ushort*)ptr2, 'A', 'Z', 'a' - 'A');
+                return FastCore<ushort>.RangedAddAndEquals((ushort*)ptr, (ushort*)ptr2, MathHelper.MakeUnsigned(length), 'A', 'Z', 'a' - 'A');
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static bool EqualsCore(void* ptr, void* ptrEnd, void* ptr2) => Core.Equals((byte*)ptr, (byte*)ptrEnd, (byte*)ptr2);
+        private static bool EqualsCore(byte* ptr, byte* ptrEnd, byte* ptr2) => FastCore.Equals(ptr, ptr2, unchecked((nuint)(ptrEnd - ptr)));
+
+        [Inline(InlineBehavior.Remove)]
+        private static bool EqualsCore(void* ptr, void* ptr2, nuint length) => FastCore.Equals((byte*)ptr, (byte*)ptr2, length);
     }
 }

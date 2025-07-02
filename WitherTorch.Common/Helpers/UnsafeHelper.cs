@@ -141,6 +141,13 @@ namespace WitherTorch.Common.Helpers
             return true;
         }
 
+        [Inline(InlineBehavior.Remove)]
+        internal static bool IsUnsigned<T>()
+            => (typeof(T) == typeof(byte)) ||
+                   (typeof(T) == typeof(ushort)) ||
+                   (typeof(T) == typeof(uint)) ||
+                   (typeof(T) == typeof(ulong));
+
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsGreaterThan<T>(T a, T b)
         {
