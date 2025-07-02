@@ -146,135 +146,139 @@ namespace WitherTorch.Common.Extensions
         private static unsafe string? ToLowerOrUpperAsciiCore(char* ptr, char* ptrEnd, [InlineParameter] bool isUpper)
         {
             char* ptrStart = ptr;
-            nuint length = unchecked((nuint)MathHelper.MakeUnsigned(ptrEnd - ptr));
-
             LazyTinyRefStruct<string> resultLazy = new LazyTinyRefStruct<string>(() =>
             {
-                int resultLength = unchecked((int)(length & int.MaxValue));
+                int resultLength = unchecked((int)(ptrEnd - ptrStart));
                 string result = StringHelper.AllocateRawString(resultLength);
                 fixed (char* ptrResult = result)
                     UnsafeHelper.CopyBlock(ptrResult, ptrStart, unchecked((uint)(resultLength * sizeof(char))));
                 return result;
             });
 
-#if NET6_0_OR_GREATER
-            const int VectorClassCount = 4;
+#if NET6_0_OR_GREATER             
+            if (Limits.UseVector512())
+            {
+                Vector512<ushort>* ptrLimit = ((Vector512<ushort>*)ptr) + 1;
+                if (ptrLimit < ptrEnd)
+                {
+                    Vector512<ushort> maskVectorLow = Vector512.Create<ushort>(isUpper ? 'a' : 'A');
+                    Vector512<ushort> maskVectorHigh = Vector512.Create<ushort>(isUpper ? 'z' : 'Z');
+                    Vector512<ushort> operationVector = Vector512.Create<ushort>(UpperLowerDiff);
+                    do
+                    {
+                        Vector512<ushort> valueVector = Vector512.Load((ushort*)ptr);
+                        Vector512<ushort> resultVector = Vector512.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector512.LessThanOrEqual(valueVector, maskVectorHigh);
+                        if (!resultVector.Equals(default))
+                        {
+                            valueVector = VectorizedToLowerOrUpperAsciiCore_512(valueVector, operationVector, resultVector, isUpper);
+                            fixed (char* ptrResult = resultLazy.Value)
+                                valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
+                        }
+                        ptr = (char*)ptrLimit;
+                    } while (++ptrLimit < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return resultLazy.GetValueDirectly();
+                }
+            }
+            if (Limits.UseVector256())
+            {
+                Vector256<ushort>* ptrLimit = ((Vector256<ushort>*)ptr) + 1;
+                if (ptrLimit < ptrEnd)
+                {
+                    Vector256<ushort> maskVectorLow = Vector256.Create<ushort>(isUpper ? 'a' : 'A');
+                    Vector256<ushort> maskVectorHigh = Vector256.Create<ushort>(isUpper ? 'z' : 'Z');
+                    Vector256<ushort> operationVector = Vector256.Create<ushort>(UpperLowerDiff);
+                    do
+                    {
+                        Vector256<ushort> valueVector = Vector256.Load((ushort*)ptr);
+                        Vector256<ushort> resultVector = Vector256.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector256.LessThanOrEqual(valueVector, maskVectorHigh);
+                        if (!resultVector.Equals(default))
+                        {
+                            valueVector = VectorizedToLowerOrUpperAsciiCore_256(valueVector, operationVector, resultVector, isUpper);
+                            fixed (char* ptrResult = resultLazy.Value)
+                                valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
+                        }
+                        ptr = (char*)ptrLimit;
+                    } while (++ptrLimit < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return resultLazy.GetValueDirectly();
+                }
+            }
+            if (Limits.UseVector128())
+            {
+                Vector128<ushort>* ptrLimit = ((Vector128<ushort>*)ptr) + 1;
+                if (ptrLimit < ptrEnd)
+                {
+                    Vector128<ushort> maskVectorLow = Vector128.Create<ushort>(isUpper ? 'a' : 'A');
+                    Vector128<ushort> maskVectorHigh = Vector128.Create<ushort>(isUpper ? 'z' : 'Z');
+                    Vector128<ushort> operationVector = Vector128.Create<ushort>(UpperLowerDiff);
+                    do
+                    {
+                        Vector128<ushort> valueVector = Vector128.Load((ushort*)ptr);
+                        Vector128<ushort> resultVector = Vector128.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector128.LessThanOrEqual(valueVector, maskVectorHigh);
+                        if (!resultVector.Equals(default))
+                        {
+                            valueVector = VectorizedToLowerOrUpperAsciiCore_128(valueVector, operationVector, resultVector, isUpper);
+                            fixed (char* ptrResult = resultLazy.Value)
+                                valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
+                        }
+                        ptr = (char*)ptrLimit;
+                    } while (++ptrLimit < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return resultLazy.GetValueDirectly();
+                }
+            }
+            if (Limits.UseVector64())
+            {
+                Vector64<ushort>* ptrLimit = ((Vector64<ushort>*)ptr) + 1;
+                if (ptrLimit < ptrEnd)
+                {
+                    Vector64<ushort> maskVectorLow = Vector64.Create<ushort>(isUpper ? 'a' : 'A');
+                    Vector64<ushort> maskVectorHigh = Vector64.Create<ushort>(isUpper ? 'z' : 'Z');
+                    Vector64<ushort> operationVector = Vector64.Create<ushort>(UpperLowerDiff);
+                    do
+                    {
+                        Vector64<ushort> valueVector = Vector64.Load((ushort*)ptr);
+                        Vector64<ushort> resultVector = Vector64.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector64.LessThanOrEqual(valueVector, maskVectorHigh);
+                        if (!resultVector.Equals(default))
+                        {
+                            valueVector = VectorizedToLowerOrUpperAsciiCore_64(valueVector, operationVector, resultVector, isUpper);
+                            fixed (char* ptrResult = resultLazy.Value)
+                                valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
+                        }
+                        ptr = (char*)ptrLimit;
+                    } while (++ptrLimit < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return resultLazy.GetValueDirectly();
+                }
+            }
 #else
-            const int VectorClassCount = 1;
-#endif
-            nuint* vectorOperationCounts = stackalloc nuint[VectorClassCount + 1];
-            SequenceHelper.InternalShared.CalculateOperationCount<ushort>(length, vectorOperationCounts);
-            nuint operationCount;
-#if NET6_0_OR_GREATER
-            if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
+            if (Limits.UseVector())
             {
-                Vector512<ushort> maskVectorLow = Vector512.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector512<ushort> maskVectorHigh = Vector512.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector512<ushort> operationVector = Vector512.Create<ushort>(UpperLowerDiff);
-
-                nuint i = 0;
-                do
+                Vector<ushort>* ptrLimit = ((Vector<ushort>*)ptr) + 1;
+                if (ptrLimit < ptrEnd)
                 {
-                    Vector512<ushort> valueVector = Vector512.Load((ushort*)ptr);
-                    Vector512<ushort> resultVector = Vector512.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector512.LessThanOrEqual(valueVector, maskVectorHigh);
-                    if (!resultVector.Equals(default))
+                    Vector<ushort> maskVectorLow = new Vector<ushort>(isUpper ? 'a' : 'A');
+                    Vector<ushort> maskVectorHigh = new Vector<ushort>(isUpper ? 'z' : 'Z');
+                    Vector<ushort> operationVector = new Vector<ushort>(UpperLowerDiff);
+                    do
                     {
-                        valueVector = VectorizedToLowerOrUpperAsciiCore_512(valueVector, operationVector, resultVector, isUpper);
-                        fixed (char* ptrResult = resultLazy.Value)
-                            valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
-                    }
-                    ptr += Vector512<ushort>.Count;
+                        Vector<ushort> valueVector = UnsafeHelper.ReadUnaligned<Vector<ushort>>(ptr);
+                        Vector<ushort> resultVector = Vector.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector.LessThanOrEqual(valueVector, maskVectorHigh);
+                        if (!resultVector.Equals(default))
+                        {
+                            valueVector = VectorizedToLowerOrUpperAsciiCore(valueVector, operationVector, resultVector, isUpper);
+                            fixed (char* ptrResult = resultLazy.Value)
+                                UnsafeHelper.WriteUnaligned(ptrResult + (ptr - ptrStart), valueVector);
+                        }
+                        ptr = (char*)ptrLimit;
+                    } while (++ptrLimit < ptrEnd);
+                    if (ptr >= ptrEnd)
+                        return resultLazy.GetValueDirectly();
                 }
-                while (++i < operationCount);
-            }            
-            if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
-            {
-                Vector256<ushort> maskVectorLow = Vector256.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector256<ushort> maskVectorHigh = Vector256.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector256<ushort> operationVector = Vector256.Create<ushort>(UpperLowerDiff);
-
-                nuint i = 0;
-                do
-                {
-                    Vector256<ushort> valueVector = Vector256.Load((ushort*)ptr);
-                    Vector256<ushort> resultVector = Vector256.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector256.LessThanOrEqual(valueVector, maskVectorHigh);
-                    if (!resultVector.Equals(default))
-                    {
-                        valueVector = VectorizedToLowerOrUpperAsciiCore_256(valueVector, operationVector, resultVector, isUpper);
-                        fixed (char* ptrResult = resultLazy.Value)
-                            valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
-                    }
-                    ptr += Vector256<ushort>.Count;
-                }
-                while (++i < operationCount);
-            }
-            if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
-            {
-                Vector128<ushort> maskVectorLow = Vector128.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector128<ushort> maskVectorHigh = Vector128.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector128<ushort> operationVector = Vector128.Create<ushort>(UpperLowerDiff);
-
-                nuint i = 0;
-                do
-                {
-                    Vector128<ushort> valueVector = Vector128.Load((ushort*)ptr);
-                    Vector128<ushort> resultVector = Vector128.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector128.LessThanOrEqual(valueVector, maskVectorHigh);
-                    if (!resultVector.Equals(default))
-                    {
-                        valueVector = VectorizedToLowerOrUpperAsciiCore_128(valueVector, operationVector, resultVector, isUpper);
-                        fixed (char* ptrResult = resultLazy.Value)
-                            valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
-                    }
-                    ptr += Vector128<ushort>.Count;
-                }
-                while (++i < operationCount);
-            }     
-            if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
-            {
-                Vector64<ushort> maskVectorLow = Vector64.Create<ushort>(isUpper ? 'a' : 'A');
-                Vector64<ushort> maskVectorHigh = Vector64.Create<ushort>(isUpper ? 'z' : 'Z');
-                Vector64<ushort> operationVector = Vector64.Create<ushort>(UpperLowerDiff);
-
-                nuint i = 0;
-                do
-                {
-                    Vector64<ushort> valueVector = Vector64.Load((ushort*)ptr);
-                    Vector64<ushort> resultVector = Vector64.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector64.LessThanOrEqual(valueVector, maskVectorHigh);
-                    if (!resultVector.Equals(default))
-                    {
-                        valueVector = VectorizedToLowerOrUpperAsciiCore_64(valueVector, operationVector, resultVector, isUpper);
-                        fixed (char* ptrResult = resultLazy.Value)
-                            valueVector.Store((ushort*)ptrResult + (ptr - ptrStart));
-                    }
-                    ptr += Vector64<ushort>.Count;
-                }
-                while (++i < operationCount);
-            }
-#else
-            if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
-            {
-                Vector<ushort> maskVectorLow = new Vector<ushort>(isUpper ? 'a' : 'A');
-                Vector<ushort> maskVectorHigh = new Vector<ushort>(isUpper ? 'z' : 'Z');
-                Vector<ushort> operationVector = new Vector<ushort>(UpperLowerDiff);
-
-                nuint i = 0;
-                do
-                {
-                    Vector<ushort> valueVector = UnsafeHelper.Read<Vector<ushort>>(ptr);
-                    Vector<ushort> resultVector = Vector.GreaterThanOrEqual(valueVector, maskVectorLow) & Vector.LessThanOrEqual(valueVector, maskVectorHigh);
-                    if (!resultVector.Equals(default))
-                    {
-                        valueVector = VectorizedToLowerOrUpperAsciiCore(valueVector, operationVector, resultVector, isUpper);
-                        fixed (char* ptrResult = resultLazy.Value)
-                            UnsafeHelper.Write(ptrResult + (ptr - ptrStart), valueVector);
-                    }
-                    ptr += Vector<ushort>.Count;
-                }
-                while (++i < operationCount);
             }
 #endif
-            operationCount = vectorOperationCounts[VectorClassCount];
-            for (nuint i = 0; i < operationCount; i++, ptr++)
+            for (; ptr < ptrEnd; ptr++)
                 LegacyToLowerOrUpperAsciiCore(ptr, ptrStart, ref resultLazy, isUpper);
             return resultLazy.GetValueDirectly();
         }

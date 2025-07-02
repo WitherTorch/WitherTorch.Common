@@ -356,6 +356,15 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Stobj(typeof(T));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUnaligned<T>(void* destination, T value)
+        {
+            IL.Push(destination);
+            IL.Push(value);
+            IL.Emit.Unaligned(1);
+            IL.Emit.Stobj(typeof(T));
+        }
+
         [SecurityCritical]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void SwapBlock(void* destination, void* source, uint byteCount)

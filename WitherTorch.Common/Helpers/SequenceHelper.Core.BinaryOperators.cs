@@ -468,82 +468,103 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void BinaryOperationCore(ref T* ptr, nuint length, T value, [InlineParameter] BinaryOperationMethod method)
             {
+                T* ptrEnd = ptr + length;
                 if (CheckTypeCanBeVectorized())
                 {
-                    nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
-                    InternalShared.CalculateOperationCount<T>(length, vectorOperationCounts);
-                    VectorizedBinaryOperationCore(ref ptr, vectorOperationCounts, value, method);
+                    VectorizedBinaryOperationCore(ref ptr, ptrEnd, value, method);
                     return;
                 }
-                LegacyBinaryOperationCore(ref ptr, length, value, method);
+                LegacyBinaryOperationCore(ref ptr, ptrEnd, value, method);
                 return;
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedBinaryOperationCore(ref T* ptr, nuint* vectorOperationCounts, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void VectorizedBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method)
             {
-                nuint operationCount;
 #if NET6_0_OR_GREATER
-                if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector512())
                 {
-                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector512<T>* ptrLimit = ((Vector512<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector512<T> valueVector = Vector512.Load(ptr);
-                        VectorizedBinaryOperationCore_512(valueVector, maskVector, method).Store(ptr);
-                        ptr += Vector512<T>.Count;
-                    } while (++i < operationCount);
+                        Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                        do
+                        {
+                            Vector512<T> valueVector = Vector512.Load(ptr);
+                            VectorizedBinaryOperationCore_512(valueVector, maskVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
-                if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
+                if (Limits.UseVector256())
                 {
-                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector256<T>* ptrLimit = ((Vector256<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector256<T> valueVector = Vector256.Load(ptr);
-                        VectorizedBinaryOperationCore_256(valueVector, maskVector, method).Store(ptr);
-                        ptr += Vector256<T>.Count;
-                    } while (++i < operationCount);
+                        Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                        do
+                        {
+                            Vector256<T> valueVector = Vector256.Load(ptr);
+                            VectorizedBinaryOperationCore_256(valueVector, maskVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
-                if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
+                if (Limits.UseVector128())
                 {
-                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector128<T>* ptrLimit = ((Vector128<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector128<T> valueVector = Vector128.Load(ptr);
-                        VectorizedBinaryOperationCore_128(valueVector, maskVector, method).Store(ptr);
-                        ptr += Vector128<T>.Count;
-                    } while (++i < operationCount);
+                        Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                        do
+                        {
+                            Vector128<T> valueVector = Vector128.Load(ptr);
+                            VectorizedBinaryOperationCore_128(valueVector, maskVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
-                if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
+                if (Limits.UseVector64())
                 {
-                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector64<T>* ptrLimit = ((Vector64<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector64<T> valueVector = Vector64.Load(ptr);
-                        VectorizedBinaryOperationCore_64(valueVector, maskVector, method).Store(ptr);
-                        ptr += Vector64<T>.Count;
-                    } while (++i < operationCount);
+                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                        do
+                        {
+                            Vector64<T> valueVector = Vector64.Load(ptr);
+                            VectorizedBinaryOperationCore_64(valueVector, maskVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
 #else
-                if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector())
                 {
-                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                        UnsafeHelper.Write(ptr, VectorizedBinaryOperationCore(valueVector, maskVector, method));
-                        ptr += Vector<T>.Count;
-                    } while (++i < operationCount);
+                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                        do
+                        {
+                            Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                            UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperationCore(valueVector, maskVector, method));
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
 #endif
-                operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
-                for (nuint i = 0; i < operationCount; i++, ptr++)
-                    *ptr = LegacyBinaryOperationCore(*ptr, value, method);
+                LegacyBinaryOperationCore(ref ptr, ptrEnd, value, method);
             }
 
 #if NET6_0_OR_GREATER
@@ -624,9 +645,9 @@ namespace WitherTorch.Common.Helpers
 #endif
 
             [Inline(InlineBehavior.Remove)]
-            private static void LegacyBinaryOperationCore(ref T* ptr, nuint length, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void LegacyBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method)
             {
-                for (nuint i = 0; i < length; i++, ptr++)
+                for (; ptr < ptrEnd; ptr++)
                     *ptr = LegacyBinaryOperationCore(*ptr, value, method);
             }
 

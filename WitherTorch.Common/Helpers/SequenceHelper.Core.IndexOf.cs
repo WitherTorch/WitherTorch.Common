@@ -635,22 +635,22 @@ namespace WitherTorch.Common.Helpers
         unsafe partial class FastCore<T>
         {
             public static bool Contains(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: false) != null;
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static bool ContainsExclude(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: false) != null;
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static bool ContainsGreaterThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: false) != null;
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static bool ContainsLessThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false) != null;
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static bool ContainsGreaterOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: false) != null;
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static bool ContainsLessOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan, accurateResult: false) != null;
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static T* PointerIndexOf(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: true);
@@ -673,115 +673,110 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
+                T* ptrEnd = ptr + length;
                 if (CheckTypeCanBeVectorized())
-                {
-                    nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
-                    InternalShared.CalculateOperationCount<T>(length, vectorOperationCounts);
-                    return VectorizedPointerIndexOfCore(ref ptr, vectorOperationCounts, value, method, accurateResult);
-                }
+                    return VectorizedPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
 
-                return LegacyPointerIndexOfCore(ref ptr, length, value, method);
+                return LegacyPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T* VectorizedPointerIndexOfCore(ref T* ptr, nuint* vectorOperationCounts, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
+            private static T* VectorizedPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
-                nuint operationCount;
 #if NET6_0_OR_GREATER
-                if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector512())
                 {
-                    Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector512<T>* ptrLimit = ((Vector512<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector512<T> valueVector = Vector512.Load(ptr);
-                        Vector512<T> resultVector = VectorizedIndexOfCore_512(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
+                        Vector512<T> maskVector = Vector512.Create(value); // 將要比對的項目擴充成向量
+                        do
                         {
-                            ptr += Vector512<T>.Count;
-                            continue;
-                        }
-                        return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : ptr;
+                            Vector512<T> valueVector = Vector512.Load(ptr);
+                            Vector512<T> resultVector = VectorizedIndexOfCore_512(valueVector, maskVector, method);
+                            if (!resultVector.Equals(default))
+                                return accurateResult ? ptr + FindIndexForResultVector_512(resultVector) : (T*)Booleans.TrueNative;
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
                     }
-                    while (++i < operationCount);
                 }
-                if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
+                if (Limits.UseVector256())
                 {
-                    Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector256<T>* ptrLimit = ((Vector256<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector256<T> valueVector = Vector256.Load(ptr);
-                        Vector256<T> resultVector = VectorizedIndexOfCore_256(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
+                        Vector256<T> maskVector = Vector256.Create(value); // 將要比對的項目擴充成向量
+                        do
                         {
-                            ptr += Vector256<T>.Count;
-                            continue;
-                        }
-                        return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : ptr;
+                            Vector256<T> valueVector = Vector256.Load(ptr);
+                            Vector256<T> resultVector = VectorizedIndexOfCore_256(valueVector, maskVector, method);
+                            if (!resultVector.Equals(default))
+                                return accurateResult ? ptr + FindIndexForResultVector_256(resultVector) : (T*)Booleans.TrueNative;
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
                     }
-                    while (++i < operationCount);
                 }
-                if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
+                if (Limits.UseVector128())
                 {
-                    Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector128<T>* ptrLimit = ((Vector128<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector128<T> valueVector = Vector128.Load(ptr);
-                        Vector128<T> resultVector = VectorizedIndexOfCore_128(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
+                        Vector128<T> maskVector = Vector128.Create(value); // 將要比對的項目擴充成向量
+                        do
                         {
-                            ptr += Vector128<T>.Count;
-                            continue;
-                        }
-                        return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : ptr;
+                            Vector128<T> valueVector = Vector128.Load(ptr);
+                            Vector128<T> resultVector = VectorizedIndexOfCore_128(valueVector, maskVector, method);
+                            if (!resultVector.Equals(default))
+                                return accurateResult ? ptr + FindIndexForResultVector_128(resultVector) : (T*)Booleans.TrueNative;
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
                     }
-                    while (++i < operationCount);
                 }
-                if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
+                if (Limits.UseVector64())
                 {
-                    Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector64<T>* ptrLimit = ((Vector64<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector64<T> valueVector = Vector64.Load(ptr);
-                        Vector64<T> resultVector = VectorizedIndexOfCore_64(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
+                        Vector64<T> maskVector = Vector64.Create(value); // 將要比對的項目擴充成向量
+                        do
                         {
-                            ptr += Vector64<T>.Count;
-                            continue;
-                        }
-                        return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : ptr;
+                            Vector64<T> valueVector = Vector64.Load(ptr);
+                            Vector64<T> resultVector = VectorizedIndexOfCore_64(valueVector, maskVector, method);
+                            if (!resultVector.Equals(default))
+                                return accurateResult ? ptr + FindIndexForResultVector_64(resultVector) : (T*)Booleans.TrueNative;
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
                     }
-                    while (++i < operationCount);
                 }
 #else
-                if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector())
                 {
-                    Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                    nuint i = 0;
-                    do
+                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                        Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                        if (resultVector.Equals(default))
+                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
+                        do
                         {
-                            ptr += Vector<T>.Count;
-                            continue;
-                        }
-                        return accurateResult ? ptr + FindIndexForResultVector(resultVector) : ptr;
+                            Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                            Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
+                            if (!resultVector.Equals(default))
+                                return accurateResult ? ptr + FindIndexForResultVector(resultVector) : (T*)Booleans.TrueNative;
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return null;
                     }
-                    while (++i < operationCount);
                 }
 #endif
-                operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
-                for (nuint i = 0; i < operationCount; i++, ptr++)
-                {
-                    if (LegacyIndexOfCore(*ptr, value, method))
-                        return ptr;
-                }
-                return null;
+                return LegacyPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
             }
 
 #if NET6_0_OR_GREATER
@@ -882,12 +877,12 @@ namespace WitherTorch.Common.Helpers
 #endif
 
             [Inline(InlineBehavior.Remove)]
-            private static T* LegacyPointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method)
+            private static T* LegacyPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
-                for (nuint i = 0; i < length; i++, ptr++)
+                for (; ptr < ptrEnd; ptr++)
                 {
                     if (LegacyIndexOfCore(*ptr, value, method))
-                        return ptr;
+                        return accurateResult ? ptr : (T*)Booleans.TrueNative;
                 }
                 return null;
             }

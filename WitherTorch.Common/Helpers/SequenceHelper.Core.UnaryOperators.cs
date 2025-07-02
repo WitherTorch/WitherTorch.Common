@@ -94,76 +94,97 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void UnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
             {
+                T* ptrEnd = ptr + length;
                 if (CheckTypeCanBeVectorized())
                 {
-                    nuint* vectorOperationCounts = stackalloc nuint[InternalShared.VectorClassCount + 1];
-                    InternalShared.CalculateOperationCount<T>(length, vectorOperationCounts);
-                    VectorizedUnaryOperationCore(ref ptr, vectorOperationCounts, method);
+                    VectorizedUnaryOperationCore(ref ptr, ptrEnd, method);
                     return;
                 }
-                LegacyUnaryOperationCore(ref ptr, length, method);
+                LegacyUnaryOperationCore(ref ptr, ptrEnd, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore(ref T* ptr, nuint* vectorOperationCounts, [InlineParameter] UnaryOperationMethod method)
+            private static void VectorizedUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
             {
-                nuint operationCount;
 #if NET6_0_OR_GREATER
-                if (Limits.UseVector512() && (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector512())
                 {
-                    nuint i = 0;
-                    do
+                    Vector512<T>* ptrLimit = ((Vector512<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector512<T> valueVector = Vector512.Load(ptr);
-                        VectorizedUnaryOperationCore_512(valueVector, method).Store(ptr);
-                        ptr += Vector512<T>.Count;
-                    } while (++i < operationCount);
+                        do
+                        {
+                            Vector512<T> valueVector = Vector512.Load(ptr);
+                            VectorizedUnaryOperationCore_512(valueVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
-                if (Limits.UseVector256() && (operationCount = vectorOperationCounts[1]) > 0)
+                if (Limits.UseVector256())
                 {
-                    nuint i = 0;
-                    do
+                    Vector256<T>* ptrLimit = ((Vector256<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector256<T> valueVector = Vector256.Load(ptr);
-                        VectorizedUnaryOperationCore_256(valueVector, method).Store(ptr);
-                        ptr += Vector256<T>.Count;
-                    } while (++i < operationCount);
+                        do
+                        {
+                            Vector256<T> valueVector = Vector256.Load(ptr);
+                            VectorizedUnaryOperationCore_256(valueVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
-                if (Limits.UseVector128() && (operationCount = vectorOperationCounts[2]) > 0)
+                if (Limits.UseVector128())
                 {
-                    nuint i = 0;
-                    do
+                    Vector128<T>* ptrLimit = ((Vector128<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector128<T> valueVector = Vector128.Load(ptr);
-                        VectorizedUnaryOperationCore_128(valueVector, method).Store(ptr);
-                        ptr += Vector128<T>.Count;
-                    } while (++i < operationCount) ;
+                        do
+                        {
+                            Vector128<T> valueVector = Vector128.Load(ptr);
+                            VectorizedUnaryOperationCore_128(valueVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
-                if (Limits.UseVector64() && (operationCount = vectorOperationCounts[3]) > 0)
+                if (Limits.UseVector64())
                 {
-                    nuint i = 0;
-                    do
+                    Vector64<T>* ptrLimit = ((Vector64<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector64<T> valueVector = Vector64.Load(ptr);
-                        VectorizedUnaryOperationCore_64(valueVector, method).Store(ptr);
-                        ptr += Vector64<T>.Count;
-                    } while (++i < operationCount);
+                        do
+                        {
+                            Vector64<T> valueVector = Vector64.Load(ptr);
+                            VectorizedUnaryOperationCore_64(valueVector, method).Store(ptr);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
 #else
-                if (Limits.UseVector() && (operationCount = vectorOperationCounts[0]) > 0)
+                if (Limits.UseVector())
                 {
-                    nuint i = 0;
-                    do
+                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
                     {
-                        Vector<T> valueVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                        UnsafeHelper.Write(ptr, VectorizedUnaryOperationCore(valueVector, method));
-                        ptr += Vector<T>.Count;
-                    } while (++i < operationCount);
+                        do
+                        {
+                            Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                            UnsafeHelper.WriteUnaligned(ptr, VectorizedUnaryOperationCore(valueVector, method));
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
                 }
 #endif
-                operationCount = vectorOperationCounts[InternalShared.VectorClassCount];
-                for (nuint i = 0; i < operationCount; i++, ptr++)
-                    *ptr = LegacyUnaryOperationCore(*ptr, method);
+                LegacyUnaryOperationCore(ref ptr, ptrEnd, method);
             }
 
 #if NET6_0_OR_GREATER
@@ -215,9 +236,9 @@ namespace WitherTorch.Common.Helpers
 #endif
 
             [Inline(InlineBehavior.Remove)]
-            private static void LegacyUnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void LegacyUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
             {
-                for (nuint i = 0; i < length; i++, ptr++)
+                for (; ptr < ptrEnd; ptr++)
                     *ptr = LegacyUnaryOperationCore(*ptr, method);
             }
 
