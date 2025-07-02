@@ -253,74 +253,14 @@ namespace WitherTorch.Common.Collections
         private static int IndexOfCoreFast(T[] array, int count, T item)
         {
             fixed (T* ptr = array)
-            {
-                if (typeof(T) == typeof(sbyte))
-                    return SequenceHelper.IndexOf((sbyte*)ptr, (sbyte*)ptr + count, UnsafeHelper.As<T, sbyte>(item));
-                if (typeof(T) == typeof(byte))
-                    return SequenceHelper.IndexOf((byte*)ptr, (byte*)ptr + count, UnsafeHelper.As<T, byte>(item));
-                if (typeof(T) == typeof(short))
-                    return SequenceHelper.IndexOf((short*)ptr, (short*)ptr + count, UnsafeHelper.As<T, short>(item));
-                if (typeof(T) == typeof(ushort))
-                    return SequenceHelper.IndexOf((ushort*)ptr, (ushort*)ptr + count, UnsafeHelper.As<T, ushort>(item));
-                if (typeof(T) == typeof(char))
-                    return SequenceHelper.IndexOf((char*)ptr, (char*)ptr + count, UnsafeHelper.As<T, char>(item));
-                if (typeof(T) == typeof(int))
-                    return SequenceHelper.IndexOf((int*)ptr, (int*)ptr + count, UnsafeHelper.As<T, int>(item));
-                if (typeof(T) == typeof(uint))
-                    return SequenceHelper.IndexOf((uint*)ptr, (uint*)ptr + count, UnsafeHelper.As<T, uint>(item));
-                if (typeof(T) == typeof(long))
-                    return SequenceHelper.IndexOf((long*)ptr, (long*)ptr + count, UnsafeHelper.As<T, long>(item));
-                if (typeof(T) == typeof(ulong))
-                    return SequenceHelper.IndexOf((ulong*)ptr, (ulong*)ptr + count, UnsafeHelper.As<T, ulong>(item));
-                if (typeof(T) == typeof(float))
-                    return SequenceHelper.IndexOf((float*)ptr, (float*)ptr + count, UnsafeHelper.As<T, float>(item));
-                if (typeof(T) == typeof(double))
-                    return SequenceHelper.IndexOf((double*)ptr, (double*)ptr + count, UnsafeHelper.As<T, double>(item));
-                if (typeof(T) == typeof(nint))
-                    return SequenceHelper.IndexOf((nint*)ptr, (nint*)ptr + count, UnsafeHelper.As<T, nint>(item));
-                if (typeof(T) == typeof(nuint))
-                    return SequenceHelper.IndexOf((nuint*)ptr, (nuint*)ptr + count, UnsafeHelper.As<T, nuint>(item));
-                if (typeof(T) == typeof(decimal))
-                    return SequenceHelper.IndexOf((decimal*)ptr, (decimal*)ptr + count, UnsafeHelper.As<T, decimal>(item));
-            }
-            throw new InvalidOperationException();
+                return SequenceHelper.IndexOf(ptr, count, item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool ContainsCoreFast(T[] array, int count, T item)
         {
             fixed (T* ptr = array)
-            {
-                if (typeof(T) == typeof(sbyte))
-                    return SequenceHelper.Contains((sbyte*)ptr, (sbyte*)ptr + count, UnsafeHelper.As<T, sbyte>(item));
-                if (typeof(T) == typeof(byte))
-                    return SequenceHelper.Contains((byte*)ptr, (byte*)ptr + count, UnsafeHelper.As<T, byte>(item));
-                if (typeof(T) == typeof(short))
-                    return SequenceHelper.Contains((short*)ptr, (short*)ptr + count, UnsafeHelper.As<T, short>(item));
-                if (typeof(T) == typeof(ushort))
-                    return SequenceHelper.Contains((ushort*)ptr, (ushort*)ptr + count, UnsafeHelper.As<T, ushort>(item));
-                if (typeof(T) == typeof(char))
-                    return SequenceHelper.Contains((char*)ptr, (char*)ptr + count, UnsafeHelper.As<T, char>(item));
-                if (typeof(T) == typeof(int))
-                    return SequenceHelper.Contains((int*)ptr, (int*)ptr + count, UnsafeHelper.As<T, int>(item));
-                if (typeof(T) == typeof(uint))
-                    return SequenceHelper.Contains((uint*)ptr, (uint*)ptr + count, UnsafeHelper.As<T, uint>(item));
-                if (typeof(T) == typeof(long))
-                    return SequenceHelper.Contains((long*)ptr, (long*)ptr + count, UnsafeHelper.As<T, long>(item));
-                if (typeof(T) == typeof(ulong))
-                    return SequenceHelper.Contains((ulong*)ptr, (ulong*)ptr + count, UnsafeHelper.As<T, ulong>(item));
-                if (typeof(T) == typeof(float))
-                    return SequenceHelper.Contains((float*)ptr, (float*)ptr + count, UnsafeHelper.As<T, float>(item));
-                if (typeof(T) == typeof(double))
-                    return SequenceHelper.Contains((double*)ptr, (double*)ptr + count, UnsafeHelper.As<T, double>(item));
-                if (typeof(T) == typeof(nint))
-                    return SequenceHelper.Contains((nint*)ptr, (nint*)ptr + count, UnsafeHelper.As<T, nint>(item));
-                if (typeof(T) == typeof(nuint))
-                    return SequenceHelper.Contains((nuint*)ptr, (nuint*)ptr + count, UnsafeHelper.As<T, nuint>(item));
-                if (typeof(T) == typeof(decimal))
-                    return SequenceHelper.Contains((decimal*)ptr, (decimal*)ptr + count, UnsafeHelper.As<T, decimal>(item));
-            }
-            throw new InvalidOperationException();
+                return SequenceHelper.Contains(ptr, MathHelper.MakeUnsigned(count), item);
         }
 #pragma warning restore CS8500
 
@@ -372,7 +312,7 @@ namespace WitherTorch.Common.Collections
                     NativeMethods.MoveMemory(ptr + newIndex, ptr + oldIndex, count * sizeof(T));
                     return;
                 }
-                NativeMethods.CopyMemory(ptr + newIndex, ptr + oldIndex, count * sizeof(T));    
+                NativeMethods.CopyMemory(ptr + newIndex, ptr + oldIndex, count * sizeof(T));
             }
 #pragma warning restore CS8500
         }

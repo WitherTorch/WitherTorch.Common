@@ -86,49 +86,11 @@ namespace WitherTorch.Common.Extensions
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe bool Contains<T>(this T[] array, T value) where T : unmanaged
-            => Contains(array, value, 0, array.Length);
+            => SequenceHelper.Contains(array, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool Contains<T>(this T[] array, T value, int startIndex, int length) where T : unmanaged
-        {
-            if (length <= 0)
-                return false;
-            fixed (T* ptr = array)
-                return ContainsCore(ptr + startIndex, value, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool Contains<T>(T* ptr, T value, int length) where T : unmanaged
-        {
-            if (length <= 0)
-                return false;
-            return ContainsCore(ptr, value, length);
-        }
-
-        
-        private static unsafe bool ContainsCore<T>(T* ptr, T value, int length) where T : unmanaged
-        {
-            switch (sizeof(T))
-            {
-                case sizeof(byte):
-                    return SequenceHelper.Contains((byte*)ptr, (byte*)ptr + length, *(byte*)&value);
-                case sizeof(ushort):
-                    return SequenceHelper.Contains((ushort*)ptr, (ushort*)ptr + length, *(ushort*)&value);
-                case sizeof(uint):
-                    return SequenceHelper.Contains((uint*)ptr, (uint*)ptr + length, *(uint*)&value);
-                case sizeof(ulong):
-                    return SequenceHelper.Contains((ulong*)ptr, (ulong*)ptr + length, *(ulong*)&value);
-                default:
-                    break;
-            }
-            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-            for (int i = 0; i < length; i++)
-            {
-                if (comparer.Equals(ptr[i], value))
-                    return true;
-            }
-            return false;
-        }
+        public static unsafe bool Contains<T>(this T[] array, T value, int startIndex, int length) 
+            => SequenceHelper.Contains(array, value, startIndex, length);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool TryPop<T>(this Stack<T> obj, out T? value)

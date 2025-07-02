@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using InlineMethod;
+
 namespace WitherTorch.Common.Helpers
 {
     unsafe partial class SequenceHelper
@@ -40,12 +42,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T* ptr, T* ptrEnd)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            NotCore(ptr, unchecked((nuint)(ptrEnd - ptr)));
-        }
+        public static void Not<T>(T* ptr, nuint length) => NotCore(ptr, length);
         #endregion
 
         #region Core Methods

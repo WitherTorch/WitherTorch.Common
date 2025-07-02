@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
+using InlineMethod;
+
 namespace WitherTorch.Common.Helpers
 {
     unsafe partial class SequenceHelper
     {
 #pragma warning disable CS8500
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T* PointerIndexOf<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOf(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOf<T>(T* ptr, T* ptrEnd, T value)
+        public static T* PointerIndexOf<T>(T* ptr, nuint length, T value)
         {
-            if (ptrEnd <= ptr)
-                return null;
-            nuint length = unchecked((nuint)(ptrEnd - ptr));
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
@@ -63,12 +65,13 @@ namespace WitherTorch.Common.Helpers
             return SlowCore<T>.PointerIndexOf(ptr, value, length);
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T* PointerIndexOfExclude<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfExclude(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfExclude<T>(T* ptr, T* ptrEnd, T value)
+        public static T* PointerIndexOfExclude<T>(T* ptr, nuint length, T value)
         {
-            if (ptrEnd <= ptr)
-                return null;
-            nuint length = unchecked((nuint)(ptrEnd - ptr));
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
@@ -119,12 +122,13 @@ namespace WitherTorch.Common.Helpers
             return SlowCore<T>.PointerIndexOfExclude(ptr, value, length);
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T* PointerIndexOfGreaterThan<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfGreaterThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfGreaterThan<T>(T* ptr, T* ptrEnd, T value)
+        public static T* PointerIndexOfGreaterThan<T>(T* ptr, nuint length, T value)
         {
-            if (ptrEnd <= ptr)
-                return null;
-            nuint length = unchecked((nuint)(ptrEnd - ptr));
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
@@ -175,12 +179,13 @@ namespace WitherTorch.Common.Helpers
             return SlowCore<T>.PointerIndexOfGreaterThan(ptr, value, length);
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T* PointerIndexOfGreaterOrEqualsThan<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfGreaterOrEqualsThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfGreaterOrEqualsThan<T>(T* ptr, T* ptrEnd, T value)
+        public static T* PointerIndexOfGreaterOrEqualsThan<T>(T* ptr, nuint length, T value)
         {
-            if (ptrEnd <= ptr)
-                return null;
-            nuint length = unchecked((nuint)(ptrEnd - ptr));
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfGreaterOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
@@ -231,12 +236,13 @@ namespace WitherTorch.Common.Helpers
             return SlowCore<T>.PointerIndexOfGreaterOrEqualsThan(ptr, value, length);
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T* PointerIndexOfLessThan<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfLessThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfLessThan<T>(T* ptr, T* ptrEnd, T value)
+        public static T* PointerIndexOfLessThan<T>(T* ptr, nuint length, T value)
         {
-            if (ptrEnd <= ptr)
-                return null;
-            nuint length = unchecked((nuint)(ptrEnd - ptr));
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
@@ -287,12 +293,13 @@ namespace WitherTorch.Common.Helpers
             return SlowCore<T>.PointerIndexOfLessThan(ptr, value, length);
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T* PointerIndexOfLessOrEqualsThan<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfLessOrEqualsThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfLessOrEqualsThan<T>(T* ptr, T* ptrEnd, T value)
+        public static T* PointerIndexOfLessOrEqualsThan<T>(T* ptr, nuint length, T value)
         {
-            if (ptrEnd <= ptr)
-                return null;
-            nuint length = unchecked((nuint)(ptrEnd - ptr));
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfLessOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))

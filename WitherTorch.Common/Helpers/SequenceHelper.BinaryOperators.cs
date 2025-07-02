@@ -40,12 +40,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Or<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            OrCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void Or<T>(T* ptr, nuint length, T value) => OrCore(ptr, length, value);
         #endregion
 
         #region And
@@ -81,12 +76,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void And<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            AndCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void And<T>(T* ptr, nuint length, T value) => AndCore(ptr, length, value);
         #endregion
 
         #region Xor
@@ -122,12 +112,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Xor<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            XorCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void Xor<T>(T* ptr, nuint length, T value) => XorCore(ptr, length, value);
         #endregion
 
         #region Add
@@ -163,12 +148,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Add<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            AddCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void Add<T>(T* ptr, nuint length, T value) => AddCore(ptr, length, value);
         #endregion
 
         #region Substract
@@ -204,12 +184,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Substract<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            SubstractCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void Substract<T>(T* ptr, nuint length, T value) => SubstractCore(ptr, length, value);
         #endregion
 
         #region Multiply
@@ -245,12 +220,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Multiply<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            MultiplyCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void Multiply<T>(T* ptr, nuint length, T value) => MultiplyCore(ptr, length, value);
         #endregion
 
         #region Divide
@@ -286,12 +256,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Divide<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return;
-            DivideCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static void Divide<T>(T* ptr, nuint length, T value) => DivideCore(ptr, length, value);
         #endregion
 
         #region Core Methods

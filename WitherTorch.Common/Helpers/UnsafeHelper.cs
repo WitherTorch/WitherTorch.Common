@@ -54,14 +54,9 @@ namespace WitherTorch.Common.Helpers
         {
             [Inline(InlineBehavior.Keep, export: true)]
 #if NET6_0_OR_GREATER
-            get => (void*)nint.MaxValue;
+            get => (void*)nuint.MaxValue;
 #else
-            get => PointerSizeConstant switch
-            {
-                sizeof(uint) => (void*)uint.MaxValue,
-                sizeof(ulong) => unchecked((void*)ulong.MaxValue),
-                _ => unchecked((void*)ulong.MaxValue),
-            };
+            get => (void*)unchecked((nuint)(-1));
 #endif
         }
 

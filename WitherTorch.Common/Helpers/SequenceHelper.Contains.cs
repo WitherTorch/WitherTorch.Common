@@ -71,12 +71,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Contains<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return false;
-            return ContainsCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static bool Contains<T>(T* ptr, nuint length, T value) => ContainsCore(ptr, length, value);
         #endregion
 
         #region ContainsExclude
@@ -143,12 +138,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsExclude<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return false;
-            return ContainsExcludeCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static bool ContainsExclude<T>(T* ptr, nuint length, T value) => ContainsExcludeCore(ptr, length, value);
         #endregion
 
         #region ContainsGreaterThan
@@ -215,12 +205,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterThan<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return false;
-            return ContainsGreaterThanCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static bool ContainsGreaterThan<T>(T* ptr, nuint length, T value) => ContainsGreaterThanCore(ptr, length, value);
         #endregion
 
         #region ContainsGreaterOrEqualsThan
@@ -287,12 +272,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return false;
-            return ContainsGreaterOrEqualsThanCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static bool ContainsGreaterOrEqualsThan<T>(T* ptr, nuint length, T value) => ContainsGreaterOrEqualsThanCore(ptr, length, value);
         #endregion
 
         #region ContainsLessThan
@@ -359,12 +339,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessThan<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return false;
-            return ContainsLessThanCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static bool ContainsLessThan<T>(T* ptr, nuint length, T value) => ContainsLessThanCore(ptr, length, value);
         #endregion
 
         #region ContainsLessOrEqualsThan
@@ -431,12 +406,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan<T>(T* ptr, T* ptrEnd, T value)
-        {
-            if (ptrEnd <= ptr)
-                return false;
-            return ContainsLessOrEqualsThanCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value);
-        }
+        public static bool ContainsLessOrEqualsThan<T>(T* ptr, nuint length, T value) => ContainsLessOrEqualsThanCore(ptr, length, value);
         #endregion
 
         #region Core Methods
