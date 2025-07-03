@@ -320,12 +320,11 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void MoveArraySlow(T[] array, int oldIndex, int newIndex, int count)
         {
-            if (MathHelper.MakeUnsigned(oldIndex - newIndex) < count)
-            {
-                MoveArrayCoreVerySlow(array, oldIndex, newIndex, count);
-                return;
-            }
-            MoveArrayCoreSlow(array, oldIndex, newIndex, count);
+            Array.Copy(array, oldIndex, array, newIndex, count);
+            if (newIndex < oldIndex)
+                Array.Clear(array, newIndex + count, oldIndex - newIndex);
+            else
+                Array.Clear(array, oldIndex, newIndex - oldIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -341,12 +340,6 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void MoveArrayCoreVerySlow(T[] array, int oldIndex, int newIndex, int count)
         {
-            if (newIndex > oldIndex)
-            {
-                for (int i = oldIndex, j = newIndex, limit = count; i < limit; i++, j++)
-                    (array[j], array[i]) = (array[i], default!);
-                return;
-            }
             for (int i = oldIndex + count - 1, j = newIndex + count - 1; i >= oldIndex; i--, j--)
                 (array[j], array[i]) = (array[i], default!);
         }

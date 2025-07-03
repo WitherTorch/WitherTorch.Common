@@ -38,6 +38,14 @@ namespace WitherTorch.Common.Helpers
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        public static void BreakIf(bool condition)
+        {
+            if (Debugger.IsAttached && condition)
+                Debugger.Break();
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
         public static void Break()
         {
             if (!Debugger.IsAttached)

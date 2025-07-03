@@ -12,15 +12,7 @@ namespace WitherTorch.Common.Helpers
             => ptrResult < ptrBase ? -1 : unchecked((int)(ptrResult - ptrBase));
 
         [Inline(InlineBehavior.Remove)]
-        private static int ConvertToIndex32<T>(T* ptrResult, T* ptrBase, int startIndex)
-            => ptrResult < ptrBase ? -1 : unchecked((int)(ptrResult - ptrBase + startIndex));
-
-        [Inline(InlineBehavior.Remove)]
         private static nint ConvertToIndexNative<T>(T* ptrResult, T* ptrBase)
             => ptrResult < ptrBase ? -1 : unchecked((int)(ptrResult - ptrBase));
-
-        [Inline(InlineBehavior.Remove)]
-        private static nint ConvertToIndexNative<T>(T* ptrResult, T* ptrBase, nint startIndex)
-            => ptrResult < ptrBase ? -1 : unchecked((nint)(ptrResult - ptrBase + startIndex));
     }
 }

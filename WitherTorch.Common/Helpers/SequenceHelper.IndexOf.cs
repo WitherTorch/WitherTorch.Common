@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOf(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOf(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -38,7 +38,7 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOf(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOf(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -55,7 +55,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOf(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOf(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -69,7 +69,7 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOf(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOf(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -96,7 +96,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfExclude(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,7 +110,7 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfExclude(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -127,7 +127,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfExclude(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -141,7 +141,7 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfExclude(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,7 +168,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -182,7 +182,7 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -199,7 +199,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -213,7 +213,7 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -240,7 +240,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -254,7 +254,7 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -271,7 +271,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,7 +285,7 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,7 +312,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -326,7 +326,7 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -343,7 +343,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -357,7 +357,7 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -384,7 +384,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -398,7 +398,7 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -415,7 +415,7 @@ namespace WitherTorch.Common.Helpers
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(length - startIndex), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -429,7 +429,7 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, unchecked((uint)count), value), ptr, startIndex);
+                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
