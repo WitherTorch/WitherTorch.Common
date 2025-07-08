@@ -340,6 +340,10 @@ namespace WitherTorch.Common.Helpers
         public static T? Read<T>(ref readonly T? location) where T : class
             => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), default, default);
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static int CompareExchange(ref int location, int value, int comparand)
+            => Interlocked.CompareExchange(ref location, value, comparand);
+
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
         public static uint CompareExchange(ref uint location, uint value, uint comparand)
@@ -349,6 +353,10 @@ namespace WitherTorch.Common.Helpers
         public static uint CompareExchange(ref uint location, uint value, uint comparand)
             => unchecked((uint)Interlocked.CompareExchange(ref UnsafeHelper.As<uint, int>(ref location), (int)value, (int)comparand));
 #endif
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static long CompareExchange(ref long location, long value, long comparand)
+            => Interlocked.CompareExchange(ref location, value, comparand);
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
