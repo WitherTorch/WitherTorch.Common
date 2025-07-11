@@ -18,7 +18,7 @@ namespace WitherTorch.Common.Collections
             _pool = pool;
         }
 
-        public override T[] Rent(uint capacity)
+        public override T[] Rent(nuint capacity)
         {
             if (capacity == 0)
                 return Array.Empty<T>();    

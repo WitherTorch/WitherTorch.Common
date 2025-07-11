@@ -22,10 +22,32 @@ namespace WitherTorch.Common.Buffers
         {
             if (capacity < 0)
                 throw new ArgumentOutOfRangeException(nameof(capacity));
-            return Rent(unchecked((uint)capacity));
+            return Rent(unchecked((nuint)capacity));
         }
 
-        public abstract T[] Rent(uint capacity);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T[] Rent(long capacity)
+        {
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+            return Rent(unchecked((nuint)capacity));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T[] Rent(nint capacity)
+        {
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(capacity));
+            return Rent(unchecked((nuint)capacity));
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public T[] Rent(uint capacity) => Rent(unchecked((nuint)capacity));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public T[] Rent(ulong capacity) => Rent(unchecked((nuint)capacity));
+
+        public abstract T[] Rent(nuint capacity);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Return(T[] obj) => Return(obj, !UnsafeHelper.IsUnmanagedType<T>());

@@ -67,7 +67,7 @@ namespace WitherTorch.Common.Collections
             _restoreListLocal = new ThreadLocal<List<DelayedArray>>(() => new List<DelayedArray>(2), false);
         }
 
-        public override T[] Rent(uint capacity)
+        public override T[] Rent(nuint capacity)
         {
             if (capacity == 0)
                 return Array.Empty<T>();
@@ -79,7 +79,7 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T[] RentSmall(uint capacity)
+        private T[] RentSmall(nuint capacity)
         {
             int index;
             if (capacity <= MinimumArraySize)
@@ -98,7 +98,7 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T[] RentLarge(uint capacity)
+        private T[] RentLarge(nuint capacity)
         {
             int index = MathHelper.Log2(capacity - 1 | 15) - 3 - LocalArrayQueueCount;
             if (!_largeQueueLazy[index].Value.TryDequeue(out DelayedArray result))
