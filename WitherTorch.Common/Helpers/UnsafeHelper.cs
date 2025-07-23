@@ -365,7 +365,6 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Stobj(typeof(T));
         }
 
-        [SecurityCritical]
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static void SwapBlock(void* destination, void* source, uint byteCount)
         {
@@ -389,8 +388,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [SecurityCritical]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlock(void* destination, void* source, uint byteCount)
         {
             IL.Push(destination);
@@ -400,8 +397,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [SecurityCritical]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyBlockUnaligned(void* destination, void* source, uint byteCount)
         {
             IL.Push(destination);
@@ -412,8 +407,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public static unsafe ref TTo As<TFrom, TTo>(ref TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -425,8 +418,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public static unsafe TTo As<TFrom, TTo>(TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -438,8 +429,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public static unsafe T As<T>(object source) where T : class
         {
 #if NET8_0_OR_GREATER
@@ -448,6 +437,15 @@ namespace WitherTorch.Common.Helpers
             IL.Push(source);
             return IL.Return<T>();
 #endif
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe TTo RewriteManagedObjectType<TFrom, TTo>(TFrom obj, TTo template) where TFrom : class where TTo : class
+        {
+#pragma warning disable CS8500
+            **(nuint***)&obj = **(nuint***)&template;
+#pragma warning restore CS8500
+            return As<TFrom, TTo>(obj);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

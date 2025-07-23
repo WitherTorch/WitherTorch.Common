@@ -3,10 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-using InlineIL;
-
-using InlineMethod;
-
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
 

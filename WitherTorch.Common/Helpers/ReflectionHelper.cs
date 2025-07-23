@@ -2,12 +2,22 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using InlineMethod;
-
 namespace WitherTorch.Common.Helpers
 {
     public static class ReflectionHelper
     {
+        public static ConstructorInfo? GetConstuctor(Type type, Type[]? parameterTypes) 
+            => type.GetConstructor(BindingFlags.Instance | BindingFlags.Public, null, parameterTypes ?? [], []);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint GetConstuctorPointer(Type type, Type[]? parameterTypes)
+        {
+            ConstructorInfo? constuctor = GetConstuctor(type, parameterTypes);
+            if (constuctor is null)
+                return default;
+            return constuctor.MethodHandle.GetFunctionPointer();
+        }
+
         public static MethodInfo? GetMethod(Type type, string methodName, Type[]? parameterTypes, Type returnType,
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
         {
@@ -39,6 +49,25 @@ namespace WitherTorch.Common.Helpers
             BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
         {
             MethodInfo? method = GetMethod(type, methodName, parameterTypes, returnType, flags);
+            if (method is null)
+                return default;
+            return method.MethodHandle.GetFunctionPointer();
+        }
+
+        public static MethodInfo? GetPropertyGetter(Type type, string propertyName, Type propertyType,
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
+        {
+            PropertyInfo? property = type.GetProperty(propertyName, flags);
+            if (property is null || !propertyType.Equals(property.PropertyType))
+                return null;
+            return property.GetGetMethod((flags & BindingFlags.NonPublic) == BindingFlags.NonPublic);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint GetPropertyGetterPointer(Type type, string propertyName, Type propertyType,
+            BindingFlags flags = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public)
+        {
+            MethodInfo? method = GetPropertyGetter(type, propertyName, propertyType, flags);
             if (method is null)
                 return default;
             return method.MethodHandle.GetFunctionPointer();
