@@ -14,7 +14,7 @@ namespace WitherTorch.Common.Text
         {
             int length = str.Length;
             if (length <= 0)
-                return EmptyString.Instance;
+                return Empty;
 
             if (tryLatin1Compress)
             {
@@ -25,7 +25,7 @@ namespace WitherTorch.Common.Text
                 }
             }
 
-            return new Utf16String(str);
+            return Utf16String.Create(str);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,42 +34,62 @@ namespace WitherTorch.Common.Text
         public static unsafe StringBase Create(char* ptr, bool tryLatin1Compress)
         {
             if (*ptr == '\0')
-                return EmptyString.Instance;
+                return Empty;
 
             if (tryLatin1Compress && Latin1String.TryCreate(ptr, out Latin1String? latin1String))
                 return latin1String;
 
-            return new Utf16String(new string(ptr));
+            return Utf16String.Create(ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(char* ptr, int startIndex, int length) => Create(ptr, startIndex, length, WTCommon.AllowLatin1StringCompression);
+        public static unsafe StringBase Create(char* ptr, int startIndex, int count) => Create(ptr, startIndex, count, WTCommon.AllowLatin1StringCompression);
 
-        public static unsafe StringBase Create(char* ptr, int startIndex, int length, bool tryCompress)
+        public static unsafe StringBase Create(char* ptr, int startIndex, int count, bool tryLatin1Compress)
         {
-            if (length <= 0)
-                return EmptyString.Instance;
-
-            if (tryCompress)
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count <= 0)
+                return Empty;
+            if (tryLatin1Compress)
             {
-                if (startIndex < 0)
-                    throw new ArgumentOutOfRangeException(nameof(startIndex));
-                if (Latin1String.TryCreate(ptr + startIndex, unchecked((nuint)length), out Latin1String? latin1String))
+                if (Latin1String.TryCreate(ptr + startIndex, unchecked((nuint)count), out Latin1String? latin1String))
                     return latin1String;
             }
-
-            return new Utf16String(new string(ptr, startIndex, length));
+            return Utf16String.Create(ptr + startIndex, unchecked((nuint)count));
         }
 
-        public static unsafe StringBase CreateLatin1String(byte* ptr, int startIndex, int length)
+        public static unsafe StringBase CreateUtf16String(char* ptr)
         {
-            if (length <= 0)
-                return EmptyString.Instance;
+            if (*ptr == default)
+                return Empty;
 
-            byte[] buffer = new byte[length + 1];
-            fixed (byte* ptrBuffer = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptr, unchecked((uint)length * sizeof(byte)));
-            return new Latin1String(buffer);
+            return Utf16String.Create(ptr);
+        }
+
+        public static unsafe StringBase CreateUtf16String(char* ptr, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count <= 0)
+                return Empty;
+            return Utf16String.Create(ptr + startIndex, unchecked((nuint)count));
+        }
+
+        public static unsafe StringBase CreateLatin1String(byte* ptr)
+        {
+            if (*ptr == default)
+                return Empty;
+            return Latin1String.Create(ptr);
+        }
+
+        public static unsafe StringBase CreateLatin1String(byte* ptr, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count <= 0)
+                return Empty;
+            return Latin1String.Create(ptr + startIndex, unchecked((nuint)count));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

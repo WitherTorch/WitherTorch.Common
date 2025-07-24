@@ -1,4 +1,5 @@
-﻿using WitherTorch.Common.Helpers;
+﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
@@ -23,27 +24,21 @@ namespace WitherTorch.Common.Text
                 if (endIndex >= length)
                     return Create(ptr, 0, unchecked((int)startIndex));
 
-                if (!WTCommon.AllowLatin1StringCompression||
-                    SequenceHelper.ContainsGreaterThan(ptr, startIndex, InternalStringHelper.Latin1StringLimit) ||
-                    SequenceHelper.ContainsGreaterThan(ptr + startIndex, length - endIndex, InternalStringHelper.Latin1StringLimit))
+                ArrayPool<char> pool = ArrayPool<char>.Shared;
+                nuint newLength = length - count;
+                char[] buffer = pool.Rent(newLength);
+                try
                 {
-                    string buffer = StringHelper.AllocateRawString(unchecked((int)(length - count)));
                     fixed (char* ptrBuffer = buffer)
                     {
                         UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptr, unchecked((uint)startIndex * sizeof(char)));
                         UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptr + endIndex, unchecked((uint)(length - endIndex) * sizeof(char)));
+                        return Create(ptrBuffer, 0, unchecked((int)newLength));
                     }
-                    return new Utf16String(buffer);
                 }
-                else
+                finally
                 {
-                    byte[] buffer = new byte[length - count + 1];
-                    fixed (byte* ptrBuffer = buffer)
-                    {
-                        InternalStringHelper.NarrowAndCopyTo(ptr, startIndex, ptrBuffer);
-                        InternalStringHelper.NarrowAndCopyTo(ptr + endIndex, length - endIndex, ptrBuffer + startIndex);
-                    }
-                    return new Latin1String(buffer);
+                    pool.Return(buffer);
                 }
             }
         }

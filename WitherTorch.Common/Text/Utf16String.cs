@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
@@ -13,9 +14,33 @@ namespace WitherTorch.Common.Text
 
         public override int Length => _value.Length;
 
-        public Utf16String(string value)
+        private Utf16String(string value)
         {
             _value = value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Utf16String Allocate(nuint length, out string buffer)
+        {
+            if (length > int.MaxValue)
+                throw new OutOfMemoryException();
+
+            return new Utf16String(buffer = StringHelper.AllocateRawString(unchecked((int)length)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe new Utf16String Create(string source) => new Utf16String(source);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe new Utf16String Create(char* source) => new Utf16String(new string(source));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Utf16String Create(char* source, nuint length)
+        {
+            if (length > int.MaxValue)
+                throw new OutOfMemoryException();
+
+            return new Utf16String(new string(source, 0, unchecked((int)length)));
         }
 
         protected internal override unsafe char GetCharAt(nuint index)

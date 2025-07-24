@@ -3,6 +3,7 @@
     public enum StringType : uint
     {
         Utf16 = 0,
-        Latin1 = 1,
+        Utf8 = 1,
+        Latin1 = 2,
     }
 }

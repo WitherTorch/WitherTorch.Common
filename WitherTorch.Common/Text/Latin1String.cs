@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -18,10 +19,50 @@ namespace WitherTorch.Common.Text
 
         public override int Length => _length;
 
-        public Latin1String(byte[] value)
+        private Latin1String(byte[] value)
         {
             _value = value;
             _length = value.Length - 1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Latin1String Allocate(nuint length, out byte[] buffer)
+        {
+            if (length > MaxLatin1StringLength)
+                throw new OutOfMemoryException();
+
+            return new Latin1String(buffer = new byte[length + 1]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Latin1String Create(byte* source)
+        {
+            nuint length = 0;
+            do
+            {
+                byte c = source[length];
+                if (c == '\0')
+                    break;
+                if (++length > MaxLatin1StringLength)
+                    throw new OutOfMemoryException();
+            } while (true);
+
+            byte[] buffer = new byte[length + 1];
+            fixed (byte* ptr = buffer)
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length));
+            return new Latin1String(buffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe Latin1String Create(byte* source, nuint length)
+        {
+            if (length >= MaxLatin1StringLength)
+                throw new OutOfMemoryException();
+
+            byte[] buffer = new byte[length + 1];
+            fixed (byte* ptr = buffer)
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length));
+            return new Latin1String(buffer);
         }
 
         public static unsafe bool TryCreate(char* source, [NotNullWhen(true)] out Latin1String? result)
@@ -32,11 +73,11 @@ namespace WitherTorch.Common.Text
                 char c = source[length];
                 if (c == '\0')
                     break;
-                if (c > InternalStringHelper.Latin1StringLimit || ++length >= MaxLatin1StringLength)
+                if (c > InternalStringHelper.Latin1StringLimit || ++length > MaxLatin1StringLength)
                     goto Failed;
             } while (true);
 
-            byte[] buffer = new byte[length + 1];
+            byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* dest = buffer)
                 InternalStringHelper.NarrowAndCopyTo(source, length, dest);
             result = new Latin1String(buffer);
