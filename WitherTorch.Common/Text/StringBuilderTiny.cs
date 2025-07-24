@@ -3,14 +3,12 @@ using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 
-using InlineMethod;
-
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Text
 {
-    public unsafe ref struct StringBuilderTiny
+    public unsafe ref partial struct StringBuilderTiny
     {
         private char* _start, _iterator, _end;
         private DelayedCollectingStringBuilder? _builder;
@@ -84,20 +82,34 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public void Append(string value)
         {
             int count = value.Length;
             if (count <= 0)
                 return;
             fixed (char* ptr = value)
-            {
                 AppendCore(ptr, count);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
+        public void Append(StringBase value)
+        {
+            int count = value.Length;
+            if (count <= 0)
+                return;
+            AppendCore(value, 0, unchecked((nuint)count));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Append(StringSlice value)
+        {
+            nuint count = value.Length;
+            if (count <= 0)
+                return;
+            AppendCore(value.Original, value.StartIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(string value, int startIndex, int count)
         {
             if (startIndex < 0)
@@ -108,74 +120,29 @@ namespace WitherTorch.Common.Text
             if (startIndex + count > valueLength)
                 throw new ArgumentOutOfRangeException(startIndex >= valueLength ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = value)
-            {
                 AppendCore(ptr + startIndex, count);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
+        public void Append(StringBase value, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            int valueLength = value.Length;
+            if (valueLength <= 0)
+                return;
+            if (startIndex + count > valueLength)
+                throw new ArgumentOutOfRangeException(startIndex >= valueLength ? nameof(startIndex) : nameof(count));
+            AppendCore(value, unchecked((nuint)startIndex), unchecked((nuint)count));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(char* ptr, int count)
         {
             if (count <= 0)
                 return;
             AppendCore(ptr, count);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [Inline(InlineBehavior.Remove)]
-        [SecuritySafeCritical]
-        private void AppendCore(char* ptr, [InlineParameter] int count)
-        {
-            DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is not null)
-            {
-                builder.GetObject().Append(ptr, count);
-                return;
-            }
-            char* iterator = _iterator;
-            char* endIterator = iterator + count - 1;
-            char* end = _end;
-            if (endIterator < end)
-            {
-                UnsafeHelper.CopyBlock(iterator, ptr, unchecked((uint)(sizeof(char) * count)));
-                _iterator = endIterator + 1;
-                return;
-            }
-            GetOrRentAlternateStringBuilder(count).Append(ptr, count);
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat<T>(string format, T arg0) => AppendFormat(format, new ParamArrayTiny<T>(arg0));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat<T>(string format, T arg0, T arg1) => AppendFormat(format, new ParamArrayTiny<T>(arg0, arg1));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat<T>(string format, T arg0, T arg1, T arg2) => AppendFormat(format, new ParamArrayTiny<T>(arg0, arg1, arg2));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat<T>(string format, params T[] args) => AppendFormat(format, new ParamArrayTiny<T>(args));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat(string format, object arg0) => AppendFormat(format, new ParamArrayTiny<object>(arg0));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat(string format, object arg0, object arg1) => AppendFormat(format, new ParamArrayTiny<object>(arg0, arg1));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat(string format, object arg0, object arg1, object arg2) => AppendFormat(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [SecuritySafeCritical]
-        public void AppendFormat(string format, params object[] args) => AppendFormat(format, new ParamArrayTiny<object>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(string format, in ParamArrayTiny<T> args)
@@ -216,7 +183,44 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
+        public void AppendFormat<T>(StringBase format, in ParamArrayTiny<T> args)
+        {
+            int length = format.Length;
+            int lastPos = 0, indexOfLeft, indexOfRight;
+            do
+            {
+                indexOfLeft = format.IndexOf('{', lastPos, length - lastPos);
+                if (indexOfLeft < 0)
+                    break;
+                indexOfRight = format.IndexOf('}', indexOfLeft, length - indexOfLeft);
+                if (indexOfRight < 0)
+                    break;
+                Append(format, lastPos, indexOfLeft - lastPos);
+                int count = indexOfRight - indexOfLeft - 1;
+                int delimiterIndex = format.IndexOf(':', indexOfLeft, count);
+                if (delimiterIndex < 0)
+                    Append(args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, count)]?.ToString() ?? "null");
+                else
+                {
+                    T arg = args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1)];
+                    if (arg is IFormattable formattable)
+                    {
+                        string subFormat = format.Slice(delimiterIndex + 1, indexOfRight - delimiterIndex - 1).ToString();
+                        Append(formattable.ToString(subFormat, null));
+                    }
+                    else
+                    {
+                        Append(arg?.ToString() ?? "null");
+                    }
+                }
+                lastPos = indexOfRight + 1;
+            } while (lastPos < length);
+            int lastCount = length - lastPos;
+            if (lastCount > 0)
+                Append(format, lastPos, lastCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringBuilderTiny Clear()
         {
             DelayedCollectingStringBuilder? builder = _builder;
@@ -230,7 +234,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public void Insert(int index, char value)
         {
             DelayedCollectingStringBuilder? builder = _builder;
@@ -257,7 +260,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public void Insert(int index, string value)
         {
             int valueLength = value.Length;
@@ -281,7 +283,7 @@ namespace WitherTorch.Common.Text
                 }
                 fixed (char* ptr = value)
                 {
-                    UnsafeHelper.CopyBlock(copyStartPtr, ptr, unchecked((uint)(sizeof(char) * valueLength)));
+                    UnsafeHelper.CopyBlockUnaligned(copyStartPtr, ptr, unchecked((uint)(sizeof(char) * valueLength)));
                 }
                 _iterator = endIterator + 1;
                 return;
@@ -290,7 +292,33 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
+        public void Insert(int index, StringBase value)
+        {
+            int valueLength = value.Length;
+            if (valueLength <= 0)
+                return;
+            DelayedCollectingStringBuilder? builder = _builder;
+            if (builder is not null)
+            {
+                builder.GetObject().Insert(index, value.ToString());
+                return;
+            }
+            char* iterator = _iterator;
+            char* endIterator = iterator + valueLength - 1;
+            char* end = _end;
+            if (endIterator < end)
+            {
+                char* copyStartPtr = _start + index;
+                for (char* sourcePtr = iterator - 1, destPtr = endIterator; sourcePtr >= copyStartPtr; sourcePtr--, destPtr--)
+                    *destPtr = *sourcePtr;
+                value.CopyToCore(copyStartPtr, 0u, unchecked((nuint)valueLength));
+                _iterator = endIterator + 1;
+                return;
+            }
+            GetOrRentAlternateStringBuilder(valueLength).Insert(index, value.ToString());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Remove(int startIndex, int length)
         {
             if (startIndex < 0)
@@ -318,7 +346,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public void RemoveLast()
         {
             DelayedCollectingStringBuilder? builder = _builder;
@@ -335,7 +362,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public override readonly string ToString()
         {
             DelayedCollectingStringBuilder? builder = _builder;
@@ -349,7 +375,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
         public readonly string ToString(int startIndex, int length)
         {
             if (length <= 0)
@@ -368,133 +393,5 @@ namespace WitherTorch.Common.Text
         }
 
         public void Dispose() => ReturnStringBuilder();
-
-        #region Inline Methods
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void Append(char* ptr, int startIndex, int count)
-            => Append(ptr + startIndex, count);
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void Append(char* ptr, char* ptrEnd)
-            => Append(ptr, unchecked((int)(ptrEnd - ptr)));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void Append(object value)
-            => Append(value?.ToString() ?? "null");
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void Append<T>(T value)
-            => Append(value?.ToString() ?? "null");
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine()
-            => Append('\n');
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(char value)
-        {
-            Append(value);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(char value, int repeatCount)
-        {
-            Append(value, repeatCount);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(string value)
-        {
-            Append(value);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(string value, int startIndex, int count)
-        {
-            Append(value, startIndex, count);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(char* ptr, int count)
-        {
-            Append(ptr, count);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(char* ptr, int startIndex, int count)
-        {
-            Append(ptr, startIndex, count);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(char* ptr, char* ptrEnd)
-        {
-            Append(ptr, ptrEnd);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(object value)
-        {
-            Append(value);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine<T>(T value)
-        {
-            Append(value);
-            AppendLine();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void Insert(int index, object value)
-            => Insert(index, value?.ToString() ?? "null");
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void Insert<T>(int index, T value)
-            => Insert(index, value?.ToString() ?? "null");
-        #endregion
-
-        #region Private Methods
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private StringBuilder GetOrRentAlternateStringBuilder(int extraLength)
-        {
-            DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is null)
-                return RentAlternateStringBuilder(extraLength);
-            return builder.GetObject();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private StringBuilder RentAlternateStringBuilder(int extraLength)
-        {
-            char* start = _start;
-            char* iterator = _iterator;
-            int size = unchecked((int)(iterator - start));
-            DelayedCollectingStringBuilder builder = StringBuilderPool.Shared.Rent();
-            _builder = builder;
-            StringBuilder result = builder.GetObject();
-            result.EnsureCapacity(size + extraLength);
-            result.Append(start, size);
-            return result;
-        }
-
-        [Inline(InlineBehavior.Remove)]
-        private void ReturnStringBuilder()
-        {
-            DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is null)
-                return;
-            _builder = null;
-            StringBuilderPool.Shared.Return(builder);
-        }
-        #endregion
     }
 }

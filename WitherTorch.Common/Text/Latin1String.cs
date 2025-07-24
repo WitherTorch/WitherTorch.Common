@@ -88,7 +88,7 @@ namespace WitherTorch.Common.Text
             _ => false,
         };
 
-        protected override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
+        protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
         {
             fixed (byte* ptr = _value)
                 InternalStringHelper.WidenAndCopyTo(ptr + startIndex, count, destination);

@@ -21,7 +21,7 @@ namespace WitherTorch.Common.Text
 
         protected override bool IsFullyWhitespaced() => true;
 
-        protected override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count) { }
+        protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count) { }
 
         protected override bool PartiallyEqualsCore(string other, nuint startIndex, nuint count) => false;
 

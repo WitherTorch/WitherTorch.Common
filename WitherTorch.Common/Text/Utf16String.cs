@@ -34,7 +34,7 @@ namespace WitherTorch.Common.Text
             return true;
         }
 
-        protected override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
+        protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
         {
             fixed (char* ptr = _value)
                 UnsafeHelper.CopyBlockUnaligned(destination, ptr, unchecked((uint)count * sizeof(char)));

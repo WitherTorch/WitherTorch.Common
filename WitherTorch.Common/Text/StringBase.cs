@@ -93,7 +93,7 @@ namespace WitherTorch.Common.Text
             CopyToCore(destination, unchecked((nuint)startIndex), unchecked((nuint)count));
         }
 
-        protected abstract unsafe void CopyToCore(char* destination, nuint startIndex, nuint count);
+        protected internal abstract unsafe void CopyToCore(char* destination, nuint startIndex, nuint count);
 
         public virtual IEnumerator<char> GetEnumerator() => new IndexEnumerator(this);
 
