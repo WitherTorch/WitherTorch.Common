@@ -67,7 +67,7 @@ namespace WitherTorch.Common.Text
             {
                 Utf16String utf16 => CompareToCoreUtf16(value, utf16._value, unchecked((nuint)length)),
                 Latin1String latin1 => CompareToCoreLatin1(value, latin1.GetInternalRepresentation(), unchecked((nuint)length)),
-                Utf8String utf8 => CompareToCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length), utf8.IsAsciiOnly),
+                Utf8String utf8 => CompareToCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length)),
                 _ => CompareToCoreOther(value, other, unchecked((nuint)length)),
             };
         }
@@ -95,7 +95,7 @@ namespace WitherTorch.Common.Text
             {
                 Utf16String utf16 => EqualsCoreUtf16(value, utf16._value, unchecked((nuint)length)),
                 Latin1String latin1 => EqualsCoreLatin1(value, latin1.GetInternalRepresentation(), unchecked((nuint)length)),
-                Utf8String utf8 => EqualsCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length), utf8.IsAsciiOnly),
+                Utf8String utf8 => EqualsCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length)),
                 _ => EqualsCoreOther(value, other, unchecked((nuint)length)),
             };
         }
@@ -107,16 +107,11 @@ namespace WitherTorch.Common.Text
                 return -Latin1StringHelper.CompareTo_Utf16(ptrB, ptrA, length);
         }
 
-        private static unsafe int CompareToCoreUtf8(string a, byte[] b, nuint length, bool isAsciiOnly)
+        private static unsafe int CompareToCoreUtf8(string a, byte[] b, nuint length)
         {
             fixed (char* ptrA = a)
             fixed (byte* ptrB = b)
-            {
-                if (isAsciiOnly)
-                    return -Latin1StringHelper.CompareTo_Utf16(ptrB, ptrA, length);
-
                 return -Utf8StringHelper.CompareTo_Utf16(ptrB, ptrA, length);
-            }
         }
 
         private static unsafe int CompareToCoreUtf16(string a, string b, nuint length)
@@ -144,16 +139,11 @@ namespace WitherTorch.Common.Text
                 return Latin1StringHelper.Equals_Utf16(ptrB, ptrA, length);
         }
 
-        private static unsafe bool EqualsCoreUtf8(string a, byte[] b, nuint length, bool isAsciiOnly)
+        private static unsafe bool EqualsCoreUtf8(string a, byte[] b, nuint length)
         {
             fixed (char* ptrA = a)
             fixed (byte* ptrB = b)
-            {
-                if (isAsciiOnly)
-                    return Latin1StringHelper.Equals_Utf16(ptrB, ptrA, length);
-
                 return Utf8StringHelper.Equals_Utf16(ptrB, ptrA, length);
-            }
         }
 
         private static unsafe bool EqualsCoreUtf16(string a, string b, nuint length)

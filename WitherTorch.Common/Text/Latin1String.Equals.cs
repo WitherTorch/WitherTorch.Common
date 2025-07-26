@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String latin1 => PartiallyEqualsCoreLatin1(_value, latin1._value, startIndex, count),
                 Utf16String utf16 => PartiallyEqualsCoreUtf16(_value, utf16.GetInternalRepresentation(), startIndex, count),
-                Utf8String utf8 => PartiallyEqualsCoreUtf8(_value, utf8.GetInternalRepresentation(), startIndex, count, utf8.IsAsciiOnly),
+                Utf8String utf8 => PartiallyEqualsCoreUtf8(_value, utf8.GetInternalRepresentation(), startIndex, count),
                 _ => base.PartiallyEqualsCore(other, startIndex, count),
             };
 
@@ -39,7 +39,7 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String latin1 => CompareToCoreLatin1(value, latin1._value, unchecked((nuint)length)),
                 Utf16String utf16 => CompareToCoreUtf16(value, utf16.GetInternalRepresentation(), unchecked((nuint)length)),
-                Utf8String utf8 => CompareToCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length), utf8.IsAsciiOnly),
+                Utf8String utf8 => CompareToCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length)),
                 _ => base.CompareToCore(other),
             };
         }
@@ -67,7 +67,7 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String latin1 => EqualsCoreLatin1(value, latin1._value, unchecked((nuint)length)),
                 Utf16String utf16 => EqualsCoreUtf16(value, utf16.GetInternalRepresentation(), unchecked((nuint)length)),
-                Utf8String utf8 => EqualsCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length), utf8.IsAsciiOnly),
+                Utf8String utf8 => EqualsCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length)),
                 _ => base.EqualsCore(other),
             };
         }
@@ -78,15 +78,11 @@ namespace WitherTorch.Common.Text
                 return SequenceHelper.Equals(ptrA + startIndex, ptrB, count);
         }
 
-        private static unsafe bool PartiallyEqualsCoreUtf8(byte[] a, byte[] b, nuint startIndex, nuint count, bool isAsciiOnly)
+        private static unsafe bool PartiallyEqualsCoreUtf8(byte[] a, byte[] b, nuint startIndex, nuint count)
         {
             fixed (byte* ptrA = a, ptrB = b)
             {
-                byte* iteratorA = ptrA + startIndex;
-                if (isAsciiOnly && SequenceHelper.ContainsGreaterThan(ptrA + startIndex, count, (byte)0x7F))
-                    return SequenceHelper.Equals(iteratorA, ptrB, count);
-
-                byte* iteratorB = ptrB;
+                byte* iteratorA = ptrA + startIndex, iteratorB = ptrB;
                 byte* end = (byte*)UnsafeHelper.PointerMaxValue;
                 for (nuint i = 0; i < count; i++)
                 {
@@ -137,15 +133,10 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private static unsafe int CompareToCoreUtf8(byte[] a, byte[] b, nuint length, bool isAsciiOnly)
+        private static unsafe int CompareToCoreUtf8(byte[] a, byte[] b, nuint length)
         {
             fixed (byte* ptrA = a, ptrB = b)
-            {
-                if (isAsciiOnly)
-                    return InternalSequenceHelper.CompareTo(ptrA, ptrB, length);
-
                 return -Utf8StringHelper.CompareTo_Latin1(ptrB, ptrA, length);
-            }
         }
 
         private static unsafe bool EqualsCoreLatin1(byte[] a, byte[] b, nuint length)
@@ -161,15 +152,10 @@ namespace WitherTorch.Common.Text
                 return Latin1StringHelper.Equals_Utf16(ptrA, ptrB, length);
         }
 
-        private static unsafe bool EqualsCoreUtf8(byte[] a, byte[] b, nuint length, bool isAsciiOnly)
+        private static unsafe bool EqualsCoreUtf8(byte[] a, byte[] b, nuint length)
         {
             fixed (byte* ptrA = a, ptrB = b)
-            {
-                if (isAsciiOnly)
-                    return SequenceHelper.Equals(ptrA, ptrB, length);
-
                 return Utf8StringHelper.Equals_Latin1(ptrB, ptrA, length);
-            }
         }
     }
 }

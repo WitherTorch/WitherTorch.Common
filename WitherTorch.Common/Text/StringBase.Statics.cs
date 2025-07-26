@@ -26,7 +26,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (char* ptr = str)
                 {
-                    if (Utf8String.TryCreate(ptr, unchecked((nuint)length), out Utf8String? utf8String))
+                    if (Utf8String.TryCreate(ptr, unchecked((nuint)length), out StringBase? utf8String))
                         return utf8String;
                 }
             }
@@ -50,7 +50,7 @@ namespace WitherTorch.Common.Text
                 return latin1String;
 
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression &&
-                Utf8String.TryCreate(ptr, length, out Utf8String? utf8String))
+                Utf8String.TryCreate(ptr, length, out StringBase? utf8String))
                 return utf8String;
 
             return Utf16String.Create(ptr, length);
@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Text
             }
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
             {
-                if (Utf8String.TryCreate(ptr + startIndex, unchecked((nuint)count), out Utf8String? utf8String))
+                if (Utf8String.TryCreate(ptr + startIndex, unchecked((nuint)count), out StringBase? utf8String))
                     return utf8String;
             }
             return Utf16String.Create(ptr + startIndex, unchecked((nuint)count));

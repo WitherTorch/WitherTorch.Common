@@ -16,21 +16,18 @@ namespace WitherTorch.Common.Text
 
         private readonly byte[] _value;
         private readonly int _length;
-        private readonly bool _isAsciiOnly;
 
         public override StringType StringType => StringType.Utf8;
         public override int Length => _length;
-        public bool IsAsciiOnly => _isAsciiOnly;
 
-        private Utf8String(byte[] value, int length, bool isAsciiOnly)
+        private Utf8String(byte[] value, int length)
         {
             _value = value;
             _length = length;
-            _isAsciiOnly = isAsciiOnly;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Utf8String Create(byte* source)
+        public static unsafe StringBase Create(byte* source)
         {
             bool isAsciiOnly = true;
             nuint length = 0;
@@ -45,12 +42,12 @@ namespace WitherTorch.Common.Text
                     throw new OutOfMemoryException();
             } while (true);
 
+            if (isAsciiOnly)
+                return Latin1String.Create(source, length);
+
             byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
                 UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
-
-            if (isAsciiOnly)
-                return new Utf8String(buffer, unchecked((int)length), isAsciiOnly: true);
 
             int resultLength = 0;
             fixed (byte* ptr = buffer)
@@ -59,42 +56,47 @@ namespace WitherTorch.Common.Text
                 while ((iterator = Utf8StringHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
                     resultLength += Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
             }
-            return new Utf8String(buffer, resultLength, isAsciiOnly: false);
+            return new Utf8String(buffer, resultLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Utf8String Create(byte* source, nuint length)
+        public static unsafe StringBase Create(byte* source, nuint length)
         {
             if (length > MaxUtf8StringBufferSize)
                 throw new OutOfMemoryException();
 
-            byte[] buffer = new byte[length + 1];
-            fixed (byte* ptr = buffer)
+            if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiCharacterLimit))
             {
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
-                if (!SequenceHelper.ContainsGreaterThan(ptr, length, AsciiCharacterLimit))
-                    return new Utf8String(buffer, (int)length, isAsciiOnly: true);
-
-                byte* iterator = ptr, ptrEnd = ptr + length + 1;
-                int resultLength = 0;
-                while ((iterator = Utf8StringHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
-                    resultLength += Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
-
-                return new Utf8String(buffer, resultLength, isAsciiOnly: false);
+                Latin1String result = Latin1String.Allocate(length, out byte[] buffer);
+                fixed (byte* ptr = buffer)
+                    UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                return result;
+            }
+            else
+            {
+                byte[] buffer = new byte[length + 1];
+                fixed (byte* ptr = buffer)
+                {
+                    UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                    byte* iterator = ptr, ptrEnd = ptr + length + 1;
+                    int resultLength = 0;
+                    while ((iterator = Utf8StringHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
+                        resultLength += Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
+                    return new Utf8String(buffer, resultLength);
+                }
             }
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, [NotNullWhen(true)] out Utf8String? result)
+        public static unsafe bool TryCreate(char* source, nuint length, [NotNullWhen(true)] out StringBase? result)
         {
             if (length > MaxUtf8StringBufferSize)
                 goto Failed;
 
-            if (!SequenceHelper.ContainsGreaterThan(source, length, unchecked((char)AsciiCharacterLimit)))
+            if (!SequenceHelper.ContainsGreaterThan(source, length, (char)AsciiCharacterLimit))
             {
-                byte[] buffer = new byte[length + 1];
-                fixed (byte* dest = buffer)
-                    Latin1StringHelper.NarrowAndCopyTo(source, length, dest);
-                result = new Utf8String(buffer, unchecked((int)length), isAsciiOnly: true);
+                result = Latin1String.Allocate(length, out byte[] buffer);
+                fixed (byte* ptr = buffer)
+                    Latin1StringHelper.NarrowAndCopyTo(source, length, ptr);
                 return true;
             }
 
@@ -105,7 +107,7 @@ namespace WitherTorch.Common.Text
             return false;
         }
 
-        private static unsafe bool TryCreateCore(char* source, nuint length, [NotNullWhen(true)] out Utf8String? result)
+        private static unsafe bool TryCreateCore(char* source, nuint length, [NotNullWhen(true)] out StringBase? result)
         {
             if (length > Utf16CompressionLengthLimit)
                 goto Failed;
@@ -128,7 +130,7 @@ namespace WitherTorch.Common.Text
                     byte[] resultBuffer = new byte[resultLength + 1];
                     fixed (byte* dest = resultBuffer)
                         UnsafeHelper.CopyBlockUnaligned(dest, ptr, unchecked((uint)resultLength * sizeof(byte)));
-                    result = new Utf8String(resultBuffer, unchecked((int)length), isAsciiOnly: false);
+                    result = new Utf8String(resultBuffer, unchecked((int)length));
                     return true;
                 }
             }
@@ -144,10 +146,6 @@ namespace WitherTorch.Common.Text
 
         protected internal override char GetCharAt(nuint index)
         {
-            if (_isAsciiOnly)
-                return unchecked((char)_value[index]); // O(1) 時間複雜度
-
-            // O(N) 時間複雜度
             using CharEnumerator enumerator = new CharEnumerator(_value);
             for (nuint i = 0; i <= index; i++)
                 enumerator.MoveNext();
@@ -158,37 +156,6 @@ namespace WitherTorch.Common.Text
 
         protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
         {
-            if (_isAsciiOnly)
-            {
-                CopyToCoreFast(destination, startIndex, count);
-                return;
-            }
-
-            CopyToCoreSlow(destination, startIndex, count);
-        }
-
-        public byte[] GetInternalRepresentation() => _value;
-
-        protected override unsafe string ToStringCore()
-        {
-            byte[] source = _value;
-            int length = _length;
-            string result = StringHelper.AllocateRawString(length);
-            if (_isAsciiOnly)
-                ToStringCoreFast(source, result, unchecked((nuint)length));
-            else
-                ToStringCoreSlow(source, result, unchecked((nuint)length));
-            return result;
-        }
-
-        private unsafe void CopyToCoreFast(char* destination, nuint startIndex, nuint count)
-        {
-            fixed (byte* ptr = _value)
-                Latin1StringHelper.WidenAndCopyTo(ptr + startIndex, count, destination);
-        }
-
-        private unsafe void CopyToCoreSlow(char* destination, nuint startIndex, nuint count)
-        {
             byte[] source = _value;
             fixed (byte* ptrSource = source)
             {
@@ -198,18 +165,17 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private static unsafe void ToStringCoreFast(byte[] source, string result, nuint length)
-        {
-            fixed (byte* ptrSource = source)
-            fixed (char* ptrResult = result)
-                Latin1StringHelper.WidenAndCopyTo(ptrSource, length, ptrResult);
-        }
+        public byte[] GetInternalRepresentation() => _value;
 
-        private static unsafe void ToStringCoreSlow(byte[] source, string result, nuint length)
+        protected override unsafe string ToStringCore()
         {
+            byte[] source = _value;
+            int length = _length;
+            string result = StringHelper.AllocateRawString(length);
             fixed (byte* ptrSource = source)
             fixed (char* ptrResult = result)
                 Utf8StringHelper.WriteToUtf16Buffer(ptrSource, ptrSource + source.Length, ptrResult, ptrResult + length);
+            return result;
         }
     }
 }
