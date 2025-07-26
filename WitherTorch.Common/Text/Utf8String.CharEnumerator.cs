@@ -35,6 +35,7 @@ namespace WitherTorch.Common.Text
             public CharEnumerator(in CharEnumerator original)
             {
                 _buffer = original._buffer;
+                _length = original._length;
                 _cursor = original._cursor;
                 _current = original._current;
                 _current2 = original._current2;
