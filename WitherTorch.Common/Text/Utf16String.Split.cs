@@ -44,13 +44,32 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String latin1 => GetSplitCount(latin1, pool, out sliceBuffer),
                 Utf16String utf16 => GetSplitCount(utf16._value, pool, out sliceBuffer),
-                _ => base.GetSplitCount(separator, pool, out sliceBuffer)
+                _ => GetSplitCountOther(separator, pool, out sliceBuffer)
             };
 
         private unsafe nuint GetSplitCount(Latin1String separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
         {
             fixed (byte* ptr = separator.GetInternalRepresentation())
                 return GetSplitCount(ptr, unchecked((nuint)separator.Length), pool, out sliceBuffer);
+        }
+
+        private unsafe nuint GetSplitCountOther(StringBase separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
+        {
+            ArrayPool<char> bufferPool = ArrayPool<char>.Shared;
+            nuint length = unchecked((nuint)separator.Length);
+            char[] buffer = bufferPool.Rent(length);
+            try
+            {
+                fixed (char* ptr = buffer)
+                {
+                    separator.CopyToCore(ptr, 0, length);
+                    return GetSplitCount(ptr, length, pool, out sliceBuffer);
+                }
+            }
+            finally
+            {
+                bufferPool.Return(buffer);
+            }
         }
 
         private unsafe nuint GetSplitCount(byte* separator, nuint separatorLength, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
@@ -61,7 +80,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (char* ptr = buffer)
                 {
-                    InternalStringHelper.WidenAndCopyTo(separator, separatorLength, ptr);
+                    Latin1StringHelper.WidenAndCopyTo(separator, separatorLength, ptr);
                     return GetSplitCount(ptr, separatorLength, pool, out sliceBuffer);
                 }
             }
@@ -80,7 +99,7 @@ namespace WitherTorch.Common.Text
             fixed (char* ptrSource = source)
             {
                 char* previous = ptrSource, iterator = ptrSource, ptrEnd = ptrSource + source.Length;
-                while ((iterator = InternalStringHelper.PointerIndexOf(iterator, ptrEnd, separator, separatorLength)) != null)
+                while ((iterator = InternalSequenceHelper.PointerIndexOf(iterator, ptrEnd, separator, separatorLength)) != null)
                 {
                     unchecked
                     {

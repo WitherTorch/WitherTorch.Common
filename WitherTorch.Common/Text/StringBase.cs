@@ -95,15 +95,15 @@ namespace WitherTorch.Common.Text
 
         protected internal abstract unsafe void CopyToCore(char* destination, nuint startIndex, nuint count);
 
-        public virtual IEnumerator<char> GetEnumerator() => new IndexEnumerator(this);
+        public virtual IEnumerator<char> GetEnumerator() => new CharEnumerator(this);
 
         public StringBase Clone() => this;
 
         public override int GetHashCode() => ToString().GetHashCode();
 
-        public abstract string ToCLRString();
+        protected abstract string ToStringCore();
 
-        public override string ToString() => Length > 0 ? ToCLRString() : string.Empty;
+        public override string ToString() => Length > 0 ? ToStringCore() : string.Empty;
 
         #region Interface Implementations
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

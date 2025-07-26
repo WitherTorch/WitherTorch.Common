@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.Common.Helpers;
-
 namespace WitherTorch.Common.Text
 {
     partial class StringBase
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StringBase Create(string str) => Create(str, WTCommon.AllowLatin1StringCompression);
+        public static StringBase Create(string str) => Create(str, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(string str, bool tryLatin1Compress)
+        public static unsafe StringBase Create(string str, StringCreateOptions options)
         {
             int length = str.Length;
             if (length <= 0)
                 return Empty;
 
-            if (tryLatin1Compress)
+            if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
             {
                 fixed (char* ptr = str)
                 {
@@ -24,37 +22,58 @@ namespace WitherTorch.Common.Text
                         return latin1String;
                 }
             }
+            if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
+            {
+                fixed (char* ptr = str)
+                {
+                    if (Utf8String.TryCreate(ptr, unchecked((nuint)length), out Utf8String? utf8String))
+                        return utf8String;
+                }
+            }
 
             return Utf16String.Create(str);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(char* ptr) => Create(ptr, WTCommon.AllowLatin1StringCompression);
+        public static unsafe StringBase Create(char* ptr) => Create(ptr, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(char* ptr, bool tryLatin1Compress)
+        public static unsafe StringBase Create(char* ptr, StringCreateOptions options)
         {
             if (*ptr == '\0')
                 return Empty;
 
-            if (tryLatin1Compress && Latin1String.TryCreate(ptr, out Latin1String? latin1String))
+            nuint length;
+            for (length = 1; ptr[length] != '\0'; length++) ;
+
+            if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression &&
+                Latin1String.TryCreate(ptr, length, out Latin1String? latin1String))
                 return latin1String;
 
-            return Utf16String.Create(ptr);
+            if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression &&
+                Utf8String.TryCreate(ptr, length, out Utf8String? utf8String))
+                return utf8String;
+
+            return Utf16String.Create(ptr, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(char* ptr, int startIndex, int count) => Create(ptr, startIndex, count, WTCommon.AllowLatin1StringCompression);
+        public static unsafe StringBase Create(char* ptr, int startIndex, int count) => Create(ptr, startIndex, count, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(char* ptr, int startIndex, int count, bool tryLatin1Compress)
+        public static unsafe StringBase Create(char* ptr, int startIndex, int count, StringCreateOptions options)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count <= 0)
                 return Empty;
-            if (tryLatin1Compress)
+            if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
             {
                 if (Latin1String.TryCreate(ptr + startIndex, unchecked((nuint)count), out Latin1String? latin1String))
                     return latin1String;
+            }
+            if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
+            {
+                if (Utf8String.TryCreate(ptr + startIndex, unchecked((nuint)count), out Utf8String? utf8String))
+                    return utf8String;
             }
             return Utf16String.Create(ptr + startIndex, unchecked((nuint)count));
         }
@@ -90,6 +109,22 @@ namespace WitherTorch.Common.Text
             if (count <= 0)
                 return Empty;
             return Latin1String.Create(ptr + startIndex, unchecked((nuint)count));
+        }
+
+        public static unsafe StringBase CreateUtf8String(byte* ptr)
+        {
+            if (*ptr == default)
+                return Empty;
+            return Utf8String.Create(ptr);
+        }
+
+        public static unsafe StringBase CreateUtf8String(byte* ptr, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count <= 0)
+                return Empty;
+            return Utf8String.Create(ptr + startIndex, unchecked((nuint)count));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

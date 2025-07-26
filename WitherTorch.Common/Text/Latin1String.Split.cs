@@ -7,7 +7,7 @@ namespace WitherTorch.Common.Text
     {
         protected override unsafe nuint GetSplitCount(char separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
         {
-            if (separator > InternalStringHelper.Latin1StringLimit)
+            if (separator > Latin1StringHelper.Latin1StringLimit)
             {
                 sliceBuffer = null;
                 return 1;
@@ -62,7 +62,7 @@ namespace WitherTorch.Common.Text
 
         private unsafe nuint GetSplitCount(char* separator, nuint separatorLength, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
         {
-            if (SequenceHelper.ContainsGreaterThan(separator, separatorLength, InternalStringHelper.Latin1StringLimit))
+            if (SequenceHelper.ContainsGreaterThan(separator, separatorLength, Latin1StringHelper.Latin1StringLimit))
             {
                 sliceBuffer = null;
                 return 1;
@@ -74,7 +74,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (byte* ptr = buffer)
                 {
-                    InternalStringHelper.NarrowAndCopyTo(separator, separatorLength, ptr);
+                    Latin1StringHelper.NarrowAndCopyTo(separator, separatorLength, ptr);
                     return GetSplitCount(ptr, separatorLength, pool, out sliceBuffer);
                 }
             }
@@ -93,7 +93,7 @@ namespace WitherTorch.Common.Text
             fixed (byte* ptrSource = source)
             {
                 byte* previous = ptrSource, iterator = ptrSource, ptrEnd = ptrSource + _length;
-                while ((iterator = InternalStringHelper.PointerIndexOf(iterator, ptrEnd, separator, separatorLength)) != null)
+                while ((iterator = InternalSequenceHelper.PointerIndexOf(iterator, ptrEnd, separator, separatorLength)) != null)
                 {
                     unchecked
                     {

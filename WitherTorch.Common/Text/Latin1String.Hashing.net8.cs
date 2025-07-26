@@ -54,7 +54,7 @@ namespace WitherTorch.Common.Text
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static int GetHashCode(Latin1String str) => _hashingFunc(str);
 
-            private static int FallbackHashingFunction(Latin1String str) => str.ToCLRStringCore().GetHashCode();
+            private static int FallbackHashingFunction(Latin1String str) => str.ToStringCore().GetHashCode();
 
             private static int MarvinHashingFunction(Latin1String str)
             {
@@ -69,7 +69,7 @@ namespace WitherTorch.Common.Text
                     fixed (byte* ptrSource = value)
                     fixed (char* ptrBuffer = buffer)
                     {
-                        InternalStringHelper.WidenAndCopyTo(ptrSource, unchecked((nuint)length), ptrBuffer);
+                        Latin1StringHelper.WidenAndCopyTo(ptrSource, unchecked((nuint)length), ptrBuffer);
                         return _computeHash32Func(new ReadOnlySpan<byte>(ptrBuffer, length * sizeof(char)), _hashingSeed);
                     }
                 }

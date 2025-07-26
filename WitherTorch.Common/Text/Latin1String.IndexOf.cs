@@ -8,7 +8,7 @@ namespace WitherTorch.Common.Text
     {
         protected override int IndexOfCore(char value, nuint startIndex, nuint count)
         {
-            if (value > InternalStringHelper.Latin1StringLimit)
+            if (value > Latin1StringHelper.Latin1StringLimit)
                 return -1;
 
             fixed (byte* ptr = _value)
@@ -25,7 +25,7 @@ namespace WitherTorch.Common.Text
             fixed (byte* ptr = _value)
             fixed (char* ptr2 = value)
             {
-                byte* result = InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
+                byte* result = Latin1StringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
                 if (result == null)
                     return -1;
                 return unchecked((int)(result - ptr));
@@ -42,7 +42,7 @@ namespace WitherTorch.Common.Text
 
         protected override bool ContainsCore(char value, nuint startIndex, nuint count)
         {
-            if (value > InternalStringHelper.Latin1StringLimit)
+            if (value > Latin1StringHelper.Latin1StringLimit)
                 return false;
 
             fixed (byte* ptr = _value)
@@ -54,7 +54,7 @@ namespace WitherTorch.Common.Text
             fixed (byte* ptr = _value)
             fixed (char* ptr2 = value)
             {
-                byte* result = InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
+                byte* result = Latin1StringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
                 return result != null;
             }
         }
@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Text
         {
             fixed (byte* ptr = _value, ptr2 = value._value)
             {
-                byte* result = InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
+                byte* result = InternalSequenceHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
                 if (result == null)
                     return -1;
                 return unchecked((int)(result - ptr));
@@ -83,7 +83,7 @@ namespace WitherTorch.Common.Text
         private bool ContainsCore(Latin1String value, nuint valueLength, nuint startIndex, nuint count)
         {
             fixed (byte* ptr = _value, ptr2 = value._value)
-                return InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength) != null;
+                return InternalSequenceHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength) != null;
         }
     }
 }

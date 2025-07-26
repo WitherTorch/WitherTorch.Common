@@ -5,52 +5,22 @@ namespace WitherTorch.Common.Text
 {
     partial class Latin1String
     {
-
         protected override unsafe bool PartiallyEqualsCore(string other, nuint startIndex, nuint count)
-        {
-            fixed (char* ptr = other)
-                return PartiallyEqualsCore(ptr, startIndex, count);
-        }
+            => PartiallyEqualsCoreUtf16(_value, other, startIndex, count);
 
         protected override bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
             => other switch
             {
-                Latin1String latin1 => PartiallyEqualsCore(latin1._value, startIndex, count),
-                Utf16String utf16 => PartiallyEqualsCore(utf16.GetInternalRepresentation(), startIndex, count),
+                Latin1String latin1 => PartiallyEqualsCoreLatin1(_value, latin1._value, startIndex, count),
+                Utf16String utf16 => PartiallyEqualsCoreUtf16(_value, utf16.GetInternalRepresentation(), startIndex, count),
+                Utf8String utf8 => PartiallyEqualsCoreUtf8(_value, utf8.GetInternalRepresentation(), startIndex, count, utf8.IsAsciiOnly),
                 _ => base.PartiallyEqualsCore(other, startIndex, count),
             };
-
-        private unsafe bool PartiallyEqualsCore(char* other, nuint startIndex, nuint count)
-        {
-            if (SequenceHelper.ContainsGreaterThan(other, count, InternalStringHelper.Latin1StringLimit))
-                return false;
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(count);
-            try
-            {
-                fixed (byte* ptrSource = _value, ptrBuffer = buffer)
-                {
-                    InternalStringHelper.NarrowAndCopyTo(other, count, ptrBuffer);
-                    return SequenceHelper.Equals(ptrSource + startIndex, ptrBuffer, count);
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        private unsafe bool PartiallyEqualsCore(byte[] other, nuint startIndex, nuint count)
-        {
-            fixed (byte* ptrSource = _value, ptrOther = other)
-                return SequenceHelper.Equals(ptrSource + startIndex, ptrOther, count);
-        }
 
         public override int GetHashCode() => HashingHelper.GetHashCode(this);
 
         public override int CompareToCore(string other)
         {
-            byte[] value = _value;
             int length = _length;
             int result = other.Length.CompareTo(length);
             if (result != 0 || length <= 0)
@@ -69,6 +39,7 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String latin1 => CompareToCoreLatin1(value, latin1._value, unchecked((nuint)length)),
                 Utf16String utf16 => CompareToCoreUtf16(value, utf16.GetInternalRepresentation(), unchecked((nuint)length)),
+                Utf8String utf8 => CompareToCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length), utf8.IsAsciiOnly),
                 _ => base.CompareToCore(other),
             };
         }
@@ -96,54 +67,108 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String latin1 => EqualsCoreLatin1(value, latin1._value, unchecked((nuint)length)),
                 Utf16String utf16 => EqualsCoreUtf16(value, utf16.GetInternalRepresentation(), unchecked((nuint)length)),
+                Utf8String utf8 => EqualsCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length), utf8.IsAsciiOnly),
                 _ => base.EqualsCore(other),
             };
         }
 
-        private unsafe int CompareToCoreLatin1(byte[] a, byte[] b, nuint length)
+        private static unsafe bool PartiallyEqualsCoreLatin1(byte[] a, byte[] b, nuint startIndex, nuint count)
         {
             fixed (byte* ptrA = a, ptrB = b)
-                return InternalStringHelper.CompareTo_LL(ptrA, ptrB, length);
+                return SequenceHelper.Equals(ptrA + startIndex, ptrB, count);
         }
 
-        private unsafe int CompareToCoreUtf16(byte[] a, string b, nuint length)
+        private static unsafe bool PartiallyEqualsCoreUtf8(byte[] a, byte[] b, nuint startIndex, nuint count, bool isAsciiOnly)
         {
-            fixed (byte* ptrA = a)
-            fixed (char* ptrB = b)
+            fixed (byte* ptrA = a, ptrB = b)
             {
-                return InternalStringHelper.CompareTo_LU(ptrA, ptrB, length);
+                byte* iteratorA = ptrA + startIndex;
+                if (isAsciiOnly && SequenceHelper.ContainsGreaterThan(ptrA + startIndex, count, (byte)0x7F))
+                    return SequenceHelper.Equals(iteratorA, ptrB, count);
+
+                byte* iteratorB = ptrB;
+                byte* end = (byte*)UnsafeHelper.PointerMaxValue;
+                for (nuint i = 0; i < count; i++)
+                {
+                    if ((iteratorB = Utf8StringHelper.TryReadUtf8Character(iteratorB, end, out uint unicodeValue)) == null ||
+                        unicodeValue > Latin1StringHelper.Latin1StringLimit ||
+                        iteratorA[i] != unicodeValue)
+                        return false;
+                }
             }
+            return true;
         }
 
-        private unsafe bool EqualsCoreLatin1(byte[] a, byte[] b, nuint length)
+        private static unsafe bool PartiallyEqualsCoreUtf16(byte[] a, string b, nuint startIndex, nuint count)
         {
-            fixed (byte* ptrA = a, ptrB = b)
-                return SequenceHelper.Equals(ptrA, ptrB, length);
-        }
-
-        private unsafe bool EqualsCoreUtf16(byte[] a, string b, nuint length)
-        {
-            if (length <= 0)
-                return true;
-            fixed (byte* ptrA = a)
             fixed (char* ptrB = b)
             {
-                if (SequenceHelper.ContainsGreaterThan(ptrB, length, InternalStringHelper.Latin1StringLimit))
+                if (SequenceHelper.ContainsGreaterThan(ptrB, count, Latin1StringHelper.Latin1StringLimit))
                     return false;
                 ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-                byte[] buffer = pool.Rent(length);
+                byte[] buffer = pool.Rent(count);
                 try
                 {
-                    fixed (byte* dest = buffer)
+                    fixed (byte* ptrA = a, ptrBuffer = buffer)
                     {
-                        InternalStringHelper.NarrowAndCopyTo(ptrB, length, dest);
-                        return SequenceHelper.Equals(ptrA, dest, length);
+                        Latin1StringHelper.NarrowAndCopyTo(ptrB, count, ptrBuffer);
+                        return SequenceHelper.Equals(ptrA + startIndex, ptrBuffer, count);
                     }
                 }
                 finally
                 {
                     pool.Return(buffer);
                 }
+            }
+        }
+
+        private static unsafe int CompareToCoreLatin1(byte[] a, byte[] b, nuint length)
+        {
+            fixed (byte* ptrA = a, ptrB = b)
+                return InternalSequenceHelper.CompareTo(ptrA, ptrB, length);
+        }
+
+        private static unsafe int CompareToCoreUtf16(byte[] a, string b, nuint length)
+        {
+            fixed (byte* ptrA = a)
+            fixed (char* ptrB = b)
+            {
+                return Latin1StringHelper.CompareTo_Utf16(ptrA, ptrB, length);
+            }
+        }
+
+        private static unsafe int CompareToCoreUtf8(byte[] a, byte[] b, nuint length, bool isAsciiOnly)
+        {
+            fixed (byte* ptrA = a, ptrB = b)
+            {
+                if (isAsciiOnly)
+                    return InternalSequenceHelper.CompareTo(ptrA, ptrB, length);
+
+                return -Utf8StringHelper.CompareTo_Latin1(ptrB, ptrA, length);
+            }
+        }
+
+        private static unsafe bool EqualsCoreLatin1(byte[] a, byte[] b, nuint length)
+        {
+            fixed (byte* ptrA = a, ptrB = b)
+                return SequenceHelper.Equals(ptrA, ptrB, length);
+        }
+
+        private static unsafe bool EqualsCoreUtf16(byte[] a, string b, nuint length)
+        {
+            fixed (byte* ptrA = a)
+            fixed (char* ptrB = b)
+                return Latin1StringHelper.Equals_Utf16(ptrA, ptrB, length);
+        }
+
+        private static unsafe bool EqualsCoreUtf8(byte[] a, byte[] b, nuint length, bool isAsciiOnly)
+        {
+            fixed (byte* ptrA = a, ptrB = b)
+            {
+                if (isAsciiOnly)
+                    return SequenceHelper.Equals(ptrA, ptrB, length);
+
+                return Utf8StringHelper.Equals_Latin1(ptrB, ptrA, length);
             }
         }
     }

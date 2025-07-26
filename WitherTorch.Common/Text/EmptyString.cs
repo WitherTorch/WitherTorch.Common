@@ -12,7 +12,6 @@ namespace WitherTorch.Common.Text
         public static EmptyString Instance => _instance;
 
         public override StringType StringType => StringType.Utf16;
-
         public override int Length => 0;
 
         private EmptyString() { }
@@ -67,7 +66,7 @@ namespace WitherTorch.Common.Text
 
         public override bool EqualsCore(StringBase other) => other.Length == 0;
 
-        public override string ToCLRString() => string.Empty;
+        protected override string ToStringCore() => string.Empty;
 
         public override string ToString() => string.Empty;
 

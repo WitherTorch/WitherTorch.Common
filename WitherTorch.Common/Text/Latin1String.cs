@@ -16,7 +16,6 @@ namespace WitherTorch.Common.Text
         private readonly int _length;
 
         public override StringType StringType => StringType.Latin1;
-
         public override int Length => _length;
 
         private Latin1String(byte[] value)
@@ -41,15 +40,15 @@ namespace WitherTorch.Common.Text
             do
             {
                 byte c = source[length];
-                if (c == '\0')
+                if (c == 0)
                     break;
                 if (++length > MaxLatin1StringLength)
                     throw new OutOfMemoryException();
             } while (true);
 
-            byte[] buffer = new byte[length + 1];
+            byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length));
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
             return new Latin1String(buffer);
         }
 
@@ -61,41 +60,18 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length + 1];
             fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length));
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
             return new Latin1String(buffer);
-        }
-
-        public static unsafe bool TryCreate(char* source, [NotNullWhen(true)] out Latin1String? result)
-        {
-            nuint length = 0;
-            do
-            {
-                char c = source[length];
-                if (c == '\0')
-                    break;
-                if (c > InternalStringHelper.Latin1StringLimit || ++length > MaxLatin1StringLength)
-                    goto Failed;
-            } while (true);
-
-            byte[] buffer = new byte[length]; // Tail zero is included
-            fixed (byte* dest = buffer)
-                InternalStringHelper.NarrowAndCopyTo(source, length, dest);
-            result = new Latin1String(buffer);
-            return true;
-
-        Failed:
-            result = null;
-            return false;
         }
 
         public static unsafe bool TryCreate(char* source, nuint length, [NotNullWhen(true)] out Latin1String? result)
         {
-            if (SequenceHelper.ContainsGreaterThan(source, length, InternalStringHelper.Latin1StringLimit) || length > MaxLatin1StringLength)
+            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1StringHelper.Latin1StringLimit) || length > MaxLatin1StringLength)
                 goto Failed;
 
             byte[] buffer = new byte[length + 1];
             fixed (byte* dest = buffer)
-                InternalStringHelper.NarrowAndCopyTo(source, length, dest);
+                Latin1StringHelper.NarrowAndCopyTo(source, length, dest);
             result = new Latin1String(buffer);
             return true;
 
@@ -132,29 +108,21 @@ namespace WitherTorch.Common.Text
         protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
         {
             fixed (byte* ptr = _value)
-                InternalStringHelper.WidenAndCopyTo(ptr + startIndex, count, destination);
+                Latin1StringHelper.WidenAndCopyTo(ptr + startIndex, count, destination);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte[] GetInternalRepresentation() => _value;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe string ToCLRStringCore()
+        protected override unsafe string ToStringCore()
         {
-            byte[] value = _value;
             int length = _length;
-            if (length <= 0)
-                return string.Empty;
             string result = StringHelper.AllocateRawString(length);
-            fixed (byte* source = value)
+            fixed (byte* source = _value)
             fixed (char* dest = result)
-                InternalStringHelper.WidenAndCopyTo(source, unchecked((nuint)length), dest);
+                Latin1StringHelper.WidenAndCopyTo(source, unchecked((nuint)length), dest);
             return result;
         }
-
-        public override unsafe string ToCLRString() => ToCLRStringCore();
-
-        public override string ToString() => ToCLRStringCore();
 
         byte[] IWrapper<byte[]>.Unwrap() => _value;
     }

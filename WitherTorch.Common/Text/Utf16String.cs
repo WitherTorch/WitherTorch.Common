@@ -11,7 +11,6 @@ namespace WitherTorch.Common.Text
         private readonly string _value;
 
         public override StringType StringType => StringType.Utf16;
-
         public override int Length => _value.Length;
 
         private Utf16String(string value)
@@ -72,7 +71,7 @@ namespace WitherTorch.Common.Text
 
         public override int GetHashCode() => _value.GetHashCode();
 
-        public override string ToCLRString() => _value;
+        protected override string ToStringCore() => _value;
 
         public override string ToString() => _value;
 

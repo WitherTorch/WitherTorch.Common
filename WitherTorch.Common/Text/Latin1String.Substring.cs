@@ -14,24 +14,16 @@ namespace WitherTorch.Common.Text
 
         protected override unsafe StringBase RemoveCore(nuint startIndex, nuint count)
         {
-            byte[] source = _value;
-            byte[] buffer;
             nuint length = unchecked((nuint)_length);
             nuint endIndex = startIndex + count;
             if (endIndex >= length)
+                return SubstringCore(0, startIndex);
+
+            byte[] buffer = new byte[length - count + 1];
+            fixed (byte* ptrSource = _value, ptrBuffer = buffer)
             {
-                buffer = new byte[startIndex + 1];
-                fixed (byte* ptrSource = source, ptrBuffer = buffer)
-                    UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource, unchecked((uint)startIndex * sizeof(byte)));
-            }
-            else
-            {
-                buffer = new byte[length - count + 1];
-                fixed (byte* ptrSource = source, ptrBuffer = buffer)
-                {
-                    UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource, unchecked((uint)startIndex * sizeof(byte)));
-                    UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptrSource + endIndex, unchecked((uint)(length - endIndex) * sizeof(byte)));
-                }
+                UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource, unchecked((uint)startIndex * sizeof(byte)));
+                UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptrSource + endIndex, unchecked((uint)(length - endIndex) * sizeof(byte)));
             }
             return new Latin1String(buffer);
         }

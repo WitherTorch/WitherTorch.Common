@@ -1,9 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 
-using WitherTorch.Common;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Buffers;
-
 
 #if NET8_0_OR_GREATER
 using System.Runtime.Intrinsics;
@@ -13,35 +11,41 @@ using System.Numerics;
 
 namespace WitherTorch.Common.Text
 {
-    internal static class InternalStringHelper
+    internal static class Latin1StringHelper
     {
         public const char Latin1StringLimit = '\u00ff';
 
-        // LL = Latin1 to Latin1
-        // LU = Latin1 to Utf16
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe int CompareTo_LL(byte* a, byte* b, nuint length)
-        {
-            for (nuint i = 0; i < length; i++)
-            {
-                int comparison = a[i].CompareTo(b[i]);
-                if (comparison != 0)
-                    return comparison;
-            }
-            return 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe int CompareTo_LU(byte* a, char* b, nuint length)
+        public static unsafe int CompareTo_Utf16(byte* a, char* b, nuint length)
         {
             for (nuint i = 0; i < length; i++)
             {
                 int comparison = unchecked((char)a[i]).CompareTo(b[i]);
                 if (comparison != 0)
-                    return comparison;
+                    return MathHelper.Sign(comparison);
             }
             return 0;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool Equals_Utf16(byte* a, char* b, nuint length)
+        {
+            if (SequenceHelper.ContainsGreaterThan(b, length, Latin1StringLimit))
+                return false;
+            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            byte[] buffer = pool.Rent(length);
+            try
+            {
+                fixed (byte* ptrBuffer = buffer)
+                {
+                    NarrowAndCopyTo(b, length, ptrBuffer);
+                    return SequenceHelper.Equals(a, ptrBuffer, length);
+                }
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
         }
 
         public static unsafe char* PointerIndexOf(char* ptr, nuint count, byte* value, nuint valueLength)
@@ -57,7 +61,7 @@ namespace WitherTorch.Common.Text
                 fixed (char* ptrBuffer = buffer)
                 {
                     WidenAndCopyTo(value, valueLength, ptrBuffer);
-                    return PointerIndexOf(ptr, count, ptrBuffer, valueLength);
+                    return InternalSequenceHelper.PointerIndexOf(ptr, count, ptrBuffer, valueLength);
                 }
             }
             finally
@@ -87,50 +91,13 @@ namespace WitherTorch.Common.Text
                 fixed (byte* ptrBuffer = buffer)
                 {
                     NarrowAndCopyTo(value, valueLength, ptrBuffer);
-                    return PointerIndexOf(ptr, count, ptrBuffer, valueLength);
+                    return InternalSequenceHelper.PointerIndexOf(ptr, count, ptrBuffer, valueLength);
                 }
             }
             finally
             {
                 pool.Return(buffer);
             }
-        }
-
-        public static unsafe T* PointerIndexOf<T>(T* ptr, T* ptrEnd, T* value, nuint valueLength) where T : unmanaged
-        {
-            if (ptrEnd < ptr)
-                return null;
-
-            DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
-            if (valueLength == 1)
-                return SequenceHelper.PointerIndexOf(ptr, ptrEnd, *value);
-
-            return PointerIndexOfCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value, valueLength);
-        }
-
-        public static unsafe T* PointerIndexOf<T>(T* ptr, nuint count, T* value, nuint valueLength) where T : unmanaged
-        {
-            DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
-            if (valueLength == 1)
-                return SequenceHelper.PointerIndexOf(ptr, count, *value);
-
-            return PointerIndexOfCore(ptr, count, value, valueLength);
-        }
-
-        private static unsafe T* PointerIndexOfCore<T>(T* ptr, nuint count, T* value, nuint valueLength) where T : unmanaged
-        {
-            T valueHead = *value;
-            value++;
-            valueLength--;
-
-            T* ptrEnd = ptr + count - valueLength;
-            while ((ptr = SequenceHelper.PointerIndexOf(ptr, ptrEnd, valueHead)) != null)
-            {
-                if (SequenceHelper.Equals(ptr + 1, value, valueLength))
-                    return ptr;
-                ptr++;
-            }
-            return null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

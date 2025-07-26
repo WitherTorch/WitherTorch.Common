@@ -21,7 +21,7 @@ namespace WitherTorch.Common.Text
         {
             fixed (char* ptr = _value, ptr2 = value)
             {
-                char* result = InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
+                char* result = InternalSequenceHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
                 if (result == null)
                     return -1;
                 return unchecked((int)(result - ptr));
@@ -46,7 +46,7 @@ namespace WitherTorch.Common.Text
         {
             fixed (char* ptr = _value, ptr2 = value)
             {
-                char* result = InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
+                char* result = InternalSequenceHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
                 return result != null;
             }
         }
@@ -65,7 +65,7 @@ namespace WitherTorch.Common.Text
             fixed (char* ptr = _value)
             fixed (byte* ptr2 = value.GetInternalRepresentation())
             {
-                char* result = InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
+                char* result = Latin1StringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength);
                 if (result == null)
                     return -1;
                 return unchecked((int)(result - ptr));
@@ -77,7 +77,7 @@ namespace WitherTorch.Common.Text
         {
             fixed (char* ptr = _value)
             fixed (byte* ptr2 = value.GetInternalRepresentation())
-                return InternalStringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength) != null;
+                return Latin1StringHelper.PointerIndexOf(ptr + startIndex, count, ptr2, valueLength) != null;
         }
     }
 }

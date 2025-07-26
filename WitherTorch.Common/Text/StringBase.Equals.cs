@@ -171,12 +171,15 @@ namespace WitherTorch.Common.Text
 
         public virtual bool EqualsCore(StringBase other) => ToString().Equals(other.ToString(), StringComparison.Ordinal);
 
-        protected virtual bool PartiallyEqualsCore(string other, nuint startIndex, nuint count)
+        protected virtual unsafe bool PartiallyEqualsCore(string other, nuint startIndex, nuint count)
         {
-            for (nuint i = 0; i < count; i++)
+            fixed (char* ptr = other)
             {
-                if (GetCharAt(startIndex + i) != other[(int)i])
-                    return false;
+                for (nuint i = 0; i < count; i++)
+                {
+                    if (GetCharAt(startIndex + i) != ptr[i])
+                        return false;
+                }
             }
             return true;
         }

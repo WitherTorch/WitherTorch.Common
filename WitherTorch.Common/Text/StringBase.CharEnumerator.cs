@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -6,18 +7,20 @@ namespace WitherTorch.Common.Text
 {
     public abstract partial class StringBase
     {
-        private sealed class IndexEnumerator : IEnumerator<char>
+        private sealed class CharEnumerator : IEnumerator<char>
         {
             private readonly StringBase _source;
             private readonly int _length;
 
             private int _index;
+            private char _current;
+            private bool _isValidState;
 
-            public IndexEnumerator(StringBase str)
+            public CharEnumerator(StringBase str)
             {
                 _source = str;
                 _length = str.Length;
-                _index = -1;
+                Reset();
             }
 
             public char Current
@@ -25,35 +28,53 @@ namespace WitherTorch.Common.Text
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
-                    int index = _index;
-                    if (index < 0 || index >= _length)
+                    if (!_isValidState)
                         throw new InvalidOperationException("Enumerator is not positioned within the string.");
-                    return _source.GetCharAt(unchecked((nuint)index));
+                    return _current;
                 }
             }
 
-            object System.Collections.IEnumerator.Current => Current;
+            object IEnumerator.Current => Current;
 
             public void Dispose() { }
 
             public bool MoveNext()
             {
+                bool state = MoveNextCore();
+                _isValidState = state;
+                return state;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool MoveNextCore()
+            {
                 int index = _index;
                 if (index < 0)
                 {
                     _index = 0;
-                    return true;
+                    if (_length > 0)
+                    {
+                        _current = _source.GetCharAt(0);
+                        return true;
+                    }
+                    return false;
                 }
                 index++;
                 if (index < _length)
                 {
                     _index = index;
+                    _current = _source.GetCharAt(unchecked((char)_index));
                     return true;
                 }
                 return false;
             }
 
-            public void Reset() => _index = -1;
+            public void Reset()
+            {
+                _index = -1;
+                _current = '\0';
+                _isValidState = false;
+            }
         }
     }
 }

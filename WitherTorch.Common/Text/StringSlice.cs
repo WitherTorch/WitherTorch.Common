@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.Common.Text
 {
     public readonly struct StringSlice : IEnumerable<char>
@@ -106,14 +108,28 @@ namespace WitherTorch.Common.Text
 #endif
         }
 
-        public bool Equals(StringSlice other) 
+        public bool Equals(StringSlice other)
             => ReferenceEquals(_original, other._original) && _startIndex == other._startIndex && _length == other._length;
 
         public override bool Equals(object? obj) => obj is StringSlice other && Equals(other);
 
         public StringBase ToStringBase() => _original.SubstringCore(_startIndex, _length);
 
-        public override string ToString() => ToStringBase().ToString();
+        public override unsafe string ToString()
+        {
+            nuint length = _length;
+            if (length == 0)
+                return string.Empty;
+            StringBase original = _original;
+            nuint startIndex = _startIndex;
+            if (startIndex == 0 && length == unchecked((nuint)original.Length))
+                return original.ToString();
+
+            string result = StringHelper.AllocateRawString((int)length);
+            fixed (char* ptr = result)
+                original.CopyToCore(ptr, startIndex, length);
+            return result;
+        }
 
         public struct Enumerator : IEnumerator<char>
         {
