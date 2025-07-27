@@ -101,7 +101,7 @@ namespace WitherTorch.Common.Helpers
                     switch (length)
                     {
                         case 7:
-                            if (ptr != ptr2)
+                            if (*ptr != *ptr2)
                                 return false;
                             ptr++;
                             ptr2++;
@@ -113,7 +113,7 @@ namespace WitherTorch.Common.Helpers
                             ptr2 += 2;
                             goto case 4;
                         case 5:
-                            if (ptr != ptr2)
+                            if (*ptr != *ptr2)
                                 return false;
                             ptr++;
                             ptr2++;
@@ -123,7 +123,7 @@ namespace WitherTorch.Common.Helpers
                                 return false;
                             goto case 0;
                         case 3:
-                            if (ptr != ptr2)
+                            if (*ptr != *ptr2)
                                 return false;
                             ptr++;
                             ptr2++;
@@ -133,7 +133,7 @@ namespace WitherTorch.Common.Helpers
                                 return false;
                             goto case 0;
                         case 1:
-                            if (ptr != ptr2)
+                            if (*ptr != *ptr2)
                                 return false;
                             goto case 0;
                         case 0:
