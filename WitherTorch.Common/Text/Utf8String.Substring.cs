@@ -125,12 +125,12 @@ namespace WitherTorch.Common.Text
         {
             for (nuint i = 0; i < count; i++)
             {
-                if ((source = Utf8StringHelper.TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) == null)
+                if ((source = Utf8EncodingHelper.TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) == null)
                 {
                     bufferEnd = buffer;
                     break;
                 }
-                if ((buffer = Utf8StringHelper.TryWriteUtf8Character(buffer, bufferEnd, unicodeValue)) == null)
+                if ((buffer = Utf8EncodingHelper.TryWriteUtf8Character(buffer, bufferEnd, unicodeValue)) == null)
                     return null;
             }
             return buffer;
@@ -140,13 +140,13 @@ namespace WitherTorch.Common.Text
         {
             for (nuint i = 0; i < count; i++)
             {
-                if ((source = Utf8StringHelper.TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) == null)
+                if ((source = Utf8EncodingHelper.TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) == null)
                     return 0;
-                if (Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out char trailSurrogate))
+                if (Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out _, out char trailSurrogate))
                 {
                     if (++i < count)
                         continue;
-                    if ((destination = Utf8StringHelper.TryWriteUtf8Character(destination, destinationEnd, trailSurrogate)) == null)
+                    if ((destination = Utf8EncodingHelper.TryWriteUtf8Character(destination, destinationEnd, trailSurrogate)) == null)
                         return (nuint)UnsafeHelper.PointerMaxValue;
                 }
             }
@@ -157,9 +157,9 @@ namespace WitherTorch.Common.Text
         {
             for (nuint i = 0; i < count; i++)
             {
-                if ((source = Utf8StringHelper.TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) == null)
+                if ((source = Utf8EncodingHelper.TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) == null)
                     return 0;
-                if (Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out char trailSurrogate))
+                if (Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out _, out char trailSurrogate))
                 {
                     if (++i < count)
                         continue;

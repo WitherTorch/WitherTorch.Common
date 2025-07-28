@@ -53,8 +53,8 @@ namespace WitherTorch.Common.Text
             fixed (byte* ptr = buffer)
             {
                 byte* iterator = ptr, ptrEnd = ptr + length + 1;
-                while ((iterator = Utf8StringHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
-                    resultLength += Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
+                while ((iterator = Utf8EncodingHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
+                    resultLength += Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
             }
             return new Utf8String(buffer, resultLength);
         }
@@ -80,8 +80,8 @@ namespace WitherTorch.Common.Text
                     UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
                     byte* iterator = ptr, ptrEnd = ptr + length + 1;
                     int resultLength = 0;
-                    while ((iterator = Utf8StringHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
-                        resultLength += Utf8StringHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
+                    while ((iterator = Utf8EncodingHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
+                        resultLength += Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
                     return new Utf8String(buffer, resultLength);
                 }
             }
@@ -121,9 +121,9 @@ namespace WitherTorch.Common.Text
                 {
                     char* sourceEnd = source + length;
                     byte* iterator = ptr, ptrEnd = ptr + bufferLength;
-                    while ((source = Utf8StringHelper.TryReadUtf16Character(source, sourceEnd, out uint unicodeValue)) != null)
+                    while ((source = Utf8EncodingHelper.TryReadUtf16Character(source, sourceEnd, out uint unicodeValue)) != null)
                     {
-                        if ((iterator = Utf8StringHelper.TryWriteUtf8Character(iterator, ptrEnd, unicodeValue)) == null)
+                        if ((iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, ptrEnd, unicodeValue)) == null)
                             goto Failed;
                     }
                     nuint resultLength = unchecked((nuint)(iterator - ptr));
@@ -161,7 +161,7 @@ namespace WitherTorch.Common.Text
             {
                 byte* sourceIterator = ptrSource, sourceEnd = ptrSource + source.Length;
                 nuint offset = SkipCharacters(ref sourceIterator, sourceEnd, destination, startIndex);
-                Utf8StringHelper.WriteToUtf16Buffer(sourceIterator, sourceEnd, destination + offset, destination + count);
+                Utf8EncodingHelper.WriteToUtf16BufferCore(sourceIterator, sourceEnd, destination + offset, destination + count);
             }
         }
 
@@ -174,7 +174,7 @@ namespace WitherTorch.Common.Text
             string result = StringHelper.AllocateRawString(length);
             fixed (byte* ptrSource = source)
             fixed (char* ptrResult = result)
-                Utf8StringHelper.WriteToUtf16Buffer(ptrSource, ptrSource + source.Length, ptrResult, ptrResult + length);
+                Utf8EncodingHelper.WriteToUtf16BufferCore(ptrSource, ptrSource + source.Length, ptrResult, ptrResult + length);
             return result;
         }
     }

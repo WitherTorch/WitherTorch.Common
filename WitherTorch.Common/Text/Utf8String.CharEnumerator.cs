@@ -90,13 +90,13 @@ namespace WitherTorch.Common.Text
                     return false;
                 fixed (byte* ptr = _buffer)
                 {
-                    byte* ptrNext = Utf8StringHelper.TryReadUtf8Character(ptr + cursor, ptr + length, out uint codePoint);
+                    byte* ptrNext = Utf8EncodingHelper.TryReadUtf8Character(ptr + cursor, ptr + length, out uint codePoint);
                     if (ptrNext < ptr)
                     {
                         _cursor = length;
                         return false;
                     }
-                    Utf8StringHelper.ToUtf16Characters(codePoint, out _current, out _current2);
+                    Utf8EncodingHelper.ToUtf16Characters(codePoint, out _current, out _current2);
                     _cursor = unchecked((nuint)(ptrNext - ptr));
                     return true;
                 }

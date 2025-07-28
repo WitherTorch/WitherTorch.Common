@@ -529,10 +529,10 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe int SizeOf<T>()
+        public static unsafe uint SizeOf<T>()
         {
             IL.Emit.Sizeof<T>();
-            return IL.Return<int>();
+            return IL.Return<uint>();
         }
     }
 }

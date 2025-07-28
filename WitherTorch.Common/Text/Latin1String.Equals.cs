@@ -86,7 +86,7 @@ namespace WitherTorch.Common.Text
                 byte* end = (byte*)UnsafeHelper.PointerMaxValue;
                 for (nuint i = 0; i < count; i++)
                 {
-                    if ((iteratorB = Utf8StringHelper.TryReadUtf8Character(iteratorB, end, out uint unicodeValue)) == null ||
+                    if ((iteratorB = Utf8EncodingHelper.TryReadUtf8Character(iteratorB, end, out uint unicodeValue)) == null ||
                         unicodeValue > Latin1StringHelper.Latin1StringLimit ||
                         iteratorA[i] != unicodeValue)
                         return false;
