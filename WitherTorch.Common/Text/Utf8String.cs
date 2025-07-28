@@ -50,12 +50,9 @@ namespace WitherTorch.Common.Text
                 UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
 
             int resultLength = 0;
-            fixed (byte* ptr = buffer)
-            {
-                byte* iterator = ptr, ptrEnd = ptr + length + 1;
-                while ((iterator = Utf8EncodingHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
-                    resultLength += Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
-            }
+            using CharEnumerator enumerator = new CharEnumerator(buffer);
+            while (enumerator.MoveNext())
+                resultLength++;
             return new Utf8String(buffer, resultLength);
         }
 
@@ -76,14 +73,13 @@ namespace WitherTorch.Common.Text
             {
                 byte[] buffer = new byte[length + 1];
                 fixed (byte* ptr = buffer)
-                {
                     UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
-                    byte* iterator = ptr, ptrEnd = ptr + length + 1;
-                    int resultLength = 0;
-                    while ((iterator = Utf8EncodingHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
-                        resultLength += Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out _, out _) ? 2 : 1;
-                    return new Utf8String(buffer, resultLength);
-                }
+
+                int resultLength = 0;
+                using CharEnumerator enumerator = new CharEnumerator(buffer);
+                while (enumerator.MoveNext())
+                    resultLength++;
+                return new Utf8String(buffer, resultLength);
             }
         }
 
@@ -159,7 +155,7 @@ namespace WitherTorch.Common.Text
             byte[] source = _value;
             fixed (byte* ptrSource = source)
             {
-                byte* sourceIterator = ptrSource, sourceEnd = ptrSource + source.Length;
+                byte* sourceIterator = ptrSource, sourceEnd = ptrSource + source.Length - 1;
                 nuint offset = SkipCharacters(ref sourceIterator, sourceEnd, destination, startIndex);
                 Utf8EncodingHelper.WriteToUtf16BufferCore(sourceIterator, sourceEnd, destination + offset, destination + count);
             }
@@ -174,7 +170,7 @@ namespace WitherTorch.Common.Text
             string result = StringHelper.AllocateRawString(length);
             fixed (byte* ptrSource = source)
             fixed (char* ptrResult = result)
-                Utf8EncodingHelper.WriteToUtf16BufferCore(ptrSource, ptrSource + source.Length, ptrResult, ptrResult + length);
+                Utf8EncodingHelper.WriteToUtf16BufferCore(ptrSource, ptrSource + source.Length - 1, ptrResult, ptrResult + length);
             return result;
         }
     }

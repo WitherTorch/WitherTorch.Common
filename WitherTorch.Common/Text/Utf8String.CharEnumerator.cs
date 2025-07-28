@@ -23,7 +23,7 @@ namespace WitherTorch.Common.Text
             public CharEnumerator(byte[] buffer)
             {
                 _buffer = buffer;
-                _length = MathHelper.MakeUnsigned(buffer.Length);
+                _length = MathHelper.MakeUnsigned(buffer.Length - 1);
                 Reset();
             }
 
