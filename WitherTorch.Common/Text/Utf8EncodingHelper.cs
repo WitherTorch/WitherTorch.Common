@@ -161,7 +161,9 @@ namespace WitherTorch.Common.Text
                 Latin1StringHelper.NarrowAndCopyTo(source, length, destination);
                 return destination + length;
             }
-            return ReadFromUtf16BufferCore(source, source + sourceLength, destination, destination + destinationLength);
+            byte* destinationEnd = destination + destinationLength;
+            destination = TryReadFromUtf16BufferCore(source, source + sourceLength, destination, destinationEnd);
+            return destination == null ? destinationEnd : destination;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -175,15 +177,16 @@ namespace WitherTorch.Common.Text
                 Latin1StringHelper.NarrowAndCopyTo(source, length, destination);
                 return destination + length;
             }
-            return ReadFromUtf16BufferCore(source, sourceEnd, destination, destinationEnd);
+            destination = TryReadFromUtf16BufferCore(source, sourceEnd, destination, destinationEnd);
+            return destination == null ? destinationEnd : destination;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe byte* ReadFromUtf16BufferCore(char* source, char* sourceEnd, byte* destination, byte* destinationEnd)
+        internal static unsafe byte* TryReadFromUtf16BufferCore(char* source, char* sourceEnd, byte* destination, byte* destinationEnd)
         {
             while ((source = TryReadUtf16Character(source, sourceEnd, out uint unicodeValue)) != null &&
                 (destination = TryWriteUtf8Character(destination, destinationEnd, unicodeValue)) != null) ;
-            return destination == null ? destinationEnd : destination;
+            return destination;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -197,7 +200,9 @@ namespace WitherTorch.Common.Text
                 Latin1StringHelper.WidenAndCopyTo(source, length, destination);
                 return destination + length;
             }
-            return WriteToUtf16BufferCore(source, source + sourceLength, destination, destination + destinationLength);
+            char* destinationEnd = destination + destinationLength;
+            destination = TryWriteToUtf16BufferCore(source, source + sourceLength, destination, destinationEnd);
+            return destination == null ? destinationEnd : destination;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -211,15 +216,16 @@ namespace WitherTorch.Common.Text
                 Latin1StringHelper.WidenAndCopyTo(source, length, destination);
                 return destination + length;
             }
-            return WriteToUtf16BufferCore(source, sourceEnd, destination, destinationEnd);
+            destination = TryWriteToUtf16BufferCore(source, sourceEnd, destination, destinationEnd);
+            return destination == null ? destinationEnd : destination;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe char* WriteToUtf16BufferCore(byte* source, byte* sourceEnd, char* destination, char* destinationEnd)
+        internal static unsafe char* TryWriteToUtf16BufferCore(byte* source, byte* sourceEnd, char* destination, char* destinationEnd)
         {
             while ((source = TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) != null &&
                 (destination = TryWriteUtf16Character(destination, destinationEnd, unicodeValue)) != null) ;
-            return destination == null ? destinationEnd : destination;
+            return destination;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

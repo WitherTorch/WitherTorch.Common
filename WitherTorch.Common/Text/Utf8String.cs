@@ -83,7 +83,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, [NotNullWhen(true)] out StringBase? result)
+        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringBase? result)
         {
             if (length > MaxUtf8StringBufferSize)
                 goto Failed;
@@ -96,33 +96,40 @@ namespace WitherTorch.Common.Text
                 return true;
             }
 
-            return TryCreateCore(source, length, out result);
+            bool tryEncodeAsPossible = (options & StringCreateOptions._ForceUseUtf8_Flag) == StringCreateOptions._ForceUseUtf8_Flag;
+            return TryCreateCore(source, length, tryEncodeAsPossible, out result);
 
         Failed:
             result = null;
             return false;
         }
 
-        private static unsafe bool TryCreateCore(char* source, nuint length, [NotNullWhen(true)] out StringBase? result)
+        private static unsafe bool TryCreateCore(char* source, nuint length, bool tryEncodeAsPossible, [NotNullWhen(true)] out StringBase? result)
         {
-            if (length > Utf16CompressionLengthLimit)
-                goto Failed;
+            nuint bufferLength;
 
-            nuint bufferLength = length * sizeof(char);
+            if (tryEncodeAsPossible)
+            {
+                bufferLength = MathHelper.Min(Utf8EncodingHelper.GetWorstCaseForEncodeLength(length), MaxUtf8StringBufferSize);
+            }
+            else
+            {
+                if (length > Utf16CompressionLengthLimit)
+                    goto Failed;
+
+                bufferLength = length * sizeof(char);
+            }
+
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             byte[] buffer = pool.Rent(bufferLength);
             try
             {
                 fixed (byte* ptr = buffer)
                 {
-                    char* sourceEnd = source + length;
-                    byte* iterator = ptr, ptrEnd = ptr + bufferLength;
-                    while ((source = Utf8EncodingHelper.TryReadUtf16Character(source, sourceEnd, out uint unicodeValue)) != null)
-                    {
-                        if ((iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, ptrEnd, unicodeValue)) == null)
-                            goto Failed;
-                    }
-                    nuint resultLength = unchecked((nuint)(iterator - ptr));
+                    byte* bufferEnd = Utf8EncodingHelper.TryReadFromUtf16BufferCore(source, source + length, ptr, ptr + bufferLength);
+                    if (bufferEnd == null)
+                        goto Failed;
+                    nuint resultLength = unchecked((nuint)(bufferEnd - ptr));
                     byte[] resultBuffer = new byte[resultLength + 1];
                     fixed (byte* dest = resultBuffer)
                         UnsafeHelper.CopyBlockUnaligned(dest, ptr, unchecked((uint)resultLength * sizeof(byte)));
@@ -157,7 +164,7 @@ namespace WitherTorch.Common.Text
             {
                 byte* sourceIterator = ptrSource, sourceEnd = ptrSource + source.Length - 1;
                 nuint offset = SkipCharacters(ref sourceIterator, sourceEnd, destination, startIndex);
-                Utf8EncodingHelper.WriteToUtf16BufferCore(sourceIterator, sourceEnd, destination + offset, destination + count);
+                Utf8EncodingHelper.TryWriteToUtf16BufferCore(sourceIterator, sourceEnd, destination + offset, destination + count);
             }
         }
 
@@ -170,7 +177,7 @@ namespace WitherTorch.Common.Text
             string result = StringHelper.AllocateRawString(length);
             fixed (byte* ptrSource = source)
             fixed (char* ptrResult = result)
-                Utf8EncodingHelper.WriteToUtf16BufferCore(ptrSource, ptrSource + source.Length - 1, ptrResult, ptrResult + length);
+                Utf8EncodingHelper.TryWriteToUtf16BufferCore(ptrSource, ptrSource + source.Length - 1, ptrResult, ptrResult + length);
             return result;
         }
     }
