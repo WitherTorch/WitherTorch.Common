@@ -63,38 +63,58 @@ namespace WitherTorch.Common.Text
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
-            if (count <= 0)
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            return Create(ptr, unchecked((nuint)startIndex), unchecked((nuint)count), options);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase Create(char* ptr, nuint startIndex, nuint count) => Create(ptr, startIndex, count, WTCommon.StringCreateOptions);
+
+        public static unsafe StringBase Create(char* ptr, nuint startIndex, nuint count, StringCreateOptions options)
+        {
+            if (count == 0)
                 return Empty;
             if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
             {
-                if (Latin1String.TryCreate(ptr + startIndex, unchecked((nuint)count), out Latin1String? latin1String))
+                if (Latin1String.TryCreate(ptr + startIndex, count, out Latin1String? latin1String))
                     return latin1String;
             }
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
             {
-                if (Utf8String.TryCreate(ptr + startIndex, unchecked((nuint)count), options, out StringBase? utf8String))
+                if (Utf8String.TryCreate(ptr + startIndex, count, options, out StringBase? utf8String))
                     return utf8String;
             }
-            return Utf16String.Create(ptr + startIndex, unchecked((nuint)count));
+            return Utf16String.Create(ptr + startIndex, count);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateUtf16String(char* ptr)
         {
             if (*ptr == default)
                 return Empty;
-
             return Utf16String.Create(ptr);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateUtf16String(char* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
-            if (count <= 0)
-                return Empty;
-            return Utf16String.Create(ptr + startIndex, unchecked((nuint)count));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            return CreateUtf16String(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase CreateUtf16String(char* ptr, nuint startIndex, nuint count)
+        {
+            if (count == 0)
+                return Empty;
+            return Utf16String.Create(ptr + startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateLatin1String(byte* ptr)
         {
             if (*ptr == default)
@@ -102,15 +122,25 @@ namespace WitherTorch.Common.Text
             return Latin1String.Create(ptr);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateLatin1String(byte* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
-            if (count <= 0)
-                return Empty;
-            return Latin1String.Create(ptr + startIndex, unchecked((nuint)count));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            return CreateLatin1String(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase CreateLatin1String(byte* ptr, nuint startIndex, nuint count)
+        {
+            if (count == 0)
+                return Empty;
+            return Latin1String.Create(ptr + startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateUtf8String(byte* ptr)
         {
             if (*ptr == default)
@@ -118,13 +148,22 @@ namespace WitherTorch.Common.Text
             return Utf8String.Create(ptr);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateUtf8String(byte* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
-            if (count <= 0)
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            return CreateUtf8String(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase CreateUtf8String(byte* ptr, nuint startIndex, nuint count)
+        {
+            if (count == 0)
                 return Empty;
-            return Utf8String.Create(ptr + startIndex, unchecked((nuint)count));
+            return Utf8String.Create(ptr + startIndex, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
