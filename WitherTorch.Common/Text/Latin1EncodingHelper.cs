@@ -14,7 +14,13 @@ namespace WitherTorch.Common.Text
 {
     public static class Latin1EncodingHelper
     {
+        // ASCII 編碼邊界
+        public const char AsciiEncodingLimit = '\u007F';
+        public const byte AsciiEncodingLimit_InByte = 0x007F;
+
+        // Latin-1 編碼邊界
         public const char Latin1EncodingLimit = '\u00FF';
+        public const byte Latin1EncodingLimit_InByte = 0x00FF;
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe int GetWorstCaseForEncodeLength(int length) => length;

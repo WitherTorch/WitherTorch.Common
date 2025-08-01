@@ -41,9 +41,6 @@ namespace WitherTorch.Common.Text
         private const byte Utf8TrailHeader = 0b10_000000;
         private const byte Utf8TrailMask = 0b00_111111;
 
-        // ASCII 編碼邊界
-        private const char AsciiEncodingLimit = '\u007f';
-
         // UTF-8 解碼錯誤替代字元 (U+FFFD)
         public const uint Utf8DecodeErrorCodePoint = 0xFFFD;
 
@@ -156,7 +153,7 @@ namespace WitherTorch.Common.Text
             if (sourceLength == 0 || destinationLength == 0)
                 return destination;
             nuint length = MathHelper.Min(sourceLength, destinationLength);
-            if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingLimit))
+            if (!SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.AsciiEncodingLimit))
                 return Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             byte* destinationEnd = destination + destinationLength;
             destination = TryReadFromUtf16BufferCore(source, source + sourceLength, destination, destinationEnd);
@@ -169,7 +166,7 @@ namespace WitherTorch.Common.Text
             if (sourceEnd <= source || destinationEnd <= destination)
                 return destination;
             nuint length = MathHelper.Min(unchecked((nuint)(sourceEnd - source)), unchecked((nuint)(destinationEnd - destination)));
-            if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingLimit))
+            if (!SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.AsciiEncodingLimit))
                 return Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             destination = TryReadFromUtf16BufferCore(source, sourceEnd, destination, destinationEnd);
             return destination == null ? destinationEnd : destination;
@@ -189,7 +186,7 @@ namespace WitherTorch.Common.Text
             if (sourceLength == 0 || destinationLength == 0)
                 return destination;
             nuint length = MathHelper.Min(sourceLength, destinationLength);
-            if (!SequenceHelper.ContainsGreaterThan(source, length, (byte)AsciiEncodingLimit))
+            if (!SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.AsciiEncodingLimit_InByte))
             {
                 Latin1EncodingHelper.WriteToUtf16BufferCore(source, destination, length);
                 return destination + length;
@@ -205,7 +202,7 @@ namespace WitherTorch.Common.Text
             if (sourceEnd <= source || destinationEnd <= destination)
                 return destination;
             nuint length = MathHelper.Min(unchecked((nuint)(sourceEnd - source)), unchecked((nuint)(destinationEnd - destination)));
-            if (!SequenceHelper.ContainsGreaterThan(source, length, (byte)AsciiEncodingLimit))
+            if (!SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.AsciiEncodingLimit_InByte))
             {
                 Latin1EncodingHelper.WriteToUtf16BufferCore(source, destination, length);
                 return destination + length;
