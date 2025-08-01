@@ -87,5 +87,7 @@ namespace WitherTorch.Common.Text
             }
 #endif
         }
+
+        nuint IPinnableReference<char>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length);
     }
 }

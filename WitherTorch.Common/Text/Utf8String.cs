@@ -182,5 +182,7 @@ namespace WitherTorch.Common.Text
         }
 
         ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
+
+        nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length);
     }
 }

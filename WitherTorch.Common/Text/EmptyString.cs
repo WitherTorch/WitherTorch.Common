@@ -84,6 +84,10 @@ namespace WitherTorch.Common.Text
 #endif
         }
 
-        unsafe ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref Array.Empty<byte>()[0];
+        nuint IPinnableReference<char>.GetPinnedLength() => 0;
+
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref Array.Empty<byte>()[0];
+
+        nuint IPinnableReference<byte>.GetPinnedLength() => 0;
     }
 }
