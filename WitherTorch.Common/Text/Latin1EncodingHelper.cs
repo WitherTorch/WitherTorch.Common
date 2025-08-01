@@ -245,6 +245,7 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe byte* ReadFromUtf16BufferCore(char* source, byte* destination, nuint length)
         {
+            byte* destinationEnd = destination + length;
             char* sourceEnd = source + length;
 #if NET8_0_OR_GREATER
             if (Limits.UseVector512())
@@ -343,12 +344,13 @@ namespace WitherTorch.Common.Text
                 *destination = unchecked((byte)*source);
 
             Result:
-            return destination + length;
+            return destinationEnd;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe char* WriteToUtf16BufferCore(byte* source, char* destination, nuint length)
         {
+            char* destinationEnd = destination + length;
             byte* sourceEnd = source + length;
 #if NET8_0_OR_GREATER
             if (Limits.UseVector512())
@@ -457,7 +459,7 @@ namespace WitherTorch.Common.Text
                 *destination = unchecked((char)*source);
 
             Result:
-            return destination + length;
+            return destinationEnd;
         }
     }
 }
