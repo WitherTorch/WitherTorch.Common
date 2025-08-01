@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-using System.Security;
+using System.Security.Cryptography;
 
 using InlineIL;
 
 using InlineMethod;
+
+#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
@@ -69,6 +70,12 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize)
                 }
             };
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void* Max<T>(void* val1, void* val2) => unchecked((void*)Max((nuint)val1, (nuint)val2));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe T* Max<T>(T* val1, T* val2) => unchecked((T*)Max((nuint)val1, (nuint)val2));
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static decimal Max(decimal val1, decimal val2) => Math.Max(val1, val2);
@@ -140,6 +147,12 @@ namespace WitherTorch.Common.Helpers
             };
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void* Min<T>(void* val1, void* val2) => unchecked((void*)Min((nuint)val1, (nuint)val2));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe T* Min<T>(T* val1, T* val2) => unchecked((T*)Min((nuint)val1, (nuint)val2));
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static decimal Min(decimal val1, decimal val2) => Math.Min(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -179,6 +192,22 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Keep, export: true)]
         public static ulong Clamp(ulong value, ulong min, ulong max)
             => ClampCoreUnsigned(value, min, max, sizeof(ulong) * 8 - 1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe nint Clamp(nint value, nint min, nint max)
+            => ClampCore(value, min, max, sizeof(nint) * 8 - 1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe nuint Clamp(nuint value, nuint min, nuint max)
+            => ClampCoreUnsigned(value, min, max, sizeof(nuint) * 8 - 1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void* Clamp(void* value, void* min, void* max)
+            => unchecked((void*)Clamp((nuint)value, (nuint)min, (nuint)max));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe T* Clamp<T>(T* value, T* min, T* max)
+            => unchecked((T*)Clamp((nuint)value, (nuint)min, (nuint)max));
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static decimal Clamp(decimal value, decimal min, decimal max)

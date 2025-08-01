@@ -92,7 +92,7 @@ namespace WitherTorch.Common.Text
             {
                 result = Latin1String.Allocate(length, out byte[] buffer);
                 fixed (byte* ptr = buffer)
-                    Latin1StringHelper.NarrowAndCopyTo(source, length, ptr);
+                    Latin1EncodingHelper.ReadFromUtf16BufferCore(source, ptr, length);
                 return true;
             }
 

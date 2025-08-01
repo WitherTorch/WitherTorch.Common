@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 
 using InlineMethod;
 
@@ -66,12 +67,12 @@ namespace WitherTorch.Common.Text
 
         public static unsafe bool TryCreate(char* source, nuint length, [NotNullWhen(true)] out Latin1String? result)
         {
-            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1StringHelper.Latin1StringLimit) || length > MaxLatin1StringLength)
+            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.Latin1EncodingLimit) || length > MaxLatin1StringLength)
                 goto Failed;
 
             byte[] buffer = new byte[length + 1];
             fixed (byte* dest = buffer)
-                Latin1StringHelper.NarrowAndCopyTo(source, length, dest);
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(source, dest, length);
             result = new Latin1String(buffer);
             return true;
 
@@ -108,7 +109,7 @@ namespace WitherTorch.Common.Text
         protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
         {
             fixed (byte* ptr = _value)
-                Latin1StringHelper.WidenAndCopyTo(ptr + startIndex, count, destination);
+                Latin1EncodingHelper.WriteToUtf16BufferCore(ptr + startIndex, destination, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -120,7 +121,7 @@ namespace WitherTorch.Common.Text
             string result = StringHelper.AllocateRawString(length);
             fixed (byte* source = _value)
             fixed (char* dest = result)
-                Latin1StringHelper.WidenAndCopyTo(source, unchecked((nuint)length), dest);
+                Latin1EncodingHelper.WriteToUtf16BufferCore(source, dest, unchecked((nuint)length));
             return result;
         }
 

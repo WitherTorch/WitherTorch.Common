@@ -7,7 +7,7 @@ namespace WitherTorch.Common.Text
     {
         protected override unsafe nuint GetSplitCount(char separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
         {
-            if (separator > Latin1StringHelper.Latin1StringLimit)
+            if (separator > Latin1EncodingHelper.Latin1EncodingLimit)
             {
                 sliceBuffer = null;
                 return 1;
@@ -62,7 +62,7 @@ namespace WitherTorch.Common.Text
 
         private unsafe nuint GetSplitCount(char* separator, nuint separatorLength, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
         {
-            if (SequenceHelper.ContainsGreaterThan(separator, separatorLength, Latin1StringHelper.Latin1StringLimit))
+            if (SequenceHelper.ContainsGreaterThan(separator, separatorLength, Latin1EncodingHelper.Latin1EncodingLimit))
             {
                 sliceBuffer = null;
                 return 1;
@@ -74,7 +74,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (byte* ptr = buffer)
                 {
-                    Latin1StringHelper.NarrowAndCopyTo(separator, separatorLength, ptr);
+                    Latin1EncodingHelper.ReadFromUtf16BufferCore(separator, ptr, separatorLength);
                     return GetSplitCount(ptr, separatorLength, pool, out sliceBuffer);
                 }
             }

@@ -157,10 +157,7 @@ namespace WitherTorch.Common.Text
                 return destination;
             nuint length = MathHelper.Min(sourceLength, destinationLength);
             if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingLimit))
-            {
-                Latin1StringHelper.NarrowAndCopyTo(source, length, destination);
-                return destination + length;
-            }
+                return Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             byte* destinationEnd = destination + destinationLength;
             destination = TryReadFromUtf16BufferCore(source, source + sourceLength, destination, destinationEnd);
             return destination == null ? destinationEnd : destination;
@@ -173,10 +170,7 @@ namespace WitherTorch.Common.Text
                 return destination;
             nuint length = MathHelper.Min(unchecked((nuint)(sourceEnd - source)), unchecked((nuint)(destinationEnd - destination)));
             if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingLimit))
-            {
-                Latin1StringHelper.NarrowAndCopyTo(source, length, destination);
-                return destination + length;
-            }
+                return Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             destination = TryReadFromUtf16BufferCore(source, sourceEnd, destination, destinationEnd);
             return destination == null ? destinationEnd : destination;
         }
@@ -197,7 +191,7 @@ namespace WitherTorch.Common.Text
             nuint length = MathHelper.Min(sourceLength, destinationLength);
             if (!SequenceHelper.ContainsGreaterThan(source, length, (byte)AsciiEncodingLimit))
             {
-                Latin1StringHelper.WidenAndCopyTo(source, length, destination);
+                Latin1EncodingHelper.WriteToUtf16BufferCore(source, destination, length);
                 return destination + length;
             }
             char* destinationEnd = destination + destinationLength;
@@ -213,7 +207,7 @@ namespace WitherTorch.Common.Text
             nuint length = MathHelper.Min(unchecked((nuint)(sourceEnd - source)), unchecked((nuint)(destinationEnd - destination)));
             if (!SequenceHelper.ContainsGreaterThan(source, length, (byte)AsciiEncodingLimit))
             {
-                Latin1StringHelper.WidenAndCopyTo(source, length, destination);
+                Latin1EncodingHelper.WriteToUtf16BufferCore(source, destination, length);
                 return destination + length;
             }
             destination = TryWriteToUtf16BufferCore(source, sourceEnd, destination, destinationEnd);

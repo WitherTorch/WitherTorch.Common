@@ -8,7 +8,7 @@ namespace WitherTorch.Common.Text
     {
         protected override int IndexOfCore(char value, nuint startIndex, nuint count)
         {
-            if (value > Latin1StringHelper.Latin1StringLimit)
+            if (value > Latin1EncodingHelper.Latin1EncodingLimit)
                 return -1;
 
             fixed (byte* ptr = _value)
@@ -42,7 +42,7 @@ namespace WitherTorch.Common.Text
 
         protected override bool ContainsCore(char value, nuint startIndex, nuint count)
         {
-            if (value > Latin1StringHelper.Latin1StringLimit)
+            if (value > Latin1EncodingHelper.Latin1EncodingLimit)
                 return false;
 
             fixed (byte* ptr = _value)

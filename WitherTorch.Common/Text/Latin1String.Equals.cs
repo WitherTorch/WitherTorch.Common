@@ -87,7 +87,7 @@ namespace WitherTorch.Common.Text
                 for (nuint i = 0; i < count; i++)
                 {
                     if ((iteratorB = Utf8EncodingHelper.TryReadUtf8Character(iteratorB, end, out uint unicodeValue)) == null ||
-                        unicodeValue > Latin1StringHelper.Latin1StringLimit ||
+                        unicodeValue > Latin1EncodingHelper.Latin1EncodingLimit ||
                         iteratorA[i] != unicodeValue)
                         return false;
                 }
@@ -99,7 +99,7 @@ namespace WitherTorch.Common.Text
         {
             fixed (char* ptrB = b)
             {
-                if (SequenceHelper.ContainsGreaterThan(ptrB, count, Latin1StringHelper.Latin1StringLimit))
+                if (SequenceHelper.ContainsGreaterThan(ptrB, count, Latin1EncodingHelper.Latin1EncodingLimit))
                     return false;
                 ArrayPool<byte> pool = ArrayPool<byte>.Shared;
                 byte[] buffer = pool.Rent(count);
@@ -107,7 +107,7 @@ namespace WitherTorch.Common.Text
                 {
                     fixed (byte* ptrA = a, ptrBuffer = buffer)
                     {
-                        Latin1StringHelper.NarrowAndCopyTo(ptrB, count, ptrBuffer);
+                        Latin1EncodingHelper.ReadFromUtf16BufferCore(ptrB, ptrBuffer, count);
                         return SequenceHelper.Equals(ptrA + startIndex, ptrBuffer, count);
                     }
                 }

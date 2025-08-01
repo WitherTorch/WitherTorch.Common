@@ -69,7 +69,7 @@ namespace WitherTorch.Common.Text
                     fixed (byte* ptrSource = value)
                     fixed (char* ptrBuffer = buffer)
                     {
-                        Latin1StringHelper.WidenAndCopyTo(ptrSource, unchecked((nuint)length), ptrBuffer);
+                        Latin1EncodingHelper.WriteToUtf16BufferCore(ptrSource, ptrBuffer, unchecked((nuint)length));
                         return _computeHash32Func(new ReadOnlySpan<byte>(ptrBuffer, length * sizeof(char)), _hashingSeed);
                     }
                 }

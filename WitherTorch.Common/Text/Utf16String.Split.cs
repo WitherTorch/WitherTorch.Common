@@ -80,7 +80,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (char* ptr = buffer)
                 {
-                    Latin1StringHelper.WidenAndCopyTo(separator, separatorLength, ptr);
+                    Latin1EncodingHelper.WriteToUtf16BufferCore(separator, ptr, separatorLength);
                     return GetSplitCount(ptr, separatorLength, pool, out sliceBuffer);
                 }
             }

@@ -129,7 +129,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (byte* ptrA = a, ptrBuffer = buffer)
                 {
-                    Latin1StringHelper.NarrowAndCopyTo(b, count, ptrBuffer);
+                    Latin1EncodingHelper.ReadFromUtf16BufferCore(b, ptrBuffer, count);
                     return SequenceHelper.Equals(ptrA + startIndex, ptrBuffer, count * sizeof(byte));
                 }
             }
