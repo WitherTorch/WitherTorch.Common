@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed class EmptyString : StringBase, IWrapper<string>, IWrapper<byte[]>
+    internal sealed class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>
     {
         private static readonly EmptyString _instance = new EmptyString();
 
@@ -70,8 +71,19 @@ namespace WitherTorch.Common.Text
 
         public override string ToString() => string.Empty;
 
-        byte[] IWrapper<byte[]>.Unwrap() => Array.Empty<byte>();
+        ref readonly char IPinnableReference<char>.GetPinnableReference()
+        {
+#if NET8_0_OR_GREATER
+            return ref string.Empty.GetPinnableReference();
+#else
+            unsafe
+            {
+                fixed (char* ptr = string.Empty)
+                    return ref *ptr;
+            }
+#endif
+        }
 
-        string IWrapper<string>.Unwrap() => string.Empty;
+        unsafe ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref Array.Empty<byte>()[0];
     }
 }

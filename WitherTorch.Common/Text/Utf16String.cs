@@ -6,7 +6,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf16String : StringBase, IWrapper<string>
+    internal sealed partial class Utf16String : StringBase, IPinnableReference<char>
     {
         private readonly string _value;
 
@@ -75,6 +75,17 @@ namespace WitherTorch.Common.Text
 
         public override string ToString() => _value;
 
-        string IWrapper<string>.Unwrap() => _value;
+        ref readonly char IPinnableReference<char>.GetPinnableReference()
+        {
+#if NET8_0_OR_GREATER
+            return ref _value.GetPinnableReference();
+#else
+            unsafe
+            {
+                fixed (char* ptr = _value)
+                    return ref *ptr;
+            }
+#endif
+        }
     }
 }

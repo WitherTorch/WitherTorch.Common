@@ -8,7 +8,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Latin1String : StringBase, IWrapper<byte[]>
+    internal sealed partial class Latin1String : StringBase, IPinnableReference<byte>
     {
         private const int MaxLatin1StringLength = Limits.MaxArrayLength - 1;
 
@@ -124,6 +124,6 @@ namespace WitherTorch.Common.Text
             return result;
         }
 
-        byte[] IWrapper<byte[]>.Unwrap() => _value;
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
     }
 }

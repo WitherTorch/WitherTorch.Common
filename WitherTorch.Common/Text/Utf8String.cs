@@ -8,7 +8,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf8String : StringBase
+    internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>
     {
         private const int MaxUtf8StringBufferSize = Limits.MaxArrayLength - 1;
         private const int Utf16CompressionLengthLimit = Limits.MaxArrayLength / 2 - 1;
@@ -180,5 +180,7 @@ namespace WitherTorch.Common.Text
                 Utf8EncodingHelper.TryWriteToUtf16BufferCore(ptrSource, ptrSource + source.Length - 1, ptrResult, ptrResult + length);
             return result;
         }
+
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
     }
 }
