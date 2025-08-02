@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 
 using WitherTorch.Common.Buffers;
-using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
@@ -11,6 +10,8 @@ namespace WitherTorch.Common.Text
         private static readonly EmptyString _instance = new EmptyString();
 
         public static EmptyString Instance => _instance;
+
+        private readonly byte _zeroByte = 0;
 
         public override StringType StringType => StringType.Utf16;
         public override int Length => 0;
@@ -71,23 +72,20 @@ namespace WitherTorch.Common.Text
 
         public override string ToString() => string.Empty;
 
-        ref readonly char IPinnableReference<char>.GetPinnableReference()
-        {
-#if NET8_0_OR_GREATER
-            return ref string.Empty.GetPinnableReference();
-#else
-            unsafe
-            {
-                fixed (char* ptr = string.Empty)
-                    return ref *ptr;
-            }
-#endif
-        }
+        ref readonly char IPinnableReference<char>.GetPinnableReference() => ref CLRStringHelper.GetPinnableReference(string.Empty);
 
         nuint IPinnableReference<char>.GetPinnedLength() => 0;
 
-        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref Array.Empty<byte>()[0];
+        ReadOnlyMemory<char> IPinnableReference<char>.AsMemory() => ReadOnlyMemory<char>.Empty;
+
+        ReadOnlySpan<char> IPinnableReference<char>.AsSpan() => ReadOnlySpan<char>.Empty;
+
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _zeroByte;
 
         nuint IPinnableReference<byte>.GetPinnedLength() => 0;
+
+        ReadOnlyMemory<byte> IPinnableReference<byte>.AsMemory() => ReadOnlyMemory<byte>.Empty;
+
+        ReadOnlySpan<byte> IPinnableReference<byte>.AsSpan() => ReadOnlySpan<byte>.Empty;
     }
 }

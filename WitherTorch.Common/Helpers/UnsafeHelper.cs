@@ -485,7 +485,48 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Initblk();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint ByteOffset<T>(ref T origin, ref T target)
+        {
+            IL.PushInRef(ref target);
+            IL.PushInRef(ref origin);
+            IL.Emit.Sub();
+            return IL.Return<nint>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint ByteOffsetUnsigned<T>(ref T origin, ref T target)
+        {
+            IL.PushInRef(ref target);
+            IL.PushInRef(ref origin);
+            IL.Emit.Sub();
+            return IL.Return<nuint>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref T AddByteOffset<T>(ref T source, nuint byteOffset)
+        {
+            IL.PushInRef(ref source);
+            IL.Push(byteOffset);
+            IL.Emit.Add();
+            return ref IL.ReturnRef<T>();
+        }
+
 #pragma warning disable CS8500
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref T NullRef<T>()
+        {
+            IL.Emit.Ldnull();
+            return ref IL.ReturnRef<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ref T AsRef<T>(T* value)
+        {
+            IL.Emit.Ldarg_0();
+            return ref IL.ReturnRef<T>();
+        }
+
         [Inline(InlineBehavior.Keep, export: true)]
         public static ref T AsRefIn<T>(in T value)
         {

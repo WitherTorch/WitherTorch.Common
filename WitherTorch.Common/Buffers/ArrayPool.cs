@@ -1,10 +1,12 @@
-﻿using InlineMethod;
-
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
+
+using InlineMethod;
 
 using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Buffers
 {
@@ -12,7 +14,9 @@ namespace WitherTorch.Common.Buffers
     {
         protected const uint MinimumArraySize = 16;
 
-        public static ArrayPool<T> Shared => SharedArrayPool<T>.Instance;
+        private static readonly LazyTiny<ArrayPool<T>> _sharedLazy = new LazyTiny<ArrayPool<T>>(CreateSharedPool, LazyThreadSafetyMode.ExecutionAndPublication);
+
+        public static ArrayPool<T> Shared => _sharedLazy.Value;
 
         [Inline(InlineBehavior.Keep, export: true)]
         public T[] Rent() => Rent(MinimumArraySize);
@@ -65,5 +69,24 @@ namespace WitherTorch.Common.Buffers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public void ReturnList(FixedArrayList<T> list, bool clearArray) => Return(list.AsArray(), clearArray);
+
+        private static ArrayPool<T> CreateSharedPool()
+        {
+            try
+            {
+                return UnsafeCreateWrappedSystemArrayPool();
+            }
+            catch (Exception)
+            {
+                return new SharedArrayPoolImpl();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static SystemArrayPoolWrapper UnsafeCreateWrappedSystemArrayPool()
+        {
+            System.Buffers.ArrayPool<T> pool = System.Buffers.ArrayPool<T>.Shared;
+            return new SystemArrayPoolWrapper(pool);
+        }
     }
 }

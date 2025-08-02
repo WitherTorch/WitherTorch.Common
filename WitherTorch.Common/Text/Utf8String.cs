@@ -181,8 +181,33 @@ namespace WitherTorch.Common.Text
             return result;
         }
 
-        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference()
+        {
+            byte[] value = _value;
+            int length = value.Length;
+            if (length <= 0)
+                return ref ((IPinnableReference<byte>)Empty).GetPinnableReference();
+            return ref value[0];
+        }
 
-        nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length);
+        nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length - 1);
+
+        ReadOnlyMemory<byte> IPinnableReference<byte>.AsMemory()
+        {
+            byte[] value = _value;
+            int length = value.Length;
+            if (length <= 0)
+                return ReadOnlyMemory<byte>.Empty;
+            return new ReadOnlyMemory<byte>(value, 0, length - 1);
+        }
+
+        ReadOnlySpan<byte> IPinnableReference<byte>.AsSpan()
+        {
+            byte[] value = _value;
+            int length = value.Length;
+            if (length <= 0)
+                return ReadOnlySpan<byte>.Empty;
+            return new ReadOnlySpan<byte>(value, 0, length - 1);
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -93,7 +94,7 @@ namespace WitherTorch.Common.Extensions
             => SequenceHelper.Contains(array, value, startIndex, length);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool TryPop<T>(this Stack<T> obj, out T? value)
+        public static bool TryPop<T>(this Stack<T> obj, [MaybeNullWhen(false)] out T? value)
         {
             if (obj.Count > 0)
             {
@@ -105,7 +106,7 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool TryDequeue<T>(this Queue<T> obj, out T? value)
+        public static bool TryDequeue<T>(this Queue<T> obj, [MaybeNullWhen(false)] out T? value)
         {
             if (obj.Count > 0)
             {
