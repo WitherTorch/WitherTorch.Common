@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
-
-using InlineMethod;
+﻿using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -25,7 +22,7 @@ namespace WitherTorch.Common.Helpers
         public static int Sign(int value)
         {
 #if NET8_0_OR_GREATER
-            return Math.Sign(value);
+            return System.Math.Sign(value);
 #else
             const int ByteOffset = sizeof(int) * 8 - 1;
             return unchecked(value >> ByteOffset | (int)((uint)-value >> ByteOffset));
@@ -36,7 +33,7 @@ namespace WitherTorch.Common.Helpers
         public static int Sign(long value)
         {
 #if NET8_0_OR_GREATER
-            return Math.Sign(value);
+            return System.Math.Sign(value);
 #else
             const int ByteOffset = sizeof(long) * 8 - 1;
             return unchecked((int)(value >> ByteOffset | (long)((ulong)-value >> ByteOffset)));
@@ -44,22 +41,13 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static int Sign(nint value)
+        public static unsafe int Sign(nint value)
         {
 #if NET8_0_OR_GREATER
-            return Math.Sign(value);
+            return System.Math.Sign(value);
 #else
-            return UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(int) => Sign(unchecked((int)value)),
-                sizeof(long) => Sign(unchecked((long)value)),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(int) => Sign(unchecked((int)value)),
-                    sizeof(long) => Sign(unchecked((long)value)),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize),
-                },
-            };
+            int byteOffset = sizeof(nint) * 8 - 1;
+            return unchecked((int)(value >> byteOffset | (long)((ulong)-value >> byteOffset)));
 #endif
         }
 
@@ -76,17 +64,6 @@ namespace WitherTorch.Common.Helpers
         public static long MakeSigned(ulong value) => unchecked((long)(value & long.MaxValue));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nint MakeSigned(nuint value)
-            => UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(uint) => MakeSigned(unchecked((uint)value)),
-                sizeof(ulong) => unchecked((nint)MakeSigned(unchecked((ulong)value))),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(uint) => MakeSigned(unchecked((uint)value)),
-                    sizeof(ulong) => unchecked((nint)MakeSigned(unchecked((ulong)value))),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize),
-                },
-            };
+        public static nint MakeSigned(nuint value) => unchecked((nint)(value & (nuint)UnsafeHelper.IntPtrMaxValue));
     }
 }

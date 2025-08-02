@@ -44,47 +44,32 @@ namespace WitherTorch.Common.Helpers
             => MaxCoreUnsigned(val1, val2, sizeof(ulong) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nint Max(nint val1, nint val2)
-            => UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(int) => unchecked(MaxCore((int)val1, (int)val2, sizeof(int) * 8 - 1)),
-                sizeof(long) => unchecked((nint)MaxCore<long>(val1, val2, sizeof(long) * 8 - 1)),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(int) => unchecked(MaxCore((int)val1, (int)val2, sizeof(int) * 8 - 1)),
-                    sizeof(long) => unchecked((nint)MaxCore<long>(val1, val2, sizeof(long) * 8 - 1)),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize)
-                }
-            };
+        public static unsafe nint Max(nint val1, nint val2)
+            => MaxCore(val1, val2, sizeof(nint) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nuint Max(nuint val1, nuint val2)
-            => UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(uint) => unchecked(MaxCoreUnsigned((uint)val1, (uint)val2, sizeof(uint) * 8 - 1)),
-                sizeof(ulong) => unchecked((nuint)MaxCoreUnsigned<ulong>(val1, val2, sizeof(ulong) * 8 - 1)),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(int) => unchecked(MaxCore((uint)val1, (uint)val2, sizeof(uint) * 8 - 1)),
-                    sizeof(long) => unchecked((nuint)MaxCore<ulong>(val1, val2, sizeof(ulong) * 8 - 1)),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize)
-                }
-            };
+        public static unsafe nuint Max(nuint val1, nuint val2)
+            => MaxCoreUnsigned(val1, val2, sizeof(nuint) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void* Max<T>(void* val1, void* val2) => unchecked((void*)Max((nuint)val1, (nuint)val2));
+        public static unsafe void* Max(void* val1, void* val2) 
+            => unchecked((void*)Max((nuint)val1, (nuint)val2));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* Max<T>(T* val1, T* val2) => unchecked((T*)Max((nuint)val1, (nuint)val2));
+        public static unsafe T* Max<T>(T* val1, T* val2) 
+            => unchecked((T*)Max((nuint)val1, (nuint)val2));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static decimal Max(decimal val1, decimal val2) => Math.Max(val1, val2);
+        public static decimal Max(decimal val1, decimal val2) 
+            => Math.Max(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static float Max(float val1, float val2) => Math.Max(val1, val2);
+        public static float Max(float val1, float val2) 
+            => Math.Max(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static double Max(double val1, double val2) => Math.Max(val1, val2);
+        public static double Max(double val1, double val2) 
+            => Math.Max(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static sbyte Min(sbyte val1, sbyte val2)
@@ -119,47 +104,32 @@ namespace WitherTorch.Common.Helpers
             => MinCoreUnsigned(val1, val2, sizeof(ulong) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nint Min(nint val1, nint val2)
-            => UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(int) => unchecked(MinCore((int)val1, (int)val2, sizeof(int) * 8 - 1)),
-                sizeof(long) => unchecked((nint)MinCore<long>(val1, val2, sizeof(long) * 8 - 1)),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(int) => unchecked(MinCore((int)val1, (int)val2, sizeof(int) * 8 - 1)),
-                    sizeof(long) => unchecked((nint)MinCore<long>(val1, val2, sizeof(long) * 8 - 1)),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize)
-                }
-            };
+        public static unsafe nint Min(nint val1, nint val2)
+            => MinCore(val1, val2, sizeof(nint) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nuint Min(nuint val1, nuint val2)
-            => UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(uint) => unchecked(MinCoreUnsigned((uint)val1, (uint)val2, sizeof(uint) * 8 - 1)),
-                sizeof(ulong) => unchecked((nuint)MinCoreUnsigned<ulong>(val1, val2, sizeof(ulong) * 8 - 1)),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(int) => unchecked(MinCore((uint)val1, (uint)val2, sizeof(uint) * 8 - 1)),
-                    sizeof(long) => unchecked((nuint)MinCore<ulong>(val1, val2, sizeof(ulong) * 8 - 1)),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize)
-                }
-            };
+        public static unsafe nuint Min(nuint val1, nuint val2)
+            => MinCoreUnsigned(val1, val2, sizeof(nuint) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void* Min<T>(void* val1, void* val2) => unchecked((void*)Min((nuint)val1, (nuint)val2));
+        public static unsafe void* Min(void* val1, void* val2) 
+            => unchecked((void*)Min((nuint)val1, (nuint)val2));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* Min<T>(T* val1, T* val2) => unchecked((T*)Min((nuint)val1, (nuint)val2));
+        public static unsafe T* Min<T>(T* val1, T* val2) 
+            => unchecked((T*)Min((nuint)val1, (nuint)val2));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static decimal Min(decimal val1, decimal val2) => Math.Min(val1, val2);
+        public static decimal Min(decimal val1, decimal val2) 
+            => Math.Min(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static float Min(float val1, float val2) => Math.Min(val1, val2);
+        public static float Min(float val1, float val2) 
+            => Math.Min(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static double Min(double val1, double val2) => Math.Min(val1, val2);
+        public static double Min(double val1, double val2) 
+            => Math.Min(val1, val2);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static sbyte Clamp(sbyte value, sbyte min, sbyte max)

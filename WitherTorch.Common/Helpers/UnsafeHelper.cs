@@ -47,17 +47,65 @@ namespace WitherTorch.Common.Helpers
         public static void* PointerMinValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
-            get => null;
+            get => (void*)UIntPtrMinValue;
         }
 
         public static void* PointerMaxValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
+            get => (void*)UIntPtrMaxValue;
+        }
+
+        public static nint IntPtrMinValue
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
 #if NET6_0_OR_GREATER
-            get => (void*)nuint.MaxValue;
+            get => nint.MinValue;
 #else
-            get => (void*)unchecked((nuint)(-1));
+            get => PointerSizeConstant switch
+            {
+                sizeof(int) => int.MinValue,
+                sizeof(long) => unchecked((nint)long.MinValue),
+                _ => PointerSize switch
+                {
+                    sizeof(int) => int.MinValue,
+                    sizeof(long) => unchecked((nint)long.MinValue),
+                    _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
+                },
+            };
 #endif
+        }
+
+        public static nint IntPtrMaxValue
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
+#if NET6_0_OR_GREATER
+            get => nint.MaxValue;
+#else
+            get => PointerSizeConstant switch
+            {
+                sizeof(int) => int.MaxValue,
+                sizeof(long) => unchecked((nint)long.MaxValue),
+                _ => PointerSize switch
+                {
+                    sizeof(int) => int.MaxValue,
+                    sizeof(long) => unchecked((nint)long.MaxValue),
+                    _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
+                },
+            };
+#endif
+        }
+
+        public static nuint UIntPtrMinValue
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
+            get => 0;
+        }
+
+        public static nuint UIntPtrMaxValue
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
+            get => unchecked((nuint)(-1));
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

@@ -102,6 +102,7 @@ namespace WitherTorch.Common.Helpers
 
             IL.MarkLabel(JumpLabel);
             IL.Emit.Ldc_I4_0();
+            IL.Emit.Conv_U8();
             IL.Emit.Ret();
             throw IL.Unreachable();
 #else
@@ -115,17 +116,30 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nuint MakeUnsigned(nint value)
-            => UnsafeHelper.PointerSizeConstant switch
-            {
-                sizeof(int) => MakeUnsigned(unchecked((int)value)),
-                sizeof(long) => unchecked((nuint)MakeUnsigned(unchecked((long)value))),
-                _ => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(int) => MakeUnsigned(unchecked((int)value)),
-                    sizeof(long) => unchecked((nuint)MakeUnsigned(unchecked((long)value))),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize),
-                },
-            };
+        public static unsafe nuint MakeUnsigned(nint value)
+        {
+            IL.Push(value);
+#if NET8_0_OR_GREATER
+            const string JumpLabel = "ZeroReturn";
+
+            IL.Emit.Ldc_I4_0();
+            IL.Emit.Blt(JumpLabel);
+            IL.Push(value);
+            IL.Emit.Ret();
+
+            IL.MarkLabel(JumpLabel);
+            IL.Emit.Ldc_I4_0();
+            IL.Emit.Conv_U();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+#else
+            IL.Push(sizeof(nint) * 8 - 1);
+            IL.Emit.Shr();
+            IL.Emit.Not();
+            IL.Push(value);
+            IL.Emit.And();
+            return IL.Return<uint>();
+#endif
+        }
     }
 }
