@@ -54,7 +54,7 @@ namespace WitherTorch.Common.Text
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static int GetHashCode(Latin1String str) => _hashingFunc(str);
 
-            private static int FallbackHashingFunction(Latin1String str) => str.ToStringCore().GetHashCode();
+            private static int FallbackHashingFunction(Latin1String str) => str.ToString().GetHashCode();
 
             private static int MarvinHashingFunction(Latin1String str)
             {

@@ -68,7 +68,7 @@ namespace WitherTorch.Common.Text
 
         public override bool EqualsCore(StringBase other) => other.Length == 0;
 
-        protected override string ToStringCore() => string.Empty;
+        public override char[] ToCharArray() => Array.Empty<char>();
 
         public override string ToString() => string.Empty;
 

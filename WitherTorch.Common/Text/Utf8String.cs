@@ -170,17 +170,6 @@ namespace WitherTorch.Common.Text
 
         public byte[] GetInternalRepresentation() => _value;
 
-        protected override unsafe string ToStringCore()
-        {
-            byte[] source = _value;
-            int length = _length;
-            string result = StringHelper.AllocateRawString(length);
-            fixed (byte* ptrSource = source)
-            fixed (char* ptrResult = result)
-                Utf8EncodingHelper.TryWriteToUtf16BufferCore(ptrSource, ptrSource + source.Length - 1, ptrResult, ptrResult + length);
-            return result;
-        }
-
         ref readonly byte IPinnableReference<byte>.GetPinnableReference()
         {
             byte[] value = _value;

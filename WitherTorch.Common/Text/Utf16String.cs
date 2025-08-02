@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 using WitherTorch.Common.Helpers;
 
@@ -72,7 +71,16 @@ namespace WitherTorch.Common.Text
 
         public override int GetHashCode() => _value.GetHashCode();
 
-        protected override string ToStringCore() => _value;
+        public override unsafe char[] ToCharArray()
+        {
+            int length = Length;
+            if (length <= 0)
+                return Array.Empty<char>();
+            char[] result = new char[length];
+            fixed (char* source = _value, destination = result)
+                UnsafeHelper.CopyBlockUnaligned(destination, source, unchecked((uint)length * sizeof(char)));
+            return result;
+        }
 
         public override string ToString() => _value;
 

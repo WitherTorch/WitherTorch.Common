@@ -115,16 +115,6 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte[] GetInternalRepresentation() => _value;
 
-        protected override unsafe string ToStringCore()
-        {
-            int length = _length;
-            string result = StringHelper.AllocateRawString(length);
-            fixed (byte* source = _value)
-            fixed (char* dest = result)
-                Latin1EncodingHelper.WriteToUtf16BufferCore(source, dest, unchecked((nuint)length));
-            return result;
-        }
-
         ref readonly byte IPinnableReference<byte>.GetPinnableReference()
         {
             byte[] value = _value;

@@ -101,9 +101,27 @@ namespace WitherTorch.Common.Text
 
         public override int GetHashCode() => ToString().GetHashCode();
 
-        protected abstract string ToStringCore();
+        public unsafe virtual char[] ToCharArray()
+        {
+            int length = Length;
+            if (length <= 0)
+                return Array.Empty<char>();
+            char[] result = new char[length];
+            fixed (char* ptr = result)
+                CopyToCore(ptr, 0, unchecked((nuint)length));
+            return result;
+        }
 
-        public override string ToString() => Length > 0 ? ToStringCore() : string.Empty;
+        public override unsafe string ToString()
+        {
+            int length = Length;
+            if (length <= 0)
+                return string.Empty;
+            string result = StringHelper.AllocateRawString(length);
+            fixed (char* ptr = result)
+                CopyToCore(ptr, 0, unchecked((nuint)length));
+            return result;
+        }
 
         #region Interface Implementations
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
