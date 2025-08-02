@@ -36,7 +36,7 @@ namespace WitherTorch.Common.Text
 
                     byte[] result = new byte[length + 1];
                     fixed (byte* ptrResult = result)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult, ptrBuffer, unchecked((uint)length));
+                        UnsafeHelper.CopyBlockUnaligned(ptrResult, ptrBuffer, length * sizeof(byte));
                     return new Utf8String(result, unchecked((int)count));
                 }
             }
@@ -89,7 +89,7 @@ namespace WitherTorch.Common.Text
 
                     byte[] result = new byte[length + 1];
                     fixed (byte* ptrResult = result)
-                        UnsafeHelper.CopyBlockUnaligned(ptrResult, ptrBuffer, unchecked((uint)length));
+                        UnsafeHelper.CopyBlockUnaligned(ptrResult, ptrBuffer, length * sizeof(byte));
                     return new Utf8String(result, unchecked((int)resultLength));
                 }
             }

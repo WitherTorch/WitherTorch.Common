@@ -47,7 +47,7 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
 
             int resultLength = 0;
             using CharEnumerator enumerator = new CharEnumerator(buffer);
@@ -66,14 +66,14 @@ namespace WitherTorch.Common.Text
             {
                 Latin1String result = Latin1String.Allocate(length, out byte[] buffer);
                 fixed (byte* ptr = buffer)
-                    UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                    UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
                 return result;
             }
             else
             {
                 byte[] buffer = new byte[length + 1];
                 fixed (byte* ptr = buffer)
-                    UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                    UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
 
                 int resultLength = 0;
                 using CharEnumerator enumerator = new CharEnumerator(buffer);
@@ -132,7 +132,7 @@ namespace WitherTorch.Common.Text
                     nuint resultLength = unchecked((nuint)(bufferEnd - ptr));
                     byte[] resultBuffer = new byte[resultLength + 1];
                     fixed (byte* dest = resultBuffer)
-                        UnsafeHelper.CopyBlockUnaligned(dest, ptr, unchecked((uint)resultLength * sizeof(byte)));
+                        UnsafeHelper.CopyBlockUnaligned(dest, ptr, resultLength * sizeof(byte));
                     result = new Utf8String(resultBuffer, unchecked((int)length));
                     return true;
                 }

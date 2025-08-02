@@ -21,7 +21,7 @@ namespace WitherTorch.Common.Text
                 {
                     fixed (char* ptr = str)
                     {
-                        if (Latin1String.TryCreate(ptr, unchecked((nuint)length), out Latin1String? latin1String))
+                        if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out Latin1String? latin1String))
                             return latin1String;
                     }
                 }
@@ -37,6 +37,15 @@ namespace WitherTorch.Common.Text
             else
             {
                 str = internedString;
+
+                if ((options & StringCreateOptions.ForceUseLatin1) == StringCreateOptions.ForceUseLatin1)
+                {
+                    fixed (char* ptr = str)
+                    {
+                        if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out Latin1String? latin1String))
+                            return latin1String;
+                    }
+                }
 
                 if ((options & StringCreateOptions.ForceUseUtf8) == StringCreateOptions.ForceUseUtf8)
                 {
@@ -65,7 +74,7 @@ namespace WitherTorch.Common.Text
             {
                 if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
                 {
-                    if (Latin1String.TryCreate(ptr, castedLength, out Latin1String? latin1String))
+                    if (Latin1String.TryCreate(ptr, castedLength, options, out Latin1String? latin1String))
                         return latin1String;
                 }
                 if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
@@ -89,7 +98,7 @@ namespace WitherTorch.Common.Text
             for (length = 1; ptr[length] != '\0'; length++) ;
 
             if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression &&
-                Latin1String.TryCreate(ptr, length, out Latin1String? latin1String))
+                Latin1String.TryCreate(ptr, length, options, out Latin1String? latin1String))
                 return latin1String;
 
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression &&
@@ -120,7 +129,7 @@ namespace WitherTorch.Common.Text
                 return Empty;
             if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
             {
-                if (Latin1String.TryCreate(ptr + startIndex, count, out Latin1String? latin1String))
+                if (Latin1String.TryCreate(ptr + startIndex, count, options, out Latin1String? latin1String))
                     return latin1String;
             }
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)

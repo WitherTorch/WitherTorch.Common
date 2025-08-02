@@ -31,8 +31,8 @@ namespace WitherTorch.Common.Text
                 {
                     fixed (char* ptrBuffer = buffer)
                     {
-                        UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptr, unchecked((uint)startIndex * sizeof(char)));
-                        UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptr + endIndex, unchecked((uint)(length - endIndex) * sizeof(char)));
+                        UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptr, startIndex * sizeof(char));
+                        UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptr + endIndex, (length - endIndex) * sizeof(char));
                         return Create(ptrBuffer, 0, unchecked((int)newLength));
                     }
                 }

@@ -445,7 +445,26 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static void CopyBlock(void* destination, void* source, nuint byteCount)
+        {
+            IL.Push(destination);
+            IL.Push(source);
+            IL.Push(byteCount);
+            IL.Emit.Cpblk();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static void CopyBlockUnaligned(void* destination, void* source, uint byteCount)
+        {
+            IL.Push(destination);
+            IL.Push(source);
+            IL.Push(byteCount);
+            IL.Emit.Unaligned(1);
+            IL.Emit.Cpblk();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static void CopyBlockUnaligned(void* destination, void* source, nuint byteCount)
         {
             IL.Push(destination);
             IL.Push(source);

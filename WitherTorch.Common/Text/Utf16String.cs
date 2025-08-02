@@ -61,7 +61,7 @@ namespace WitherTorch.Common.Text
         protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
         {
             fixed (char* ptr = _value)
-                UnsafeHelper.CopyBlockUnaligned(destination, ptr + startIndex, unchecked((uint)count * sizeof(char)));
+                UnsafeHelper.CopyBlockUnaligned(destination, ptr + startIndex, count * sizeof(char));
         }
 
         public override IEnumerator<char> GetEnumerator() => _value.GetEnumerator();

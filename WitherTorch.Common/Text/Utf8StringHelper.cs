@@ -1,9 +1,5 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-using InlineMethod;
-
-using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text

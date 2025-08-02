@@ -49,7 +49,7 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
             return new Latin1String(buffer);
         }
 
@@ -61,24 +61,51 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length + 1];
             fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, unchecked((uint)length * sizeof(byte)));
+                UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
             return new Latin1String(buffer);
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, [NotNullWhen(true)] out Latin1String? result)
+        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out Latin1String? result)
         {
-            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.Latin1EncodingLimit) || length > MaxLatin1StringLength)
+            if (length > MaxLatin1StringLength)
                 goto Failed;
 
-            byte[] buffer = new byte[length + 1];
-            fixed (byte* dest = buffer)
-                Latin1EncodingHelper.ReadFromUtf16BufferCore(source, dest, length);
+            byte[] buffer;
+            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.Latin1EncodingLimit))
+            {
+                if ((options & StringCreateOptions._ForceUseLatin1_Flag) != StringCreateOptions._ForceUseLatin1_Flag)
+                    goto Failed;
+                buffer = CreateLatin1StringCore_OutOfLatin1Range(source, length);
+            }
+            else
+            {
+                buffer = CreateLatin1StringCore(source, length);
+            }
+
             result = new Latin1String(buffer);
             return true;
 
         Failed:
             result = null;
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe byte[] CreateLatin1StringCore_OutOfLatin1Range(char* source, nuint length)
+        {
+            byte[] buffer = new byte[length + 1];
+            fixed (byte* destination = buffer)
+                Latin1EncodingHelper.ReadFromUtf16BufferCore_OutOfLatin1Range(source, destination, length);
+            return buffer;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe byte[] CreateLatin1StringCore(char* source, nuint length)
+        {
+            byte[] buffer = new byte[length + 1];
+            fixed (byte* destination = buffer)
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
+            return buffer;
         }
 
         protected internal override unsafe char GetCharAt(nuint index)

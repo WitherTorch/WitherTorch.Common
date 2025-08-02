@@ -8,7 +8,7 @@ namespace WitherTorch.Common.Text
         {
             byte[] buffer = new byte[count + 1];
             fixed (byte* ptrSource = _value, ptrBuffer = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource + startIndex, unchecked((uint)count * sizeof(byte)));
+                UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource + startIndex, count * sizeof(byte));
             return new Latin1String(buffer);
         }
 
@@ -22,8 +22,8 @@ namespace WitherTorch.Common.Text
             byte[] buffer = new byte[length - count + 1];
             fixed (byte* ptrSource = _value, ptrBuffer = buffer)
             {
-                UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource, unchecked((uint)startIndex * sizeof(byte)));
-                UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptrSource + endIndex, unchecked((uint)(length - endIndex) * sizeof(byte)));
+                UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptrSource, startIndex * sizeof(byte));
+                UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptrSource + endIndex, (length - endIndex) * sizeof(byte));
             }
             return new Latin1String(buffer);
         }
