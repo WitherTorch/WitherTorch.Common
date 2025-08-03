@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 
 using InlineMethod;
 
@@ -11,7 +10,7 @@ namespace WitherTorch.Common.Text
 {
     internal sealed partial class Latin1String : StringBase, IPinnableReference<byte>
     {
-        private const int MaxLatin1StringLength = Limits.MaxArrayLength - 1;
+        private static readonly nuint MaxLatin1StringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
 
         private readonly byte[] _value;
         private readonly int _length;

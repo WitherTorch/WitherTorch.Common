@@ -10,9 +10,9 @@ namespace WitherTorch.Common.Text
 {
     internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>
     {
-        private const int MaxUtf8StringBufferSize = Limits.MaxArrayLength - 1;
-        private const int Utf16CompressionLengthLimit = Limits.MaxArrayLength / 2 - 1;
         private const byte AsciiCharacterLimit = 0x007F;
+        private static readonly nuint MaxUtf8StringBufferSize = unchecked((nuint)Limits.MaxArrayLength - 1);
+        private static readonly nuint Utf16CompressionLengthLimit = unchecked((nuint)Limits.MaxArrayLength / 2 - 1);
 
         private readonly byte[] _value;
         private readonly int _length;

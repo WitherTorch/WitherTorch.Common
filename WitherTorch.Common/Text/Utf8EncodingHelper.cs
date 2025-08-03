@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
@@ -7,7 +8,7 @@ using WitherTorch.Common.Helpers;
 namespace WitherTorch.Common.Text
 {
     // .NET 預設的 UTF8 編碼實現會在內部複製字串，增加GC壓力和降低編碼效率，故實作此 UTF8 編解碼實現來減少開銷
-    public static class Utf8EncodingHelper
+    public static partial class Utf8EncodingHelper
     {
         // UTF-16 代理對範圍
         private const char Utf16LeadSurrogateStart = unchecked((char)0b_1101_1000_0000_0000);
@@ -79,7 +80,7 @@ namespace WitherTorch.Common.Text
             if (!IsTrailSurrogate(trailSurrogate) || trailSurrogate > Utf16TrailSurrogateEnd)
                 goto Single;
 
-            unicodeValue = unchecked((uint)(((leadSurrogate - Utf16LeadSurrogateStart) << 10) + (trailSurrogate - Utf16TrailSurrogateEnd)));
+            unicodeValue = ComposeSurrogatePair(leadSurrogate, trailSurrogate);
             return ptr + 2;
 
         Single:
@@ -92,6 +93,10 @@ namespace WitherTorch.Common.Text
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe bool IsTrailSurrogate(char c) => c >= Utf16TrailSurrogateStart && c <= Utf16TrailSurrogateStart;
+
+        [Inline(InlineBehavior.Remove)]
+        private static unsafe uint ComposeSurrogatePair(char leadSurrogate, char trailSurrogate) 
+            => unchecked((uint)(((leadSurrogate - Utf16LeadSurrogateStart) << 10) + (trailSurrogate - Utf16TrailSurrogateEnd)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe char* TryWriteUtf16Character(char* ptr, char* ptrEnd, uint unicodeValue)
@@ -142,6 +147,15 @@ namespace WitherTorch.Common.Text
         }
 
         [Inline(InlineBehavior.Remove)]
+        private static bool IsSection2HeadByte(byte value) => (value & ~Utf8Section2Mask) == Utf8Section2Head;
+
+        [Inline(InlineBehavior.Remove)]
+        private static bool IsSection3HeadByte(byte value) => (value & ~Utf8Section3Mask) == Utf8Section3Head;
+
+        [Inline(InlineBehavior.Remove)]
+        private static bool IsSection4HeadByte(byte value) => (value & ~Utf8Section4Mask) == Utf8Section4Head;
+
+        [Inline(InlineBehavior.Remove)]
         private static bool IsTrailByte(byte value) => (value & ~Utf8TrailMask) == Utf8TrailHeader;
 
         [Inline(InlineBehavior.Remove)]
@@ -174,6 +188,22 @@ namespace WitherTorch.Common.Text
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe byte* TryReadFromUtf16BufferCore(char* source, char* sourceEnd, byte* destination, byte* destinationEnd)
+        {
+            nuint count = unchecked((nuint)(sourceEnd - source));
+            if (!SequenceHelper.Contains(source, count, '\0'))
+            {
+                try
+                {
+                    return TryReadFromUtf16BufferCoreFast(source, count, destination, destinationEnd);
+                }
+                catch (OutOfMemoryException)
+                {
+                }
+            }
+            return TryReadFromUtf16BufferCoreSlow(source, sourceEnd, destination, destinationEnd);
+        }
+
+        private static unsafe byte* TryReadFromUtf16BufferCoreSlow(char* source, char* sourceEnd, byte* destination, byte* destinationEnd)
         {
             while ((source = TryReadUtf16Character(source, sourceEnd, out uint unicodeValue)) != null &&
                 (destination = TryWriteUtf8Character(destination, destinationEnd, unicodeValue)) != null) ;
@@ -213,6 +243,22 @@ namespace WitherTorch.Common.Text
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static unsafe char* TryWriteToUtf16BufferCore(byte* source, byte* sourceEnd, char* destination, char* destinationEnd)
+        {
+            nuint count = unchecked((nuint)(sourceEnd - source));
+            if (!SequenceHelper.Contains(source, count, (byte)0))
+            {
+                try
+                {
+                    return TryWriteToUtf16BufferCoreFast(source, count, destination, destinationEnd);
+                }
+                catch (OutOfMemoryException)
+                {
+                }
+            }
+            return TryWriteToUtf16BufferCoreSlow(source, sourceEnd, destination, destinationEnd);
+        }
+
+        private static unsafe char* TryWriteToUtf16BufferCoreSlow(byte* source, byte* sourceEnd, char* destination, char* destinationEnd)
         {
             while ((source = TryReadUtf8Character(source, sourceEnd, out uint unicodeValue)) != null &&
                 (destination = TryWriteUtf16Character(destination, destinationEnd, unicodeValue)) != null) ;

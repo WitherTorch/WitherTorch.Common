@@ -42,9 +42,14 @@ namespace WitherTorch.Common
         /// <summary>
         /// 陣列的最大容許大小
         /// </summary>
-        public const int MaxArrayLength = 0x7FEFFFFF;
+        public static readonly int MaxArrayLength
+#if NET8_0_OR_GREATER
+            = System.Array.MaxLength;
+#else
+            = 0x7FEFFFFF;
+#endif
 
-#if NET6_0_OR_GREATER       
+#if NET6_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool UseAnyVector() => UseVector512() || UseVector256() || UseVector128() || UseVector64();
 
