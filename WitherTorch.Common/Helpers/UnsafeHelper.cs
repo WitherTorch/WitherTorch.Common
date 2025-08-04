@@ -493,11 +493,7 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Cpblk();
         }
 
-#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public static unsafe ref TTo As<TFrom, TTo>(ref TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -508,11 +504,7 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
-#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public static unsafe TTo As<TFrom, TTo>(TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -523,11 +515,7 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
-#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public static unsafe T As<T>(object source) where T : class
         {
 #if NET8_0_OR_GREATER
