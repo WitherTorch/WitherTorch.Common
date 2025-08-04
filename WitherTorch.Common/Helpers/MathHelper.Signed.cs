@@ -64,6 +64,6 @@ namespace WitherTorch.Common.Helpers
         public static long MakeSigned(ulong value) => unchecked((long)(value & long.MaxValue));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nint MakeSigned(nuint value) => unchecked((nint)(value & (nuint)UnsafeHelper.IntPtrMaxValue));
+        public static nint MakeSigned(nuint value) => unchecked((nint)(value & (nuint)UnsafeHelper.GetMaxValue<nint>()));
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -47,65 +48,83 @@ namespace WitherTorch.Common.Helpers
         public static void* PointerMinValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
-            get => (void*)UIntPtrMinValue;
+            get => (void*)GetMinValue<nuint>();
         }
 
         public static void* PointerMaxValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
-            get => (void*)UIntPtrMaxValue;
+            get => (void*)GetMaxValue<nuint>();
         }
 
-        public static nint IntPtrMinValue
+        public static T GetMinValue<T>() where T : unmanaged
         {
-            [Inline(InlineBehavior.Keep, export: true)]
-#if NET6_0_OR_GREATER
-            get => nint.MinValue;
-#else
-            get => PointerSizeConstant switch
-            {
-                sizeof(int) => int.MinValue,
-                sizeof(long) => unchecked((nint)long.MinValue),
-                _ => PointerSize switch
+            if (IsUnsigned<T>())
+                return default;
+            if (typeof(T) == typeof(sbyte))
+                return As<sbyte, T>(sbyte.MinValue);
+            if (typeof(T) == typeof(char))
+                return As<char, T>(char.MinValue);
+            if (typeof(T) == typeof(short))
+                return As<short, T>(short.MinValue);
+            if (typeof(T) == typeof(int))
+                return As<int, T>(int.MinValue);
+            if (typeof(T) == typeof(long))
+                return As<long, T>(long.MinValue);
+            if (typeof(T) == typeof(nint))
+                return As<nint, T>(PointerSizeConstant switch
                 {
                     sizeof(int) => int.MinValue,
                     sizeof(long) => unchecked((nint)long.MinValue),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
-                },
-            };
-#endif
+                    _ => PointerSize switch
+                    {
+                        sizeof(int) => int.MinValue,
+                        sizeof(long) => unchecked((nint)long.MinValue),
+                        _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
+                    },
+                });
+            if (typeof(T) == typeof(float))
+                return As<float, T>(float.MinValue);
+            if (typeof(T) == typeof(double))
+                return As<double, T>(double.MinValue);
+            if (typeof(T) == typeof(decimal))
+                return As<decimal, T>(decimal.MinValue);
+            throw new PlatformNotSupportedException();
         }
 
-        public static nint IntPtrMaxValue
+        public static T GetMaxValue<T>() where T : unmanaged
         {
-            [Inline(InlineBehavior.Keep, export: true)]
-#if NET6_0_OR_GREATER
-            get => nint.MaxValue;
-#else
-            get => PointerSizeConstant switch
-            {
-                sizeof(int) => int.MaxValue,
-                sizeof(long) => unchecked((nint)long.MaxValue),
-                _ => PointerSize switch
+            if (IsUnsigned<T>())
+                return Not<T>(default);
+            if (typeof(T) == typeof(sbyte))
+                return As<sbyte, T>(sbyte.MaxValue);
+            if (typeof(T) == typeof(char))
+                return As<char, T>(char.MaxValue);
+            if (typeof(T) == typeof(short))
+                return As<short, T>(short.MaxValue);
+            if (typeof(T) == typeof(int))
+                return As<int, T>(int.MaxValue);
+            if (typeof(T) == typeof(long))
+                return As<long, T>(long.MaxValue);
+            if (typeof(T) == typeof(nint))
+                return As<nint, T>(PointerSizeConstant switch
                 {
                     sizeof(int) => int.MaxValue,
                     sizeof(long) => unchecked((nint)long.MaxValue),
-                    _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
-                },
-            };
-#endif
-        }
-
-        public static nuint UIntPtrMinValue
-        {
-            [Inline(InlineBehavior.Keep, export: true)]
-            get => 0;
-        }
-
-        public static nuint UIntPtrMaxValue
-        {
-            [Inline(InlineBehavior.Keep, export: true)]
-            get => unchecked((nuint)(-1));
+                    _ => PointerSize switch
+                    {
+                        sizeof(int) => int.MaxValue,
+                        sizeof(long) => unchecked((nint)long.MaxValue),
+                        _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
+                    },
+                });
+            if (typeof(T) == typeof(float))
+                return As<float, T>(float.MaxValue);
+            if (typeof(T) == typeof(double))
+                return As<double, T>(double.MaxValue);
+            if (typeof(T) == typeof(decimal))
+                return As<decimal, T>(decimal.MaxValue);
+            throw new PlatformNotSupportedException();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -189,7 +208,8 @@ namespace WitherTorch.Common.Helpers
             => (typeof(T) == typeof(byte)) ||
                    (typeof(T) == typeof(ushort)) ||
                    (typeof(T) == typeof(uint)) ||
-                   (typeof(T) == typeof(ulong));
+                   (typeof(T) == typeof(ulong)) ||
+                   (typeof(T) == typeof(nuint));
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsGreaterThan<T>(T a, T b)
@@ -473,7 +493,11 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Cpblk();
         }
 
+#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static unsafe ref TTo As<TFrom, TTo>(ref TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -484,7 +508,11 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
+#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static unsafe TTo As<TFrom, TTo>(TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -495,7 +523,11 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
+#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public static unsafe T As<T>(object source) where T : class
         {
 #if NET8_0_OR_GREATER
