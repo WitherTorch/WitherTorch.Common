@@ -385,9 +385,22 @@ namespace WitherTorch.Common.Text
                 return builder.GetObject().ToString();
             char* start = _start;
             char* iterator = _iterator;
-            if (start == iterator)
+            if (start >= iterator)
                 return string.Empty;
             return new string(start, 0, unchecked((int)(iterator - start)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly StringBase ToStringBase()
+        {
+            DelayedCollectingStringBuilder? builder = _builder;
+            if (builder is not null)
+                return StringBase.Create(builder.GetObject().ToString());
+            char* start = _start;
+            char* iterator = _iterator;
+            if (start >= iterator)
+                return StringBase.Empty;
+            return StringBase.Create(start, 0, unchecked((nuint)(iterator - start)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

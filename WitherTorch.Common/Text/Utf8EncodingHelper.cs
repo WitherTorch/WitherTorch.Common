@@ -245,6 +245,20 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe nuint GetNextUtf8CharacterOffset(byte b)
+        {
+            if (b <= Utf8Section1Limit) // Section 1
+                return 1;
+            if ((b & ~Utf8Section2Mask) == Utf8Section2Head) // Section 2
+                return 2;
+            if ((b & ~Utf8Section3Mask) == Utf8Section3Head) // Section 3
+                return 3;
+            if ((b & ~Utf8Section4Mask) == Utf8Section4Head) // Section 4
+                return 4;
+            return 1; // Decode Error
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe byte* TrySkipUtf8Character(byte* ptr, byte* ptrEnd)
         {
             if (ptr >= ptrEnd)

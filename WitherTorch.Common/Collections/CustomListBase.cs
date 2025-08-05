@@ -110,6 +110,40 @@ namespace WitherTorch.Common.Collections
             }
         }
 
+#pragma warning disable CS8500
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddRange(T* ptr, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            if (count == 0)
+                return;
+
+            int index = _count;
+            _count = index + count;
+            EnsureCapacity();
+            T[] array = _array;
+            fixed (T* destination = array)
+                UnsafeHelper.CopyBlockUnaligned(destination + index, ptr + startIndex, (uint)count * UnsafeHelper.SizeOf<T>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddRange(T* ptr, nuint startIndex, nuint count)
+        {
+            if (count == 0)
+                return;
+
+            nuint index = MathHelper.MakeUnsigned(_count);
+            _count = unchecked((int)MathHelper.MakeSigned(index + count));
+            EnsureCapacity();
+            T[] array = _array;
+            fixed (T* destination = array)
+                UnsafeHelper.CopyBlockUnaligned(destination + index, ptr + startIndex, count * UnsafeHelper.SizeOf<T>());
+        }
+#pragma warning restore CS8500
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int BinarySearch(T item) => Array.BinarySearch(_array, 0, _count, item);
 
