@@ -1,6 +1,8 @@
 ﻿using System.IO;
 using System.Text;
 
+using LocalsInit;
+
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Text;
@@ -30,50 +32,85 @@ namespace WitherTorch.Common.IO
                 }
                 _charBuffer = null;
             }
-            nuint currentPos;
-            while ((currentPos = _bufferPos) >= _bufferLength)
-            {
-                if (_eofReached)
-                {
-                    _bufferPos = _bufferLength;
-                    return -1;
-                }
-            }
 
             Decoder decoder = _encoding.GetDecoder();
+            nuint currentPos, currentLength;
             byte[] buffer = _buffer;
-
-            nuint bufferPos;
-            int receivedCharCount;
-            while ((receivedCharCount = decoder.GetCharCount(buffer, (int)(bufferPos = _bufferPos), (int)(_bufferLength - bufferPos), flush: true)) <= 0)
+            ArrayPool<char> pool = ArrayPool<char>.Shared;
+            charBuffer = pool.Rent(buffer.Length);
+            try
             {
-                ReadStream();
-
-                if (_eofReached)
+                do
                 {
-                    _bufferPos = _bufferLength;
-                    return -1;
-                }
-            }
+                    currentPos = _bufferPos;
+                    currentLength = _bufferLength;
+                    if (currentPos < currentLength)
+                    {
+                        int currentCount = unchecked((int)(currentLength - currentPos));
 
-            charBuffer = new char[receivedCharCount];
-            fixed (byte* source = buffer)
-            fixed (char* destination = charBuffer)
-            {
-                decoder.Convert(source + bufferPos, (int)(_bufferLength - bufferPos), destination, receivedCharCount, true, out int sourceOffset, out _, out bool completed);
-                if (completed)
-                    _bufferPos = _bufferLength;
-                else
-                    _bufferPos = bufferPos + MathHelper.MakeUnsigned(sourceOffset);
+                        fixed (byte* source = buffer)
+                        fixed (char* destination = charBuffer)
+                        {
+                            decoder.Convert(source + currentPos, currentCount, destination, charBuffer.Length,
+                                flush: false, out int consumedBytes, out int producedChars, out bool completed);
+                            if (completed)
+                                _bufferPos = currentLength;
+                            else
+                                _bufferPos = currentPos + MathHelper.MakeUnsigned(consumedBytes);
+                            if (producedChars > 0)
+                            {
+                                char[] newCharBuffer = new char[producedChars];
+                                fixed (char* ptr = newCharBuffer)
+                                    UnsafeHelper.CopyBlockUnaligned(ptr, destination, unchecked((uint)producedChars * sizeof(char)));
+                                _charBuffer = newCharBuffer;
+                                _charBufferPos = movePosition ? 1u : 0u;
+                                return newCharBuffer[0];
+                            }
+                        }
+                    }
+
+                    ReadStream();
+                    if (_eofReached)
+                    {
+                        currentPos = _bufferPos;
+                        currentLength = _bufferLength;
+                        if (currentPos < currentLength)
+                        {
+                            _bufferPos = currentLength;
+
+                            int currentCount = unchecked((int)(currentLength - currentPos));
+
+                            fixed (byte* source = buffer)
+                            fixed (char* destination = charBuffer)
+                            {
+                                decoder.Convert(source + currentPos, currentCount, destination, charBuffer.Length,
+                                    flush: true, out int _, out int producedChars, out bool _);
+                                if (producedChars > 0)
+                                {
+                                    char[] newCharBuffer = new char[producedChars];
+                                    fixed (char* ptr = newCharBuffer)
+                                        UnsafeHelper.CopyBlockUnaligned(ptr, destination, unchecked((uint)producedChars * sizeof(char)));
+                                    _charBuffer = newCharBuffer;
+                                    _charBufferPos = movePosition ? 1u : 0u;
+                                    return newCharBuffer[0];
+                                }
+                            }
+                        }
+                        return -1;
+                    }
+                }
+                while (true);
             }
-            _charBuffer = charBuffer;
-            _charBufferPos = movePosition ? 1u : 0u;
-            return charBuffer[0];
+            finally
+            {
+                pool.Return(charBuffer);
+            }
         }
 
+        [LocalsInit(false)]
         private partial string? ReadLineInOtherEncoding()
         {
-            bool isEndOfStream = _eofReached;
+            bool isEndOfStream = _eofReached && _bufferPos >= _bufferLength;
 
             char[]? charBuffer = _charBuffer;
             if (charBuffer is not null)
@@ -105,73 +142,176 @@ namespace WitherTorch.Common.IO
             nuint currentPos, currentLength;
 
             ArrayPool<char> pool = ArrayPool<char>.Shared;
+            charBuffer = pool.Rent(buffer.Length);
             do
             {
                 currentPos = _bufferPos;
                 currentLength = _bufferLength;
-
-                int currentCount = unchecked((int)(currentLength - currentPos));
-                int charBufferLength;
-                fixed (byte* ptr = buffer)
+                if (currentPos < currentLength)
                 {
-                    charBufferLength = decoder.GetCharCount(ptr + currentPos, currentCount, flush: true);
-                    if (charBufferLength == 0)
-                        goto Read;
-                    charBuffer = pool.Rent(charBufferLength);
-                }
-                try
-                {
+                    int currentCount = unchecked((int)(currentLength - currentPos));
+                    fixed (byte* source = buffer)
                     fixed (char* destination = charBuffer)
                     {
-                        char* destinationEnd;
-                        fixed (byte* source = buffer)
-                        {
-                            decoder.Convert(source + currentPos, currentCount, destination, charBufferLength, true, out int sourceOffset, out int destinationOffset, out bool completed);
-                            destinationEnd = destination + destinationOffset;
-                            if (completed)
-                                _bufferPos = _bufferLength;
-                            else
-                                _bufferPos = currentPos + MathHelper.MakeUnsigned(sourceOffset);
-                        }
-                        char* destinationIndexOf = SequenceHelper.PointerIndexOf(destination, destinationEnd, '\n');
-                        if (destinationIndexOf == null)
-                            builder.Append(destination, destinationEnd);
+                        decoder.Convert(source + currentPos, currentCount, destination, charBuffer.Length,
+                            flush: false, out int consumedBytes, out int producedChars, out bool completed);
+                        if (completed)
+                            _bufferPos = currentLength;
                         else
+                            _bufferPos = currentPos + MathHelper.MakeUnsigned(consumedBytes);
+                        if (producedChars > 0)
                         {
-                            nuint count = unchecked((nuint)(destinationEnd - destinationIndexOf));
-                            if (destinationIndexOf > destination)
+                            nint indexOf = FindNewLineMarkInUtf16(destination, producedChars);
+                            if (indexOf < 0)
                             {
-                                char* destinationIndexOfBackward = destinationIndexOf - 1;
-                                if (*destinationIndexOfBackward == '\r')
-                                    destinationIndexOf = destinationIndexOfBackward;
+                                builder.Append(destination, producedChars);
                             }
-                            builder.Append(destination, destinationIndexOf);
-                            if (count > 1)
+                            else
                             {
-                                char[] newBuffer = new char[count];
-                                fixed (char* ptrNew = newBuffer)
-                                    UnsafeHelper.CopyBlockUnaligned(ptrNew, destinationEnd - count, count * sizeof(char));
-                                _charBuffer = newBuffer;
-                                _charBufferPos = 0;
+                                builder.Append(destination, (int)indexOf);
+                                producedChars -= (int)indexOf + 1;
+                                if (producedChars > 0)
+                                {
+                                    char[] newCharBuffer = new char[producedChars];
+                                    fixed (char* ptr = newCharBuffer)
+                                        UnsafeHelper.CopyBlockUnaligned(ptr, destination + indexOf + 1, unchecked((uint)producedChars * sizeof(char)));
+                                    _charBuffer = newCharBuffer;
+                                    _charBufferPos = 0;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                 }
-                finally
-                {
-                    pool.Return(charBuffer);
-                }
 
-            Read:
                 ReadStream();
 
                 if (_eofReached)
                 {
-                    _bufferPos = _bufferLength;
+                    currentPos = _bufferPos;
+                    currentLength = _bufferLength;
+                    if (currentPos < currentLength)
+                    {
+                        _bufferPos = currentLength;
+                        int currentCount = unchecked((int)(currentLength - currentPos));
+                        fixed (byte* source = buffer)
+                        fixed (char* destination = charBuffer)
+                        {
+                            decoder.Convert(source + currentPos, currentCount, destination, charBuffer.Length,
+                                flush: true, out int _, out int producedChars, out bool _);
+                            if (producedChars > 0)
+                            {
+                                nint indexOf = FindNewLineMarkInUtf16(destination, producedChars);
+                                if (indexOf < 0)
+                                {
+                                    builder.Append(destination, producedChars);
+                                }
+                                else
+                                {
+                                    builder.Append(destination, (int)indexOf);
+                                    producedChars -= (int)indexOf + 1;
+                                    if (producedChars > 0)
+                                    {
+                                        char[] newCharBuffer = new char[producedChars];
+                                        fixed (char* ptr = newCharBuffer)
+                                            UnsafeHelper.CopyBlockUnaligned(ptr, destination + indexOf + 1, unchecked((uint)producedChars * sizeof(char)));
+                                        _charBuffer = newCharBuffer;    
+                                        _charBufferPos = 0;
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     return builder.Length <= 0 ? null : builder.ToString();
                 }
             } while (true);
+            return builder.ToString();
+        }
+
+        [LocalsInit(false)]
+        private partial string ReadToEndInOtherEncoding()
+        {
+            bool isEndOfStream = _eofReached && _bufferPos >= _bufferLength;
+
+            char[]? charBuffer = _charBuffer;
+            if (charBuffer is not null)
+            {
+                _charBuffer = null;
+                if (isEndOfStream)
+                    return new string(charBuffer);
+            }
+
+            if (isEndOfStream)
+                return string.Empty;
+
+            using StringBuilderTiny builder = new StringBuilderTiny();
+            if (Limits.UseStackallocStringBuilder)
+            {
+                char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
+                builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
+            }
+            if (charBuffer is not null)
+            {
+                fixed (char* ptr = charBuffer)
+                    builder.Append(ptr + _charBufferPos, ptr + charBuffer.Length);
+            }
+
+            Decoder decoder = _encoding.GetDecoder();
+            byte[] buffer = _buffer;
+            nuint currentPos, currentLength;
+
+            ArrayPool<char> pool = ArrayPool<char>.Shared;
+            charBuffer = pool.Rent(buffer.Length);
+            try
+            {
+                do
+                {
+                    currentPos = _bufferPos;
+                    currentLength = _bufferLength;
+                    if (currentPos < currentLength)
+                    {
+                        int currentCount = unchecked((int)(currentLength - currentPos));
+
+                        fixed (byte* source = buffer)
+                        fixed (char* destination = charBuffer)
+                        {
+                            decoder.Convert(source + currentPos, currentCount, destination, charBuffer.Length,
+                                flush: true, out int consumedBytes, out int producedChars, out bool completed);
+                            if (completed)
+                                _bufferPos = currentLength;
+                            else
+                                _bufferPos = currentPos + MathHelper.MakeUnsigned(consumedBytes);
+                            if (producedChars > 0)
+                                builder.Append(destination, producedChars);
+                        }
+                    }
+                    ReadStream();
+                    if (_eofReached)
+                    {
+                        currentPos = _bufferPos;
+                        currentLength = _bufferLength;
+                        if (currentPos < currentLength)
+                        {
+                            _bufferPos = currentLength;
+                            int currentCount = unchecked((int)(currentLength - currentPos));
+                            fixed (byte* source = buffer)
+                            fixed (char* destination = charBuffer)
+                            {
+                                decoder.Convert(source + currentPos, currentCount, destination, charBuffer.Length,
+                                    flush: true, out int _, out int producedChars, out bool _);
+                                if (producedChars > 0)
+                                    builder.Append(destination, producedChars);
+                            }
+                        }
+                        break;
+                    }
+                } while (true);
+            }
+            finally
+            {
+                pool.Return(charBuffer);
+            }
             return builder.ToString();
         }
 
@@ -180,5 +320,8 @@ namespace WitherTorch.Common.IO
             string? result = ReadLineInOtherEncoding();
             return result is null ? null : StringBase.Create(result, StringCreateOptions.None);
         }
+
+        private partial StringBase ReadToEndAsStringBaseInOtherEncoding()
+            => StringBase.Create(ReadToEndInOtherEncoding(), StringCreateOptions.None);
     }
 }

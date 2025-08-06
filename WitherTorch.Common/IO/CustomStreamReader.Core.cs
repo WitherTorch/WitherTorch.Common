@@ -11,6 +11,8 @@ namespace WitherTorch.Common.IO
     {
         private void ReadStream()
         {
+            if (_eofReached)
+                return;
             nuint currentPos = _bufferPos;
             nuint currentLength = _bufferLength;
             if (currentPos == 0) // Just expand buffer
@@ -47,6 +49,21 @@ namespace WitherTorch.Common.IO
                 return 0;
             }
             return unchecked((nuint)length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static nint FindNewLineMarkInUtf16(char* ptr, nint length)
+        {
+            nint result = SequenceHelper.IndexOf(ptr, length, '\0');
+            if (result >= 0)
+                length = result;
+            nint result2 = SequenceHelper.IndexOf(ptr, length, '\r');
+            if (result2 >= 0)
+                length = result = result2;
+            result2 = SequenceHelper.IndexOf(ptr, length, '\n');
+            if (result2 >= 0)
+                result = result2;
+            return result < 0 ? result : result * 2;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -122,6 +139,37 @@ namespace WitherTorch.Common.IO
             }
             _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
             return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReadToEndIntoBuffer_AsciiLike(PooledList<byte> list)
+        {
+            byte[] buffer = _buffer;
+            nuint currentPos, currentLength;
+            while (true)
+            {
+                currentPos = _bufferPos;
+                currentLength = _bufferLength;
+                if (currentPos < currentLength)
+                {
+                    _bufferPos = currentLength;
+                    fixed (byte* ptr = buffer)
+                        list.AddRange(ptr, currentPos, currentLength - currentPos);
+                }
+                ReadStream();
+                if (_eofReached)
+                {
+                    currentPos = _bufferPos;
+                    currentLength = _bufferLength;
+                    if (currentPos < currentLength)
+                    {
+                        _bufferPos = currentLength;
+                        fixed (byte* ptr = buffer)
+                            list.AddRange(ptr, currentPos, currentLength - currentPos);
+                    }
+                    break;
+                }
+            }
         }
 
         private string? ReadLineInCharBuffer(char[] charBuffer, bool isEndOfStream)
