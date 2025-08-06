@@ -1,36 +1,61 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading;
 
 using LocalsInit;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Text;
+using WitherTorch.Common.Threading;
 
-namespace WitherTorch.Common.IO
+namespace WitherTorch.Common.IO.Internals
 {
-    unsafe partial class CustomStreamReader : TextReader
+    internal sealed class Latin1StreamReader : AsciiBasedStreamReaderBase
     {
-        private partial int ReadOneInLatin1Encoding(bool movePosition)
+        private static readonly LazyTiny<Encoding> _encodingLazy = new LazyTiny<Encoding>(GetEncoding, LazyThreadSafetyMode.PublicationOnly);
+
+        public override Encoding CurrentEncoding => _encodingLazy.Value;
+
+        public Latin1StreamReader(Stream stream, int bufferSize, bool leaveOpen) : base(stream, bufferSize, leaveOpen) { }
+
+        private static Encoding GetEncoding()
         {
-            byte[] buffer = _buffer;
+#if NET8_0_OR_GREATER
+            return Encoding.Latin1;
+#else
+            try
+            {
+                return Encoding.GetEncoding(codepage: 28591);
+            }
+            catch (Exception)
+            {
+                return Encoding.GetEncoding(codepage: 1252); // Windows-1252 編碼頁，雖然與 Latin-1 (ISO-8859-1) 不完全一樣，但可做為佔位符使用
+            }
+#endif
+        }
+
+        protected override char? ReadCharacterCore(byte[] buffer, bool movePosition)
+        {
             nuint currentPos, nextPos;
             while ((nextPos = (currentPos = _bufferPos) + 1) >= _bufferLength)
             {
                 ReadStream();
-                if (_eofReached)
+                if (CheckEndOfStream(fullyCheck: false))
                 {
                     _bufferPos = _bufferLength;
-                    return -1;
+                    return null;
                 }
             }
             if (movePosition)
                 _bufferPos = nextPos;
-            return buffer[currentPos];
+            return unchecked((char)buffer[currentPos]);
         }
 
         [LocalsInit(false)]
-        private partial string? ReadLineInLatin1Encoding()
+        protected override unsafe string? ReadLineCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return null;
 
             using StringBuilderTiny builder = new StringBuilderTiny();
@@ -39,7 +64,6 @@ namespace WitherTorch.Common.IO
                 char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
-            byte[] buffer = _buffer;
             nuint currentPos, currentLength;
             nint indexOf;
 
@@ -60,26 +84,29 @@ namespace WitherTorch.Common.IO
                         _bufferPos = currentLength;
                     }
                     ReadStream();
-                    if (_eofReached)
+                    if (CheckEndOfStream(fullyCheck: false))
                     {
                         _bufferPos = _bufferLength;
                         return builder.Length <= 0 ? null : builder.ToString();
                     }
                 }
 
-                _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
-
                 fixed (byte* source = buffer)
                 {
-                    byte* startPointer = source + currentPos;
-                    if (indexOf > 0 && startPointer[indexOf - 1] == (byte)'\r')
-                        indexOf--;
                     fixed (char* destination = charBuffer)
                     {
                         char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOf, destination, destination + currentLength);
                         builder.Append(destination, destinationEnd);
                     }
+                    byte* ptrIndexOf = source + currentPos + indexOf;
+                    if (*ptrIndexOf == (byte)'\r')
+                    {
+                        ptrIndexOf++;
+                        if (ptrIndexOf < (source + currentLength) && *ptrIndexOf == (byte)'\n')
+                            indexOf++;
+                    }
                 }
+                _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
             }
             finally
             {
@@ -89,9 +116,9 @@ namespace WitherTorch.Common.IO
         }
 
         [LocalsInit(false)]
-        private partial string ReadToEndInLatin1Encoding()
+        protected override unsafe string ReadToEndCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return string.Empty;
 
             using StringBuilderTiny builder = new StringBuilderTiny();
@@ -100,7 +127,6 @@ namespace WitherTorch.Common.IO
                 char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
-            byte[] buffer = _buffer;
             nuint currentPos, currentLength;
 
             ArrayPool<char> pool = ArrayPool<char>.Shared;
@@ -122,7 +148,7 @@ namespace WitherTorch.Common.IO
                         _bufferPos = currentLength;
                     }
                     ReadStream();
-                    if (_eofReached)
+                    if (CheckEndOfStream(fullyCheck: false))
                     {
                         _bufferPos = _bufferLength;
                         break;
@@ -136,15 +162,14 @@ namespace WitherTorch.Common.IO
             return builder.ToString();
         }
 
-        private partial StringBase? ReadLineAsStringBaseInLatin1Encoding()
+        protected override unsafe StringBase? ReadLineAsStringBaseCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return null;
 
-            byte[] buffer = _buffer;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
-            bool isEndOfStream = TryReadLineIntoBuffer_AsciiLike(list);
+            bool isEndOfStream = TryReadLineIntoPooledList(buffer, list);
             int count = list.Count;
             if (count <= 0)
                 return isEndOfStream ? null : StringBase.Empty;
@@ -160,15 +185,14 @@ namespace WitherTorch.Common.IO
             }
         }
 
-        private partial StringBase ReadToEndAsStringBaseInLatin1Encoding()
+        protected override unsafe StringBase ReadToEndAsStringBaseCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return StringBase.Empty;
 
-            byte[] buffer = _buffer;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
-            ReadToEndIntoBuffer_AsciiLike(list);
+            ReadToEndIntoPooledList(buffer, list);
             int count = list.Count;
             if (count <= 0)
                 return StringBase.Empty;

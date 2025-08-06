@@ -1,40 +1,46 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading;
 
 using LocalsInit;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Text;
+using WitherTorch.Common.Threading;
 
-namespace WitherTorch.Common.IO
+namespace WitherTorch.Common.IO.Internals
 {
-    unsafe partial class CustomStreamReader : TextReader
+    internal sealed class AsciiStreamReader : AsciiBasedStreamReaderBase
     {
-        private partial int ReadOneInAsciiEncoding(bool movePosition)
+        private static readonly Encoding _encoding = Encoding.ASCII;
+
+        public override Encoding CurrentEncoding => _encoding;
+
+        public AsciiStreamReader(Stream stream, int bufferSize, bool leaveOpen) : base(stream, bufferSize, leaveOpen) { }
+
+        protected override char? ReadCharacterCore(byte[] buffer, bool movePosition)
         {
-            byte[] buffer = _buffer;
             nuint currentPos, nextPos;
             while ((nextPos = (currentPos = _bufferPos) + 1) >= _bufferLength)
             {
                 ReadStream();
-                if (_eofReached)
+                if (CheckEndOfStream(fullyCheck: false))
                 {
                     _bufferPos = _bufferLength;
-                    return -1;
+                    return null;
                 }
             }
             if (movePosition)
                 _bufferPos = nextPos;
-            int result = buffer[currentPos];
-            if (result > Latin1EncodingHelper.AsciiEncodingLimit_InByte)
-                result = '?';
-            return result;
+            return unchecked((char)buffer[currentPos]);
         }
 
         [LocalsInit(false)]
-        private partial string? ReadLineInAsciiEncoding()
+        protected override unsafe string? ReadLineCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return null;
 
             using StringBuilderTiny builder = new StringBuilderTiny();
@@ -43,7 +49,6 @@ namespace WitherTorch.Common.IO
                 char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
-            byte[] buffer = _buffer;
             nuint currentPos, currentLength;
             nint indexOf;
 
@@ -59,44 +64,36 @@ namespace WitherTorch.Common.IO
                         fixed (char* destination = charBuffer)
                         {
                             char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
-                            char* iterator = destination;
-                            while ((iterator = SequenceHelper.PointerIndexOfGreaterThan(iterator, destinationEnd, Latin1EncodingHelper.AsciiEncodingLimit)) != null)
-                            {
-                                *iterator = '?';
-                                iterator++;
-                            }
+                            ReplaceNonAsciiCharacterToFallback(destination, destinationEnd);
                             builder.Append(destination, destinationEnd);
                         }
                         _bufferPos = currentLength;
                     }
                     ReadStream();
-                    if (_eofReached)
+                    if (CheckEndOfStream(fullyCheck: false))
                     {
                         _bufferPos = _bufferLength;
                         return builder.Length <= 0 ? null : builder.ToString();
                     }
                 }
 
-                _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
-
-                fixed (byte* ptr = buffer)
+                fixed (byte* source = buffer)
                 {
-                    byte* startPointer = ptr + currentPos;
-                    if (indexOf > 0 && startPointer[indexOf - 1] == (byte)'\r')
-                        indexOf--;
-                    fixed (byte* source = buffer)
                     fixed (char* destination = charBuffer)
                     {
                         char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOf, destination, destination + currentLength);
-                        char* iterator = destination;
-                        while ((iterator = SequenceHelper.PointerIndexOfGreaterThan(iterator, destinationEnd, Latin1EncodingHelper.AsciiEncodingLimit)) != null)
-                        {
-                            *iterator = '?';
-                            iterator++;
-                        }
+                        ReplaceNonAsciiCharacterToFallback(destination, destinationEnd);
                         builder.Append(destination, destinationEnd);
                     }
+                    byte* ptrIndexOf = source + currentPos + indexOf;
+                    if (*ptrIndexOf == (byte)'\r')
+                    {
+                        ptrIndexOf++;
+                        if (ptrIndexOf < (source + currentLength) && *ptrIndexOf == (byte)'\n')
+                            indexOf++;
+                    }
                 }
+                _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
             }
             finally
             {
@@ -106,9 +103,9 @@ namespace WitherTorch.Common.IO
         }
 
         [LocalsInit(false)]
-        private partial string ReadToEndInAsciiEncoding()
+        protected override unsafe string ReadToEndCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return string.Empty;
 
             using StringBuilderTiny builder = new StringBuilderTiny();
@@ -117,7 +114,6 @@ namespace WitherTorch.Common.IO
                 char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
-            byte[] buffer = _buffer;
             nuint currentPos, currentLength;
 
             ArrayPool<char> pool = ArrayPool<char>.Shared;
@@ -134,18 +130,13 @@ namespace WitherTorch.Common.IO
                         fixed (char* destination = charBuffer)
                         {
                             char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
-                            char* iterator = destination;
-                            while ((iterator = SequenceHelper.PointerIndexOfGreaterThan(iterator, destinationEnd, Latin1EncodingHelper.AsciiEncodingLimit)) != null)
-                            {
-                                *iterator = '?';
-                                iterator++;
-                            }
+                            ReplaceNonAsciiCharacterToFallback(destination, destinationEnd);
                             builder.Append(destination, destinationEnd);
                         }
                         _bufferPos = currentLength;
                     }
                     ReadStream();
-                    if (_eofReached)
+                    if (CheckEndOfStream(fullyCheck: false))
                     {
                         _bufferPos = _bufferLength;
                         break;
@@ -159,15 +150,14 @@ namespace WitherTorch.Common.IO
             return builder.ToString();
         }
 
-        private partial StringBase? ReadLineAsStringBaseInAsciiEncoding()
+        protected override unsafe StringBase? ReadLineAsStringBaseCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return null;
 
-            byte[] buffer = _buffer;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
-            bool isEndOfStream = TryReadLineIntoBuffer_AsciiLike(list);
+            bool isEndOfStream = TryReadLineIntoPooledList(buffer, list);
             int count = list.Count;
             if (count <= 0)
                 return isEndOfStream ? null : StringBase.Empty;
@@ -176,13 +166,7 @@ namespace WitherTorch.Common.IO
             {
                 fixed (byte* ptr = buffer)
                 {
-                    byte* iterator = ptr;
-                    byte* ptrEnd = ptr + count;
-                    while ((iterator = SequenceHelper.PointerIndexOf(iterator, ptrEnd, Latin1EncodingHelper.AsciiEncodingLimit_InByte)) != null)
-                    {
-                        *iterator = (byte)'?';
-                        iterator++;
-                    }
+                    ReplaceNonAsciiCharacterToFallback(ptr, ptr + count);
                     return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
                 }
             }
@@ -192,15 +176,14 @@ namespace WitherTorch.Common.IO
             }
         }
 
-        private partial StringBase ReadToEndAsStringBaseInAsciiEncoding()
+        protected override unsafe StringBase ReadToEndAsStringBaseCore(byte[] buffer)
         {
-            if (_eofReached && _bufferPos >= _bufferLength)
+            if (CheckEndOfStream(fullyCheck: true))
                 return StringBase.Empty;
 
-            byte[] buffer = _buffer;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
-            ReadToEndIntoBuffer_AsciiLike(list);
+            ReadToEndIntoPooledList(buffer, list);
             int count = list.Count;
             if (count <= 0)
                 return StringBase.Empty;
@@ -209,19 +192,31 @@ namespace WitherTorch.Common.IO
             {
                 fixed (byte* ptr = buffer)
                 {
-                    byte* iterator = ptr;
-                    byte* ptrEnd = ptr + count;
-                    while ((iterator = SequenceHelper.PointerIndexOf(iterator, ptrEnd, Latin1EncodingHelper.AsciiEncodingLimit_InByte)) != null)
-                    {
-                        *iterator = (byte)'?';
-                        iterator++;
-                    }
+                    ReplaceNonAsciiCharacterToFallback(ptr, ptr + count);
                     return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
                 }
             }
             finally
             {
                 pool.Return(buffer);
+            }
+        }
+
+        private static unsafe void ReplaceNonAsciiCharacterToFallback(char* ptr, char* ptrEnd)
+        {
+            while ((ptr = SequenceHelper.PointerIndexOfGreaterThan(ptr, ptrEnd, Latin1EncodingHelper.AsciiEncodingLimit)) != null)
+            {
+                *ptr = '?';
+                ptr++;
+            }
+        }
+
+        private static unsafe void ReplaceNonAsciiCharacterToFallback(byte* ptr, byte* ptrEnd)
+        {
+            while ((ptr = SequenceHelper.PointerIndexOfGreaterThan(ptr, ptrEnd, Latin1EncodingHelper.AsciiEncodingLimit_InByte)) != null)
+            {
+                *ptr = (byte)'?';
+                ptr++;
             }
         }
     }

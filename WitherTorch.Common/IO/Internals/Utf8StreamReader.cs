@@ -1,46 +1,58 @@
 ﻿using System.IO;
+using System.Text;
 
 using LocalsInit;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Text;
 
-namespace WitherTorch.Common.IO
+namespace WitherTorch.Common.IO.Internals
 {
-    unsafe partial class CustomStreamReader : TextReader
+    internal sealed unsafe class Utf8StreamReader : AsciiBasedStreamReaderBase
     {
-        private partial int ReadOneInUtf8Encoding(bool movePosition)
+        private static readonly Encoding _encoding = Encoding.UTF8;
+
+        private char? _bufferingCharacter;
+
+        public override Encoding CurrentEncoding => _encoding;
+
+        public Utf8StreamReader(Stream stream, int bufferSize, bool leaveOpen) : base(stream, bufferSize, leaveOpen)
         {
-            char[]? charBuffer = _charBuffer;
-            if (charBuffer is not null)
+            _bufferingCharacter = null;
+        }
+
+        protected override bool CheckEndOfStreamCore()
+            => base.CheckEndOfStreamCore() && _bufferingCharacter == null;
+
+        protected override char? ReadCharacterCore(byte[] buffer, bool movePosition)
+        {
+            char? bufferingCharacter = _bufferingCharacter;
+            if (bufferingCharacter is not null)
             {
-                nuint charBufferPos = _charBufferPos;
-                if (charBufferPos == 0 && charBuffer.Length > 0)
-                {
-                    if (movePosition)
-                        _charBuffer = null;
-                    return charBuffer[0];
-                }
-                _charBuffer = null;
+                if (movePosition)
+                    _bufferingCharacter = null;
+                return bufferingCharacter;
             }
-            byte[] buffer = _buffer;
-            nuint currentPos;
-            while ((currentPos = _bufferPos) >= _bufferLength)
+
+            nuint currentPos, currentLength;
+            while ((currentPos = _bufferPos) >= (currentLength = _bufferLength))
             {
-                if (_eofReached)
-                    return -1;
+                if (CheckEndOfStream(fullyCheck: false))
+                    return null;
                 ReadStream();
             }
+
             nuint nextPos;
-            while ((nextPos = currentPos + Utf8EncodingHelper.GetNextUtf8CharacterOffset(buffer[currentPos])) >= _bufferLength)
+            while ((nextPos = currentPos + Utf8EncodingHelper.GetNextUtf8CharacterOffset(buffer[currentPos])) >= currentLength)
             {
                 ReadStream();
-                if (_eofReached)
+                if (CheckEndOfStream(fullyCheck: false))
                 {
                     _bufferPos = _bufferLength;
-                    return -1;
+                    return null;
                 }
                 currentPos = _bufferPos;
+                currentLength = _bufferLength;
             }
             if (movePosition)
                 _bufferPos = nextPos;
@@ -48,39 +60,26 @@ namespace WitherTorch.Common.IO
             {
                 byte* ptrOffset = Utf8EncodingHelper.TryReadUtf8Character(ptr + currentPos, ptr + nextPos, out uint unicodeValue);
                 if (ptrOffset == null)
-                    return -1;
+                    return null;
                 if (Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out char leadSurrogate, out char trailSurrogate) && movePosition)
-                {
-                    _charBuffer = [trailSurrogate];
-                    _charBufferPos = 0;
-                }
+                    _bufferingCharacter = trailSurrogate;
                 return leadSurrogate;
             }
         }
 
         [LocalsInit(false)]
-        private partial string? ReadLineInUtf8Encoding()
+        protected override string? ReadLineCore(byte[] buffer)
         {
-            bool isEndOfStream = _eofReached && _bufferPos >= _bufferLength;
-
-            char[]? charBuffer = _charBuffer;
-            if (charBuffer is not null)
+            bool isEndOfStream = CheckEndOfStream(fullyCheck: false) && base.CheckEndOfStreamCore();
+            char? bufferingCharacter = _bufferingCharacter;
+            if (bufferingCharacter is not null)
             {
-                nuint charBufferPos = _charBufferPos;
-                if (charBufferPos == 0 && charBuffer.Length > 0)
-                {
-                    char c = charBuffer[0];
-                    if (c == '\n' || isEndOfStream)
-                    {
-                        _charBuffer = null;
-                        return new string(c, 1);
-                    }
-                }
-                else
-                {
-                    _charBuffer = null;
-                    charBuffer = null;
-                }
+                _bufferingCharacter = null;
+                char c = bufferingCharacter.Value;
+                if (c == '\n')
+                    return string.Empty;
+                if (isEndOfStream)
+                    return new string(c, 1);
             }
 
             if (isEndOfStream)
@@ -92,9 +91,8 @@ namespace WitherTorch.Common.IO
                 char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
-            if (charBuffer is not null)
-                builder.Append(charBuffer[0]);
-            byte[] buffer = _buffer;
+            if (bufferingCharacter is not null)
+                builder.Append(bufferingCharacter.Value);
             nuint currentPos, currentLength;
             nint indexOf;
             while ((indexOf = FindNewLineMarkInAscii(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
@@ -123,20 +121,15 @@ namespace WitherTorch.Common.IO
                     }
                 }
                 ReadStream();
-                if (_eofReached)
+                if (CheckEndOfStream(fullyCheck: false))
                 {
                     _bufferPos = _bufferLength;
                     return builder.Length <= 0 ? null : builder.ToString();
                 }
             }
 
-            _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
-
             fixed (byte* ptr = buffer)
             {
-                byte* startPointer = ptr + currentPos;
-                if (indexOf > 0 && startPointer[indexOf - 1] == (byte)'\r')
-                    indexOf--;
                 byte* iterator = ptr + currentPos;
                 byte* ptrEnd = iterator + indexOf;
                 while ((iterator = Utf8EncodingHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
@@ -151,28 +144,29 @@ namespace WitherTorch.Common.IO
                         builder.Append(leadSurrogate);
                     }
                 }
+                byte* ptrIndexOf = ptr + currentPos + indexOf;
+                if (*ptrIndexOf == (byte)'\r')
+                {
+                    ptrIndexOf++;
+                    if (ptrIndexOf < (ptr + currentLength) && *ptrIndexOf == (byte)'\n')
+                        indexOf++;
+                }
             }
+
+            _bufferPos = currentPos + unchecked((nuint)indexOf) + 1;
             return builder.ToString();
         }
 
         [LocalsInit(false)]
-        private partial string ReadToEndInUtf8Encoding()
+        protected override string ReadToEndCore(byte[] buffer)
         {
-            bool isEndOfStream = _eofReached && _bufferPos >= _bufferLength;
-
-            char[]? charBuffer = _charBuffer;
-            if (charBuffer is not null)
+            bool isEndOfStream = CheckEndOfStream(fullyCheck: false) && base.CheckEndOfStreamCore();
+            char? bufferingCharacter = _bufferingCharacter;
+            if (bufferingCharacter is not null)
             {
-                _charBuffer = null;
-                if (_charBufferPos == 0 && charBuffer.Length > 0)
-                {
-                    if (isEndOfStream)
-                        return new string(charBuffer[0], 1);
-                }
-                else
-                {
-                    charBuffer = null;
-                }
+                _bufferingCharacter = null;
+                if (isEndOfStream)
+                    return new string(bufferingCharacter.Value, 1);
             }
 
             if (isEndOfStream)
@@ -184,9 +178,8 @@ namespace WitherTorch.Common.IO
                 char* stackBuffer = stackalloc char[Limits.MaxStackallocChars];
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
-            if (charBuffer is not null)
-                builder.Append(charBuffer[0]);
-            byte[] buffer = _buffer;
+            if (bufferingCharacter is not null)
+                builder.Append(bufferingCharacter.Value);
             nuint currentPos, currentLength;
             do
             {
@@ -216,7 +209,7 @@ namespace WitherTorch.Common.IO
                     }
                 }
                 ReadStream();
-                if (_eofReached)
+                if (CheckEndOfStream(fullyCheck: false))
                 {
                     _bufferPos = _bufferLength;
                     break;
@@ -226,46 +219,43 @@ namespace WitherTorch.Common.IO
         }
 
         [LocalsInit(false)]
-        private partial StringBase? ReadLineAsStringBaseInUtf8Encoding()
+        protected override StringBase? ReadLineAsStringBaseCore(byte[] buffer)
         {
-            bool isEndOfStream = _eofReached && _bufferPos >= _bufferLength;
+            bool isEndOfStream = CheckEndOfStream(fullyCheck: false) && base.CheckEndOfStreamCore();
 
-            char[]? charBuffer = _charBuffer;
-            if (charBuffer is not null)
+            char? bufferingCharacter = _bufferingCharacter;
+            if (bufferingCharacter is not null)
             {
-                nuint charBufferPos = _charBufferPos;
-                if (charBufferPos == 0 && charBuffer.Length > 0)
+                _bufferingCharacter = null;
+                char c = bufferingCharacter.Value;
+                if (c == '\n')
+                    return StringBase.Empty;
+                if (isEndOfStream)
                 {
-                    char c = charBuffer[0];
-                    if (c == '\n' || isEndOfStream)
-                    {
-                        _charBuffer = null;
-                        return StringBase.Create(&c, 0u, 1u);
-                    }
-                }
-                else
-                {
-                    _charBuffer = null;
-                    charBuffer = null;
+                    byte* tempBuffer = stackalloc byte[3];
+                    byte* tempBufferEnd = tempBuffer + 3;
+                    byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, bufferingCharacter.Value);
+                    if (tempBufferLimit > tempBuffer)
+                        return StringBase.CreateUtf8String(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
+                    return StringBase.Empty;
                 }
             }
 
             if (isEndOfStream)
                 return null;
 
-            byte[] buffer = _buffer;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
-            if (charBuffer is not null)
+            if (bufferingCharacter is not null)
             {
                 byte* tempBuffer = stackalloc byte[4];
                 byte* tempBufferEnd = tempBuffer + 4;
-                byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, charBuffer[0]);
+                byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, bufferingCharacter.Value);
                 if (tempBufferLimit > tempBuffer)
                     list.AddRange(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
             }
 
-            isEndOfStream = TryReadLineIntoBuffer_AsciiLike(list);
+            isEndOfStream = TryReadLineIntoPooledList(buffer, list);
             int count = list.Count;
             if (count <= 0)
                 return isEndOfStream ? null : StringBase.Empty;
@@ -282,46 +272,39 @@ namespace WitherTorch.Common.IO
         }
 
         [LocalsInit(false)]
-        private partial StringBase ReadToEndAsStringBaseInUtf8Encoding()
+        protected override StringBase ReadToEndAsStringBaseCore(byte[] buffer)
         {
-            bool isEndOfStream = _eofReached && _bufferPos >= _bufferLength;
-
-            char[]? charBuffer = _charBuffer;
-            if (charBuffer is not null)
+            bool isEndOfStream = CheckEndOfStream(fullyCheck: false) && base.CheckEndOfStreamCore();
+            char? bufferingCharacter = _bufferingCharacter;
+            if (bufferingCharacter is not null)
             {
-                nuint charBufferPos = _charBufferPos;
-                if (charBufferPos == 0 && charBuffer.Length > 0)
+                _bufferingCharacter = null;
+                if (isEndOfStream)
                 {
-                    if (isEndOfStream)
-                    {
-                        char c = charBuffer[0];
-                        _charBuffer = null;
-                        return StringBase.Create(&c, 0u, 1u);
-                    }
-                }
-                else
-                {
-                    _charBuffer = null;
-                    charBuffer = null;
+                    byte* tempBuffer = stackalloc byte[3];
+                    byte* tempBufferEnd = tempBuffer + 3;
+                    byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, bufferingCharacter.Value);
+                    if (tempBufferLimit > tempBuffer)
+                        return StringBase.CreateUtf8String(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
+                    return StringBase.Empty;
                 }
             }
 
             if (isEndOfStream)
                 return StringBase.Empty;
 
-            byte[] buffer = _buffer;
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
-            if (charBuffer is not null)
+            if (bufferingCharacter is not null)
             {
-                byte* tempBuffer = stackalloc byte[4];
-                byte* tempBufferEnd = tempBuffer + 4;
-                byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, charBuffer[0]);
+                byte* tempBuffer = stackalloc byte[3];
+                byte* tempBufferEnd = tempBuffer + 3;
+                byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, bufferingCharacter.Value);
                 if (tempBufferLimit > tempBuffer)
                     list.AddRange(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
             }
 
-            ReadToEndIntoBuffer_AsciiLike(list);
+            ReadToEndIntoPooledList(buffer, list);
             int count = list.Count;
             if (count <= 0)
                 return StringBase.Empty;
