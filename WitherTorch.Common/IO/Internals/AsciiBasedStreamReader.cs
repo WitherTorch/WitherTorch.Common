@@ -6,12 +6,12 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.IO.Internals
 {
-    internal abstract class AsciiBasedStreamReaderBase : CustomStreamReaderBase
+    internal abstract class AsciiBasedStreamReader : CustomStreamReaderBase
     {
-        protected AsciiBasedStreamReaderBase(Stream stream, int bufferSize, bool leaveOpen) : base(stream, bufferSize, leaveOpen) { }
+        protected AsciiBasedStreamReader(Stream stream, int bufferSize, bool leaveOpen) : base(stream, bufferSize, leaveOpen) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static unsafe nint FindNewLineMarkInAscii(byte[] buffer, nuint offset, nuint length)
+        protected static unsafe nint FindNewLineMark(byte[] buffer, nuint offset, nuint length)
         {
             if (offset >= length)
                 return -1;
@@ -35,7 +35,7 @@ namespace WitherTorch.Common.IO.Internals
         {
             nuint currentPos, currentLength;
             nint indexOf;
-            while ((indexOf = FindNewLineMarkInAscii(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+            while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
             {
                 if (currentPos < currentLength)
                 {

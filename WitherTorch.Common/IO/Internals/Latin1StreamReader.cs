@@ -11,7 +11,7 @@ using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.IO.Internals
 {
-    internal sealed class Latin1StreamReader : AsciiBasedStreamReaderBase
+    internal sealed class Latin1StreamReader : AsciiBasedStreamReader
     {
         private static readonly LazyTiny<Encoding> _encodingLazy = new LazyTiny<Encoding>(GetEncoding, LazyThreadSafetyMode.PublicationOnly);
 
@@ -71,7 +71,7 @@ namespace WitherTorch.Common.IO.Internals
             char[] charBuffer = pool.Rent(buffer.Length);
             try
             {
-                while ((indexOf = FindNewLineMarkInAscii(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+                while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
                 {
                     if (currentPos < currentLength)
                     {

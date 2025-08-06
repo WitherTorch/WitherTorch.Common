@@ -12,7 +12,7 @@ using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.IO.Internals
 {
-    internal sealed class AsciiStreamReader : AsciiBasedStreamReaderBase
+    internal sealed class AsciiStreamReader : AsciiBasedStreamReader
     {
         private static readonly Encoding _encoding = Encoding.ASCII;
 
@@ -56,7 +56,7 @@ namespace WitherTorch.Common.IO.Internals
             char[] charBuffer = pool.Rent(buffer.Length);
             try
             {
-                while ((indexOf = FindNewLineMarkInAscii(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+                while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
                 {
                     if (currentPos < currentLength)
                     {

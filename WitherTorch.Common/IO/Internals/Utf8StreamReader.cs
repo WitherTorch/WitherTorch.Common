@@ -8,7 +8,7 @@ using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.IO.Internals
 {
-    internal sealed unsafe class Utf8StreamReader : AsciiBasedStreamReaderBase
+    internal sealed unsafe class Utf8StreamReader : AsciiBasedStreamReader
     {
         private static readonly Encoding _encoding = Encoding.UTF8;
 
@@ -95,7 +95,7 @@ namespace WitherTorch.Common.IO.Internals
                 builder.Append(bufferingCharacter.Value);
             nuint currentPos, currentLength;
             nint indexOf;
-            while ((indexOf = FindNewLineMarkInAscii(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+            while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
             {
                 if (currentPos < currentLength)
                 {
