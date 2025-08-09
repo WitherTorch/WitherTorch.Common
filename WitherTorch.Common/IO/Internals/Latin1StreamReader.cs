@@ -65,13 +65,13 @@ namespace WitherTorch.Common.IO.Internals
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
             nuint currentPos, currentLength;
-            nint indexOf;
+            nuint? indexOf;
 
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] charBuffer = pool.Rent(buffer.Length);
             try
             {
-                while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+                while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) is null)
                 {
                     if (currentPos < currentLength)
                     {
@@ -91,14 +91,15 @@ namespace WitherTorch.Common.IO.Internals
                     }
                 }
 
+                nuint indexOfReal = indexOf.Value;
                 fixed (byte* source = buffer)
                 {
                     fixed (char* destination = charBuffer)
                     {
-                        char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOf, destination, destination + currentLength);
+                        char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOfReal, destination, destination + currentLength);
                         builder.Append(destination, destinationEnd);
                     }
-                    byte* ptrIndexOf = source + currentPos + indexOf;
+                    byte* ptrIndexOf = source + currentPos + indexOfReal;
                     if (*ptrIndexOf == (byte)'\r')
                     {
                         ptrIndexOf++;

@@ -621,6 +621,354 @@ namespace WitherTorch.Common.Helpers
                         throw new NotImplementedException();
                 }
             }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Replace(nint* ptr, nuint length, nint filter, nint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.Replace((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.Replace((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.Replace((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.Replace((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceExclude(nint* ptr, nuint length, nint filter, nint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.ReplaceExclude((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.ReplaceExclude((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.ReplaceExclude((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.ReplaceExclude((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceGreaterThan(nint* ptr, nuint length, nint filter, nint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.ReplaceGreaterThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.ReplaceGreaterThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.ReplaceGreaterThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.ReplaceGreaterThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceGreaterOrEqualsThan(nint* ptr, nuint length, nint filter, nint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.ReplaceGreaterOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.ReplaceGreaterOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.ReplaceGreaterOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.ReplaceGreaterOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceLessThan(nint* ptr, nuint length, nint filter, nint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.ReplaceLessThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.ReplaceLessThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.ReplaceLessThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.ReplaceLessThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceLessOrEqualsThan(nint* ptr, nuint length, nint filter, nint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.ReplaceLessOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.ReplaceLessOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.ReplaceLessOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.ReplaceLessOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Replace(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.Replace((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.Replace((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.Replace((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.Replace((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceExclude(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.ReplaceExclude((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.ReplaceExclude((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.ReplaceExclude((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.ReplaceExclude((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceGreaterThan(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.ReplaceGreaterThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.ReplaceGreaterThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.ReplaceGreaterThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.ReplaceGreaterThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceGreaterOrEqualsThan(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.ReplaceGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.ReplaceGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.ReplaceGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.ReplaceGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceLessThan(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.ReplaceLessThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.ReplaceLessThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.ReplaceLessThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.ReplaceLessThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void ReplaceLessOrEqualsThan(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.ReplaceLessOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.ReplaceLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.ReplaceLessOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.ReplaceLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
         }
 #pragma warning restore CS0162
 
@@ -662,6 +1010,24 @@ namespace WitherTorch.Common.Helpers
             public static T* PointerIndexOfLessOrEqualsThan(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan, accurateResult: true);
 
+            public static void Replace(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Include);
+
+            public static void ReplaceExclude(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Exclude);
+
+            public static void ReplaceGreaterThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThan);
+
+            public static void ReplaceLessThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
+
+            public static void ReplaceGreaterOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterOrEqualsThan);
+
+            public static void ReplaceLessOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessOrEqualsThan);
+
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
@@ -698,48 +1064,93 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.LessOrEqualsThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessOrEqualsThanUnsigned(item, value) : UnsafeHelper.IsLessOrEqualsThan(item, value),
                     _ => throw new InvalidOperationException(),
                 };
+
+            [Inline(InlineBehavior.Remove)]
+            private static void ReplaceCore(ref T* ptr, nuint length, T filter, T replacement, [InlineParameter] IndexOfMethod method)
+            {
+                T* ptrEnd = ptr + length;
+                if (CheckTypeCanBeVectorized())
+                {
+                    VectorizedReplaceCore(ref ptr, ptrEnd, filter, replacement, method);
+                    return;
+                }
+
+                LegacyReplaceCore(ref ptr, ptrEnd, filter, replacement, method);
+            }
+
+
+            [Inline(InlineBehavior.Remove)]
+            private static partial void VectorizedReplaceCore(ref T* ptr, T* ptrEnd, T filter, T replacement, [InlineParameter] IndexOfMethod method);
+
+            [Inline(InlineBehavior.Remove)]
+            private static void LegacyReplaceCore(ref T* ptr, T* ptrEnd, T filter, T replacement, [InlineParameter] IndexOfMethod method)
+            {
+                for (; ptr < ptrEnd; ptr++)
+                {
+                    if (LegacyIndexOfCore(*ptr, filter, method))
+                        *ptr = replacement;
+                }
+            }
         }
 
         unsafe partial class SlowCore<T>
         {
-            public static bool Contains(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.Include) != null;
+            public static bool Contains(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include) != null;
 
-            public static bool ContainsExclude(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.Exclude) != null;
+            public static bool ContainsExclude(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude) != null;
 
-            public static bool ContainsGreaterThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.GreaterThan) != null;
+            public static bool ContainsGreaterThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan) != null;
 
-            public static bool ContainsLessThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.LessThan) != null;
+            public static bool ContainsLessThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan) != null;
 
-            public static bool ContainsGreaterOrEqualsThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.GreaterOrEqualsThan) != null;
+            public static bool ContainsGreaterOrEqualsThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan) != null;
 
-            public static bool ContainsLessOrEqualsThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.LessOrEqualsThan) != null;
+            public static bool ContainsLessOrEqualsThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan) != null;
 
-            public static T* PointerIndexOf(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.Include);
+            public static T* PointerIndexOf(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include);
 
-            public static T* PointerIndexOfExclude(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.Exclude);
+            public static T* PointerIndexOfExclude(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude);
 
-            public static T* PointerIndexOfGreaterThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.GreaterThan);
+            public static T* PointerIndexOfGreaterThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan);
 
-            public static T* PointerIndexOfLessThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.LessThan);
+            public static T* PointerIndexOfLessThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan);
 
-            public static T* PointerIndexOfGreaterOrEqualsThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.GreaterOrEqualsThan);
+            public static T* PointerIndexOfGreaterOrEqualsThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan);
 
-            public static T* PointerIndexOfLessOrEqualsThan(T* ptr, T value, nuint length)
-                => PointerIndexOfCore(ref ptr, value, length, IndexOfMethod.LessOrEqualsThan);
+            public static T* PointerIndexOfLessOrEqualsThan(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan);
+
+            public static void Replace(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Include);
+
+            public static void ReplaceExclude(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Exclude);
+
+            public static void ReplaceGreaterThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThan);
+
+            public static void ReplaceLessThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
+
+            public static void ReplaceGreaterOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterOrEqualsThan);
+
+            public static void ReplaceLessOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessOrEqualsThan);
 
             [Inline(InlineBehavior.Remove)]
-            private static T* PointerIndexOfCore(ref T* ptr, T value, nuint length, [InlineParameter] IndexOfMethod method)
+            private static T* PointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method)
             {
                 if (method == IndexOfMethod.Include || method == IndexOfMethod.Exclude)
                 {
@@ -760,6 +1171,29 @@ namespace WitherTorch.Common.Helpers
                     }
                 }
                 return null;
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void ReplaceCore(ref T* ptr, nuint length, T filter, T replacement, [InlineParameter] IndexOfMethod method)
+            {
+                if (method == IndexOfMethod.Include || method == IndexOfMethod.Exclude)
+                {
+                    EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+                    for (nuint i = 0; i < length; i++, ptr++)
+                    {
+                        if (IndexOfCore(comparer, *ptr, filter, method))
+                            *ptr = replacement;
+                    }
+                }
+                else
+                {
+                    Comparer<T> comparer = Comparer<T>.Default;
+                    for (nuint i = 0; i < length; i++, ptr++)
+                    {
+                        if (IndexOfCore(comparer, *ptr, filter, method))
+                            *ptr = replacement;
+                    }
+                }
             }
 
             [Inline(InlineBehavior.Remove)]

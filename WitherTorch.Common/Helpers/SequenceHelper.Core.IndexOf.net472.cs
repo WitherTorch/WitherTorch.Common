@@ -36,6 +36,32 @@ namespace WitherTorch.Common.Helpers
                 return LegacyPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
             }
 
+            private static partial void VectorizedReplaceCore(ref T* ptr, T* ptrEnd, T filter, T replacement, IndexOfMethod method)
+            {
+                if (Limits.UseVector())
+                {
+                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
+                    if (ptrLimit < ptrEnd)
+                    {
+                        Vector<T> filterVector = new Vector<T>(filter); // 將要比對的項目擴充成向量
+                        Vector<T> replaceVector = new Vector<T>(replacement);
+                        do
+                        {
+                            Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                            sourceVector = Vector.ConditionalSelect(
+                                condition: VectorizedIndexOfCore(sourceVector, filterVector, method),
+                                left: replaceVector,
+                                right: sourceVector);
+                            UnsafeHelper.WriteUnaligned(ptr, sourceVector);
+                            ptr = (T*)ptrLimit;
+                        } while (++ptrLimit < ptrEnd);
+                        if (ptr >= ptrEnd)
+                            return;
+                    }
+                }
+                LegacyReplaceCore(ref ptr, ptrEnd, filter, replacement, method);
+            }
+
             [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedIndexOfCore(in Vector<T> valueVector, in Vector<T> maskVector, [InlineParameter] IndexOfMethod method)
                 => method switch

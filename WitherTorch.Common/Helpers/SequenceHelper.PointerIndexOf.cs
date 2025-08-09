@@ -59,10 +59,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOf((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => (T*)FastCore<float>.PointerIndexOf((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => (T*)FastCore<double>.PointerIndexOf((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.PointerIndexOf(ptr, value, length)
+                    _ => SlowCore<T>.PointerIndexOf(ptr, length, value)
                 };
             }
-            return SlowCore<T>.PointerIndexOf(ptr, value, length);
+            return SlowCore<T>.PointerIndexOf(ptr, length, value);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -116,10 +116,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfExclude((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => (T*)FastCore<float>.PointerIndexOfExclude((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => (T*)FastCore<double>.PointerIndexOfExclude((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.PointerIndexOfExclude(ptr, value, length)
+                    _ => SlowCore<T>.PointerIndexOfExclude(ptr, length, value)
                 };
             }
-            return SlowCore<T>.PointerIndexOfExclude(ptr, value, length);
+            return SlowCore<T>.PointerIndexOfExclude(ptr, length, value);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -173,10 +173,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfGreaterThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => (T*)FastCore<float>.PointerIndexOfGreaterThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => (T*)FastCore<double>.PointerIndexOfGreaterThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.PointerIndexOfGreaterThan(ptr, value, length)
+                    _ => SlowCore<T>.PointerIndexOfGreaterThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.PointerIndexOfGreaterThan(ptr, value, length);
+            return SlowCore<T>.PointerIndexOfGreaterThan(ptr, length, value);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -230,10 +230,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => (T*)FastCore<float>.PointerIndexOfGreaterOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => (T*)FastCore<double>.PointerIndexOfGreaterOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.PointerIndexOfGreaterOrEqualsThan(ptr, value, length)
+                    _ => SlowCore<T>.PointerIndexOfGreaterOrEqualsThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.PointerIndexOfGreaterOrEqualsThan(ptr, value, length);
+            return SlowCore<T>.PointerIndexOfGreaterOrEqualsThan(ptr, length, value);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -287,10 +287,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfLessThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => (T*)FastCore<float>.PointerIndexOfLessThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => (T*)FastCore<double>.PointerIndexOfLessThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.PointerIndexOfLessThan(ptr, value, length)
+                    _ => SlowCore<T>.PointerIndexOfLessThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.PointerIndexOfLessThan(ptr, value, length);
+            return SlowCore<T>.PointerIndexOfLessThan(ptr, length, value);
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -344,10 +344,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => (T*)FastCore<float>.PointerIndexOfLessOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => (T*)FastCore<double>.PointerIndexOfLessOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.PointerIndexOfLessOrEqualsThan(ptr, value, length)
+                    _ => SlowCore<T>.PointerIndexOfLessOrEqualsThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.PointerIndexOfLessOrEqualsThan(ptr, value, length);
+            return SlowCore<T>.PointerIndexOfLessOrEqualsThan(ptr, length, value);
         }
     }
 }

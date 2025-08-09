@@ -11,22 +11,25 @@ namespace WitherTorch.Common.IO.Internals
         protected AsciiBasedStreamReader(Stream stream, int bufferSize, bool leaveOpen) : base(stream, bufferSize, leaveOpen) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static unsafe nint FindNewLineMark(byte[] buffer, nuint offset, nuint length)
+        protected static unsafe nuint? FindNewLineMark(byte[] buffer, nuint offset, nuint length)
         {
             if (offset >= length)
-                return -1;
+                return null;
             fixed (byte* ptr = buffer)
             {
                 byte* startPointer = ptr + offset;
-                nint scanLength = (nint)(length - offset);
-                nint result = SequenceHelper.IndexOf(startPointer, scanLength, (byte)'\0');
-                if (result >= 0)
-                    scanLength = result;
-                nint result2 = SequenceHelper.IndexOf(startPointer, scanLength, (byte)'\r');
-                if (result2 >= 0)
-                    scanLength = result = result2;
+                nuint scanLength = length - offset;
+                nuint? result = SequenceHelper.IndexOf(startPointer, scanLength, (byte)'\0');
+                if (result.HasValue)
+                    scanLength = result.Value;
+                nuint? result2 = SequenceHelper.IndexOf(startPointer, scanLength, (byte)'\r');
+                if (result2.HasValue)
+                {
+                    result = result2;
+                    scanLength = result2.Value;
+                }
                 result2 = SequenceHelper.IndexOf(startPointer, scanLength, (byte)'\n');
-                return result2 >= 0 ? result2 : result;
+                return result2.HasValue ? result2 : result;
             }
         }
 
@@ -34,8 +37,8 @@ namespace WitherTorch.Common.IO.Internals
         protected unsafe bool TryReadLineIntoPooledList(byte[] buffer, PooledList<byte> list) // Return value: stream is EOF or not
         {
             nuint currentPos, currentLength;
-            nint indexOf;
-            while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+            nuint? indexOf;
+            while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) is null)
             {
                 if (currentPos < currentLength)
                 {
@@ -51,10 +54,11 @@ namespace WitherTorch.Common.IO.Internals
                 }
             }
 
+            nuint indexOfReal = indexOf.Value;
             fixed (byte* ptr = buffer)
             {
-                list.AddRange(ptr, currentPos, unchecked((nuint)indexOf));
-                byte* ptrIndexOf = ptr + currentPos + indexOf;
+                list.AddRange(ptr, currentPos, indexOfReal);
+                byte* ptrIndexOf = ptr + currentPos + indexOfReal;
                 if (*ptrIndexOf == (byte)'\r')
                 {
                     ptrIndexOf++;

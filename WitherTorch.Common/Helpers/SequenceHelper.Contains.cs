@@ -437,10 +437,10 @@ namespace WitherTorch.Common.Helpers
                 return FastCore.Contains((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
                 return FastCore.Contains((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsCoreSlow(ptr, value, length);
+            return ContainsCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsCoreSlow<T>(T* ptr, T value, nuint length)
+        private static bool ContainsCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -457,10 +457,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.Contains((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.Contains((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.Contains((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.Contains(ptr, value, length)
+                    _ => SlowCore<T>.Contains(ptr, length, value)
                 };
             }
-            return SlowCore<T>.Contains(ptr, value, length);
+            return SlowCore<T>.Contains(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -490,10 +490,10 @@ namespace WitherTorch.Common.Helpers
                 return FastCore.ContainsExclude((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
                 return FastCore.ContainsExclude((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsExcludeCoreSlow(ptr, value, length);
+            return ContainsExcludeCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsExcludeCoreSlow<T>(T* ptr, T value, nuint length)
+        private static bool ContainsExcludeCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -510,10 +510,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsExclude((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsExclude((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsExclude((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsExclude(ptr, value, length)
+                    _ => SlowCore<T>.ContainsExclude(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsExclude(ptr, value, length);
+            return SlowCore<T>.ContainsExclude(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -543,10 +543,10 @@ namespace WitherTorch.Common.Helpers
                 return FastCore.ContainsGreaterThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
                 return FastCore.ContainsGreaterThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsGreaterThanCoreSlow(ptr, value, length);
+            return ContainsGreaterThanCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsGreaterThanCoreSlow<T>(T* ptr, T value, nuint length)
+        private static bool ContainsGreaterThanCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -563,10 +563,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsGreaterThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsGreaterThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsGreaterThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsGreaterThan(ptr, value, length)
+                    _ => SlowCore<T>.ContainsGreaterThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsGreaterThan(ptr, value, length);
+            return SlowCore<T>.ContainsGreaterThan(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -596,10 +596,10 @@ namespace WitherTorch.Common.Helpers
                 return FastCore.ContainsGreaterOrEqualsThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
                 return FastCore.ContainsGreaterOrEqualsThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsGreaterOrEqualsThanCoreSlow(ptr, value, length);
+            return ContainsGreaterOrEqualsThanCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsGreaterOrEqualsThanCoreSlow<T>(T* ptr, T value, nuint length)
+        private static bool ContainsGreaterOrEqualsThanCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -616,10 +616,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsGreaterOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsGreaterOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsGreaterOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, value, length)
+                    _ => SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, value, length);
+            return SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -649,10 +649,10 @@ namespace WitherTorch.Common.Helpers
                 return FastCore.ContainsLessThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
                 return FastCore.ContainsLessThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsLessThanCoreSlow(ptr, value, length);
+            return ContainsLessThanCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsLessThanCoreSlow<T>(T* ptr, T value, nuint length)
+        private static bool ContainsLessThanCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -669,10 +669,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsLessThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsLessThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsLessThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsLessThan(ptr, value, length)
+                    _ => SlowCore<T>.ContainsLessThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsLessThan(ptr, value, length);
+            return SlowCore<T>.ContainsLessThan(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -702,10 +702,10 @@ namespace WitherTorch.Common.Helpers
                 return FastCore.ContainsLessOrEqualsThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
                 return FastCore.ContainsLessOrEqualsThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsLessOrEqualsThanCoreSlow(ptr, value, length);
+            return ContainsLessOrEqualsThanCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsLessOrEqualsThanCoreSlow<T>(T* ptr, T value, nuint length)
+        private static bool ContainsLessOrEqualsThanCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -722,10 +722,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsLessOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsLessOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsLessOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsLessOrEqualsThan(ptr, value, length)
+                    _ => SlowCore<T>.ContainsLessOrEqualsThan(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsLessOrEqualsThan(ptr, value, length);
+            return SlowCore<T>.ContainsLessOrEqualsThan(ptr, length, value);
         }
         #endregion
     }

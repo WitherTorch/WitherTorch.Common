@@ -77,8 +77,8 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndex32(PointerIndexOf(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint IndexOf<T>(T* ptr, nint length, T value)
-            => ConvertToIndexNative(PointerIndexOf(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static nuint? IndexOf<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOf(ptr, length, value), ptr);
         #endregion
 
         #region IndexOfExclude
@@ -149,8 +149,8 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndex32(PointerIndexOfExclude(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint IndexOfExclude<T>(T* ptr, nint length, T value)
-            => ConvertToIndexNative(PointerIndexOfExclude(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static nuint? IndexOfExclude<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfExclude(ptr, length, value), ptr);
         #endregion
 
         #region IndexOfGreaterThan
@@ -221,8 +221,8 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndex32(PointerIndexOfGreaterThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint IndexOfGreaterThan<T>(T* ptr, nint length, T value)
-            => ConvertToIndexNative(PointerIndexOfGreaterThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static nuint? IndexOfGreaterThan<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfGreaterThan(ptr, length, value), ptr);
         #endregion
 
         #region IndexOfGreaterOrEqualsThan
@@ -293,8 +293,8 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint IndexOfGreaterOrEqualsThan<T>(T* ptr, nint length, T value)
-            => ConvertToIndexNative(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static nuint? IndexOfGreaterOrEqualsThan<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfGreaterOrEqualsThan(ptr, length, value), ptr);
         #endregion
 
         #region IndexOfLessThan
@@ -365,8 +365,8 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndex32(PointerIndexOfLessThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint IndexOfLessThan<T>(T* ptr, nint length, T value)
-            => ConvertToIndexNative(PointerIndexOfLessThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static nuint? IndexOfLessThan<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfLessThan(ptr, length, value), ptr);
         #endregion
 
         #region IndexOfLessOrEqualsThan
@@ -437,8 +437,8 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nint IndexOfLessOrEqualsThan<T>(T* ptr, nint length, T value)
-            => ConvertToIndexNative(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static nuint? IndexOfLessOrEqualsThan<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfLessOrEqualsThan(ptr, length, value), ptr);
         #endregion
     }
 }

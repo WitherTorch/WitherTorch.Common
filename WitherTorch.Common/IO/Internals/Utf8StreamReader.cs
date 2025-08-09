@@ -94,8 +94,8 @@ namespace WitherTorch.Common.IO.Internals
             if (bufferingCharacter is not null)
                 builder.Append(bufferingCharacter.Value);
             nuint currentPos, currentLength;
-            nint indexOf;
-            while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+            nuint? indexOf;
+            while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) is null)
             {
                 if (currentPos < currentLength)
                 {
@@ -128,10 +128,11 @@ namespace WitherTorch.Common.IO.Internals
                 }
             }
 
+            nuint indexOfReal = indexOf.Value;
             fixed (byte* ptr = buffer)
             {
                 byte* iterator = ptr + currentPos;
-                byte* ptrEnd = iterator + indexOf;
+                byte* ptrEnd = iterator + indexOfReal;
                 while ((iterator = Utf8EncodingHelper.TryReadUtf8Character(iterator, ptrEnd, out uint unicodeValue)) != null)
                 {
                     if (Utf8EncodingHelper.ToUtf16Characters(unicodeValue, out char leadSurrogate, out char trailSurrogate))
@@ -144,7 +145,7 @@ namespace WitherTorch.Common.IO.Internals
                         builder.Append(leadSurrogate);
                     }
                 }
-                byte* ptrIndexOf = ptr + currentPos + indexOf;
+                byte* ptrIndexOf = ptr + currentPos + indexOfReal;
                 if (*ptrIndexOf == (byte)'\r')
                 {
                     ptrIndexOf++;

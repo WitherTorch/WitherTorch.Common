@@ -1,14 +1,11 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
-using System.Threading;
 
 using LocalsInit;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Text;
-using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.IO.Internals
 {
@@ -50,13 +47,13 @@ namespace WitherTorch.Common.IO.Internals
                 builder.SetStartPointer(stackBuffer, Limits.MaxStackallocChars);
             }
             nuint currentPos, currentLength;
-            nint indexOf;
+            nuint? indexOf;
 
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] charBuffer = pool.Rent(buffer.Length);
             try
             {
-                while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) < 0)
+                while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) is null)
                 {
                     if (currentPos < currentLength)
                     {
@@ -64,7 +61,7 @@ namespace WitherTorch.Common.IO.Internals
                         fixed (char* destination = charBuffer)
                         {
                             char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
-                            ReplaceNonAsciiCharacterToFallback(destination, destinationEnd);
+                            SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), Latin1EncodingHelper.AsciiEncodingLimit, '?');
                             builder.Append(destination, destinationEnd);
                         }
                         _bufferPos = currentLength;
@@ -77,15 +74,16 @@ namespace WitherTorch.Common.IO.Internals
                     }
                 }
 
+                nuint indexOfReal = indexOf.Value;
                 fixed (byte* source = buffer)
                 {
                     fixed (char* destination = charBuffer)
                     {
-                        char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOf, destination, destination + currentLength);
-                        ReplaceNonAsciiCharacterToFallback(destination, destinationEnd);
+                        char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOfReal, destination, destination + currentLength);
+                        SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), Latin1EncodingHelper.AsciiEncodingLimit, '?');
                         builder.Append(destination, destinationEnd);
                     }
-                    byte* ptrIndexOf = source + currentPos + indexOf;
+                    byte* ptrIndexOf = source + currentPos + indexOfReal;
                     if (*ptrIndexOf == (byte)'\r')
                     {
                         ptrIndexOf++;
@@ -130,7 +128,7 @@ namespace WitherTorch.Common.IO.Internals
                         fixed (char* destination = charBuffer)
                         {
                             char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
-                            ReplaceNonAsciiCharacterToFallback(destination, destinationEnd);
+                            SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), Latin1EncodingHelper.AsciiEncodingLimit, '?');
                             builder.Append(destination, destinationEnd);
                         }
                         _bufferPos = currentLength;
@@ -166,7 +164,7 @@ namespace WitherTorch.Common.IO.Internals
             {
                 fixed (byte* ptr = buffer)
                 {
-                    ReplaceNonAsciiCharacterToFallback(ptr, ptr + count);
+                    SequenceHelper.ReplaceGreaterThan(ptr, count, Latin1EncodingHelper.AsciiEncodingLimit_InByte, (byte)'?'); 
                     return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
                 }
             }
@@ -192,31 +190,13 @@ namespace WitherTorch.Common.IO.Internals
             {
                 fixed (byte* ptr = buffer)
                 {
-                    ReplaceNonAsciiCharacterToFallback(ptr, ptr + count);
+                    SequenceHelper.ReplaceGreaterThan(ptr, count, Latin1EncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
                     return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
                 }
             }
             finally
             {
                 pool.Return(buffer);
-            }
-        }
-
-        private static unsafe void ReplaceNonAsciiCharacterToFallback(char* ptr, char* ptrEnd)
-        {
-            while ((ptr = SequenceHelper.PointerIndexOfGreaterThan(ptr, ptrEnd, Latin1EncodingHelper.AsciiEncodingLimit)) != null)
-            {
-                *ptr = '?';
-                ptr++;
-            }
-        }
-
-        private static unsafe void ReplaceNonAsciiCharacterToFallback(byte* ptr, byte* ptrEnd)
-        {
-            while ((ptr = SequenceHelper.PointerIndexOfGreaterThan(ptr, ptrEnd, Latin1EncodingHelper.AsciiEncodingLimit_InByte)) != null)
-            {
-                *ptr = (byte)'?';
-                ptr++;
             }
         }
     }

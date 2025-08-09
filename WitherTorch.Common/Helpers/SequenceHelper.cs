@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Helpers
             => ptrResult < ptrBase ? -1 : unchecked((int)(ptrResult - ptrBase));
 
         [Inline(InlineBehavior.Remove)]
-        private static nint ConvertToIndexNative<T>(T* ptrResult, T* ptrBase)
-            => ptrResult < ptrBase ? -1 : unchecked((int)(ptrResult - ptrBase));
+        private static nuint? ConvertToIndexNative<T>(T* ptrResult, T* ptrBase)
+            => ptrResult < ptrBase ? null : unchecked((nuint)(ptrResult - ptrBase));
     }
 }
