@@ -34,22 +34,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetStartPointer(in Span<char> span)
-        {
-            char* ptr = UnsafeHelper.AsPointerRef(ref span.GetPinnableReference());
-            int length = span.Length;
-            SetStartPointer(ptr, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetStartPointer(in ReadOnlySpan<char> span)
-        {
-            char* ptr = UnsafeHelper.AsPointerIn(in span.GetPinnableReference());
-            int length = span.Length;
-            SetStartPointer(ptr, length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecuritySafeCritical]
         public void Append(char value)
         {

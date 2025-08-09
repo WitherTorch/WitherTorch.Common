@@ -7,10 +7,9 @@ using InlineMethod;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Threading;
 using WitherTorch.Common.Buffers;
-using System.IO;
+
 using LocalsInit;
-
-
+using WitherTorch.Common.Text;
 
 
 #if NET6_0_OR_GREATER
@@ -98,6 +97,14 @@ namespace WitherTorch.Common.Extensions
                 return false;
             return chars.Contains(str[0]);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static StringBase ToStringBase(this string _this)
+            => ToStringBase(_this, WTCommon.StringCreateOptions);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase ToStringBase(this string _this, StringCreateOptions options)
+            => StringBase.Create(_this, options);
 
         public static string[] ToUpperAscii(this string[] array)
         {

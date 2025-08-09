@@ -80,6 +80,34 @@ namespace WitherTorch.Common.UnitTest
         }
 
         [Fact]
+        public void ContainsAsciiPartTest()
+        {
+            string target = CreateRandomString(10, 200);
+            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
+
+            int length = target.Length;
+            int sideLeftLength = MathHelper.CeilDiv(length, 2);
+            char c = target[new Random().Next(sideLeftLength)];
+            _output.WriteLine($"Target character: {c}");
+            Assert.Equal(testing.Contains(c), target.Contains(c));
+        }
+
+        [Fact]
+        public void ContainsBmpPartTest()
+        {
+            string target = CreateRandomString(10, 200);
+            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
+
+            int length = target.Length;
+            int sideLeftLength = MathHelper.CeilDiv(length, 2);
+            char c = target[sideLeftLength+ new Random().Next(length - sideLeftLength)];
+            _output.WriteLine($"Target character: {c}");
+            Assert.Equal(testing.Contains(c), target.Contains(c));
+        }
+
+        [Fact]
         public void ToStringTest()
         {
             string target = CreateRandomString(10, 200);

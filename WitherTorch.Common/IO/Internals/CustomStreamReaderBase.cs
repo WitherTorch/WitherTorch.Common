@@ -10,7 +10,7 @@ using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.IO.Internals
 {
-    internal abstract class CustomStreamReaderBase : IStreamReader
+    internal abstract partial class CustomStreamReaderBase : IStreamReader
     {
         private readonly Stream _stream;
         private readonly byte[] _buffer;
@@ -70,7 +70,7 @@ namespace WitherTorch.Common.IO.Internals
         public string ReadToEnd()
         {
             lock (_syncLock)
-                return ReadToEndCore(_buffer);  
+                return ReadToEndCore(_buffer);
         }
 
         public StringBase ReadToEndAsStringBase()
@@ -129,65 +129,29 @@ namespace WitherTorch.Common.IO.Internals
             return unchecked((nuint)length);
         }
 
-        public async Task<int> PeekAsync() => await PeekAsync(CancellationToken.None);
+        public Task<int> PeekAsync()
+            => Task<int>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).Peek(), this, 
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public async ValueTask<int> PeekAsync(CancellationToken token)
-        {
-            await Task.Yield();
-            if (token.IsCancellationRequested)
-                return -1;
-            return Peek();
-        }
+        public Task<int> ReadAsync() 
+            => Task<int>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).Read(), this,
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public async Task<int> ReadAsync() => await ReadAsync(CancellationToken.None);
+        public Task<string?> ReadLineAsync()
+            => Task<string?>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadLine(), this,
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public async ValueTask<int> ReadAsync(CancellationToken token)
-        {
-            await Task.Yield();
-            if (token.IsCancellationRequested)
-                return -1;
-            return Read();
-        }
+        public Task<StringBase?> ReadLineAsStringBaseAsync() 
+            => Task<StringBase?>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadLineAsStringBase(), this,
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public async Task<string?> ReadLineAsync() => await ReadLineAsync(CancellationToken.None);
+        public Task<string> ReadToEndAsync() 
+            => Task<string>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadToEnd(), this,
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public async ValueTask<string?> ReadLineAsync(CancellationToken token)
-        {
-            await Task.Yield();
-            if (token.IsCancellationRequested)
-                return null;
-            return ReadLine();
-        }
-
-        public async Task<StringBase?> ReadLineAsStringBaseAsync() => await ReadLineAsStringBaseAsync(CancellationToken.None);
-
-        public async ValueTask<StringBase?> ReadLineAsStringBaseAsync(CancellationToken token)
-        {
-            await Task.Yield();
-            if (token.IsCancellationRequested)
-                return null;
-            return ReadLineAsStringBase();
-        }
-
-        public async Task<string> ReadToEndAsync() => await ReadToEndAsync(CancellationToken.None);
-
-        public async ValueTask<string> ReadToEndAsync(CancellationToken token)
-        {
-            await Task.Yield();
-            if (token.IsCancellationRequested)
-                return string.Empty;
-            return ReadToEnd();
-        }
-
-        public async Task<StringBase> ReadToEndAsStringBaseAsync() => await ReadToEndAsStringBaseAsync(CancellationToken.None);
-
-        public async ValueTask<StringBase> ReadToEndAsStringBaseAsync(CancellationToken token)
-        {
-            await Task.Yield();
-            if (token.IsCancellationRequested)
-                return StringBase.Empty;
-            return ReadToEndAsStringBase();
-        }
+        public Task<StringBase> ReadToEndAsStringBaseAsync()
+            => Task<StringBase>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadToEndAsStringBase(), this,
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
         ~CustomStreamReaderBase() => Dispose(disposing: false);
 
@@ -205,7 +169,7 @@ namespace WitherTorch.Common.IO.Internals
             DisposeCore(disposing);
         }
 
-        protected void DisposeCore(bool disposing)
+        protected virtual void DisposeCore(bool disposing)
         {
             if (_leaveOpen)
                 return;

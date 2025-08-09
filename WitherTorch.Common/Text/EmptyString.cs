@@ -6,6 +6,9 @@ using WitherTorch.Common.Buffers;
 namespace WitherTorch.Common.Text
 {
     internal sealed class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>
+#if NET8_0_OR_GREATER
+        , IMemoryReference<char>, IMemoryReference<byte>
+#endif
     {
         private static readonly EmptyString _instance = new EmptyString();
 
@@ -76,16 +79,19 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<char>.GetPinnedLength() => 0;
 
-        ReadOnlyMemory<char> IPinnableReference<char>.AsMemory() => ReadOnlyMemory<char>.Empty;
-
-        ReadOnlySpan<char> IPinnableReference<char>.AsSpan() => ReadOnlySpan<char>.Empty;
-
         ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _zeroByte;
 
         nuint IPinnableReference<byte>.GetPinnedLength() => 0;
 
-        ReadOnlyMemory<byte> IPinnableReference<byte>.AsMemory() => ReadOnlyMemory<byte>.Empty;
+#if NET8_0_OR_GREATER
+
+        ReadOnlySpan<char> IPinnableReference<char>.AsSpan() => ReadOnlySpan<char>.Empty;
 
         ReadOnlySpan<byte> IPinnableReference<byte>.AsSpan() => ReadOnlySpan<byte>.Empty;
+
+        ReadOnlyMemory<char> IMemoryReference<char>.AsMemory() => ReadOnlyMemory<char>.Empty;
+
+        ReadOnlyMemory<byte> IMemoryReference<byte>.AsMemory() => ReadOnlyMemory<byte>.Empty;
+#endif
     }
 }
