@@ -1,20 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using InlineMethod;
+
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>
-#if NET8_0_OR_GREATER
-        , IMemoryReference<char>, IMemoryReference<byte>
-#endif
+    internal sealed partial class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>, 
+        IHolder<byte[]>, IHolder<char[]>,
+        IHolder<ArraySegment<byte>>, IHolder<ArraySegment<char>>
     {
         private static readonly EmptyString _instance = new EmptyString();
 
         public static EmptyString Instance => _instance;
 
-        private readonly byte _zeroByte = 0;
+        private readonly char _zeroChar = '\0';
 
         public override StringType StringType => StringType.Utf16;
         public override int Length => 0;
@@ -75,23 +77,30 @@ namespace WitherTorch.Common.Text
 
         public override string ToString() => string.Empty;
 
-        ref readonly char IPinnableReference<char>.GetPinnableReference() => ref CLRStringHelper.GetPinnableReference(string.Empty);
+        ref readonly char IPinnableReference<char>.GetPinnableReference() => ref _zeroChar;
 
         nuint IPinnableReference<char>.GetPinnedLength() => 0;
 
-        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _zeroByte;
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref UnsafeHelper.As<char, byte>(ref UnsafeHelper.AsRefIn(in _zeroChar));
 
         nuint IPinnableReference<byte>.GetPinnedLength() => 0;
 
+        byte[] IHolder<byte[]>.Value => Array.Empty<byte>();
+
+        char[] IHolder<char[]>.Value => Array.Empty<char>();
+
+        ArraySegment<byte> IHolder<ArraySegment<byte>>.Value => GetEmptySegment<byte>();
+
+        ArraySegment<char> IHolder<ArraySegment<char>>.Value => GetEmptySegment<char>();
+
+        [Inline(InlineBehavior.Remove)]
+        private static ArraySegment<T> GetEmptySegment<T>()
+        {
 #if NET8_0_OR_GREATER
-
-        ReadOnlySpan<char> IPinnableReference<char>.AsSpan() => ReadOnlySpan<char>.Empty;
-
-        ReadOnlySpan<byte> IPinnableReference<byte>.AsSpan() => ReadOnlySpan<byte>.Empty;
-
-        ReadOnlyMemory<char> IMemoryReference<char>.AsMemory() => ReadOnlyMemory<char>.Empty;
-
-        ReadOnlyMemory<byte> IMemoryReference<byte>.AsMemory() => ReadOnlyMemory<byte>.Empty;
+            return ArraySegment<T>.Empty;
+#else
+            return new ArraySegment<T>(Array.Empty<T>(), 0, 0);
 #endif
+        }
     }
 }

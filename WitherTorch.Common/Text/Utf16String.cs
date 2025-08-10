@@ -6,11 +6,8 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf16String : StringBase, IPinnableReference<char>
-#if NET8_0_OR_GREATER
-        , IMemoryReference<char>
-#endif
-
+    internal sealed partial class Utf16String : StringBase, IPinnableReference<char>,
+        IHolder<string>
     {
         private readonly string _value;
 
@@ -92,10 +89,6 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<char>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length);
 
-#if NET8_0_OR_GREATER
-        ReadOnlySpan<char> IPinnableReference<char>.AsSpan() => _value.AsSpan();
-
-        ReadOnlyMemory<char> IMemoryReference<char>.AsMemory() => _value.AsMemory();
-#endif
+        string IHolder<string>.Value => _value;
     }
 }

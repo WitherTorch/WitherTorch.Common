@@ -8,10 +8,8 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Latin1String : StringBase, IPinnableReference<byte>
-#if NET8_0_OR_GREATER
-        , IMemoryReference<byte>
-#endif
+    internal sealed partial class Latin1String : StringBase, IPinnableReference<byte>,
+        IHolder<ArraySegment<byte>>
     {
         private static readonly nuint MaxLatin1StringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
 
@@ -155,23 +153,6 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length - 1);
 
-#if NET8_0_OR_GREATER
-        ReadOnlySpan<byte> IPinnableReference<byte>.AsSpan()
-        {
-            byte[] value = _value;
-            int length = value.Length;
-            if (length <= 0)
-                return ReadOnlySpan<byte>.Empty;
-            return new ReadOnlySpan<byte>(value, 0, length - 1);
-        }
-        ReadOnlyMemory<byte> IMemoryReference<byte>.AsMemory()
-        {
-            byte[] value = _value;
-            int length = value.Length;
-            if (length <= 0)
-                return ReadOnlyMemory<byte>.Empty;
-            return new ReadOnlyMemory<byte>(value, 0, length - 1);
-        }
-#endif
+        ArraySegment<byte> IHolder<ArraySegment<byte>>.Value => new ArraySegment<byte>(_value, 0, _length);
     }
 }
