@@ -9,12 +9,12 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    unsafe partial class Latin1String
+    unsafe partial class AsciiLikeString
     {
         private static class HashingHelper
         {
             private static readonly delegate* managed<ReadOnlySpan<byte>, ulong, int> _computeHash32Func;
-            private static readonly delegate* managed<Latin1String, int> _hashingFunc;
+            private static readonly delegate* managed<AsciiLikeString, int> _hashingFunc;
             private static readonly ulong _hashingSeed;
 
             static HashingHelper()
@@ -52,13 +52,12 @@ namespace WitherTorch.Common.Text
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static int GetHashCode(Latin1String str) => _hashingFunc(str);
+            public static int GetHashCode(AsciiLikeString str) => _hashingFunc(str);
 
-            private static int FallbackHashingFunction(Latin1String str) => str.ToString().GetHashCode();
+            private static int FallbackHashingFunction(AsciiLikeString str) => str.ToString().GetHashCode();
 
-            private static int MarvinHashingFunction(Latin1String str)
+            private static int MarvinHashingFunction(AsciiLikeString str)
             {
-                byte[] value = str._value;
                 int length = str._length;
                 if (length <= 0)
                     return string.Empty.GetHashCode();
@@ -66,11 +65,10 @@ namespace WitherTorch.Common.Text
                 char[] buffer = pool.Rent(length);
                 try
                 {
-                    fixed (byte* ptrSource = value)
-                    fixed (char* ptrBuffer = buffer)
+                    fixed (char* destination = buffer)
                     {
-                        Latin1EncodingHelper.WriteToUtf16BufferCore(ptrSource, ptrBuffer, unchecked((nuint)length));
-                        return _computeHash32Func(new ReadOnlySpan<byte>(ptrBuffer, length * sizeof(char)), _hashingSeed);
+                        str.CopyToCore(destination, 0, unchecked((nuint)length));
+                        return _computeHash32Func(new ReadOnlySpan<byte>(destination, length * sizeof(char)), _hashingSeed);
                     }
                 }
                 finally

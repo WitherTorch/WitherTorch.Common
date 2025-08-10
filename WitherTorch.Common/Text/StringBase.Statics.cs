@@ -176,6 +176,32 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase CreateAsciiString(byte* ptr)
+        {
+            if (*ptr == default)
+                return Empty;
+            return AsciiString.Create(ptr);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase CreateAsciiString(byte* ptr, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            return CreateAsciiString(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe StringBase CreateAsciiString(byte* ptr, nuint startIndex, nuint count)
+        {
+            if (count == 0)
+                return Empty;
+            return AsciiString.Create(ptr + startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe StringBase CreateUtf8String(byte* ptr)
         {
             if (*ptr == default)

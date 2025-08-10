@@ -6,11 +6,11 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    public static partial class Latin1EncodingHelper
+    public static partial class AsciiEncodingHelper
     {
-        // Latin-1 編碼邊界
-        public const char Latin1EncodingLimit = '\u00FF';
-        public const byte Latin1EncodingLimit_InByte = 0x00FF;
+        // ASCII 編碼邊界
+        public const char AsciiEncodingLimit = '\u007F';
+        public const byte AsciiEncodingLimit_InByte = 0x007F;
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe int GetWorstCaseForEncodeLength(int length) => length;
@@ -36,8 +36,8 @@ namespace WitherTorch.Common.Text
             if (sourceLength == 0 || destinationLength == 0)
                 return destination;
             nuint length = MathHelper.Min(sourceLength, destinationLength);
-            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingLimit))
-                return ReadFromUtf16BufferCore_OutOfLatin1Range(source, destination, length);
+            if (SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingLimit))
+                return ReadFromUtf16BufferCore_OutOfAsciiRange(source, destination, length);
             return ReadFromUtf16BufferCore(source, destination, length);
         }
 
@@ -47,8 +47,8 @@ namespace WitherTorch.Common.Text
             if (sourceEnd <= source || destinationEnd <= destination)
                 return destination;
             nuint length = MathHelper.Min(unchecked((nuint)(sourceEnd - source)), unchecked((nuint)(destinationEnd - destination)));
-            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingLimit))
-                return ReadFromUtf16BufferCore_OutOfLatin1Range(source, destination, length);
+            if (SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingLimit))
+                return ReadFromUtf16BufferCore_OutOfAsciiRange(source, destination, length);
             return ReadFromUtf16BufferCore(source, destination, length);
         }
 

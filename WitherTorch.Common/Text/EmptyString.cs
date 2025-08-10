@@ -49,15 +49,21 @@ namespace WitherTorch.Common.Text
 
         protected override StringBase RemoveCore(nuint startIndex, nuint count) => this;
 
-        protected override nuint GetSplitCount(char separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
+        protected override nuint GetSplitCount(char separator, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
-            sliceBuffer = null;
+            rangeBuffer = null;
             return 1;
         }
 
-        protected override nuint GetSplitCount(string separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
+        protected override nuint GetSplitCount(string separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
-            sliceBuffer = null;
+            rangeBuffer = null;
+            return 1;
+        }
+
+        protected override nuint GetSplitCount(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+        {
+            rangeBuffer = null;
             return 1;
         }
 

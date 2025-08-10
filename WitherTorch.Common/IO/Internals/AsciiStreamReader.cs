@@ -61,7 +61,7 @@ namespace WitherTorch.Common.IO.Internals
                         fixed (char* destination = charBuffer)
                         {
                             char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
-                            SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), Latin1EncodingHelper.AsciiEncodingLimit, '?');
+                            SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
                             builder.Append(destination, destinationEnd);
                         }
                         _bufferPos = currentLength;
@@ -80,7 +80,7 @@ namespace WitherTorch.Common.IO.Internals
                     fixed (char* destination = charBuffer)
                     {
                         char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOfReal, destination, destination + currentLength);
-                        SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), Latin1EncodingHelper.AsciiEncodingLimit, '?');
+                        SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
                         builder.Append(destination, destinationEnd);
                     }
                     byte* ptrIndexOf = source + currentPos + indexOfReal;
@@ -127,8 +127,8 @@ namespace WitherTorch.Common.IO.Internals
                         fixed (byte* source = buffer)
                         fixed (char* destination = charBuffer)
                         {
-                            char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
-                            SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), Latin1EncodingHelper.AsciiEncodingLimit, '?');
+                            char* destinationEnd = AsciiEncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
+                            SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
                             builder.Append(destination, destinationEnd);
                         }
                         _bufferPos = currentLength;
@@ -163,10 +163,7 @@ namespace WitherTorch.Common.IO.Internals
             try
             {
                 fixed (byte* ptr = buffer)
-                {
-                    SequenceHelper.ReplaceGreaterThan(ptr, count, Latin1EncodingHelper.AsciiEncodingLimit_InByte, (byte)'?'); 
-                    return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
-                }
+                    return StringBase.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
             }
             finally
             {
@@ -189,10 +186,7 @@ namespace WitherTorch.Common.IO.Internals
             try
             {
                 fixed (byte* ptr = buffer)
-                {
-                    SequenceHelper.ReplaceGreaterThan(ptr, count, Latin1EncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
-                    return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
-                }
+                    return StringBase.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
             }
             finally
             {

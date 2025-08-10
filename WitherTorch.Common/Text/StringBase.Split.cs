@@ -12,19 +12,19 @@ namespace WitherTorch.Common.Text
 
         public StringBase[] Split(char separator, StringSplitOptions options)
         {
-            ArrayPool<StringSlice> slicePool = ArrayPool<StringSlice>.Shared;
-            StringSlice[]? sliceBuffer = null;
+            ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
+            SplitRange[]? rangeBuffer = null;
             try
             {
-                nuint splitCount = GetSplitCount(separator, slicePool, out sliceBuffer);
+                nuint splitCount = GetSplitCount(separator, rangePool, out rangeBuffer);
                 if (ShouldRemoveEmptyEntries(options))
-                    return SplitCore_RemoveEmptyEntries(sliceBuffer, splitCount);
-                return SplitCore(sliceBuffer, splitCount);
+                    return SplitCore_RemoveEmptyEntries(rangeBuffer, splitCount);
+                return SplitCore(rangeBuffer, splitCount);
             }
             finally
             {
-                if (sliceBuffer is not null)
-                    slicePool.Return(sliceBuffer);
+                if (rangeBuffer is not null)
+                    rangePool.Return(rangeBuffer);
             }
         }
 
@@ -32,36 +32,67 @@ namespace WitherTorch.Common.Text
 
         public StringBase[] Split(string separator, StringSplitOptions options)
         {
-            ArrayPool<StringSlice> slicePool = ArrayPool<StringSlice>.Shared;
-            StringSlice[]? sliceBuffer = null;
+            int separatorLength = separator.Length;
+            if (separatorLength <= 0)
+                return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringBase>() : [this];
+
+            ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
+            SplitRange[]? rangeBuffer = null;
             try
             {
-                nuint splitCount = GetSplitCount(separator, slicePool, out sliceBuffer);
+                nuint splitCount = GetSplitCount(separator, unchecked((nuint)separatorLength), rangePool, out rangeBuffer);
                 if (ShouldRemoveEmptyEntries(options))
-                    return SplitCore_RemoveEmptyEntries(sliceBuffer, splitCount);
-                return SplitCore(sliceBuffer, splitCount);
+                    return SplitCore_RemoveEmptyEntries(rangeBuffer, splitCount);
+                return SplitCore(rangeBuffer, splitCount);
             }
             finally
             {
-                if (sliceBuffer is not null)
-                    slicePool.Return(sliceBuffer);
+                if (rangeBuffer is not null)
+                    rangePool.Return(rangeBuffer);
             }
         }
 
-        private StringBase[] SplitCore(StringSlice[]? sliceBuffer, nuint count)
+        public StringBase[] Split(StringBase separator) => Split(separator, StringSplitOptions.None);
+
+        public StringBase[] Split(StringBase separator, StringSplitOptions options)
         {
-            if (count < 2 || sliceBuffer is null)
+            int separatorLength = separator.Length;
+            if (separatorLength <= 0)
+                return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringBase>() : [this];
+
+            ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
+            SplitRange[]? rangeBuffer = null;
+            try
+            {
+                nuint splitCount = GetSplitCount(separator, unchecked((nuint)separatorLength), rangePool, out rangeBuffer);
+                if (ShouldRemoveEmptyEntries(options))
+                    return SplitCore_RemoveEmptyEntries(rangeBuffer, splitCount);
+                return SplitCore(rangeBuffer, splitCount);
+            }
+            finally
+            {
+                if (rangeBuffer is not null)
+                    rangePool.Return(rangeBuffer);
+            }
+        }
+
+        private StringBase[] SplitCore(SplitRange[]? rangeBuffer, nuint count)
+        {
+            if (count < 2 || rangeBuffer is null)
                 return [this];
 
             StringBase[] result = new StringBase[count];
             for (nuint i = 0; i < count; i++)
-                result[i] = sliceBuffer[i].ToStringBase();
+            {
+                SplitRange range = rangeBuffer[i];
+                result[i] = SubstringCore(range.StartIndex, range.Count);
+            }
             return result;
         }
 
-        private StringBase[] SplitCore_RemoveEmptyEntries(StringSlice[]? sliceBuffer, nuint count)
+        private StringBase[] SplitCore_RemoveEmptyEntries(SplitRange[]? rangeBuffer, nuint count)
         {
-            if (count < 2 || sliceBuffer is null)
+            if (count < 2 || rangeBuffer is null)
             {
                 if (Length <= 0)
                     return Array.Empty<StringBase>();
@@ -74,7 +105,8 @@ namespace WitherTorch.Common.Text
             {
                 for (nuint i = 0; i < count; i++)
                 {
-                    StringBase slicedString = sliceBuffer[i].ToStringBase();
+                    SplitRange range = rangeBuffer[i];
+                    StringBase slicedString = SubstringCore(range.StartIndex, range.Count);
                     if (IsNullOrEmpty(slicedString))
                     {
                         buffer[i] = null;
@@ -101,12 +133,12 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        protected abstract nuint GetSplitCount(char separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer);
+        protected abstract nuint GetSplitCount(char separator, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer);
 
-        protected abstract nuint GetSplitCount(string separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer);
+        protected abstract nuint GetSplitCount(string separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer);
 
-        protected virtual nuint GetSplitCount(StringBase separator, ArrayPool<StringSlice> pool, out StringSlice[]? sliceBuffer)
-            => GetSplitCount(separator.ToString(), pool, out sliceBuffer);
+        protected virtual nuint GetSplitCount(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+            => GetSplitCount(separator.ToString(), separatorLength, pool, out rangeBuffer);
 
         [Inline(InlineBehavior.Remove)]
         private static bool ShouldRemoveEmptyEntries(StringSplitOptions options)

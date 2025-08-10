@@ -1,8 +1,8 @@
 ﻿namespace WitherTorch.Common.Text
 {
-    partial class Latin1EncodingHelper
+    partial class AsciiEncodingHelper
     {
-        internal static unsafe partial byte* ReadFromUtf16BufferCore_OutOfLatin1Range(char* source, byte* destination, nuint length);
+        internal static unsafe partial byte* ReadFromUtf16BufferCore_OutOfAsciiRange(char* source, byte* destination, nuint length);
 
         internal static unsafe partial byte* ReadFromUtf16BufferCore(char* source, byte* destination, nuint length);
 

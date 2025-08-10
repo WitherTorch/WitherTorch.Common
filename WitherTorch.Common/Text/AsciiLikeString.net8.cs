@@ -3,7 +3,7 @@ using System;
 
 namespace WitherTorch.Common.Text
 {
-    partial class Latin1String : IHolder<ReadOnlyMemory<byte>>
+    partial class AsciiLikeString : IHolder<ReadOnlyMemory<byte>>
     {
         ReadOnlyMemory<byte> IHolder<ReadOnlyMemory<byte>>.Value
         {

@@ -599,6 +599,13 @@ namespace WitherTorch.Common.Helpers
             return ref IL.ReturnRef<T>();
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void SkipInit<T>(out T value)
+        {
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
 #pragma warning disable CS8500
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T NullRef<T>()

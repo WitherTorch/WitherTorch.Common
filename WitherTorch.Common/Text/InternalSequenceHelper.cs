@@ -1,17 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+using InlineMethod;
+
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal static class InternalSequenceHelper
+    internal static partial class InternalSequenceHelper
     {
-        public static unsafe int CompareTo<T>(T* ptrA, T* ptrB, nuint length) where T : unmanaged
+        private static unsafe int LegacyCompareTo<T>(T* ptr, T* ptrEnd, T* ptrB) where T : unmanaged
         {
-            for (nuint i = 0; i < length; i++)
+            for (; ptr < ptrEnd; ptr++, ptrB++)
             {
-                int comparison = CompareTo(ptrA[i], ptrB[i]);
+                int comparison = CompareTo(*ptr, *ptrB);
                 if (comparison != 0)
                     return MathHelper.Sign(comparison);
             }
@@ -19,7 +21,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int CompareTo<T>(T a, T b)
+        private static int CompareTo<T>(T a, T b) where T : unmanaged
         {
             if (typeof(T) == typeof(byte))
                 return UnsafeHelper.As<T, byte>(a).CompareTo(UnsafeHelper.As<T, byte>(b));
@@ -64,6 +66,15 @@ namespace WitherTorch.Common.Text
             return PointerIndexOfCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value, valueLength);
         }
 
+        public static unsafe bool Contains<T>(T* ptr, nuint count, T* value, nuint valueLength) where T : unmanaged
+        {
+            DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
+            if (valueLength == 1)
+                return SequenceHelper.Contains(ptr, count, *value);
+
+            return PointerIndexOfCore(ptr, count, value, valueLength) != null;
+        }
+
         public static unsafe T* PointerIndexOf<T>(T* ptr, nuint count, T* value, nuint valueLength) where T : unmanaged
         {
             DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
@@ -88,5 +99,9 @@ namespace WitherTorch.Common.Text
             }
             return null;
         }
+
+        [Inline(InlineBehavior.Remove)]
+        public static unsafe int ConvertToIndex32<T>(T* ptrResult, T* ptrBase) where T : unmanaged
+            => ptrResult < ptrBase ? -1 : unchecked((int)(ptrResult - ptrBase));
     }
 }

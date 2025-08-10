@@ -5,7 +5,7 @@ using WitherTorch.Common.Buffers;
 
 namespace WitherTorch.Common.Text
 {
-    internal static class Latin1StringHelper
+    internal static class AsciiLikeStringHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe int CompareTo_Utf16(byte* a, char* b, nuint length)
@@ -53,36 +53,6 @@ namespace WitherTorch.Common.Text
                 fixed (char* ptrBuffer = buffer)
                 {
                     Latin1EncodingHelper.WriteToUtf16BufferCore(value, ptrBuffer, valueLength);
-                    return InternalSequenceHelper.PointerIndexOf(ptr, count, ptrBuffer, valueLength);
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        public static unsafe byte* PointerIndexOf(byte* ptr, nuint count, char* value, nuint valueLength)
-        {
-            DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
-            if (valueLength == 1)
-            {
-                char valueHead = *value;
-                if (valueHead > Latin1EncodingHelper.Latin1EncodingLimit)
-                    return null;
-                return SequenceHelper.PointerIndexOf(ptr, count, unchecked((byte)valueHead));
-            }
-
-            if (SequenceHelper.ContainsGreaterThan(value, valueLength, unchecked((char)byte.MaxValue)))
-                return null;
-
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(valueLength);
-            try
-            {
-                fixed (byte* ptrBuffer = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(value, ptrBuffer, valueLength);
                     return InternalSequenceHelper.PointerIndexOf(ptr, count, ptrBuffer, valueLength);
                 }
             }

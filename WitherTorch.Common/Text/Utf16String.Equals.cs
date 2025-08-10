@@ -14,46 +14,18 @@ namespace WitherTorch.Common.Text
         protected override bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
             => other switch
             {
-                Utf16String utf16 => PartiallyEqualsCore(utf16._value, startIndex, count),
-                _ => PartiallyEqualsCoreForOther(other, startIndex, count),
+                Utf16String utf16 => PartiallyEqualsCore(utf16, startIndex, count),
+                _ => PartiallyEqualsCore_Other(other, startIndex, count),
             };
 
-        private unsafe bool PartiallyEqualsCore(char* other, nuint startIndex, nuint count)
+        public override unsafe int CompareToCore(string other)
         {
-            fixed (char* ptr = _value)
-                return SequenceHelper.Equals(ptr + startIndex, other, count);
-        }
-
-        private unsafe bool PartiallyEqualsCoreForOther(StringBase other, nuint startIndex, nuint count)
-        {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
-            try
-            {
-                unchecked
-                {
-                    fixed (char* ptrBuffer = buffer)
-                    {
-                        other.CopyTo(ptrBuffer, (int)startIndex, (int)count);
-                        fixed (char* ptrSource = _value)
-                            return SequenceHelper.Equals(ptrSource + startIndex, ptrBuffer, count);
-                    }
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        public override int CompareToCore(string other)
-        {
-            string value = _value;
-            int length = value.Length;
+            int length = _value.Length;
             int result = other.Length.CompareTo(length);
             if (result != 0 || length <= 0)
                 return result;
-            return CompareToCoreUtf16(value, other, unchecked((nuint)length));
+            fixed (char* ptr = other)
+                return CompareToCore(ptr, unchecked((nuint)length));
         }
 
         public override int CompareToCore(StringBase other)
@@ -65,102 +37,123 @@ namespace WitherTorch.Common.Text
                 return result;
             return other switch
             {
-                Utf16String utf16 => CompareToCoreUtf16(value, utf16._value, unchecked((nuint)length)),
-                Latin1String latin1 => CompareToCoreLatin1(value, latin1.GetInternalRepresentation(), unchecked((nuint)length)),
-                Utf8String utf8 => CompareToCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length)),
-                _ => CompareToCoreOther(value, other, unchecked((nuint)length)),
+                Utf16String utf16 => CompareToCore(utf16, unchecked((nuint)length)),
+                _ => CompareToCore_Other(other, unchecked((nuint)length)),
             };
         }
 
-        public override bool EqualsCore(string other)
+        public override unsafe bool EqualsCore(string other)
         {
-            string value = _value;
-            int length = value.Length;
+            int length = _value.Length;
             if (length != other.Length)
                 return false;
             if (length <= 0)
                 return true;
-            return EqualsCoreUtf16(value, other, unchecked((nuint)length));
+            fixed (char* ptr = other)
+                return EqualsCore(ptr, unchecked((nuint)length));
         }
 
         public override bool EqualsCore(StringBase other)
         {
-            string value = _value;
-            int length = value.Length;
+            int length = _value.Length;
             if (length != other.Length)
                 return false;
             if (length <= 0)
                 return true;
             return other switch
             {
-                Utf16String utf16 => EqualsCoreUtf16(value, utf16._value, unchecked((nuint)length)),
-                Latin1String latin1 => EqualsCoreLatin1(value, latin1.GetInternalRepresentation(), unchecked((nuint)length)),
-                Utf8String utf8 => EqualsCoreUtf8(value, utf8.GetInternalRepresentation(), unchecked((nuint)length)),
-                _ => EqualsCoreOther(value, other, unchecked((nuint)length)),
+                Utf16String utf16 => EqualsCore(utf16, unchecked((nuint)length)),
+                _ => EqualsCore_Other(other, unchecked((nuint)length)),
             };
         }
 
-        private static unsafe int CompareToCoreLatin1(string a, byte[] b, nuint length)
+        private unsafe bool PartiallyEqualsCore(Utf16String other, nuint startIndex, nuint count)
         {
-            fixed (char* ptrA = a)
-            fixed (byte* ptrB = b)
-                return -Latin1StringHelper.CompareTo_Utf16(ptrB, ptrA, length);
+            fixed (char* ptr = other._value)
+                return PartiallyEqualsCore(ptr, startIndex, count);
         }
 
-        private static unsafe int CompareToCoreUtf8(string a, byte[] b, nuint length)
+        private unsafe bool PartiallyEqualsCore(char* other, nuint startIndex, nuint count)
         {
-            fixed (char* ptrA = a)
-            fixed (byte* ptrB = b)
-                return -Utf8StringHelper.CompareTo_Utf16(ptrB, ptrA, length);
+            fixed (char* source = _value)
+                return SequenceHelper.Equals(source + startIndex, other, count);
         }
 
-        private static unsafe int CompareToCoreUtf16(string a, string b, nuint length)
-        {
-            fixed (char* ptrA = a, ptrB = b)
-                return InternalSequenceHelper.CompareTo(ptrA, ptrB, length);
-        }
-
-        private static unsafe int CompareToCoreOther(string a, StringBase b, nuint length)
+        private unsafe bool PartiallyEqualsCore_Other(StringBase other, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(length);
-            fixed (char* ptrBuffer = buffer)
+            char[] buffer = pool.Rent(count);
+            try
             {
-                b.CopyToCore(ptrBuffer, 0, length);
-                fixed (char* ptrA = a)
-                    return InternalSequenceHelper.CompareTo(ptrA, ptrBuffer, length);
+                fixed (char* temp = buffer)
+                {
+                    other.CopyToCore(temp, 0, count);
+                    return PartiallyEqualsCore(temp, startIndex, count);
+                }
+            }
+            finally
+            {
+                pool.Return(buffer);
             }
         }
 
-        private static unsafe bool EqualsCoreLatin1(string a, byte[] b, nuint length)
+        private unsafe int CompareToCore(Utf16String other, nuint length)
         {
-            fixed (char* ptrA = a)
-            fixed (byte* ptrB = b)
-                return Latin1StringHelper.Equals_Utf16(ptrB, ptrA, length);
+            fixed (char* ptr = other._value)
+                return CompareToCore(ptr, length);
         }
 
-        private static unsafe bool EqualsCoreUtf8(string a, byte[] b, nuint length)
+        private unsafe int CompareToCore(char* other, nuint length)
         {
-            fixed (char* ptrA = a)
-            fixed (byte* ptrB = b)
-                return Utf8StringHelper.Equals_Utf16(ptrB, ptrA, length);
+            fixed (char* source = _value)
+                return InternalSequenceHelper.CompareTo(source, other, length);
         }
 
-        private static unsafe bool EqualsCoreUtf16(string a, string b, nuint length)
-        {
-            fixed (char* ptrA = a, ptrB = b)
-                return SequenceHelper.Equals(ptrA, ptrB, length);
-        }
-
-        private static unsafe bool EqualsCoreOther(string a, StringBase b, nuint length)
+        private unsafe int CompareToCore_Other(StringBase other, nuint length)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(length);
-            fixed (char* ptrBuffer = buffer)
+            try
             {
-                b.CopyToCore(ptrBuffer, 0, length);
-                fixed (char* ptrA = a)
-                    return SequenceHelper.Equals(ptrA, ptrBuffer, length);
+                fixed (char* temp = buffer)
+                {
+                    other.CopyToCore(temp, 0, length);
+                    return CompareToCore(temp, length);
+                }
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
+        }
+
+        private unsafe bool EqualsCore(Utf16String other, nuint length)
+        {
+            fixed (char* ptr = other._value)
+                return EqualsCore(ptr, length);
+        }
+
+        private unsafe bool EqualsCore(char* other, nuint length)
+        {
+            fixed (char* source = _value)
+                return SequenceHelper.Equals(source, other, length);
+        }
+
+        private unsafe bool EqualsCore_Other(StringBase other, nuint length)
+        {
+            ArrayPool<char> pool = ArrayPool<char>.Shared;
+            char[] buffer = pool.Rent(length);
+            try
+            {
+                fixed (char* temp = buffer)
+                {
+                    other.CopyToCore(temp, 0, length);
+                    return EqualsCore(temp, length);
+                }
+            }
+            finally
+            {
+                pool.Return(buffer);
             }
         }
     }

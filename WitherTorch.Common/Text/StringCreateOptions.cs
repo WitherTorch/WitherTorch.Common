@@ -6,12 +6,14 @@ namespace WitherTorch.Common.Text
     public enum StringCreateOptions : uint
     {
         None = 0x0000,
-        UseLatin1Compression = 0b0001,
-        ForceUseLatin1 = _ForceUseLatin1_Flag | UseLatin1Compression,
+        UseAsciiCompression = 0b0001,
+        UseLatin1Compression = 0b0010,
         UseUtf8Compression = 0b0100,
-        ForceUseUtf8 = _ForceUseUtf8_Flag | UseUtf8Compression,
 
-        _ForceUseLatin1_Flag = 0b0010,
-        _ForceUseUtf8_Flag = 0b1000,
+        ForceUseAscii = _Force_Flag | UseAsciiCompression,
+        ForceUseLatin1 = _Force_Flag | UseLatin1Compression,
+        ForceUseUtf8 = _Force_Flag | UseUtf8Compression,
+
+        _Force_Flag = unchecked((uint)int.MinValue),
     }
 }

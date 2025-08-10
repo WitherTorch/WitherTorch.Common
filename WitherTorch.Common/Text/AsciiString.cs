@@ -6,28 +6,34 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Latin1String : AsciiLikeString, IPinnableReference<byte>,
+    internal sealed partial class AsciiString : AsciiLikeString, IPinnableReference<byte>,
         IHolder<ArraySegment<byte>>
     {
         private static readonly nuint MaxStringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
 
-        public override StringType StringType => StringType.Latin1;
+        public override StringType StringType => StringType.Ascii;
 
-        private Latin1String(byte[] value) : base(value) { }
+        private AsciiString(byte[] value) : base(value) { }
 
-        protected override byte GetCharacterLimit() => Latin1EncodingHelper.Latin1EncodingLimit_InByte;
+        protected override byte GetCharacterLimit() => AsciiEncodingHelper.AsciiEncodingLimit_InByte;
+
+        protected internal override char GetCharAt(nuint index)
+        {
+            const byte CharacterMask = AsciiEncodingHelper.AsciiEncodingLimit_InByte;
+            return unchecked((char)(base.GetCharAt(index) & CharacterMask));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Latin1String Allocate(nuint length, out byte[] buffer)
+        public static AsciiString Allocate(nuint length, out byte[] buffer)
         {
             if (length > MaxStringLength)
                 throw new OutOfMemoryException();
 
-            return new Latin1String(buffer = new byte[length + 1]);
+            return new AsciiString(buffer = new byte[length + 1]);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Latin1String Create(byte* source)
+        public static unsafe AsciiString Create(byte* source)
         {
             nuint length = 0;
             do
@@ -41,40 +47,46 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
+            {
                 UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
-            return new Latin1String(buffer);
+                SequenceHelper.ReplaceGreaterThan(ptr, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
+            }
+            return new AsciiString(buffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe Latin1String Create(byte* source, nuint length)
+        public static unsafe AsciiString Create(byte* source, nuint length)
         {
             if (length >= MaxStringLength)
                 throw new OutOfMemoryException();
 
             byte[] buffer = new byte[length + 1];
             fixed (byte* ptr = buffer)
+            {
                 UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
-            return new Latin1String(buffer);
+                SequenceHelper.ReplaceGreaterThan(ptr, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
+            }
+            return new AsciiString(buffer);
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out Latin1String? result)
+        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out AsciiString? result)
         {
             if (length > MaxStringLength)
                 goto Failed;
 
             byte[] buffer;
-            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.Latin1EncodingLimit))
+            if (SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
             {
                 if ((options & StringCreateOptions._Force_Flag) != StringCreateOptions._Force_Flag)
                     goto Failed;
-                buffer = CreateLatin1StringCore_OutOfLatin1Range(source, length);
+                buffer = CreateAsciiStringCore_OutOfAsciiRange(source, length);
             }
             else
             {
-                buffer = CreateLatin1StringCore(source, length);
+                buffer = CreateAsciiStringCore(source, length);
             }
 
-            result = new Latin1String(buffer);
+            result = new AsciiString(buffer);
             return true;
 
         Failed:
@@ -83,20 +95,20 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe byte[] CreateLatin1StringCore_OutOfLatin1Range(char* source, nuint length)
+        private static unsafe byte[] CreateAsciiStringCore_OutOfAsciiRange(char* source, nuint length)
         {
             byte[] buffer = new byte[length + 1];
             fixed (byte* destination = buffer)
-                Latin1EncodingHelper.ReadFromUtf16BufferCore_OutOfLatin1Range(source, destination, length);
+                AsciiEncodingHelper.ReadFromUtf16BufferCore_OutOfAsciiRange(source, destination, length);
             return buffer;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe byte[] CreateLatin1StringCore(char* source, nuint length)
+        private static unsafe byte[] CreateAsciiStringCore(char* source, nuint length)
         {
             byte[] buffer = new byte[length + 1];
             fixed (byte* destination = buffer)
-                Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
+                AsciiEncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             return buffer;
         }
     }

@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Helpers
         private static unsafe partial class FastCore<T> where T : unmanaged
         {
             [Inline(InlineBehavior.Remove)]
-            internal static bool CheckTypeCanBeVectorized()
+            public static bool CheckTypeCanBeVectorized()
 #if NET8_0_OR_GREATER
                 => System.Numerics.Vector<T>.IsSupported;
 #else

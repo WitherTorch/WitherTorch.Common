@@ -97,7 +97,7 @@ namespace WitherTorch.Common.Text
                 return true;
             }
 
-            bool tryEncodeAsPossible = (options & StringCreateOptions._ForceUseUtf8_Flag) == StringCreateOptions._ForceUseUtf8_Flag;
+            bool tryEncodeAsPossible = (options & StringCreateOptions._Force_Flag) == StringCreateOptions._Force_Flag;
             return TryCreateCore(source, length, tryEncodeAsPossible, out result);
 
         Failed:

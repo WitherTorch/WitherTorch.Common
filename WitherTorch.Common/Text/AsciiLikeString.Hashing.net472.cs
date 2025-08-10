@@ -1,22 +1,16 @@
 ﻿#if NET472_OR_GREATER
-using System;
-using System.Diagnostics;
-using System.Diagnostics.Contracts;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-using InlineMethod;
-
-using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    unsafe partial class Latin1String
+    unsafe partial class AsciiLikeString
     {
         private static class HashingHelper
         {
-            private static readonly delegate* managed<Latin1String, int> _hashingFunc;
+            private static readonly delegate* managed<AsciiLikeString, int> _hashingFunc;
 
             static HashingHelper()
             {
@@ -32,11 +26,11 @@ namespace WitherTorch.Common.Text
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static int GetHashCode(Latin1String str) => _hashingFunc(str);
+            public static int GetHashCode(AsciiLikeString str) => _hashingFunc(str);
 
-            private static int FallbackHashingFunction(Latin1String str) => str.ToString().GetHashCode();
+            private static int FallbackHashingFunction(AsciiLikeString str) => str.ToString().GetHashCode();
 
-            private static int NormalHashingFunction(Latin1String str)
+            private static int NormalHashingFunction(AsciiLikeString str)
             {
                 byte[] value = str._value;
                 int length = str._length;
