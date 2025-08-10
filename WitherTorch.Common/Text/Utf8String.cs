@@ -11,7 +11,6 @@ namespace WitherTorch.Common.Text
     internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>,
         IHolder<ArraySegment<byte>> 
     {
-        private const byte AsciiCharacterLimit = 0x007F;
         private static readonly nuint MaxUtf8StringBufferSize = unchecked((nuint)Limits.MaxArrayLength - 1);
         private static readonly nuint Utf16CompressionLengthLimit = unchecked((nuint)Limits.MaxArrayLength / 2 - 1);
 
@@ -37,14 +36,14 @@ namespace WitherTorch.Common.Text
                 byte c = source[length];
                 if (c == 0)
                     break;
-                if (isAsciiOnly && c > AsciiCharacterLimit)
+                if (isAsciiOnly && c > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
                     isAsciiOnly = false;
                 if (++length > MaxUtf8StringBufferSize)
                     throw new OutOfMemoryException();
             } while (true);
 
             if (isAsciiOnly)
-                return Latin1String.Create(source, length);
+                return AsciiString.Create(source, length);
 
             byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
@@ -63,9 +62,9 @@ namespace WitherTorch.Common.Text
             if (length > MaxUtf8StringBufferSize)
                 throw new OutOfMemoryException();
 
-            if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiCharacterLimit))
+            if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte))
             {
-                Latin1String result = Latin1String.Allocate(length, out byte[] buffer);
+                AsciiString result = AsciiString.Allocate(length, out byte[] buffer);
                 fixed (byte* ptr = buffer)
                     UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
                 return result;
@@ -89,11 +88,12 @@ namespace WitherTorch.Common.Text
             if (length > MaxUtf8StringBufferSize)
                 goto Failed;
 
-            if (!SequenceHelper.ContainsGreaterThan(source, length, (char)AsciiCharacterLimit))
+            if ((options & StringCreateOptions.UseAsciiCompression) != StringCreateOptions.UseAsciiCompression &&
+                !SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
             {
-                result = Latin1String.Allocate(length, out byte[] buffer);
+                result = AsciiString.Allocate(length, out byte[] buffer);
                 fixed (byte* ptr = buffer)
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(source, ptr, length);
+                    AsciiEncodingHelper.ReadFromUtf16BufferCore(source, ptr, length);
                 return true;
             }
 

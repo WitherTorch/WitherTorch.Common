@@ -163,7 +163,10 @@ namespace WitherTorch.Common.IO.Internals
             try
             {
                 fixed (byte* ptr = buffer)
+                {
+                    SequenceHelper.ReplaceGreaterThan(ptr, unchecked((nuint)count), AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
                     return StringBase.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
+                }
             }
             finally
             {
@@ -186,7 +189,10 @@ namespace WitherTorch.Common.IO.Internals
             try
             {
                 fixed (byte* ptr = buffer)
+                {
+                    SequenceHelper.ReplaceGreaterThan(ptr, unchecked((nuint)count), AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
                     return StringBase.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
+                }
             }
             finally
             {

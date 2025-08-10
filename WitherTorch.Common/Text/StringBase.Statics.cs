@@ -16,47 +16,43 @@ namespace WitherTorch.Common.Text
 
             string? internedString = string.IsInterned(str);
             if (internedString is null)
-            {
-                if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
-                {
-                    fixed (char* ptr = str)
-                    {
-                        if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out Latin1String? latin1String))
-                            return latin1String;
-                    }
-                }
-                if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
-                {
-                    fixed (char* ptr = str)
-                    {
-                        if (Utf8String.TryCreate(ptr, unchecked((nuint)length), options, out StringBase? utf8String))
-                            return utf8String;
-                    }
-                }
-            }
-            else
+                goto DoCompression;
+
+            if ((options & StringCreateOptions._Force_Flag) == StringCreateOptions._Force_Flag)
             {
                 str = internedString;
+                goto DoCompression;
+            }
 
-                if ((options & StringCreateOptions.ForceUseLatin1) == StringCreateOptions.ForceUseLatin1)
+            goto JustWrap;
+
+        DoCompression:
+            if ((options & StringCreateOptions.UseAsciiCompression) == StringCreateOptions.UseAsciiCompression)
+            {
+                fixed (char* ptr = str)
                 {
-                    fixed (char* ptr = str)
-                    {
-                        if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out Latin1String? latin1String))
-                            return latin1String;
-                    }
+                    if (AsciiString.TryCreate(ptr, unchecked((nuint)length), options, out AsciiString? asciiString))
+                        return asciiString;
                 }
-
-                if ((options & StringCreateOptions.ForceUseUtf8) == StringCreateOptions.ForceUseUtf8)
+            }
+            if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
+            {
+                fixed (char* ptr = str)
                 {
-                    fixed (char* ptr = str)
-                    {
-                        if (Utf8String.TryCreate(ptr, unchecked((nuint)length), options, out StringBase? utf8String))
-                            return utf8String;
-                    }
+                    if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out StringBase? latin1String))
+                        return latin1String;
+                }
+            }
+            if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
+            {
+                fixed (char* ptr = str)
+                {
+                    if (Utf8String.TryCreate(ptr, unchecked((nuint)length), options, out StringBase? utf8String))
+                        return utf8String;
                 }
             }
 
+        JustWrap:
             return Utf16String.Create(str);
         }
 
@@ -71,13 +67,21 @@ namespace WitherTorch.Common.Text
             nuint length;
             for (length = 1; ptr[length] != '\0'; length++) ;
 
-            if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression &&
-                Latin1String.TryCreate(ptr, length, options, out Latin1String? latin1String))
-                return latin1String;
-
-            if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression &&
-                Utf8String.TryCreate(ptr, length, options, out StringBase? utf8String))
-                return utf8String;
+            if ((options & StringCreateOptions.UseAsciiCompression) == StringCreateOptions.UseAsciiCompression)
+            {
+                if (AsciiString.TryCreate(ptr, length, options, out AsciiString? asciiString))
+                    return asciiString;
+            }
+            if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
+            {
+                if (Latin1String.TryCreate(ptr, length, options, out StringBase? latin1String))
+                    return latin1String;
+            }
+            if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
+            {
+                if (Utf8String.TryCreate(ptr, length, options, out StringBase? utf8String))
+                    return utf8String;
+            }
 
             return Utf16String.Create(ptr, length);
         }
@@ -101,9 +105,14 @@ namespace WitherTorch.Common.Text
         {
             if (count == 0)
                 return Empty;
+            if ((options & StringCreateOptions.UseAsciiCompression) == StringCreateOptions.UseAsciiCompression)
+            {
+                if (AsciiString.TryCreate(ptr + startIndex, count, options, out AsciiString? asciiString))
+                    return asciiString;
+            }
             if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
             {
-                if (Latin1String.TryCreate(ptr + startIndex, count, options, out Latin1String? latin1String))
+                if (Latin1String.TryCreate(ptr + startIndex, count, options, out StringBase? latin1String))
                     return latin1String;
             }
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)

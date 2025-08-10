@@ -9,19 +9,11 @@ namespace WitherTorch.Common.Text
     internal sealed partial class AsciiString : AsciiLikeString, IPinnableReference<byte>,
         IHolder<ArraySegment<byte>>
     {
-        private static readonly nuint MaxStringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
-
         public override StringType StringType => StringType.Ascii;
 
         private AsciiString(byte[] value) : base(value) { }
 
         protected override byte GetCharacterLimit() => AsciiEncodingHelper.AsciiEncodingLimit_InByte;
-
-        protected internal override char GetCharAt(nuint index)
-        {
-            const byte CharacterMask = AsciiEncodingHelper.AsciiEncodingLimit_InByte;
-            return unchecked((char)(base.GetCharAt(index) & CharacterMask));
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AsciiString Allocate(nuint length, out byte[] buffer)
@@ -47,10 +39,7 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length]; // Tail zero is included
             fixed (byte* ptr = buffer)
-            {
                 UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
-                SequenceHelper.ReplaceGreaterThan(ptr, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
-            }
             return new AsciiString(buffer);
         }
 
@@ -62,10 +51,7 @@ namespace WitherTorch.Common.Text
 
             byte[] buffer = new byte[length + 1];
             fixed (byte* ptr = buffer)
-            {
                 UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
-                SequenceHelper.ReplaceGreaterThan(ptr, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
-            }
             return new AsciiString(buffer);
         }
 
@@ -75,12 +61,12 @@ namespace WitherTorch.Common.Text
                 goto Failed;
 
             byte[] buffer;
-            if (SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
+            if ((options & StringCreateOptions._Force_Flag) == StringCreateOptions._Force_Flag)
             {
-                if ((options & StringCreateOptions._Force_Flag) != StringCreateOptions._Force_Flag)
-                    goto Failed;
                 buffer = CreateAsciiStringCore_OutOfAsciiRange(source, length);
             }
+            else if (SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
+                goto Failed;
             else
             {
                 buffer = CreateAsciiStringCore(source, length);

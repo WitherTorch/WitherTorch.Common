@@ -10,6 +10,8 @@ namespace WitherTorch.Common.Text
     internal abstract partial class AsciiLikeString : StringBase, IPinnableReference<byte>,
         IHolder<ArraySegment<byte>>
     {
+        protected static readonly nuint MaxStringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
+
         protected readonly byte[] _value;
         protected readonly int _length;
 

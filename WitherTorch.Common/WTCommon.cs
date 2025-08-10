@@ -16,6 +16,23 @@ namespace WitherTorch.Common
 #endif
 
         /// <summary>
+        /// 是否讓 <see cref="Text.StringBase.Create(string)"/> 和 <see cref="Text.StringBase.Create(char*)"/> 在輸入字元皆為 ASCII 字元時壓縮該字串
+        /// </summary>
+        public static bool AllowAsciiStringCompression
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => (_stringCreateOptions & StringCreateOptions.UseAsciiCompression) == StringCreateOptions.UseAsciiCompression;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                if (value)
+                    _stringCreateOptions |= StringCreateOptions.UseAsciiCompression;
+                else
+                    _stringCreateOptions &= ~StringCreateOptions.UseAsciiCompression;
+            }
+        }
+
+        /// <summary>
         /// 是否讓 <see cref="Text.StringBase.Create(string)"/> 和 <see cref="Text.StringBase.Create(char*)"/> 在輸入字元皆為 Latin-1 字元時壓縮該字串
         /// </summary>
         public static bool AllowLatin1StringCompression

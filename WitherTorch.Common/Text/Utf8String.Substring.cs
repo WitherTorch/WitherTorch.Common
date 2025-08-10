@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Text
                     if (length > MaxUtf8StringBufferSize)
                         goto SlowRoute;
 
-                    bool isAsciiOnly = !SequenceHelper.ContainsGreaterThan(ptrBuffer, length, AsciiCharacterLimit);
+                    bool isAsciiOnly = !SequenceHelper.ContainsGreaterThan(ptrBuffer, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte);
                     if (isAsciiOnly)
                         return Latin1String.Create(ptrBuffer, length);
 
@@ -83,7 +83,7 @@ namespace WitherTorch.Common.Text
                     if (length > MaxUtf8StringBufferSize)
                         goto SlowRoute;
 
-                    bool isAsciiOnly = !SequenceHelper.ContainsGreaterThan(ptrBuffer, length, AsciiCharacterLimit);
+                    bool isAsciiOnly = !SequenceHelper.ContainsGreaterThan(ptrBuffer, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte);
                     if (isAsciiOnly)
                         return Latin1String.Create(ptrBuffer, length);
 

@@ -116,7 +116,7 @@ namespace WitherTorch.Common.Text
 
         private static unsafe bool PartiallyEqualsCoreUtf16(byte[] a, char* b, nuint startIndex, nuint count)
         {
-            if (!SequenceHelper.ContainsGreaterThan(b, count, (char)AsciiCharacterLimit))
+            if (!SequenceHelper.ContainsGreaterThan(b, count, AsciiEncodingHelper.AsciiEncodingLimit))
                 return PartiallyEqualsCoreUtf16_Fast(a, b, startIndex, count);
             return PartiallyEqualsCoreUtf16_Slow(a, b, startIndex, count);
         }

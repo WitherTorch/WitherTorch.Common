@@ -9,8 +9,6 @@ namespace WitherTorch.Common.Text
     internal sealed partial class Latin1String : AsciiLikeString, IPinnableReference<byte>,
         IHolder<ArraySegment<byte>>
     {
-        private static readonly nuint MaxStringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
-
         public override StringType StringType => StringType.Latin1;
 
         private Latin1String(byte[] value) : base(value) { }
@@ -57,25 +55,31 @@ namespace WitherTorch.Common.Text
             return new Latin1String(buffer);
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out Latin1String? result)
+        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringBase? result)
         {
             if (length > MaxStringLength)
                 goto Failed;
 
-            byte[] buffer;
-            if (SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.Latin1EncodingLimit))
+            if ((options & StringCreateOptions.UseAsciiCompression) != StringCreateOptions.UseAsciiCompression && 
+                !SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
             {
-                if ((options & StringCreateOptions._Force_Flag) != StringCreateOptions._Force_Flag)
-                    goto Failed;
-                buffer = CreateLatin1StringCore_OutOfLatin1Range(source, length);
+                result = AsciiString.Allocate(length, out byte[] buffer);
+                fixed (byte* desination = buffer)
+                    AsciiEncodingHelper.ReadFromUtf16BufferCore(source, desination, length);
+                return true;
             }
-            else
+            if ((options & StringCreateOptions._Force_Flag) == StringCreateOptions._Force_Flag)
             {
-                buffer = CreateLatin1StringCore(source, length);
+                byte[] buffer = CreateLatin1StringCore_OutOfLatin1Range(source, length);
+                result = new Latin1String(buffer);
+                return true;
             }
-
-            result = new Latin1String(buffer);
-            return true;
+            if (!SequenceHelper.ContainsGreaterThan(source, length, Latin1EncodingHelper.Latin1EncodingLimit))
+            {
+                byte[] buffer = CreateLatin1StringCore(source, length);
+                result = new Latin1String(buffer);
+                return true;
+            }
 
         Failed:
             result = null;
