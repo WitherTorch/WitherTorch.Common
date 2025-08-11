@@ -68,7 +68,7 @@ namespace WitherTorch.Common.Text
             return 1;
         }
 
-        public override IEnumerator<char> GetEnumerator() => Enumerable.Empty<char>().GetEnumerator();
+        public override IEnumerator<char> GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<char>();
 
         public override int GetHashCode() => string.Empty.GetHashCode();
 
