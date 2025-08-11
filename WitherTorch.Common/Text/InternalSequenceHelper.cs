@@ -54,9 +54,21 @@ namespace WitherTorch.Common.Text
             return Comparer<T>.Default.Compare(a, b);
         }
 
+        public static unsafe bool Contains<T>(T* ptr, T* ptrEnd, T* value, nuint valueLength) where T : unmanaged
+        {
+            if (ptrEnd <= ptr)
+                return false;
+
+            DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
+            if (valueLength == 1)
+                return SequenceHelper.Contains(ptr, unchecked((nuint)(ptrEnd - ptr)), *value);
+
+            return PointerIndexOfCore(ptr, unchecked((nuint)(ptrEnd - ptr)), value, valueLength) != null;
+        }
+
         public static unsafe T* PointerIndexOf<T>(T* ptr, T* ptrEnd, T* value, nuint valueLength) where T : unmanaged
         {
-            if (ptrEnd < ptr)
+            if (ptrEnd <= ptr)
                 return null;
 
             DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
