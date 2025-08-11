@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -28,6 +29,8 @@ namespace WitherTorch.Common.Text
             fixed (byte* ptr = _value)
                 return unchecked((char)ptr[index]);
         }
+
+        public override IEnumerator<char> GetEnumerator() => new CharEnumerator(this);
 
         protected override bool IsFullyWhitespaced()
         {

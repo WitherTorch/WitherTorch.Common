@@ -119,7 +119,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        public virtual IEnumerator<char> GetEnumerator() => new CharEnumerator(this);
+        public abstract IEnumerator<char> GetEnumerator();
 
         public StringBase Clone() => this;
 

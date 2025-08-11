@@ -5,20 +5,20 @@ using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Text
 {
-    public abstract partial class StringBase
+    partial class AsciiLikeString
     {
         private sealed class CharEnumerator : IEnumerator<char>
         {
-            private readonly StringBase _source;
+            private readonly byte[] _source;
             private readonly int _length;
 
             private int _index;
             private char _current;
             private bool _isValidState;
 
-            public CharEnumerator(StringBase str)
+            public CharEnumerator(AsciiLikeString str)
             {
-                _source = str;
+                _source = str._value;
                 _length = str.Length;
                 Reset();
             }
@@ -54,7 +54,7 @@ namespace WitherTorch.Common.Text
                     _index = 0;
                     if (_length > 0)
                     {
-                        _current = _source.GetCharAt(0);
+                        _current = unchecked((char)_source[0]);
                         return true;
                     }
                     return false;
@@ -63,7 +63,7 @@ namespace WitherTorch.Common.Text
                 if (index < _length)
                 {
                     _index = index;
-                    _current = _source.GetCharAt(unchecked((char)_index));
+                    _current = unchecked((char)_source[_index]);
                     return true;
                 }
                 return false;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using InlineMethod;
 
@@ -67,7 +68,7 @@ namespace WitherTorch.Common.Text
             return 1;
         }
 
-        public override IEnumerator<char> GetEnumerator() => string.Empty.GetEnumerator();
+        public override IEnumerator<char> GetEnumerator() => Enumerable.Empty<char>().GetEnumerator();
 
         public override int GetHashCode() => string.Empty.GetHashCode();
 
