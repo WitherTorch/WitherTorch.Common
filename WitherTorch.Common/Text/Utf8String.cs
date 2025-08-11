@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
     internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>,
-        IHolder<ArraySegment<byte>> 
+        IHolder<ArraySegment<byte>>
     {
         private static readonly nuint MaxUtf8StringBufferSize = unchecked((nuint)Limits.MaxArrayLength - 1);
         private static readonly nuint Utf16CompressionLengthLimit = unchecked((nuint)Limits.MaxArrayLength / 2 - 1);
@@ -24,36 +26,6 @@ namespace WitherTorch.Common.Text
         {
             _value = value;
             _length = length;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(byte* source)
-        {
-            bool isAsciiOnly = true;
-            nuint length = 0;
-            do
-            {
-                byte c = source[length];
-                if (c == 0)
-                    break;
-                if (isAsciiOnly && c > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
-                    isAsciiOnly = false;
-                if (++length > MaxUtf8StringBufferSize)
-                    throw new OutOfMemoryException();
-            } while (true);
-
-            if (isAsciiOnly)
-                return AsciiString.Create(source, length);
-
-            byte[] buffer = new byte[length]; // Tail zero is included
-            fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
-
-            int resultLength = 0;
-            using CharEnumerator enumerator = new CharEnumerator(buffer);
-            while (enumerator.MoveNext())
-                resultLength++;
-            return new Utf8String(buffer, resultLength);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -85,9 +57,6 @@ namespace WitherTorch.Common.Text
 
         public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringBase? result)
         {
-            if (length > MaxUtf8StringBufferSize)
-                goto Failed;
-
             if ((options & StringCreateOptions.UseAsciiCompression) != StringCreateOptions.UseAsciiCompression &&
                 !SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
             {
@@ -99,10 +68,6 @@ namespace WitherTorch.Common.Text
 
             bool tryEncodeAsPossible = (options & StringCreateOptions._Force_Flag) == StringCreateOptions._Force_Flag;
             return TryCreateCore(source, length, tryEncodeAsPossible, out result);
-
-        Failed:
-            result = null;
-            return false;
         }
 
         private static unsafe bool TryCreateCore(char* source, nuint length, bool tryEncodeAsPossible, [NotNullWhen(true)] out StringBase? result)
@@ -110,16 +75,10 @@ namespace WitherTorch.Common.Text
             nuint bufferLength;
 
             if (tryEncodeAsPossible)
-            {
-                bufferLength = MathHelper.Min(Utf8EncodingHelper.GetWorstCaseForEncodeLength(length), MaxUtf8StringBufferSize);
-            }
+                bufferLength = Utf8EncodingHelper.GetWorstCaseForEncodeLength(length);
             else
-            {
-                if (length > Utf16CompressionLengthLimit)
-                    goto Failed;
-
                 bufferLength = length * sizeof(char);
-            }
+            bufferLength = MathHelper.Min(bufferLength, MaxUtf8StringBufferSize);
 
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             byte[] buffer = pool.Rent(bufferLength);
@@ -146,14 +105,6 @@ namespace WitherTorch.Common.Text
         Failed:
             result = null;
             return false;
-        }
-
-        protected internal override char GetCharAt(nuint index)
-        {
-            using CharEnumerator enumerator = new CharEnumerator(_value);
-            for (nuint i = 0; i <= index; i++)
-                enumerator.MoveNext();
-            return enumerator.Current;
         }
 
         public override IEnumerator<char> GetEnumerator() => new CharEnumerator(_value);

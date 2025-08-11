@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
@@ -181,7 +183,7 @@ namespace WitherTorch.Common.Text
         }
 
         protected virtual bool ContainsCore(char value, nuint startIndex, nuint count)
-            => ContainsCore_Fallback(value, startIndex, count);
+            => this.SkipAndTake(startIndex, count).WhereEqualsTo(value).Any();
 
         protected virtual unsafe bool ContainsCore(string value, nuint valueLength, nuint startIndex, nuint count)
         {
@@ -192,16 +194,22 @@ namespace WitherTorch.Common.Text
                 return ContainsCore_Fallback(ptr, valueLength, startIndex, count);
         }
 
-        protected virtual bool ContainsCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected virtual unsafe bool ContainsCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
         {
             if (valueLength == 1)
                 return ContainsCore(value.GetCharAt(0), startIndex, count);
+
+            if (value is Utf16String utf16)
+            {
+                fixed (char* ptr = utf16.GetInternalRepresentation())
+                    return ContainsCore_Fallback(ptr, valueLength, startIndex, count);
+            }
 
             return ContainsCore_Fallback(value, valueLength, startIndex, count);
         }
 
         protected virtual int IndexOfCore(char value, nuint startIndex, nuint count)
-            => IndexOfCore_Fallback(value, startIndex, count);
+            => this.WithIndex().SkipAndTake(startIndex, count).WhereEqualsTo(value).Select(static item => item.Index).DefaultIfEmpty(-1).First();
 
         protected virtual unsafe int IndexOfCore(string value, nuint valueLength, nuint startIndex, nuint count)
         {
@@ -212,30 +220,18 @@ namespace WitherTorch.Common.Text
                 return IndexOfCore_Fallback(ptr, valueLength, startIndex, count);
         }
 
-        protected virtual int IndexOfCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected virtual unsafe int IndexOfCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
         {
             if (valueLength == 1)
                 return IndexOfCore(value.GetCharAt(0), startIndex, count);
 
-            return IndexOfCore_Fallback(value, valueLength, startIndex, count);
-        }
+            if (value is Utf16String utf16)
+            {
+                fixed (char* ptr = utf16.GetInternalRepresentation())
+                    return IndexOfCore_Fallback(ptr, valueLength, startIndex, count);
+            }
 
-        private unsafe bool ContainsCore_Fallback(char value, nuint startIndex, nuint count)
-        {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
-            try
-            {
-                fixed (char* temp = buffer)
-                {
-                    CopyToCore(temp, startIndex, count);
-                    return SequenceHelper.Contains(temp, count, value);
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
+            return IndexOfCore_Fallback(value, valueLength, startIndex, count);
         }
 
         private unsafe bool ContainsCore_Fallback(char* value, nuint valueLength, nuint startIndex, nuint count)
@@ -266,25 +262,6 @@ namespace WitherTorch.Common.Text
                 {
                     value.CopyToCore(temp, 0, valueLength);
                     return ContainsCore_Fallback(temp, valueLength, startIndex, count);
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        private unsafe int IndexOfCore_Fallback(char value, nuint startIndex, nuint count)
-        {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
-            try
-            {
-                fixed (char* temp = buffer)
-                {
-                    CopyToCore(temp, startIndex, count);
-                    char* result = SequenceHelper.PointerIndexOf(temp, count, value);
-                    return result < temp ? -1 : unchecked((int)(result - temp)) + unchecked((int)MathHelper.MakeSigned(startIndex));
                 }
             }
             finally

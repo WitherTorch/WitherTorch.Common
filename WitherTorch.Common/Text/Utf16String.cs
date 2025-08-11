@@ -32,9 +32,6 @@ namespace WitherTorch.Common.Text
         public static unsafe new Utf16String Create(string source) => new Utf16String(source);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe new Utf16String Create(char* source) => new Utf16String(new string(source));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe Utf16String Create(char* source, nuint length)
         {
             if (length > int.MaxValue)

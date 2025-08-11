@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
@@ -28,7 +30,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        protected internal abstract char GetCharAt(nuint index);
+        protected internal virtual char GetCharAt(nuint index) => this.Skip(index).First();
 
         protected virtual bool IsFullyWhitespaced()
         {
@@ -106,7 +108,16 @@ namespace WitherTorch.Common.Text
             CopyToCore(destination, startIndex, count);
         }
 
-        protected internal abstract unsafe void CopyToCore(char* destination, nuint startIndex, nuint count);
+        protected internal virtual unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
+        {
+            using IEnumerator<char> enumerator = this.Skip(startIndex).GetEnumerator();
+            for (nuint i = 0; i < count; i++)
+            {
+                if (!enumerator.MoveNext())
+                    return;
+                *destination = enumerator.Current;
+            }
+        }
 
         public virtual IEnumerator<char> GetEnumerator() => new CharEnumerator(this);
 

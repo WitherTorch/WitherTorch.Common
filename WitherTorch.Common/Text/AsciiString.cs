@@ -25,25 +25,6 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe AsciiString Create(byte* source)
-        {
-            nuint length = 0;
-            do
-            {
-                byte c = source[length];
-                if (c == 0)
-                    break;
-                if (++length > MaxStringLength)
-                    throw new OutOfMemoryException();
-            } while (true);
-
-            byte[] buffer = new byte[length]; // Tail zero is included
-            fixed (byte* ptr = buffer)
-                UnsafeHelper.CopyBlockUnaligned(ptr, source, length * sizeof(byte));
-            return new AsciiString(buffer);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe AsciiString Create(byte* source, nuint length)
         {
             if (length >= MaxStringLength)
@@ -57,9 +38,6 @@ namespace WitherTorch.Common.Text
 
         public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out AsciiString? result)
         {
-            if (length > MaxStringLength)
-                goto Failed;
-
             byte[] buffer;
             if ((options & StringCreateOptions._Force_Flag) == StringCreateOptions._Force_Flag)
             {

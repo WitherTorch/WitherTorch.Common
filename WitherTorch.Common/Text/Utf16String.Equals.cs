@@ -18,54 +18,31 @@ namespace WitherTorch.Common.Text
                 _ => PartiallyEqualsCore_Other(other, startIndex, count),
             };
 
-        public override unsafe int CompareToCore(string other)
+        protected override unsafe int CompareToCore(string other, nuint length)
         {
-            int length = _value.Length;
-            int result = other.Length.CompareTo(length);
-            if (result != 0 || length <= 0)
-                return result;
             fixed (char* ptr = other)
-                return CompareToCore(ptr, unchecked((nuint)length));
+                return CompareToCore(ptr, length);
         }
 
-        public override int CompareToCore(StringBase other)
-        {
-            string value = _value;
-            int length = value.Length;
-            int result = other.Length.CompareTo(length);
-            if (result != 0 || length <= 0)
-                return result;
-            return other switch
+        protected override int CompareToCore(StringBase other, nuint length)
+            => other switch
             {
-                Utf16String utf16 => CompareToCore(utf16, unchecked((nuint)length)),
-                _ => CompareToCore_Other(other, unchecked((nuint)length)),
+                Utf16String utf16 => CompareToCore(utf16, length),
+                _ => CompareToCore_Other(other, length),
             };
-        }
 
-        public override unsafe bool EqualsCore(string other)
+        protected override unsafe bool EqualsCore(string other, nuint length)
         {
-            int length = _value.Length;
-            if (length != other.Length)
-                return false;
-            if (length <= 0)
-                return true;
             fixed (char* ptr = other)
-                return EqualsCore(ptr, unchecked((nuint)length));
+                return EqualsCore(ptr, length);
         }
 
-        public override bool EqualsCore(StringBase other)
-        {
-            int length = _value.Length;
-            if (length != other.Length)
-                return false;
-            if (length <= 0)
-                return true;
-            return other switch
+        protected override bool EqualsCore(StringBase other, nuint length)
+            => other switch
             {
-                Utf16String utf16 => EqualsCore(utf16, unchecked((nuint)length)),
-                _ => EqualsCore_Other(other, unchecked((nuint)length)),
+                Utf16String utf16 => EqualsCore(utf16, length),
+                _ => EqualsCore_Other(other, length),
             };
-        }
 
         private unsafe bool PartiallyEqualsCore(Utf16String other, nuint startIndex, nuint count)
         {

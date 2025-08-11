@@ -71,13 +71,13 @@ namespace WitherTorch.Common.Text
 
         public override int GetHashCode() => string.Empty.GetHashCode();
 
-        public override int CompareToCore(string other) => other.Length == 0 ? 0 : -1;
+        protected override int CompareToCore(string other, nuint length) => 0;
 
-        public override int CompareToCore(StringBase other) => other.Length == 0 ? 0 : -1;
+        protected override int CompareToCore(StringBase other, nuint length) => 0;
 
-        public override bool EqualsCore(string other) => other.Length == 0;
+        protected override bool EqualsCore(string other, nuint length) => true;
 
-        public override bool EqualsCore(StringBase other) => other.Length == 0;
+        protected override bool EqualsCore(StringBase other, nuint length) => true;
 
         public override char[] ToCharArray() => Array.Empty<char>();
 

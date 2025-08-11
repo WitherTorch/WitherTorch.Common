@@ -22,58 +22,35 @@ namespace WitherTorch.Common.Text
 
         public override int GetHashCode() => HashingHelper.GetHashCode(this);
 
-        public override unsafe int CompareToCore(string other)
+        protected override unsafe int CompareToCore(string other, nuint length)
         {
-            int length = _length;
-            int result = other.Length.CompareTo(length);
-            if (result != 0 || length <= 0)
-                return result;
             fixed (char* ptr = other)
-                return CompareToCore(ptr, unchecked((nuint)length));
+                return CompareToCore(ptr, length);
         }
 
-        public override int CompareToCore(StringBase other)
-        {
-            byte[] value = _value;
-            int length = _length;
-            int result = other.Length.CompareTo(length);
-            if (result != 0 || length <= 0)
-                return result;
-            return other switch
+        protected override int CompareToCore(StringBase other, nuint length)
+            => other switch
             {
-                AsciiLikeString ascii => CompareToCore(ascii, unchecked((nuint)length)),
-                Utf16String utf16 => CompareToCore(utf16, unchecked((nuint)length)),
-                Utf8String utf8 => CompareToCore(utf8, unchecked((nuint)length)),
-                _ => CompareToCore(other, unchecked((nuint)length)),
+                AsciiLikeString ascii => CompareToCore(ascii, length),
+                Utf16String utf16 => CompareToCore(utf16, length),
+                Utf8String utf8 => CompareToCore(utf8, length),
+                _ => CompareToCore_Other(other, length),
             };
-        }
 
-        public override unsafe bool EqualsCore(string other)
+        protected override unsafe bool EqualsCore(string other, nuint length)
         {
-            int length = _length;
-            if (length != other.Length)
-                return false;
-            if (length <= 0)
-                return true;
             fixed (char* ptr = other)
-                return EqualsCore(ptr, unchecked((nuint)length));
+                return EqualsCore(ptr, length);
         }
 
-        public override bool EqualsCore(StringBase other)
-        {
-            int length = _length;
-            if (length != other.Length)
-                return false;
-            if (length <= 0)
-                return true;
-            return other switch
+        protected override bool EqualsCore(StringBase other, nuint length)
+            => other switch
             {
-                AsciiLikeString ascii => EqualsCore(ascii, unchecked((nuint)length)),
-                Utf16String utf16 => EqualsCore(utf16, unchecked((nuint)length)),
-                Utf8String utf8 => EqualsCore(utf8, unchecked((nuint)length)),
-                _ => EqualsCore(other, unchecked((nuint)length)),
+                AsciiLikeString ascii => EqualsCore(ascii, length),
+                Utf16String utf16 => EqualsCore(utf16, length),
+                Utf8String utf8 => EqualsCore(utf8, length),
+                _ => EqualsCore_Other(other, length),
             };
-        }
 
         private unsafe bool PartiallyEqualsCore(AsciiLikeString compare, nuint startIndex, nuint count)
         {
@@ -172,7 +149,7 @@ namespace WitherTorch.Common.Text
                 return CompareToCore(ptr, length);
         }
 
-        private unsafe int CompareToCore(StringBase compare, nuint length)
+        private unsafe int CompareToCore_Other(StringBase compare, nuint length)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(length);
@@ -245,7 +222,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private unsafe bool EqualsCore(StringBase compare, nuint count)
+        private unsafe bool EqualsCore_Other(StringBase compare, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(count);

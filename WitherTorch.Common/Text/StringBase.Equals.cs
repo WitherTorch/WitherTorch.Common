@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Linq;
+
+using InlineMethod;
+
+using WitherTorch.Common.Extensions;
 
 namespace WitherTorch.Common.Text
 {
@@ -62,37 +67,6 @@ namespace WitherTorch.Common.Text
                 return true;
             return unchecked(PartiallyEqualsCore(value, (nuint)(length - valueLength), (nuint)valueLength));
         }
-
-        public bool Equals(string? other)
-        {
-            if (other is null)
-                return false;
-            return EqualsCore(other);
-        }
-
-        public bool Equals(StringBase? other)
-        {
-            if (other is null)
-                return false;
-            if (ReferenceEquals(this, other))
-                return true;
-            return EqualsCore(other);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            if (obj is null)
-                return false;
-            if (ReferenceEquals(this, obj))
-                return true;
-            return obj switch
-            {
-                string str => EqualsCore(str),
-                StringBase str => EqualsCore(str),
-                _ => false,
-            };
-        }
-
         public bool PartiallyEquals(string other, int startIndex)
         {
             int length = Length;
@@ -155,7 +129,13 @@ namespace WitherTorch.Common.Text
         {
             if (other is null)
                 return 1;
-            return CompareToCore(other);
+            int length = Length;
+            int comparison = length.CompareTo(other.Length);
+            if (comparison != 0)
+                return comparison;
+            if (length <= 0)
+                return 0;
+            return CompareToCore(other, unchecked((nuint)length));
         }
 
         public int CompareTo(StringBase? other)
@@ -164,38 +144,163 @@ namespace WitherTorch.Common.Text
                 return 1;
             if (ReferenceEquals(this, other))
                 return 0;
-            return CompareToCore(other);
+            int length = Length;
+            int comparison = length.CompareTo(other.Length);
+            if (comparison != 0)
+                return comparison;
+            if (length <= 0)
+                return 0;
+            return CompareToCore(other, unchecked((nuint)length));
         }
 
-        public virtual bool EqualsCore(string other) => ToString().Equals(other, StringComparison.Ordinal);
+        public bool Equals(string? other)
+        {
+            if (other is null)
+                return false;
+            return Equals_Inline(other);
+        }
 
-        public virtual bool EqualsCore(StringBase other) => ToString().Equals(other.ToString(), StringComparison.Ordinal);
+        public bool Equals(StringBase? other)
+        {
+            if (other is null)
+                return false;
+            if (ReferenceEquals(this, other))
+                return true;
+            return Equals_Inline(other);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is null)
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            return obj switch
+            {
+                string other => Equals_Inline(other),
+                StringBase other => Equals_Inline(other),
+                _ => false
+            };
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private bool Equals_Inline(string other)
+        {
+            int length = Length;
+            if (length != other.Length)
+                return false;
+            if (length <= 0)
+                return true;
+            return EqualsCore(other, unchecked((nuint)length));
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private bool Equals_Inline(StringBase other)
+        {
+            int length = Length;
+            if (length != other.Length)
+                return false;
+            if (length <= 0)
+                return true;
+            return EqualsCore(other, unchecked((nuint)length));
+        }
 
         protected virtual unsafe bool PartiallyEqualsCore(string other, nuint startIndex, nuint count)
         {
             fixed (char* ptr = other)
             {
-                for (nuint i = 0; i < count; i++)
-                {
-                    if (GetCharAt(startIndex + i) != ptr[i])
-                        return false;
-                }
+                if (count == 1)
+                    return GetCharAt(startIndex) == ptr[startIndex];
+
+                return PartiallyEqualsCoreFallback(ptr, startIndex, count);
             }
-            return true;
         }
 
-        protected virtual bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
+        protected virtual unsafe bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
         {
-            for (nuint i = 0; i < count; i++)
+            if (count == 1)
+                return GetCharAt(startIndex) == other.GetCharAt(startIndex);
+
+            if (other is Utf16String utf16)
             {
-                if (GetCharAt(startIndex + i) != other.GetCharAt(i))
-                    return false;
+                fixed (char* ptr = utf16.GetInternalRepresentation())
+                    return PartiallyEqualsCoreFallback(ptr, startIndex, count);
             }
-            return true;
+            return PartiallyEqualsCoreFallback(other, startIndex, count);
         }
 
-        public virtual int CompareToCore(string other) => ToString().CompareTo(other);
+        protected virtual unsafe int CompareToCore(string other, nuint length)
+        {
+            fixed (char* ptr = other)
+            {
+                if (length == 1)
+                    return GetCharAt(0).CompareTo(*ptr);
 
-        public virtual int CompareToCore(StringBase other) => ToString().CompareTo(other.ToString());
+                return CompareToCoreFallback(ptr, length);
+            }
+        }
+
+        protected virtual unsafe int CompareToCore(StringBase other, nuint length)
+        {
+            if (length == 1)
+                return GetCharAt(0).CompareTo(other.GetCharAt(0));
+
+            if (other is Utf16String utf16)
+            {
+                fixed (char* ptr = utf16.GetInternalRepresentation())
+                    return CompareToCoreFallback(ptr, length);
+            }
+
+            return CompareToCoreFallback(other);
+        }
+
+        protected virtual unsafe bool EqualsCore(string other, nuint length)
+        {
+            fixed (char* ptr = other)
+            {
+                if (length == 1)
+                    return GetCharAt(0) == *ptr;
+
+                return EqualsCoreFallback(ptr, length);
+            }
+        }
+
+        protected virtual unsafe bool EqualsCore(StringBase other, nuint length)
+        {
+            if (length == 1)
+                return GetCharAt(0) == other.GetCharAt(0);
+
+            if (other is Utf16String utf16)
+            {
+                fixed (char* ptr = utf16.GetInternalRepresentation())
+                    return EqualsCoreFallback(ptr, length);
+            }
+
+            return EqualsCoreFallback(other);
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private unsafe bool PartiallyEqualsCoreFallback(char* other, nuint startIndex, nuint count)
+            => this.SkipAndTake(startIndex, count).SequenceEqual(other, count);
+
+        [Inline(InlineBehavior.Remove)]
+        private unsafe bool PartiallyEqualsCoreFallback(StringBase other, nuint startIndex, nuint count)
+            => this.SkipAndTake(startIndex, count).SequenceEqual(other);
+
+        [Inline(InlineBehavior.Remove)]
+        private unsafe int CompareToCoreFallback(char* other, nuint length)
+            => this.SequenceCompare(other, length);
+
+        [Inline(InlineBehavior.Remove)]
+        private unsafe int CompareToCoreFallback(StringBase other)
+            => this.SequenceCompare(other);
+
+        [Inline(InlineBehavior.Remove)]
+        private unsafe bool EqualsCoreFallback(char* other, nuint length)
+            => this.SequenceEqual(other, length);
+
+        [Inline(InlineBehavior.Remove)]
+        private unsafe bool EqualsCoreFallback(StringBase other)
+            => this.SequenceEqual(other);
     }
 }

@@ -7,6 +7,8 @@ using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
 {
+    #pragma warning disable CS8500
+
     unsafe partial class SequenceHelper
     {
         /// <inheritdoc cref="string.Equals(string?, string?)"/>
@@ -52,10 +54,8 @@ namespace WitherTorch.Common.Helpers
                 return false;
             if (UnsafeHelper.IsPrimitiveType<T>())
             {
-#pragma warning disable CS8500
                 fixed (T* ptr = a, ptr2 = b)
-                    return EqualsCore(ptr, ptr2, MathHelper.MakeUnsigned(length));
-#pragma warning restore CS8500
+                    return EqualsCore<T>(ptr, ptr2, MathHelper.MakeUnsigned(length));
             }
             IEqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < length; i++)
@@ -87,13 +87,17 @@ namespace WitherTorch.Common.Helpers
             => EqualsCore(ptr, ptr2, length);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool Equals<T>(T* ptr, T* ptr2, nuint length)
+            => EqualsCore<T>(ptr, ptr2, length);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool EqualsCore(string str1, string str2)
         {
             int length = str1.Length;
             if (length != str2.Length)
                 return false;
             fixed (char* ptr = str1, ptr2 = str2)
-                return EqualsCore(ptr, ptr2, MathHelper.MakeUnsigned(length));
+                return EqualsCore<char>(ptr, ptr2, MathHelper.MakeUnsigned(length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,5 +119,8 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Remove)]
         private static bool EqualsCore(void* ptr, void* ptr2, nuint length) => FastCore.Equals((byte*)ptr, (byte*)ptr2, length);
+
+        [Inline(InlineBehavior.Remove)]
+        private static bool EqualsCore<T>(void* ptr, void* ptr2, nuint length) => FastCore.Equals((byte*)ptr, (byte*)ptr2, length * UnsafeHelper.SizeOf<T>());
     }
 }

@@ -13,11 +13,7 @@ namespace WitherTorch.Common.Text
         protected override unsafe bool ContainsCore(char value, nuint startIndex, nuint count)
         {
             if (startIndex > 0 || count < unchecked((nuint)_length))
-            {
-                return this.SkipAndTake(startIndex, count)
-                    .WhereEqualsTo(value)
-                    .Any();
-            }
+                return base.ContainsCore(value, startIndex, count);
 
             if (value > AsciiEncodingHelper.AsciiEncodingLimit)
                 return ContainsCoreFallback(value);
@@ -42,14 +38,6 @@ namespace WitherTorch.Common.Text
                 Utf16String utf16 => ContainsCore(utf16, valueLength, startIndex, count),
                 _ => ContainsCore_Other(value, valueLength, startIndex, count)
             };
-
-        protected override unsafe int IndexOfCore(char value, nuint startIndex, nuint count)
-            => this.WithIndex()
-            .SkipAndTake(startIndex, count)
-            .WhereEqualsTo(value)
-            .Select(static item => item.Index)
-            .DefaultIfEmpty(-1)
-            .First();
 
         private unsafe bool ContainsCore(byte value)
         {

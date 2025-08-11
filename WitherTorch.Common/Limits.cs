@@ -48,9 +48,14 @@ namespace WitherTorch.Common
 #else
             = 0x7FEFFFFF;
 #endif
+        /// <summary>
+        /// 字串的最大容許大小
+        /// </summary>
+        public static readonly int MaxStringLength
+                = MaxArrayLength / 2 - sizeof(int);
 
 #if NET6_0_OR_GREATER
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool UseAnyVector() => UseVector512() || UseVector256() || UseVector128() || UseVector64();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

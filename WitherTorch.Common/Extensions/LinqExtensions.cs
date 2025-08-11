@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
+using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.Extensions
 {
@@ -36,8 +39,8 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<TSource> WhereEqualsTo<TSource>(this IEnumerable<TSource> _this, 
-            TSource filter, IEqualityComparer<TSource> comparer) 
+        public static IEnumerable<TSource> WhereEqualsTo<TSource>(this IEnumerable<TSource> _this,
+            TSource filter, IEqualityComparer<TSource> comparer)
             => WhereEqualsToIterator(_this, filter, comparer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -50,8 +53,8 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<IndexedValue<TValue>> WhereEqualsTo<TValue>(this IEnumerable<IndexedValue<TValue>> _this, 
-            TValue value, IEqualityComparer<TValue> comparer) 
+        public static IEnumerable<IndexedValue<TValue>> WhereEqualsTo<TValue>(this IEnumerable<IndexedValue<TValue>> _this,
+            TValue value, IEqualityComparer<TValue> comparer)
             => WhereEqualsToIterator(_this, value, comparer);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -64,8 +67,8 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerable<NativeIndexedValue<TValue>> WhereEqualsTo<TValue>(this IEnumerable<NativeIndexedValue<TValue>> _this, 
-            TValue filter, IEqualityComparer<TValue> comparer) 
+        public static IEnumerable<NativeIndexedValue<TValue>> WhereEqualsTo<TValue>(this IEnumerable<NativeIndexedValue<TValue>> _this,
+            TValue filter, IEqualityComparer<TValue> comparer)
             => WhereEqualsToIterator(_this, filter, comparer);
 
         private static IEnumerable<TSource> WhereEqualsToIterator_Primitive<TSource>(IEnumerable<TSource> source, TSource filter)
@@ -239,6 +242,166 @@ namespace WitherTorch.Common.Extensions
 
                 yield return enumerator.Current;
             }
+        }
+
+        public static unsafe bool SequenceEqual<TSource>(this IEnumerable<TSource> _this, TSource* compare, int count) where TSource : unmanaged
+        {
+            if (count <= 0)
+            {
+                using IEnumerator<TSource> enumerator = _this.GetEnumerator();
+                return !enumerator.MoveNext();
+            }
+
+            return SequenceEqualCore(_this, compare, unchecked((nuint)count));
+        }
+
+        public static unsafe bool SequenceEqual<TSource>(this IEnumerable<TSource> _this, TSource* compare, nuint count) where TSource : unmanaged
+        {
+            if (count == 0)
+            {
+                using IEnumerator<TSource> enumerator = _this.GetEnumerator();
+                return !enumerator.MoveNext();
+            }
+
+            return SequenceEqualCore(_this, compare, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe bool SequenceEqualCore<TSource>(IEnumerable<TSource> source, TSource* compare, nuint count) where TSource : unmanaged
+        {
+            switch (source)
+            {
+                case TSource[] array:
+                    {
+                        if (array.Length < MathHelper.MakeSigned(count))
+                            return false;
+                        fixed (TSource* ptr = array)
+                            return SequenceHelper.Equals(ptr, compare, count);
+                    }
+                case UnwrappableList<TSource> list:
+                    {
+                        if (list.Count < MathHelper.MakeSigned(count))
+                            return false;
+                        fixed (TSource* ptr = list.Unwrap())
+                            return SequenceHelper.Equals(ptr, compare, count);
+                    }
+                default:
+                    break;
+            }
+
+            if (UnsafeHelper.IsPrimitiveType<TSource>())
+                return SequenceEqualCore_Primitive(source, compare, count);
+            return SequenceEqualCore_NonPrimitive(source, compare, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe bool SequenceEqualCore_Primitive<TSource>(IEnumerable<TSource> source, TSource* compare, nuint count) where TSource : unmanaged
+        {
+            using IEnumerator<TSource> enumerator = source.GetEnumerator();
+            for (nuint i = 0; i < count; i++)
+            {
+                if (!enumerator.MoveNext() || !UnsafeHelper.Equals(enumerator.Current, compare[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe bool SequenceEqualCore_NonPrimitive<TSource>(IEnumerable<TSource> source, TSource* compare, nuint count) where TSource : unmanaged
+        {
+            EqualityComparer<TSource> comparer = EqualityComparer<TSource>.Default;
+
+            using IEnumerator<TSource> enumerator = source.GetEnumerator();
+            for (nuint i = 0; i < count; i++)
+            {
+                if (!enumerator.MoveNext() || !comparer.Equals(enumerator.Current, compare[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        public static unsafe int SequenceCompare<TSource>(this IEnumerable<TSource> _this, IEnumerable<TSource> other)
+        {
+            Comparer<TSource> comparer = Comparer<TSource>.Default;
+            using IEnumerator<TSource> enumeratorThis = _this.GetEnumerator();
+            using IEnumerator<TSource> enumeratorOther = other.GetEnumerator();
+            while (enumeratorThis.MoveNext())
+            {
+                if (!enumeratorOther.MoveNext())
+                    return 1;
+                int comparison = comparer.Compare(enumeratorThis.Current, enumeratorOther.Current);
+                if (comparison != 0)
+                    return MathHelper.Sign(comparison);
+            }
+            return enumeratorOther.MoveNext() ? -1 : 0;
+        }
+
+        public static unsafe int SequenceCompare<TSource>(this IEnumerable<TSource> _this, TSource* compare, int count) where TSource : unmanaged
+        {
+            if (count <= 0)
+            {
+                using IEnumerator<TSource> enumerator = _this.GetEnumerator();
+                return enumerator.MoveNext() ? 1 : 0;
+            }
+
+            return SequenceCompareCore(_this, compare, unchecked((nuint)count));
+        }
+
+        public static unsafe int SequenceCompare<TSource>(this IEnumerable<TSource> _this, TSource* compare, nuint count) where TSource : unmanaged
+        {
+            if (count == 0)
+            {
+                using IEnumerator<TSource> enumerator = _this.GetEnumerator();
+                return enumerator.MoveNext() ? 1 : 0;
+            }
+
+            return SequenceCompareCore(_this, compare, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static unsafe int SequenceCompareCore<TSource>(IEnumerable<TSource> source, TSource* compare, nuint count) where TSource : unmanaged
+        {
+            switch (source)
+            {
+                case TSource[] array:
+                    {
+                        int comparison = array.Length.CompareTo(MathHelper.MakeSigned(count));
+                        if (comparison != 0)
+                            return MathHelper.Sign(comparison);
+                        fixed (TSource* ptr = array)
+                            return InternalSequenceHelper.CompareTo(ptr, compare, count);
+                    }
+                case UnwrappableList<TSource> list:
+                    {
+                        int comparison = list.Count.CompareTo(MathHelper.MakeSigned(count));
+                        if (comparison != 0)
+                            return MathHelper.Sign(comparison);
+                        fixed (TSource* ptr = list.Unwrap())
+                            return InternalSequenceHelper.CompareTo(ptr, compare, count);
+                    }
+                default:
+                    break;
+            }
+
+            Comparer<TSource> comparer = Comparer<TSource>.Default;
+            using IEnumerator<TSource> enumerator = source.GetEnumerator();
+            for (nuint i = 0; i < count; i++)
+            {
+                if (!enumerator.MoveNext())
+                    return -1;
+                int comparison = comparer.Compare(enumerator.Current, compare[i]);
+                if (comparison != 0)
+                    return MathHelper.Sign(comparison);
+            }
+            return enumerator.MoveNext() ? 1 : 0;
+        }
+
+        public static nuint NativeCount<TSource>(this IEnumerable<TSource> _this)
+        {
+            nuint i = 0;
+            using IEnumerator<TSource> enumerator = _this.GetEnumerator();
+            while (enumerator.MoveNext() && ++i != 0) ;
+            return i;
         }
     }
 }

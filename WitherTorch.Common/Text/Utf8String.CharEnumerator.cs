@@ -9,7 +9,7 @@ namespace WitherTorch.Common.Text
 {
     partial class Utf8String
     {
-        private struct CharEnumerator : IEnumerator<char>
+        private sealed class CharEnumerator : IEnumerator<char>
         {
             private readonly byte[] _buffer;
             private readonly nuint _length;
@@ -18,7 +18,7 @@ namespace WitherTorch.Common.Text
             private char _current, _current2;
             private bool _isValidState;
 
-            public readonly nuint NextCursor => _cursor;
+            public nuint NextCursor => _cursor;
 
             public CharEnumerator(byte[] buffer)
             {
@@ -42,7 +42,7 @@ namespace WitherTorch.Common.Text
                 _isValidState = original._isValidState;
             }
 
-            public readonly char Current
+            public char Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
@@ -53,9 +53,9 @@ namespace WitherTorch.Common.Text
                 }
             }
 
-            readonly object IEnumerator.Current => Current;
+            object IEnumerator.Current => Current;
 
-            public readonly void Dispose() { }
+            public void Dispose() { }
 
             public bool MoveNext()
             {
