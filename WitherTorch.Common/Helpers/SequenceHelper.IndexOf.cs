@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-using InlineMethod;
-
 namespace WitherTorch.Common.Helpers
 {
     unsafe partial class SequenceHelper
@@ -225,26 +223,26 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndexNative(PointerIndexOfGreaterThan(ptr, length, value), ptr);
         #endregion
 
-        #region IndexOfGreaterOrEqualsThan
+        #region IndexOfGreaterThanOrEquals
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(string str, char value)
+        public static int IndexOfGreaterThanOrEquals(string str, char value)
         {
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(str.Length), value), ptr);
+                return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr, MathHelper.MakeUnsigned(str.Length), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(string str, char value, int startIndex)
+        public static int IndexOfGreaterThanOrEquals(string str, char value, int startIndex)
         {
             int length = str.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
+                return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan(string str, char value, int startIndex, int count)
+        public static int IndexOfGreaterThanOrEquals(string str, char value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -254,28 +252,28 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
+                return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan<T>(T[] array, T value) 
+        public static int IndexOfGreaterThanOrEquals<T>(T[] array, T value) 
         {
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(array.Length), value), ptr);
+                return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr, MathHelper.MakeUnsigned(array.Length), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan<T>(T[] array, T value, int startIndex) 
+        public static int IndexOfGreaterThanOrEquals<T>(T[] array, T value, int startIndex) 
         {
             int length = array.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
+                return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan<T>(T[] array, T value, int startIndex, int count) 
+        public static int IndexOfGreaterThanOrEquals<T>(T[] array, T value, int startIndex, int count) 
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -285,16 +283,16 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
+                return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfGreaterOrEqualsThan<T>(T* ptr, int length, T value) 
-            => ConvertToIndex32(PointerIndexOfGreaterOrEqualsThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static int IndexOfGreaterThanOrEquals<T>(T* ptr, int length, T value) 
+            => ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint? IndexOfGreaterOrEqualsThan<T>(T* ptr, nuint length, T value)
-            => ConvertToIndexNative(PointerIndexOfGreaterOrEqualsThan(ptr, length, value), ptr);
+        public static nuint? IndexOfGreaterThanOrEquals<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfGreaterThanOrEquals(ptr, length, value), ptr);
         #endregion
 
         #region IndexOfLessThan
@@ -369,26 +367,26 @@ namespace WitherTorch.Common.Helpers
             => ConvertToIndexNative(PointerIndexOfLessThan(ptr, length, value), ptr);
         #endregion
 
-        #region IndexOfLessOrEqualsThan
+        #region IndexOfLessThanOrEquals
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(string str, char value)
+        public static int IndexOfLessThanOrEquals(string str, char value)
         {
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(str.Length), value), ptr);
+                return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr, MathHelper.MakeUnsigned(str.Length), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(string str, char value, int startIndex)
+        public static int IndexOfLessThanOrEquals(string str, char value, int startIndex)
         {
             int length = str.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
+                return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan(string str, char value, int startIndex, int count)
+        public static int IndexOfLessThanOrEquals(string str, char value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -398,28 +396,28 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
+                return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan<T>(T[] array, T value) 
+        public static int IndexOfLessThanOrEquals<T>(T[] array, T value) 
         {
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(array.Length), value), ptr);
+                return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr, MathHelper.MakeUnsigned(array.Length), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan<T>(T[] array, T value, int startIndex) 
+        public static int IndexOfLessThanOrEquals<T>(T[] array, T value, int startIndex) 
         {
             int length = array.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
+                return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan<T>(T[] array, T value, int startIndex, int count) 
+        public static int IndexOfLessThanOrEquals<T>(T[] array, T value, int startIndex, int count) 
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -429,16 +427,16 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr + startIndex, unchecked((uint)count), value), ptr);
+                return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int IndexOfLessOrEqualsThan<T>(T* ptr, int length, T value) 
-            => ConvertToIndex32(PointerIndexOfLessOrEqualsThan(ptr, MathHelper.MakeUnsigned(length), value), ptr);
+        public static int IndexOfLessThanOrEquals<T>(T* ptr, int length, T value) 
+            => ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr, MathHelper.MakeUnsigned(length), value), ptr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint? IndexOfLessOrEqualsThan<T>(T* ptr, nuint length, T value)
-            => ConvertToIndexNative(PointerIndexOfLessOrEqualsThan(ptr, length, value), ptr);
+        public static nuint? IndexOfLessThanOrEquals<T>(T* ptr, nuint length, T value)
+            => ConvertToIndexNative(PointerIndexOfLessThanOrEquals(ptr, length, value), ptr);
         #endregion
     }
 }

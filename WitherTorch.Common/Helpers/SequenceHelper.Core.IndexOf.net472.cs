@@ -69,9 +69,9 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.Include => Vector.Equals(valueVector, maskVector),
                     IndexOfMethod.Exclude => ~Vector.Equals(valueVector, maskVector),
                     IndexOfMethod.GreaterThan => Vector.GreaterThan(valueVector, maskVector),
-                    IndexOfMethod.GreaterOrEqualsThan => Vector.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.GreaterThanOrEquals => Vector.GreaterThanOrEqual(valueVector, maskVector),
                     IndexOfMethod.LessThan => Vector.LessThan(valueVector, maskVector),
-                    IndexOfMethod.LessOrEqualsThan => Vector.LessThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThanOrEquals => Vector.LessThanOrEqual(valueVector, maskVector),
                     _ => throw new InvalidOperationException(),
                 };
 

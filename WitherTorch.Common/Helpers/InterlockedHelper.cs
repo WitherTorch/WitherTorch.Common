@@ -131,7 +131,7 @@ namespace WitherTorch.Common.Helpers
         private static T MinCore<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
-            if (UnsafeHelper.IsLessOrEqualsThan(oldValue, value))
+            if (UnsafeHelper.IsLessThanOrEquals(oldValue, value))
                 return oldValue;
             do
             {
@@ -148,7 +148,7 @@ namespace WitherTorch.Common.Helpers
         private static T MinCoreUnsigned<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
-            if (UnsafeHelper.IsLessOrEqualsThanUnsigned(oldValue, value))
+            if (UnsafeHelper.IsLessThanOrEqualsUnsigned(oldValue, value))
                 return oldValue;
             do
             {
@@ -165,7 +165,7 @@ namespace WitherTorch.Common.Helpers
         private static T MaxCore<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
-            if (UnsafeHelper.IsGreaterOrEqualsThan(oldValue, value))
+            if (UnsafeHelper.IsGreaterThanOrEquals(oldValue, value))
                 return oldValue;
             do
             {
@@ -182,7 +182,7 @@ namespace WitherTorch.Common.Helpers
         private static T MaxCoreUnsigned<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
-            if (UnsafeHelper.IsGreaterOrEqualsThanUnsigned(oldValue, value))
+            if (UnsafeHelper.IsGreaterThanOrEqualsUnsigned(oldValue, value))
                 return oldValue;
             do
             {

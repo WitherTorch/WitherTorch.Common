@@ -12,9 +12,9 @@ namespace WitherTorch.Common.Helpers
             Include,
             Exclude,
             GreaterThan,
-            GreaterOrEqualsThan,
+            GreaterThanOrEquals,
             LessThan,
-            LessOrEqualsThan,
+            LessThanOrEquals,
             _Last
         }
 
@@ -98,21 +98,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsGreaterOrEqualsThan(nint* ptr, nuint length, nint value)
+            public static bool ContainsGreaterThanOrEquals(nint* ptr, nuint length, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return FastCore<int>.ContainsGreaterOrEqualsThan((int*)ptr, length, *(int*)&value);
+                        return FastCore<int>.ContainsGreaterThanOrEquals((int*)ptr, length, *(int*)&value);
                     case sizeof(long):
-                        return FastCore<long>.ContainsGreaterOrEqualsThan((long*)ptr, length, *(long*)&value);
+                        return FastCore<long>.ContainsGreaterThanOrEquals((long*)ptr, length, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return FastCore<int>.ContainsGreaterOrEqualsThan((int*)ptr, length, *(int*)&value);
+                                return FastCore<int>.ContainsGreaterThanOrEquals((int*)ptr, length, *(int*)&value);
                             case sizeof(long):
-                                return FastCore<long>.ContainsGreaterOrEqualsThan((long*)ptr, length, *(long*)&value);
+                                return FastCore<long>.ContainsGreaterThanOrEquals((long*)ptr, length, *(long*)&value);
                             default:
                                 break;
                         }
@@ -148,21 +148,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsLessOrEqualsThan(nint* ptr, nuint length, nint value)
+            public static bool ContainsLessThanOrEquals(nint* ptr, nuint length, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return FastCore<int>.ContainsLessOrEqualsThan((int*)ptr, length, *(int*)&value);
+                        return FastCore<int>.ContainsLessThanOrEquals((int*)ptr, length, *(int*)&value);
                     case sizeof(long):
-                        return FastCore<long>.ContainsLessOrEqualsThan((long*)ptr, length, *(long*)&value);
+                        return FastCore<long>.ContainsLessThanOrEquals((long*)ptr, length, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return FastCore<int>.ContainsLessOrEqualsThan((int*)ptr, length, *(int*)&value);
+                                return FastCore<int>.ContainsLessThanOrEquals((int*)ptr, length, *(int*)&value);
                             case sizeof(long):
-                                return FastCore<long>.ContainsLessOrEqualsThan((long*)ptr, length, *(long*)&value);
+                                return FastCore<long>.ContainsLessThanOrEquals((long*)ptr, length, *(long*)&value);
                             default:
                                 break;
                         }
@@ -248,21 +248,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsGreaterOrEqualsThan(nuint* ptr, nuint length, nuint value)
+            public static bool ContainsGreaterThanOrEquals(nuint* ptr, nuint length, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return FastCore<uint>.ContainsGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                        return FastCore<uint>.ContainsGreaterThanOrEquals((uint*)ptr, length, *(uint*)&value);
                     case sizeof(ulong):
-                        return FastCore<ulong>.ContainsGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                        return FastCore<ulong>.ContainsGreaterThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return FastCore<uint>.ContainsGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                                return FastCore<uint>.ContainsGreaterThanOrEquals((uint*)ptr, length, *(uint*)&value);
                             case sizeof(ulong):
-                                return FastCore<ulong>.ContainsGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                                return FastCore<ulong>.ContainsGreaterThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -298,21 +298,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static bool ContainsLessOrEqualsThan(nuint* ptr, nuint length, nuint value)
+            public static bool ContainsLessThanOrEquals(nuint* ptr, nuint length, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return FastCore<uint>.ContainsLessOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                        return FastCore<uint>.ContainsLessThanOrEquals((uint*)ptr, length, *(uint*)&value);
                     case sizeof(ulong):
-                        return FastCore<ulong>.ContainsLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                        return FastCore<ulong>.ContainsLessThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return FastCore<uint>.ContainsLessOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                                return FastCore<uint>.ContainsLessThanOrEquals((uint*)ptr, length, *(uint*)&value);
                             case sizeof(ulong):
-                                return FastCore<ulong>.ContainsLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                                return FastCore<ulong>.ContainsLessThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -398,21 +398,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static nint* PointerIndexOfGreaterOrEqualsThan(nint* ptr, nuint length, nint value)
+            public static nint* PointerIndexOfGreaterThanOrEquals(nint* ptr, nuint length, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (nint*)FastCore<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, length, *(int*)&value);
+                        return (nint*)FastCore<int>.PointerIndexOfGreaterThanOrEquals((int*)ptr, length, *(int*)&value);
                     case sizeof(long):
-                        return (nint*)FastCore<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, length, *(long*)&value);
+                        return (nint*)FastCore<long>.PointerIndexOfGreaterThanOrEquals((long*)ptr, length, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (nint*)FastCore<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, length, *(int*)&value);
+                                return (nint*)FastCore<int>.PointerIndexOfGreaterThanOrEquals((int*)ptr, length, *(int*)&value);
                             case sizeof(long):
-                                return (nint*)FastCore<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, length, *(long*)&value);
+                                return (nint*)FastCore<long>.PointerIndexOfGreaterThanOrEquals((long*)ptr, length, *(long*)&value);
                             default:
                                 break;
                         }
@@ -448,21 +448,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static nint* PointerIndexOfLessOrEqualsThan(nint* ptr, nuint length, nint value)
+            public static nint* PointerIndexOfLessThanOrEquals(nint* ptr, nuint length, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        return (nint*)FastCore<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, length, *(int*)&value);
+                        return (nint*)FastCore<int>.PointerIndexOfLessThanOrEquals((int*)ptr, length, *(int*)&value);
                     case sizeof(long):
-                        return (nint*)FastCore<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, length, *(long*)&value);
+                        return (nint*)FastCore<long>.PointerIndexOfLessThanOrEquals((long*)ptr, length, *(long*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                return (nint*)FastCore<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, length, *(int*)&value);
+                                return (nint*)FastCore<int>.PointerIndexOfLessThanOrEquals((int*)ptr, length, *(int*)&value);
                             case sizeof(long):
-                                return (nint*)FastCore<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, length, *(long*)&value);
+                                return (nint*)FastCore<long>.PointerIndexOfLessThanOrEquals((long*)ptr, length, *(long*)&value);
                             default:
                                 break;
                         }
@@ -548,21 +548,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static nuint* PointerIndexOfGreaterOrEqualsThan(nuint* ptr, nuint length, nuint value)
+            public static nuint* PointerIndexOfGreaterThanOrEquals(nuint* ptr, nuint length, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (nuint*)FastCore<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                        return (nuint*)FastCore<uint>.PointerIndexOfGreaterThanOrEquals((uint*)ptr, length, *(uint*)&value);
                     case sizeof(ulong):
-                        return (nuint*)FastCore<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                        return (nuint*)FastCore<ulong>.PointerIndexOfGreaterThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (nuint*)FastCore<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                                return (nuint*)FastCore<uint>.PointerIndexOfGreaterThanOrEquals((uint*)ptr, length, *(uint*)&value);
                             case sizeof(ulong):
-                                return (nuint*)FastCore<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                                return (nuint*)FastCore<ulong>.PointerIndexOfGreaterThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -598,21 +598,21 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static nuint* PointerIndexOfLessOrEqualsThan(nuint* ptr, nuint length, nuint value)
+            public static nuint* PointerIndexOfLessThanOrEquals(nuint* ptr, nuint length, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        return (nuint*)FastCore<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                        return (nuint*)FastCore<uint>.PointerIndexOfLessThanOrEquals((uint*)ptr, length, *(uint*)&value);
                     case sizeof(ulong):
-                        return (nuint*)FastCore<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                        return (nuint*)FastCore<ulong>.PointerIndexOfLessThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                return (nuint*)FastCore<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, length, *(uint*)&value);
+                                return (nuint*)FastCore<uint>.PointerIndexOfLessThanOrEquals((uint*)ptr, length, *(uint*)&value);
                             case sizeof(ulong):
-                                return (nuint*)FastCore<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&value);
+                                return (nuint*)FastCore<ulong>.PointerIndexOfLessThanOrEquals((ulong*)ptr, length, *(ulong*)&value);
                             default:
                                 break;
                         }
@@ -710,24 +710,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void ReplaceGreaterOrEqualsThan(nint* ptr, nuint length, nint filter, nint replacement)
+            public static void ReplaceGreaterThanOrEquals(nint* ptr, nuint length, nint filter, nint replacement)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        FastCore<int>.ReplaceGreaterOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        FastCore<int>.ReplaceGreaterThanOrEquals((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
                         return;
                     case sizeof(long):
-                        FastCore<long>.ReplaceGreaterOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        FastCore<long>.ReplaceGreaterThanOrEquals((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                FastCore<int>.ReplaceGreaterOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                FastCore<int>.ReplaceGreaterThanOrEquals((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
                                 return;
                             case sizeof(long):
-                                FastCore<long>.ReplaceGreaterOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                FastCore<long>.ReplaceGreaterThanOrEquals((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
                                 return;
                             default:
                                 break;
@@ -768,24 +768,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void ReplaceLessOrEqualsThan(nint* ptr, nuint length, nint filter, nint replacement)
+            public static void ReplaceLessThanOrEquals(nint* ptr, nuint length, nint filter, nint replacement)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        FastCore<int>.ReplaceLessOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                        FastCore<int>.ReplaceLessThanOrEquals((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
                         return;
                     case sizeof(long):
-                        FastCore<long>.ReplaceLessOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                        FastCore<long>.ReplaceLessThanOrEquals((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                FastCore<int>.ReplaceLessOrEqualsThan((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
+                                FastCore<int>.ReplaceLessThanOrEquals((int*)ptr, length, *(int*)&filter, *(int*)&replacement);
                                 return;
                             case sizeof(long):
-                                FastCore<long>.ReplaceLessOrEqualsThan((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
+                                FastCore<long>.ReplaceLessThanOrEquals((long*)ptr, length, *(long*)&filter, *(long*)&replacement);
                                 return;
                             default:
                                 break;
@@ -884,24 +884,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void ReplaceGreaterOrEqualsThan(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            public static void ReplaceGreaterThanOrEquals(nuint* ptr, nuint length, nuint filter, nuint replacement)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        FastCore<uint>.ReplaceGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        FastCore<uint>.ReplaceGreaterThanOrEquals((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
                         return;
                     case sizeof(ulong):
-                        FastCore<ulong>.ReplaceGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        FastCore<ulong>.ReplaceGreaterThanOrEquals((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                FastCore<uint>.ReplaceGreaterOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                FastCore<uint>.ReplaceGreaterThanOrEquals((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
                                 return;
                             case sizeof(ulong):
-                                FastCore<ulong>.ReplaceGreaterOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                FastCore<ulong>.ReplaceGreaterThanOrEquals((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
                                 return;
                             default:
                                 break;
@@ -942,24 +942,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void ReplaceLessOrEqualsThan(nuint* ptr, nuint length, nuint filter, nuint replacement)
+            public static void ReplaceLessThanOrEquals(nuint* ptr, nuint length, nuint filter, nuint replacement)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        FastCore<uint>.ReplaceLessOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                        FastCore<uint>.ReplaceLessThanOrEquals((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
                         return;
                     case sizeof(ulong):
-                        FastCore<ulong>.ReplaceLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                        FastCore<ulong>.ReplaceLessThanOrEquals((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                FastCore<uint>.ReplaceLessOrEqualsThan((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
+                                FastCore<uint>.ReplaceLessThanOrEquals((uint*)ptr, length, *(uint*)&filter, *(uint*)&replacement);
                                 return;
                             case sizeof(ulong):
-                                FastCore<ulong>.ReplaceLessOrEqualsThan((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
+                                FastCore<ulong>.ReplaceLessThanOrEquals((ulong*)ptr, length, *(ulong*)&filter, *(ulong*)&replacement);
                                 return;
                             default:
                                 break;
@@ -986,11 +986,11 @@ namespace WitherTorch.Common.Helpers
             public static bool ContainsLessThan(T* ptr, nuint length, T value)
                 => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false), usePreciseBooleanDefination: true);
 
-            public static bool ContainsGreaterOrEqualsThan(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: false), usePreciseBooleanDefination: true);
+            public static bool ContainsGreaterThanOrEquals(T* ptr, nuint length, T value)
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: false), usePreciseBooleanDefination: true);
 
-            public static bool ContainsLessOrEqualsThan(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan, accurateResult: false), usePreciseBooleanDefination: true);
+            public static bool ContainsLessThanOrEquals(T* ptr, nuint length, T value)
+                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: false), usePreciseBooleanDefination: true);
 
             public static T* PointerIndexOf(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: true);
@@ -1004,11 +1004,11 @@ namespace WitherTorch.Common.Helpers
             public static T* PointerIndexOfLessThan(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: true);
 
-            public static T* PointerIndexOfGreaterOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan, accurateResult: true);
+            public static T* PointerIndexOfGreaterThanOrEquals(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: true);
 
-            public static T* PointerIndexOfLessOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan, accurateResult: true);
+            public static T* PointerIndexOfLessThanOrEquals(T* ptr, nuint length, T value)
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: true);
 
             public static void Replace(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Include);
@@ -1022,11 +1022,11 @@ namespace WitherTorch.Common.Helpers
             public static void ReplaceLessThan(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
 
-            public static void ReplaceGreaterOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
-                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterOrEqualsThan);
+            public static void ReplaceGreaterThanOrEquals(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThanOrEquals);
 
-            public static void ReplaceLessOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
-                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessOrEqualsThan);
+            public static void ReplaceLessThanOrEquals(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThanOrEquals);
 
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
@@ -1059,9 +1059,9 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.Include => UnsafeHelper.Equals(item, value),
                     IndexOfMethod.Exclude => UnsafeHelper.NotEquals(item, value),
                     IndexOfMethod.GreaterThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsGreaterThanUnsigned(item, value) : UnsafeHelper.IsGreaterThan(item, value),
-                    IndexOfMethod.GreaterOrEqualsThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsGreaterOrEqualsThanUnsigned(item, value) : UnsafeHelper.IsGreaterOrEqualsThan(item, value),
+                    IndexOfMethod.GreaterThanOrEquals => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsGreaterThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsGreaterThanOrEquals(item, value),
                     IndexOfMethod.LessThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessThanUnsigned(item, value) : UnsafeHelper.IsLessThan(item, value),
-                    IndexOfMethod.LessOrEqualsThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessOrEqualsThanUnsigned(item, value) : UnsafeHelper.IsLessOrEqualsThan(item, value),
+                    IndexOfMethod.LessThanOrEquals => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsLessThanOrEquals(item, value),
                     _ => throw new InvalidOperationException(),
                 };
 
@@ -1108,10 +1108,10 @@ namespace WitherTorch.Common.Helpers
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan) != null;
 
             public static bool ContainsGreaterOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan) != null;
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals) != null;
 
             public static bool ContainsLessOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan) != null;
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals) != null;
 
             public static T* PointerIndexOf(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include);
@@ -1126,10 +1126,10 @@ namespace WitherTorch.Common.Helpers
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan);
 
             public static T* PointerIndexOfGreaterOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterOrEqualsThan);
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals);
 
             public static T* PointerIndexOfLessOrEqualsThan(T* ptr, nuint length, T value)
-                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessOrEqualsThan);
+                => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals);
 
             public static void Replace(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Include);
@@ -1144,10 +1144,10 @@ namespace WitherTorch.Common.Helpers
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
 
             public static void ReplaceGreaterOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
-                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterOrEqualsThan);
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThanOrEquals);
 
             public static void ReplaceLessOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
-                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessOrEqualsThan);
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThanOrEquals);
 
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method)
@@ -1212,9 +1212,9 @@ namespace WitherTorch.Common.Helpers
                 return method switch
                 {
                     IndexOfMethod.GreaterThan => result > 0,
-                    IndexOfMethod.GreaterOrEqualsThan => result >= 0,
+                    IndexOfMethod.GreaterThanOrEquals => result >= 0,
                     IndexOfMethod.LessThan => result < 0,
-                    IndexOfMethod.LessOrEqualsThan => result <= 0,
+                    IndexOfMethod.LessThanOrEquals => result <= 0,
                     _ => throw new InvalidOperationException(),
                 };
             }

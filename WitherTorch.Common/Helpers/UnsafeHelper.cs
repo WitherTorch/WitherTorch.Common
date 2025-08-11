@@ -230,7 +230,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsGreaterOrEqualsThan<T>(T a, T b)
+        public static bool IsGreaterThanOrEquals<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -241,7 +241,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsGreaterOrEqualsThanUnsigned<T>(T a, T b)
+        public static bool IsGreaterThanOrEqualsUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -270,7 +270,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsLessOrEqualsThan<T>(T a, T b)
+        public static bool IsLessThanOrEquals<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -281,7 +281,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsLessOrEqualsThanUnsigned<T>(T a, T b)
+        public static bool IsLessThanOrEqualsUnsigned<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);

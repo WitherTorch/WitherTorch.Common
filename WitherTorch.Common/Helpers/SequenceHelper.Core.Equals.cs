@@ -54,8 +54,8 @@ namespace WitherTorch.Common.Helpers
             private static bool IsGreaterOrEqualsFast(T a, T b)
             {
                 if (UnsafeHelper.IsUnsigned<T>())
-                    return UnsafeHelper.IsGreaterOrEqualsThanUnsigned(a, b);
-                return UnsafeHelper.IsGreaterOrEqualsThan(a, b);
+                    return UnsafeHelper.IsGreaterThanOrEqualsUnsigned(a, b);
+                return UnsafeHelper.IsGreaterThanOrEquals(a, b);
             }
 
             [Inline(InlineBehavior.Remove)]
@@ -66,8 +66,8 @@ namespace WitherTorch.Common.Helpers
             private static bool IsLessOrEqualsFast(T a, T b)
             {
                 if (UnsafeHelper.IsUnsigned<T>())
-                    return UnsafeHelper.IsLessOrEqualsThanUnsigned(a, b);
-                return UnsafeHelper.IsLessOrEqualsThan(a, b);
+                    return UnsafeHelper.IsLessThanOrEqualsUnsigned(a, b);
+                return UnsafeHelper.IsLessThanOrEquals(a, b);
             }
 
             [Inline(InlineBehavior.Remove)]

@@ -180,56 +180,56 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T* PointerIndexOfGreaterOrEqualsThan<T>(T* ptrStart, T* ptrEnd, T value)
-            => ptrStart >= ptrEnd ? null : PointerIndexOfGreaterOrEqualsThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+        public static T* PointerIndexOfGreaterThanOrEquals<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfGreaterThanOrEquals(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfGreaterOrEqualsThan<T>(T* ptr, nuint length, T value)
+        public static T* PointerIndexOfGreaterThanOrEquals<T>(T* ptr, nuint length, T value)
         {
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
-                return (T*)FastCore<byte>.PointerIndexOfGreaterOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return (T*)FastCore<byte>.PointerIndexOfGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
-                return (T*)FastCore<sbyte>.PointerIndexOfGreaterOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return (T*)FastCore<sbyte>.PointerIndexOfGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
             if (typeof(T) == typeof(short))
-                return (T*)FastCore<short>.PointerIndexOfGreaterOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return (T*)FastCore<short>.PointerIndexOfGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
-                return (T*)FastCore<ushort>.PointerIndexOfGreaterOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return (T*)FastCore<ushort>.PointerIndexOfGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(int))
-                return (T*)FastCore<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return (T*)FastCore<int>.PointerIndexOfGreaterThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value));
             if (typeof(T) == typeof(uint))
-                return (T*)FastCore<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return (T*)FastCore<uint>.PointerIndexOfGreaterThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
             if (typeof(T) == typeof(long))
-                return (T*)FastCore<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return (T*)FastCore<long>.PointerIndexOfGreaterThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value));
             if (typeof(T) == typeof(ulong))
-                return (T*)FastCore<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return (T*)FastCore<ulong>.PointerIndexOfGreaterThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
             if (typeof(T) == typeof(float))
-                return (T*)FastCore<float>.PointerIndexOfGreaterOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return (T*)FastCore<float>.PointerIndexOfGreaterThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value));
             if (typeof(T) == typeof(double))
-                return (T*)FastCore<double>.PointerIndexOfGreaterOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return (T*)FastCore<double>.PointerIndexOfGreaterThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value));
             if (typeof(T) == typeof(nint))
-                return (T*)FastCore.PointerIndexOfGreaterOrEqualsThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return (T*)FastCore.PointerIndexOfGreaterThanOrEquals((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
-                return (T*)FastCore.PointerIndexOfGreaterOrEqualsThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return PointerIndexOfGreaterOrEqualsThanSlow(ptr, value, length);
+                return (T*)FastCore.PointerIndexOfGreaterThanOrEquals((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+            return PointerIndexOfGreaterThanOrEqualsSlow(ptr, value, length);
         }
 
-        private static T* PointerIndexOfGreaterOrEqualsThanSlow<T>(T* ptr, T value, nuint length)
+        private static T* PointerIndexOfGreaterThanOrEqualsSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
             if (type.IsEnum)
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfGreaterOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
-                    TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfGreaterOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
-                    TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfGreaterOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfGreaterOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
-                    TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfGreaterOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
-                    TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfGreaterOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
-                    TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfGreaterOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
-                    TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfGreaterOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
-                    TypeCode.Single => (T*)FastCore<float>.PointerIndexOfGreaterOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
-                    TypeCode.Double => (T*)FastCore<double>.PointerIndexOfGreaterOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
+                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
+                    TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
+                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfGreaterThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
+                    TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfGreaterThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
+                    TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfGreaterThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
+                    TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfGreaterThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
+                    TypeCode.Single => (T*)FastCore<float>.PointerIndexOfGreaterThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
+                    TypeCode.Double => (T*)FastCore<double>.PointerIndexOfGreaterThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
                     _ => SlowCore<T>.PointerIndexOfGreaterOrEqualsThan(ptr, length, value)
                 };
             }
@@ -294,56 +294,56 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T* PointerIndexOfLessOrEqualsThan<T>(T* ptrStart, T* ptrEnd, T value)
-            => ptrStart >= ptrEnd ? null : PointerIndexOfLessOrEqualsThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
+        public static T* PointerIndexOfLessThanOrEquals<T>(T* ptrStart, T* ptrEnd, T value)
+            => ptrStart >= ptrEnd ? null : PointerIndexOfLessThanOrEquals(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* PointerIndexOfLessOrEqualsThan<T>(T* ptr, nuint length, T value)
+        public static T* PointerIndexOfLessThanOrEquals<T>(T* ptr, nuint length, T value)
         {
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
-                return (T*)FastCore<byte>.PointerIndexOfLessOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return (T*)FastCore<byte>.PointerIndexOfLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
-                return (T*)FastCore<sbyte>.PointerIndexOfLessOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return (T*)FastCore<sbyte>.PointerIndexOfLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
             if (typeof(T) == typeof(short))
-                return (T*)FastCore<short>.PointerIndexOfLessOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return (T*)FastCore<short>.PointerIndexOfLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
-                return (T*)FastCore<ushort>.PointerIndexOfLessOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return (T*)FastCore<ushort>.PointerIndexOfLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(int))
-                return (T*)FastCore<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return (T*)FastCore<int>.PointerIndexOfLessThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value));
             if (typeof(T) == typeof(uint))
-                return (T*)FastCore<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return (T*)FastCore<uint>.PointerIndexOfLessThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
             if (typeof(T) == typeof(long))
-                return (T*)FastCore<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return (T*)FastCore<long>.PointerIndexOfLessThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value));
             if (typeof(T) == typeof(ulong))
-                return (T*)FastCore<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return (T*)FastCore<ulong>.PointerIndexOfLessThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
             if (typeof(T) == typeof(float))
-                return (T*)FastCore<float>.PointerIndexOfLessOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return (T*)FastCore<float>.PointerIndexOfLessThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value));
             if (typeof(T) == typeof(double))
-                return (T*)FastCore<double>.PointerIndexOfLessOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return (T*)FastCore<double>.PointerIndexOfLessThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value));
             if (typeof(T) == typeof(nint))
-                return (T*)FastCore.PointerIndexOfLessOrEqualsThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return (T*)FastCore.PointerIndexOfLessThanOrEquals((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
-                return (T*)FastCore.PointerIndexOfLessOrEqualsThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return PointerIndexOfLessOrEqualsThanSlow(ptr, value, length);
+                return (T*)FastCore.PointerIndexOfLessThanOrEquals((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+            return PointerIndexOfLessThanOrEqualsSlow(ptr, value, length);
         }
 
-        private static T* PointerIndexOfLessOrEqualsThanSlow<T>(T* ptr, T value, nuint length)
+        private static T* PointerIndexOfLessThanOrEqualsSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
             if (type.IsEnum)
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfLessOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
-                    TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfLessOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
-                    TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfLessOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfLessOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
-                    TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfLessOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
-                    TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfLessOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
-                    TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfLessOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
-                    TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfLessOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
-                    TypeCode.Single => (T*)FastCore<float>.PointerIndexOfLessOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
-                    TypeCode.Double => (T*)FastCore<double>.PointerIndexOfLessOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
+                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
+                    TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
+                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfLessThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
+                    TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfLessThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
+                    TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfLessThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
+                    TypeCode.UInt64 => (T*)FastCore<ulong>.PointerIndexOfLessThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
+                    TypeCode.Single => (T*)FastCore<float>.PointerIndexOfLessThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
+                    TypeCode.Double => (T*)FastCore<double>.PointerIndexOfLessThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
                     _ => SlowCore<T>.PointerIndexOfLessOrEqualsThan(ptr, length, value)
                 };
             }

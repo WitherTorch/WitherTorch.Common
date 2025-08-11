@@ -208,26 +208,26 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsGreaterThan<T>(T* ptr, nuint length, T value) => ContainsGreaterThanCore(ptr, length, value);
         #endregion
 
-        #region ContainsGreaterOrEqualsThan
+        #region ContainsGreaterThanOrEquals
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan(string str, char value)
+        public static bool ContainsGreaterThanOrEquals(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsGreaterOrEqualsThanCore(ptr, MathHelper.MakeUnsigned(str.Length), value);
+                return ContainsGreaterThanOrEqualsCore(ptr, MathHelper.MakeUnsigned(str.Length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan(string str, char value, int startIndex)
+        public static bool ContainsGreaterThanOrEquals(string str, char value, int startIndex)
         {
             int length = str.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ContainsGreaterOrEqualsThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+                return ContainsGreaterThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan(string str, char value, int startIndex, int count)
+        public static bool ContainsGreaterThanOrEquals(string str, char value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -237,28 +237,28 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ContainsGreaterOrEqualsThanCore(ptr + startIndex, unchecked((nuint)length), value);
+                return ContainsGreaterThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan<T>(T[] array, T value)
+        public static bool ContainsGreaterThanOrEquals<T>(T[] array, T value)
         {
             fixed (T* ptr = array)
-                return ContainsGreaterOrEqualsThanCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
+                return ContainsGreaterThanOrEqualsCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan<T>(T[] array, T value, int startIndex)
+        public static bool ContainsGreaterThanOrEquals<T>(T[] array, T value, int startIndex)
         {
             int length = array.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ContainsGreaterOrEqualsThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+                return ContainsGreaterThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan<T>(T[] array, T value, int startIndex, int count)
+        public static bool ContainsGreaterThanOrEquals<T>(T[] array, T value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -268,11 +268,11 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ContainsGreaterOrEqualsThanCore(ptr + startIndex, unchecked((nuint)length), value);
+                return ContainsGreaterThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsGreaterOrEqualsThan<T>(T* ptr, nuint length, T value) => ContainsGreaterOrEqualsThanCore(ptr, length, value);
+        public static bool ContainsGreaterThanOrEquals<T>(T* ptr, nuint length, T value) => ContainsGreaterThanOrEqualsCore(ptr, length, value);
         #endregion
 
         #region ContainsLessThan
@@ -342,26 +342,26 @@ namespace WitherTorch.Common.Helpers
         public static bool ContainsLessThan<T>(T* ptr, nuint length, T value) => ContainsLessThanCore(ptr, length, value);
         #endregion
 
-        #region ContainsLessOrEqualsThan
+        #region ContainsLessThanOrEquals
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan(string str, char value)
+        public static bool ContainsLessThanOrEquals(string str, char value)
         {
             fixed (char* ptr = str)
-                return ContainsLessOrEqualsThanCore(ptr, MathHelper.MakeUnsigned(str.Length), value);
+                return ContainsLessThanOrEqualsCore(ptr, MathHelper.MakeUnsigned(str.Length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan(string str, char value, int startIndex)
+        public static bool ContainsLessThanOrEquals(string str, char value, int startIndex)
         {
             int length = str.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (char* ptr = str)
-                return ContainsLessOrEqualsThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+                return ContainsLessThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan(string str, char value, int startIndex, int count)
+        public static bool ContainsLessThanOrEquals(string str, char value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -371,28 +371,28 @@ namespace WitherTorch.Common.Helpers
             if (length > str.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
             fixed (char* ptr = str)
-                return ContainsLessOrEqualsThanCore(ptr + startIndex, unchecked((nuint)length), value);
+                return ContainsLessThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan<T>(T[] array, T value)
+        public static bool ContainsLessThanOrEquals<T>(T[] array, T value)
         {
             fixed (T* ptr = array)
-                return ContainsLessOrEqualsThanCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
+                return ContainsLessThanOrEqualsCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan<T>(T[] array, T value, int startIndex)
+        public static bool ContainsLessThanOrEquals<T>(T[] array, T value, int startIndex)
         {
             int length = array.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                return ContainsLessOrEqualsThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+                return ContainsLessThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan<T>(T[] array, T value, int startIndex, int count)
+        public static bool ContainsLessThanOrEquals<T>(T[] array, T value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -402,11 +402,11 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                return ContainsLessOrEqualsThanCore(ptr + startIndex, unchecked((nuint)length), value);
+                return ContainsLessThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ContainsLessOrEqualsThan<T>(T* ptr, nuint length, T value) => ContainsLessOrEqualsThanCore(ptr, length, value);
+        public static bool ContainsLessThanOrEquals<T>(T* ptr, nuint length, T value) => ContainsLessThanOrEqualsCore(ptr, length, value);
         #endregion
 
         #region Core Methods
@@ -570,52 +570,52 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool ContainsGreaterOrEqualsThanCore<T>(T* ptr, nuint length, T value)
+        private static bool ContainsGreaterThanOrEqualsCore<T>(T* ptr, nuint length, T value)
         {
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
-                return FastCore<byte>.ContainsGreaterOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return FastCore<byte>.ContainsGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
-                return FastCore<sbyte>.ContainsGreaterOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return FastCore<sbyte>.ContainsGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
             if (typeof(T) == typeof(short))
-                return FastCore<short>.ContainsGreaterOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return FastCore<short>.ContainsGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
-                return FastCore<ushort>.ContainsGreaterOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return FastCore<ushort>.ContainsGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(int))
-                return FastCore<int>.ContainsGreaterOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return FastCore<int>.ContainsGreaterThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value));
             if (typeof(T) == typeof(uint))
-                return FastCore<uint>.ContainsGreaterOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return FastCore<uint>.ContainsGreaterThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
             if (typeof(T) == typeof(long))
-                return FastCore<long>.ContainsGreaterOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return FastCore<long>.ContainsGreaterThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value));
             if (typeof(T) == typeof(ulong))
-                return FastCore<ulong>.ContainsGreaterOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return FastCore<ulong>.ContainsGreaterThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
             if (typeof(T) == typeof(float))
-                return FastCore<float>.ContainsGreaterOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return FastCore<float>.ContainsGreaterThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value));
             if (typeof(T) == typeof(double))
-                return FastCore<double>.ContainsGreaterOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return FastCore<double>.ContainsGreaterThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value));
             if (typeof(T) == typeof(nint))
-                return FastCore.ContainsGreaterOrEqualsThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return FastCore.ContainsGreaterThanOrEquals((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
-                return FastCore.ContainsGreaterOrEqualsThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsGreaterOrEqualsThanCoreSlow(ptr, length, value);
+                return FastCore.ContainsGreaterThanOrEquals((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+            return ContainsGreaterThanOrEqualsCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsGreaterOrEqualsThanCoreSlow<T>(T* ptr, nuint length, T value)
+        private static bool ContainsGreaterThanOrEqualsCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsGreaterOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
-                    TypeCode.SByte => FastCore<sbyte>.ContainsGreaterOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
-                    TypeCode.Int16 => FastCore<short>.ContainsGreaterOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsGreaterOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
-                    TypeCode.Int32 => FastCore<int>.ContainsGreaterOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
-                    TypeCode.UInt32 => FastCore<uint>.ContainsGreaterOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
-                    TypeCode.Int64 => FastCore<long>.ContainsGreaterOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
-                    TypeCode.UInt64 => FastCore<ulong>.ContainsGreaterOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
-                    TypeCode.Single => FastCore<float>.ContainsGreaterOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
-                    TypeCode.Double => FastCore<double>.ContainsGreaterOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
+                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.SByte => FastCore<sbyte>.ContainsGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
+                    TypeCode.Int16 => FastCore<short>.ContainsGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
+                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.Int32 => FastCore<int>.ContainsGreaterThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
+                    TypeCode.UInt32 => FastCore<uint>.ContainsGreaterThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
+                    TypeCode.Int64 => FastCore<long>.ContainsGreaterThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
+                    TypeCode.UInt64 => FastCore<ulong>.ContainsGreaterThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
+                    TypeCode.Single => FastCore<float>.ContainsGreaterThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
+                    TypeCode.Double => FastCore<double>.ContainsGreaterThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
                     _ => SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, length, value)
                 };
             }
@@ -676,52 +676,52 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool ContainsLessOrEqualsThanCore<T>(T* ptr, nuint length, T value)
+        private static bool ContainsLessThanOrEqualsCore<T>(T* ptr, nuint length, T value)
         {
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
-                return FastCore<byte>.ContainsLessOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return FastCore<byte>.ContainsLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
             if (typeof(T) == typeof(sbyte))
-                return FastCore<sbyte>.ContainsLessOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return FastCore<sbyte>.ContainsLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
             if (typeof(T) == typeof(short))
-                return FastCore<short>.ContainsLessOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return FastCore<short>.ContainsLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
-                return FastCore<ushort>.ContainsLessOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return FastCore<ushort>.ContainsLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
             if (typeof(T) == typeof(int))
-                return FastCore<int>.ContainsLessOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return FastCore<int>.ContainsLessThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value));
             if (typeof(T) == typeof(uint))
-                return FastCore<uint>.ContainsLessOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return FastCore<uint>.ContainsLessThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
             if (typeof(T) == typeof(long))
-                return FastCore<long>.ContainsLessOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return FastCore<long>.ContainsLessThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value));
             if (typeof(T) == typeof(ulong))
-                return FastCore<ulong>.ContainsLessOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return FastCore<ulong>.ContainsLessThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
             if (typeof(T) == typeof(float))
-                return FastCore<float>.ContainsLessOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return FastCore<float>.ContainsLessThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value));
             if (typeof(T) == typeof(double))
-                return FastCore<double>.ContainsLessOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return FastCore<double>.ContainsLessThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value));
             if (typeof(T) == typeof(nint))
-                return FastCore.ContainsLessOrEqualsThan((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return FastCore.ContainsLessThanOrEquals((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
             if (typeof(T) == typeof(nuint))
-                return FastCore.ContainsLessOrEqualsThan((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
-            return ContainsLessOrEqualsThanCoreSlow(ptr, length, value);
+                return FastCore.ContainsLessThanOrEquals((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+            return ContainsLessThanOrEqualsCoreSlow(ptr, length, value);
         }
 
-        private static bool ContainsLessOrEqualsThanCoreSlow<T>(T* ptr, nuint length, T value)
+        private static bool ContainsLessThanOrEqualsCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsLessOrEqualsThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
-                    TypeCode.SByte => FastCore<sbyte>.ContainsLessOrEqualsThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
-                    TypeCode.Int16 => FastCore<short>.ContainsLessOrEqualsThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsLessOrEqualsThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
-                    TypeCode.Int32 => FastCore<int>.ContainsLessOrEqualsThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
-                    TypeCode.UInt32 => FastCore<uint>.ContainsLessOrEqualsThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
-                    TypeCode.Int64 => FastCore<long>.ContainsLessOrEqualsThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
-                    TypeCode.UInt64 => FastCore<ulong>.ContainsLessOrEqualsThan((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
-                    TypeCode.Single => FastCore<float>.ContainsLessOrEqualsThan((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
-                    TypeCode.Double => FastCore<double>.ContainsLessOrEqualsThan((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
+                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.SByte => FastCore<sbyte>.ContainsLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
+                    TypeCode.Int16 => FastCore<short>.ContainsLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
+                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.Int32 => FastCore<int>.ContainsLessThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
+                    TypeCode.UInt32 => FastCore<uint>.ContainsLessThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
+                    TypeCode.Int64 => FastCore<long>.ContainsLessThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
+                    TypeCode.UInt64 => FastCore<ulong>.ContainsLessThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
+                    TypeCode.Single => FastCore<float>.ContainsLessThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
+                    TypeCode.Double => FastCore<double>.ContainsLessThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
                     _ => SlowCore<T>.ContainsLessOrEqualsThan(ptr, length, value)
                 };
             }

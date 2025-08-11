@@ -182,9 +182,9 @@ namespace WitherTorch.Common.Helpers
                 IndexOfMethod.Include => Vector512.Equals(valueVector, maskVector),
                 IndexOfMethod.Exclude => ~Vector512.Equals(valueVector, maskVector),
                 IndexOfMethod.GreaterThan => Vector512.GreaterThan(valueVector, maskVector),
-                IndexOfMethod.GreaterOrEqualsThan => Vector512.GreaterThanOrEqual(valueVector, maskVector),
+                IndexOfMethod.GreaterThanOrEquals => Vector512.GreaterThanOrEqual(valueVector, maskVector),
                 IndexOfMethod.LessThan => Vector512.LessThan(valueVector, maskVector),
-                IndexOfMethod.LessOrEqualsThan => Vector512.LessThanOrEqual(valueVector, maskVector),
+                IndexOfMethod.LessThanOrEquals => Vector512.LessThanOrEqual(valueVector, maskVector),
                 _ => throw new InvalidOperationException(),
             };
 
@@ -195,9 +195,9 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.Include => Vector256.Equals(valueVector, maskVector),
                     IndexOfMethod.Exclude => ~Vector256.Equals(valueVector, maskVector),
                     IndexOfMethod.GreaterThan => Vector256.GreaterThan(valueVector, maskVector),
-                    IndexOfMethod.GreaterOrEqualsThan => Vector256.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.GreaterThanOrEquals => Vector256.GreaterThanOrEqual(valueVector, maskVector),
                     IndexOfMethod.LessThan => Vector256.LessThan(valueVector, maskVector),
-                    IndexOfMethod.LessOrEqualsThan => Vector256.LessThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThanOrEquals => Vector256.LessThanOrEqual(valueVector, maskVector),
                     _ => throw new InvalidOperationException(),
                 };
 
@@ -208,9 +208,9 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.Include => Vector128.Equals(valueVector, maskVector),
                     IndexOfMethod.Exclude => ~Vector128.Equals(valueVector, maskVector),
                     IndexOfMethod.GreaterThan => Vector128.GreaterThan(valueVector, maskVector),
-                    IndexOfMethod.GreaterOrEqualsThan => Vector128.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.GreaterThanOrEquals => Vector128.GreaterThanOrEqual(valueVector, maskVector),
                     IndexOfMethod.LessThan => Vector128.LessThan(valueVector, maskVector),
-                    IndexOfMethod.LessOrEqualsThan => Vector128.LessThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThanOrEquals => Vector128.LessThanOrEqual(valueVector, maskVector),
                     _ => throw new InvalidOperationException(),
                 };
 
@@ -221,9 +221,9 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.Include => Vector64.Equals(valueVector, maskVector),
                     IndexOfMethod.Exclude => ~Vector64.Equals(valueVector, maskVector),
                     IndexOfMethod.GreaterThan => Vector64.GreaterThan(valueVector, maskVector),
-                    IndexOfMethod.GreaterOrEqualsThan => Vector64.GreaterThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.GreaterThanOrEquals => Vector64.GreaterThanOrEqual(valueVector, maskVector),
                     IndexOfMethod.LessThan => Vector64.LessThan(valueVector, maskVector),
-                    IndexOfMethod.LessOrEqualsThan => Vector64.LessThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.LessThanOrEquals => Vector64.LessThanOrEqual(valueVector, maskVector),
                     _ => throw new InvalidOperationException(),
                 };
 
