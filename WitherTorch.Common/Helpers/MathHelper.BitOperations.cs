@@ -1,4 +1,7 @@
 ﻿#if NET472_OR_GREATER
+using System;
+using System.Runtime.CompilerServices;
+
 using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
@@ -33,11 +36,31 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Remove)]
+        private static int LeadingZeroCountCore(nuint value)
+            => UnsafeHelper.PointerSizeConstant switch
+            {
+                sizeof(uint) => LeadingZeroCountCore((uint)value),
+                sizeof(ulong) => LeadingZeroCountCore((ulong)value),
+                _ => UnsafeHelper.PointerSize switch
+                {
+                    sizeof(uint) => LeadingZeroCountCore((uint)value),
+                    sizeof(ulong) => LeadingZeroCountCore((ulong)value),
+                    _ => throw new PlatformNotSupportedException()
+                }
+            };
+
+        [Inline(InlineBehavior.Remove)]
         private static int TrailingZeroCountCore(uint value)
         {
             if (value == 0)
                 return 32;
-            return TrailingZeroCountDeBruijn[((value & (uint)-(int)value) * 0x077CB531u) >> 27];
+
+            // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
+            return UnsafeHelper.AddByteOffset(
+                // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_0111_1100_1011_0101_0011_0001u
+                ref TrailingZeroCountDeBruijn[0],
+                // uint|long -> IntPtr cast on 32-bit platforms does expensive overflow checks not needed here
+                (nuint)(int)(((value & (uint)-(int)value) * 0x077CB531u) >> 27)); // Multi-cast mitigates redundant conv.u8
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -50,6 +73,20 @@ namespace WitherTorch.Common.Helpers
 
             return TrailingZeroCount(lo);
         }
+
+        [Inline(InlineBehavior.Remove)]
+        private static int TrailingZeroCountCore(nuint value)
+            => UnsafeHelper.PointerSizeConstant switch
+            {
+                sizeof(uint) => TrailingZeroCountCore((uint)value),
+                sizeof(ulong) => TrailingZeroCountCore((ulong)value),
+                _ => UnsafeHelper.PointerSize switch
+                {
+                    sizeof(uint) => TrailingZeroCountCore((uint)value),
+                    sizeof(ulong) => TrailingZeroCountCore((ulong)value),
+                    _ => throw new PlatformNotSupportedException()
+                }
+            };
     }
 }
 #endif

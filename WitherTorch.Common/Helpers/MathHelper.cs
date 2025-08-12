@@ -109,6 +109,18 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        public static int LeadingZeroCount(nuint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.LeadingZeroCount(value);
+#else
+            return LeadingZeroCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
         public static int LeadingZeroCount(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -133,6 +145,18 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        public static int TrailingZeroCount(nuint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.TrailingZeroCount(value);
+#else
+            return TrailingZeroCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
         public static int TrailingZeroCount(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -151,6 +175,18 @@ namespace WitherTorch.Common.Helpers
             return System.Numerics.BitOperations.TrailingZeroCount(value);
 #else
             return TrailingZeroCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
+        public static int Log2(nuint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.Log2(value);
+#else
+            return Log2Core(value);
 #endif
         }
 

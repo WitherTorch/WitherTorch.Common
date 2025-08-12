@@ -11,7 +11,7 @@ namespace WitherTorch.Common.Collections
         protected override void EnsureCapacity()
         {
             if (_array.Length < _count)
-                throw new InvalidOperationException(nameof(FixedArrayList<T>) + " cannot resizing!");
+                throw new InvalidOperationException(nameof(FixedArrayList<>) + " cannot resizing!");
         }
 
         public T[] AsArray() => _array;

@@ -536,20 +536,20 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void Fill<T>(T* ptr, T value, [InlineParameter] int count) where T : unmanaged
+        public static unsafe void InitBlock(ref byte location, byte value, uint count)
         {
-            for (int i = 0; i < count; i++)
-                ptr[i] = value;
+            IL.PushInRef(ref location);
+            IL.Push(value);
+            IL.Push(count);
+            IL.Emit.Initblk();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlock<T>(ref T location, byte value, int count) where T : unmanaged
+        public static unsafe void InitBlock(ref byte location, byte value, nuint count)
         {
-            IL.Emit.Ldarg_0();
+            IL.PushInRef(ref location);
             IL.Push(value);
             IL.Push(count);
-            IL.Push(sizeof(T));
-            IL.Emit.Mul();
             IL.Emit.Initblk();
         }
 
@@ -563,7 +563,26 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void InitBlock(void* ptr, byte value, nuint size)
+        {
+            IL.Push(ptr);
+            IL.Push(value);
+            IL.Push(size);
+            IL.Emit.Initblk();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe void InitBlockUnaligned(void* ptr, byte value, uint size)
+        {
+            IL.Push(ptr);
+            IL.Push(value);
+            IL.Push(size);
+            IL.Emit.Unaligned(sizeof(byte));
+            IL.Emit.Initblk();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void InitBlockUnaligned(void* ptr, byte value, nuint size)
         {
             IL.Push(ptr);
             IL.Push(value);
@@ -599,7 +618,8 @@ namespace WitherTorch.Common.Helpers
             return ref IL.ReturnRef<T>();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void SkipInit<T>(out T value)
         {
             IL.Emit.Ret();

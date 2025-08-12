@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Security;
 
 using InlineMethod;
 
@@ -64,7 +63,12 @@ namespace WitherTorch.Common.Helpers
             value |= value >> 08;
             value |= value >> 16;
 
-            return Log2DeBruijn[(value * 0x07C4ACDDu) >> 27];
+            // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
+            return UnsafeHelper.AddByteOffset(
+                // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_1100_0100_1010_1100_1101_1101u
+                ref Log2DeBruijn[0],
+                // uint|long -> IntPtr cast on 32-bit platforms does expensive overflow checks not needed here
+                (uint)(int)((value * 0x07C4ACDDu) >> 27));
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -81,6 +85,20 @@ namespace WitherTorch.Common.Helpers
 
             return 32 + Log2(hi);
         }
+
+        [Inline(InlineBehavior.Remove)]
+        private static int Log2Core(nuint value)
+            => UnsafeHelper.PointerSizeConstant switch
+            {
+                sizeof(uint) => Log2Core((uint)value),
+                sizeof(ulong) => Log2Core((ulong)value),
+                _ => UnsafeHelper.PointerSize switch
+                {
+                    sizeof(uint) => Log2Core((uint)value),
+                    sizeof(ulong) => Log2Core((ulong)value),
+                    _ => throw new PlatformNotSupportedException()
+                }
+            };
 #endif
     }
 }

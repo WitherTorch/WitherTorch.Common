@@ -8,6 +8,7 @@ using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Collections
 {
+#pragma warning disable CS8500
     public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>
     {
         // Standard List Structure
@@ -37,14 +38,14 @@ namespace WitherTorch.Common.Collections
             {
                 if (index < 0 || index >= _count)
                     throw new IndexOutOfRangeException();
-                return _array[index];
+                return UnsafeHelper.AddByteOffset(ref _array[0], UnsafeHelper.SizeOf<T>() * unchecked((nuint)index)); // 忽略邊界檢查
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 if (index < 0 || index >= _count)
                     throw new IndexOutOfRangeException();
-                _array[index] = value;
+                UnsafeHelper.AddByteOffset(ref _array[0], UnsafeHelper.SizeOf<T>() * unchecked((nuint)index)) = value; // 忽略邊界檢查
             }
         }
 
@@ -110,7 +111,6 @@ namespace WitherTorch.Common.Collections
             }
         }
 
-#pragma warning disable CS8500
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddRange(T* ptr, int startIndex, int count)
         {
@@ -142,7 +142,6 @@ namespace WitherTorch.Common.Collections
             fixed (T* destination = array)
                 UnsafeHelper.CopyBlockUnaligned(destination + index, ptr + startIndex, count * UnsafeHelper.SizeOf<T>());
         }
-#pragma warning restore CS8500
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int BinarySearch(T item) => Array.BinarySearch(_array, 0, _count, item);
@@ -269,8 +268,8 @@ namespace WitherTorch.Common.Collections
         public virtual T[] ToArray()
         {
             int count = _count;
-            if (count == 0)
-                return _array;
+            if (count <= 0)
+                return Array.Empty<T>();
             T[] array = new T[count];
             Array.Copy(_array, array, count);
             return array;

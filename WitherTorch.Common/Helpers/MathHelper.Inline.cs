@@ -121,5 +121,21 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Conv_U8();
             return IL.Return<ulong>();
         }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static nint BooleanToNative(bool value)
+        {
+            IL.Push(value);
+            IL.Emit.Conv_I();
+            return IL.Return<nint>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static nuint BooleanToNativeUnsigned(bool value)
+        {
+            IL.Push(value);
+            IL.Emit.Conv_U();
+            return IL.Return<nuint>();
+        }
     }
 }
