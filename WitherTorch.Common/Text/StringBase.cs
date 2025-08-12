@@ -32,18 +32,7 @@ namespace WitherTorch.Common.Text
 
         protected internal virtual char GetCharAt(nuint index) => this.Skip(index).First();
 
-        protected virtual bool IsFullyWhitespaced()
-        {
-            int length = Length;
-            if (length <= 0)
-                return true;
-            for (nuint i = 0, limit = unchecked((nuint)length); i < limit; i++)
-            {
-                if (!char.IsWhiteSpace(GetCharAt(i)))
-                    return false;
-            }
-            return true;
-        }
+        protected virtual bool IsFullyWhitespaced() => this.All(Utf16StringHelper.IsWhiteSpaceCharacter);
 
         public unsafe void CopyTo(char[] destination)
         {

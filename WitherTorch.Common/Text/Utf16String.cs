@@ -50,7 +50,7 @@ namespace WitherTorch.Common.Text
         {
             foreach (char character in _value)
             {
-                if (!char.IsWhiteSpace(character))
+                if (Utf16StringHelper.IsWhiteSpaceCharacter(character))
                     return false;
             }
             return true;

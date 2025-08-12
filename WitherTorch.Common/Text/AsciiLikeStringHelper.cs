@@ -1,7 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
-using WitherTorch.Common.Helpers;
+using LocalsInit;
+
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
@@ -19,47 +22,18 @@ namespace WitherTorch.Common.Text
             return 0;
         }
 
+        [LocalsInit(false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool Equals_Utf16(byte* a, char* b, nuint length)
+        public static unsafe bool IsWhiteSpaceCharacter(byte c)
         {
-            if (SequenceHelper.ContainsGreaterThan(b, length, Latin1EncodingHelper.Latin1EncodingLimit))
-                return false;
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(length);
-            try
-            {
-                fixed (byte* ptrBuffer = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(b, ptrBuffer, length);
-                    return SequenceHelper.Equals(a, ptrBuffer, length);
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
+            // 空白字元表，來源: https://www.unicode.org/Public/UCD/latest/ucd/PropList.txt
+            const int CharacterCount = 8;
+            ReadOnlySpan<byte> whiteSpaceCharacters = "\u0009\u000A\u000B\u000C\u000D\u0020\u0085\u00A0"u8;
 
-        public static unsafe char* PointerIndexOf(char* ptr, nuint count, byte* value, nuint valueLength)
-        {
-            DebugHelper.ThrowIf(valueLength == 0, "valueLength should not be zero!");
-            if (valueLength == 1)
-                return SequenceHelper.PointerIndexOf(ptr, count, unchecked((char)*value));
+            DebugHelper.ThrowIf(whiteSpaceCharacters.Length != CharacterCount);
 
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(valueLength);
-            try
-            {
-                fixed (char* ptrBuffer = buffer)
-                {
-                    Latin1EncodingHelper.WriteToUtf16BufferCore(value, ptrBuffer, valueLength);
-                    return InternalSequenceHelper.PointerIndexOf(ptr, count, ptrBuffer, valueLength);
-                }
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
+            fixed (byte* ptr = whiteSpaceCharacters)
+                return SequenceHelper.Contains(ptr, CharacterCount, c);
         }
     }
 }

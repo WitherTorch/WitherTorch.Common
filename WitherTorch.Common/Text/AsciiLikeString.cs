@@ -32,13 +32,16 @@ namespace WitherTorch.Common.Text
 
         public override IEnumerator<char> GetEnumerator() => new CharEnumerator(this);
 
-        protected override bool IsFullyWhitespaced()
+        protected override unsafe bool IsFullyWhitespaced()
         {
-            byte[] value = _value;
-            for (int i = 0, length = _length; i < length; i++)
+            nuint length = MathHelper.MakeUnsigned(_length);
+            fixed (byte* source = _value) // 消除邊界檢查
             {
-                if (!IsWhiteSpace(value[i]))
-                    return false;
+                for (nuint i = 0; i < length; i++)
+                {
+                    if (!IsWhiteSpace(source[i]))
+                        return false;
+                }
             }
             return true;
         }
