@@ -50,18 +50,14 @@ namespace WitherTorch.Common.Helpers
         public static bool IsNullOrEmpty([NotNullWhen(false)] string? str)
             => str is null || str.Length <= 0;
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] string? str)
-            => IsNullOrEmpty(str) || IsNullOrWhiteSpaceSlow(str);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrWhiteSpaceSlow(string str)
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] string? str)
         {
-            if (!SequenceHelper.ContainsExclude(str, ' '))
-                return false;
-            for (int i = 0, length = str.Length; i < length; i++)
+            if (IsNullOrEmpty(str))
+                return true;
+            foreach (char c in str)
             {
-                if (!char.IsWhiteSpace(str[i]))
+                if (!CharHelper.IsWhiteSpace(c))
                     return false;
             }
             return true;
