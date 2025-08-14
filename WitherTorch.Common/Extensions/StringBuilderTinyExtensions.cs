@@ -23,6 +23,20 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void Append(this StringBuilderTiny _this, in ReadOnlySpan<char> span)
+        {
+            fixed (char* ptr = span)
+                _this.Append(ptr, span.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void AppendLine(this StringBuilderTiny _this, in ReadOnlySpan<char> span)
+        {
+            fixed (char* ptr = span)
+                _this.AppendLine(ptr, span.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void AppendFormat<T>(this StringBuilderTiny _this, string format, params ReadOnlySpan<T> args) where T : unmanaged
         {
             fixed (T* ptr = args)
