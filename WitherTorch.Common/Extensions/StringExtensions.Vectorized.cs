@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Extensions
         private static unsafe partial string? ToLowerOrUpperAsciiCore(char* ptr, char* ptrEnd, [InlineParameter] bool isUpper);
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe void LegacyToLowerOrUpperAsciiCore(char* ptr, char* ptrStart, ref LazyTinyRefStruct<string> resultLazy, [InlineParameter] bool isUpper)
+        private static unsafe void LegacyToLowerOrUpperAsciiCore(char* ptr, char* ptrStart, ref LazyTinyRef<string> resultLazy, [InlineParameter] bool isUpper)
         {
             char c = *ptr;
             if (isUpper)

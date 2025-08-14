@@ -126,7 +126,7 @@ namespace WitherTorch.Common.Helpers
 
         unsafe partial class SlowCore<T>
         {
-            private static readonly LazyTinyStruct<nint[]> _unaryOperatorsLazy = new LazyTinyStruct<nint[]>(InitializeUnaryOperators);
+            private static readonly LazyTiny<nint[]> _unaryOperatorsLazy = new LazyTiny<nint[]>(InitializeUnaryOperators);
 
             private static nint[] InitializeUnaryOperators()
             {

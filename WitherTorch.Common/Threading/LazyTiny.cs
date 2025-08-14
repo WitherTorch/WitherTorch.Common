@@ -30,6 +30,14 @@ namespace WitherTorch.Common.Threading
             this(factory, mode != LazyThreadSafetyMode.None, mode == LazyThreadSafetyMode.ExecutionAndPublication ? new object() : null)
         { }
 
+        public LazyTiny(T value)
+        {
+            _isThreadSafe = true;
+            _syncRoot = null;
+            _factory = null;
+            _value = value;
+        }
+
         private LazyTiny(Func<T>? factory, bool isThreadSafe, object? syncRoot)
         {
             _isThreadSafe = isThreadSafe;

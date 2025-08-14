@@ -140,7 +140,7 @@ namespace WitherTorch.Common.Text
         protected virtual nuint GetSplitCount(char separator, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
             IEnumerable<nuint> indexes = this.WithNativeIndex().WhereEqualsTo(separator).Select(static item => item.Index);
-            LazyTinyRefStruct<PooledList<SplitRange>> listLazy = new(() => new PooledList<SplitRange>(pool));
+            LazyTinyRef<PooledList<SplitRange>> listLazy = new(() => new PooledList<SplitRange>(pool));
             nuint start = 0, counter = 1;
             foreach (nuint index in indexes)
             {

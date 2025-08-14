@@ -6,17 +6,23 @@ namespace WitherTorch.Common.Threading
 {
     /// <inheritdoc cref="Lazy{T}"/>
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
-    public ref struct LazyTinyRefStruct<T> where T : class
+    public ref struct LazyTinyRef<T> where T : class
     {
         private readonly Func<T>? _factory;
 
         private T? _value;
 
         /// <inheritdoc cref="Lazy{T}.Lazy(Func{T})"/>
-        public LazyTinyRefStruct(Func<T>? factory)
+        public LazyTinyRef(Func<T>? factory)
         {
             _factory = factory;
             _value = null;
+        }
+
+        public LazyTinyRef(T value)
+        {
+            _factory = null;
+            _value = value;
         }
 
         /// <inheritdoc cref="Lazy{T}.IsValueCreated"/>

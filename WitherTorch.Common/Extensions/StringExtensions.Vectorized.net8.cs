@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Extensions
         private static unsafe partial string? ToLowerOrUpperAsciiCore(char* ptr, char* ptrEnd, bool isUpper)
         {
             char* ptrStart = ptr;
-            LazyTinyRefStruct<string> resultLazy = new LazyTinyRefStruct<string>(() =>
+            LazyTinyRef<string> resultLazy = new LazyTinyRef<string>(() =>
             {
                 int resultLength = unchecked((int)(ptrEnd - ptrStart));
                 string result = StringHelper.AllocateRawString(resultLength);
