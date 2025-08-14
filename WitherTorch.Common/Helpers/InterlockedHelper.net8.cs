@@ -68,7 +68,7 @@ namespace WitherTorch.Common.Helpers
                 }
             };
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int GetAndAdd(ref int location, int value)
         {
             unsafe
@@ -86,7 +86,7 @@ namespace WitherTorch.Common.Helpers
             }
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long GetAndAdd(ref long location, long value)
         {
             unsafe
