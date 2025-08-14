@@ -591,7 +591,7 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Initblk();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static nint ByteOffset<T>(ref T origin, ref T target)
         {
             IL.PushInRef(ref target);
@@ -600,7 +600,7 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<nint>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static nuint ByteOffsetUnsigned<T>(ref T origin, ref T target)
         {
             IL.PushInRef(ref target);
@@ -609,7 +609,7 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<nuint>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static ref T AddByteOffset<T>(ref T source, nuint byteOffset)
         {
             IL.PushInRef(ref source);
