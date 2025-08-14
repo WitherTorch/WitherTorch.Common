@@ -9,6 +9,20 @@ namespace WitherTorch.Common.Helpers
 {
     public static partial class InterlockedHelper
     {
+        public static partial int Add(ref int location, int value);
+        public static partial uint Add(ref uint location, uint value);
+        public static partial long Add(ref long location, long value);
+        public static partial ulong Add(ref ulong location, ulong value);
+        public static partial nint Add(ref nint location, nint value);
+        public static partial nuint Add(ref nuint location, nuint value);
+
+        public static partial int GetAndAdd(ref int location, int value);
+        public static partial uint GetAndAdd(ref uint location, uint value);
+        public static partial long GetAndAdd(ref long location, long value);
+        public static partial ulong GetAndAdd(ref ulong location, ulong value);
+        public static partial nint GetAndAdd(ref nint location, nint value);
+        public static partial nuint GetAndAdd(ref nuint location, nuint value);
+
         public static partial int Or(ref int location, int value);
         public static partial uint Or(ref uint location, uint value);
         public static partial long Or(ref long location, long value);
@@ -93,6 +107,13 @@ namespace WitherTorch.Common.Helpers
         public static partial nint Increment(ref nint location);
         /// <inheritdoc cref="Interlocked.Increment(ref long)"/>
         public static partial nuint Increment(ref nuint location);
+
+        public static partial int GetAndIncrement(ref int location);
+        public static partial uint GetAndIncrement(ref uint location);
+        public static partial long GetAndIncrement(ref long location);
+        public static partial ulong GetAndIncrement(ref ulong location);
+        public static partial nint GetAndIncrement(ref nint location);
+        public static partial nuint GetAndIncrement(ref nuint location);
 
         // Slow routines
         [Inline(InlineBehavior.Remove)]
@@ -276,5 +297,9 @@ namespace WitherTorch.Common.Helpers
                     UnsafeHelper.As<T, double>(value), UnsafeHelper.As<T, double>(comparand)));
             throw new PlatformNotSupportedException();
         }
+
+        private static int FallbackGetAndAdd(ref int location, int value) => Interlocked.Add(ref location, value) - value;
+
+        private static long FallbackGetAndAdd(ref long location, long value) => Interlocked.Add(ref location, value) - value;
     }
 }
