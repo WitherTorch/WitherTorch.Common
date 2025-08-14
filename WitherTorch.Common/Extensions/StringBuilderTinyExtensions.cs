@@ -21,5 +21,19 @@ namespace WitherTorch.Common.Extensions
             char* ptr = UnsafeHelper.AsPointerIn(in span.GetPinnableReference());
             _this.SetStartPointer(ptr, span.Length);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void AppendFormat<T>(this StringBuilderTiny _this, string format, params ReadOnlySpan<T> args) where T : unmanaged
+        {
+            fixed (T* ptr = args)
+                _this.AppendFormatCore(format, ptr, args.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void AppendFormat<T>(this StringBuilderTiny _this, StringBase format, params ReadOnlySpan<T> args) where T : unmanaged
+        {
+            fixed (T* ptr = args)
+                _this.AppendFormatCore(format, ptr, args.Length);
+        }
     }
 }

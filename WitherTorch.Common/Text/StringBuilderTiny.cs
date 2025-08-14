@@ -6,6 +6,8 @@ using System.Text;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 
+#pragma warning disable CS8500
+
 namespace WitherTorch.Common.Text
 {
     public unsafe ref partial struct StringBuilderTiny
@@ -145,80 +147,114 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(string format, in ParamArrayTiny<T> args)
+        public void AppendFormat<T>(string format, T arg0)
         {
-            int length = format.Length;
-            int lastPos = 0, indexOfLeft, indexOfRight;
-            do
+            if (UnsafeHelper.IsPrimitiveType<T>())
             {
-                indexOfLeft = StringHelper.IndexOf(format, '{', lastPos);
-                if (indexOfLeft < 0)
-                    break;
-                indexOfRight = StringHelper.IndexOf(format, '}', indexOfLeft);
-                if (indexOfRight < 0)
-                    break;
-                Append(format, lastPos, indexOfLeft - lastPos);
-                int count = indexOfRight - indexOfLeft - 1;
-                int delimiterIndex = StringHelper.IndexOf(format, ':', indexOfLeft, count);
-                if (delimiterIndex < 0)
-                    Append(args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, count)]?.ToString() ?? "null");
-                else
-                {
-                    T arg = args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1)];
-                    if (arg is IFormattable formattable)
-                    {
-                        string subFormat = format.Substring(delimiterIndex + 1, indexOfRight - delimiterIndex - 1);
-                        Append(formattable.ToString(subFormat, null));
-                    }
-                    else
-                    {
-                        Append(arg?.ToString() ?? "null");
-                    }
-                }
-                lastPos = indexOfRight + 1;
-            } while (lastPos < length);
-            int lastCount = length - lastPos;
-            if (lastCount > 0)
-                Append(format, lastPos, lastCount);
+                AppendFormatCore(format, &arg0, 1);
+                return;
+            }
+            AppendFormatCore(format, new ParamArrayTiny<T>(arg0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(StringBase format, in ParamArrayTiny<T> args)
+        public void AppendFormat<T>(string format, T arg0, T arg1)
         {
-            int length = format.Length;
-            int lastPos = 0, indexOfLeft, indexOfRight;
-            do
+            ParamArrayTiny<T> array = new (arg0, arg1);
+            if (UnsafeHelper.IsPrimitiveType<T>())
             {
-                indexOfLeft = format.IndexOf('{', lastPos, length - lastPos);
-                if (indexOfLeft < 0)
-                    break;
-                indexOfRight = format.IndexOf('}', indexOfLeft, length - indexOfLeft);
-                if (indexOfRight < 0)
-                    break;
-                Append(format, lastPos, indexOfLeft - lastPos);
-                int count = indexOfRight - indexOfLeft - 1;
-                int delimiterIndex = format.IndexOf(':', indexOfLeft, count);
-                if (delimiterIndex < 0)
-                    Append(args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, count)]?.ToString() ?? "null");
-                else
-                {
-                    T arg = args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1)];
-                    if (arg is IFormattable formattable)
-                    {
-                        string subFormat = format.Slice(delimiterIndex + 1, indexOfRight - delimiterIndex - 1).ToString();
-                        Append(formattable.ToString(subFormat, null));
-                    }
-                    else
-                    {
-                        Append(arg?.ToString() ?? "null");
-                    }
-                }
-                lastPos = indexOfRight + 1;
-            } while (lastPos < length);
-            int lastCount = length - lastPos;
-            if (lastCount > 0)
-                Append(format, lastPos, lastCount);
+                AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 2);
+                return;
+            }
+            AppendFormatCore(format, array);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat<T>(string format, T arg0, T arg1, T arg2)
+        {
+            ParamArrayTiny<T> array = new(arg0, arg1, arg2);
+            if (UnsafeHelper.IsPrimitiveType<T>())
+            {
+                AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 3);
+                return;
+            }
+            AppendFormatCore(format, array);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat<T>(string format, params T[] args) 
+            => AppendFormatCore(format, new ParamArrayTiny<T>(args));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(string format, object arg0) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(arg0));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(string format, object arg0, object arg1) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(string format, object arg0, object arg1, object arg2) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(string format, params object[] args) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(args));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat<T>(StringBase format, T arg0)
+        {
+            if (UnsafeHelper.IsPrimitiveType<T>())
+            {
+                AppendFormatCore(format, &arg0, 1);
+                return;
+            }
+            AppendFormatCore(format, new ParamArrayTiny<T>(arg0));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat<T>(StringBase format, T arg0, T arg1)
+        {
+            ParamArrayTiny<T> array = new (arg0, arg1);
+            if (UnsafeHelper.IsPrimitiveType<T>())
+            {
+                AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 2);
+                return;
+            }
+            AppendFormatCore(format, array);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat<T>(StringBase format, T arg0, T arg1, T arg2)
+        {
+            ParamArrayTiny<T> array = new(arg0, arg1, arg2);
+            if (UnsafeHelper.IsPrimitiveType<T>())
+            {
+                AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 3);
+                return;
+            }
+            AppendFormatCore(format, array);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat<T>(StringBase format, params T[] args) 
+            => AppendFormatCore(format, new ParamArrayTiny<T>(args));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(StringBase format, object arg0) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(arg0));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(StringBase format, object arg0, object arg1) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(StringBase format, object arg0, object arg1, object arg2) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormat(StringBase format, params object[] args) 
+            => AppendFormatCore(format, new ParamArrayTiny<object>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringBuilderTiny Clear()

@@ -7,54 +7,6 @@ namespace WitherTorch.Common.Text
     unsafe partial struct StringBuilderTiny
     {
         [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(string format, T arg0) => AppendFormat(format, new ParamArrayTiny<T>(arg0));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(string format, T arg0, T arg1) => AppendFormat(format, new ParamArrayTiny<T>(arg0, arg1));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(string format, T arg0, T arg1, T arg2) => AppendFormat(format, new ParamArrayTiny<T>(arg0, arg1, arg2));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(string format, params T[] args) => AppendFormat(format, new ParamArrayTiny<T>(args));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(string format, object arg0) => AppendFormat(format, new ParamArrayTiny<object>(arg0));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(string format, object arg0, object arg1) => AppendFormat(format, new ParamArrayTiny<object>(arg0, arg1));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(string format, object arg0, object arg1, object arg2) => AppendFormat(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(string format, params object[] args) => AppendFormat(format, new ParamArrayTiny<object>(args));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(StringBase format, T arg0) => AppendFormat(format, new ParamArrayTiny<T>(arg0));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(StringBase format, T arg0, T arg1) => AppendFormat(format, new ParamArrayTiny<T>(arg0, arg1));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(StringBase format, T arg0, T arg1, T arg2) => AppendFormat(format, new ParamArrayTiny<T>(arg0, arg1, arg2));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat<T>(StringBase format, params T[] args) => AppendFormat(format, new ParamArrayTiny<T>(args));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(StringBase format, object arg0) => AppendFormat(format, new ParamArrayTiny<object>(arg0));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(StringBase format, object arg0, object arg1) => AppendFormat(format, new ParamArrayTiny<object>(arg0, arg1));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(StringBase format, object arg0, object arg1, object arg2) => AppendFormat(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendFormat(StringBase format, params object[] args) => AppendFormat(format, new ParamArrayTiny<object>(args));
-
-        [Inline(InlineBehavior.Keep, export: true)]
         public void Append(char* ptr, int startIndex, int count)
             => Append(ptr + startIndex, count);
 
