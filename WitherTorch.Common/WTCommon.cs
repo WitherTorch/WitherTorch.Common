@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 using WitherTorch.Common.Text;
 
@@ -6,6 +8,8 @@ namespace WitherTorch.Common
 {
     public static class WTCommon
     {
+        private static readonly Lazy<bool> _systemBuffersExistsLazy = new Lazy<bool>(CheckSystemBuffersExists, LazyThreadSafetyMode.PublicationOnly);
+
         private static StringCreateOptions _stringCreateOptions = StringCreateOptions.None;
 
         public const bool IsDebug
@@ -14,6 +18,15 @@ namespace WitherTorch.Common
 #else
             = false;
 #endif
+
+        /// <summary>
+        /// 指示 System.Buffers 命名空間是否可使用
+        /// </summary>
+        public static bool SystemBuffersExists
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _systemBuffersExistsLazy.Value;
+        }
 
         /// <summary>
         /// 是否讓 <see cref="Text.StringBase.Create(string)"/> 和 <see cref="Text.StringBase.Create(char*)"/> 在輸入字元皆為 ASCII 字元時壓縮該字串
@@ -67,5 +80,29 @@ namespace WitherTorch.Common
         }
 
         internal static StringCreateOptions StringCreateOptions => _stringCreateOptions;
+
+        private static bool CheckSystemBuffersExists()
+        {
+            try
+            {
+                return SystemBufferChecker.CheckSpan() && SystemBufferChecker.CheckMemory() && SystemBufferChecker.CheckArrayPool();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static class SystemBufferChecker
+        {
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            public static bool CheckSpan() => ReadOnlySpan<byte>.Empty.Length == 0;
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            public static bool CheckMemory() => ReadOnlyMemory<byte>.Empty.Length == 0;
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            public static bool CheckArrayPool() => System.Buffers.ArrayPool<byte>.Shared is not null;
+        }
     }
 }

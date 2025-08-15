@@ -23,6 +23,9 @@ namespace WitherTorch.Common.Native
             [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* memcpy(void* dest, void* src, nuint sizeInBytes);
 
+            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            private static extern void* mprotect(void* ptr, nuint length, ProtectMemoryFlags flags);
+
             int INativeMethodInstance.GetCurrentThreadId() => gettid();
 
             void* INativeMethodInstance.AllocMemory(nuint size) => malloc(size);
@@ -32,6 +35,8 @@ namespace WitherTorch.Common.Native
             void INativeMethodInstance.CopyMemory(void* destination, void* source, nuint sizeInBytes) => memcpy(destination, source, sizeInBytes);
 
             void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes) => memmove(destination, source, sizeInBytes);
+
+            public unsafe void ProtectMemory(void* ptr, nuint length, ProtectMemoryFlags flags) => mprotect(ptr, length, flags);
         }
     }
 }

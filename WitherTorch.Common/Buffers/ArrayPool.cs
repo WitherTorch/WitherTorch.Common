@@ -72,14 +72,9 @@ namespace WitherTorch.Common.Buffers
 
         private static ArrayPool<T> CreateSharedPool()
         {
-            try
-            {
+            if (WTCommon.SystemBuffersExists)
                 return UnsafeCreateWrappedSystemArrayPool();
-            }
-            catch (Exception)
-            {
-                return new SharedArrayPoolImpl();
-            }
+            return new SharedArrayPoolImpl();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

@@ -1,8 +1,7 @@
-﻿using InlineMethod;
-
-using System;
+﻿using System;
 using System.Runtime.CompilerServices;
-using System.Security;
+
+using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
@@ -87,5 +86,29 @@ namespace WitherTorch.Common.Native
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void MoveMemory(void* destination, void* source, nuint sizeInBytes) 
             => _methodInstance.MoveMemory(destination, source, sizeInBytes);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProtectMemory(void* ptr, int length, ProtectMemoryFlags flags) 
+            => _methodInstance.ProtectMemory(ptr, MathHelper.MakeUnsigned(length), flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProtectMemory(void* ptr, uint length, ProtectMemoryFlags flags) 
+            => _methodInstance.ProtectMemory(ptr, length, flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProtectMemory(void* ptr, long length, ProtectMemoryFlags flags) 
+            => _methodInstance.ProtectMemory(ptr, unchecked((nuint)MathHelper.MakeUnsigned(length)), flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProtectMemory(void* ptr, ulong length, ProtectMemoryFlags flags) 
+            => _methodInstance.ProtectMemory(ptr, unchecked((nuint)length), flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProtectMemory(void* ptr, nint length, ProtectMemoryFlags flags) 
+            => _methodInstance.ProtectMemory(ptr, MathHelper.MakeUnsigned(length), flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ProtectMemory(void* ptr, nuint length, ProtectMemoryFlags flags) 
+            => _methodInstance.ProtectMemory(ptr, length, flags);
     }
 }

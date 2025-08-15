@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Collections
 #elif B32_ARCH
         protected const int SectionSize = sizeof(uint) * 8;
 #else
-        protected static readonly int SectionSize = sizeof(nuint) * 8;
+        protected unsafe static readonly int SectionSize = sizeof(nuint) * 8;
 #endif
 
         protected nuint[] _array;

@@ -55,6 +55,11 @@ namespace WitherTorch.Common.Native
                 for (nuint i = 0; i < sizeInBytes; i++)
                     ((byte*)destination)[i] = ((byte*)source)[i];
             }
+
+            public unsafe void ProtectMemory(void* ptr, nuint length, ProtectMemoryFlags flags)
+            {
+                // Do nothing
+            }
         }
     }
 }

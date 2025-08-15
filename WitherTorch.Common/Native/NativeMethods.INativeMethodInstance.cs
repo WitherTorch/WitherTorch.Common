@@ -7,26 +7,22 @@ namespace WitherTorch.Common.Native
     partial class NativeMethods
     {
         private unsafe interface INativeMethodInstance
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
+        {        
             int GetCurrentThreadId();
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
             void* AllocMemory(nuint size);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
             void FreeMemory(void* ptr);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
             void CopyMemory(void* destination, void* source, nuint sizeInBytes);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            [SecurityCritical]
             void MoveMemory(void* destination, void* source, nuint sizeInBytes);
+            void ProtectMemory(void* ptr, nuint length, ProtectMemoryFlags flags);
+        }
+
+        [Flags]
+        public enum ProtectMemoryFlags : int
+        {
+            None = 0x0,
+            CanRead = 0x1,
+            CanWrite = 0x2,
+            CanExecute = 0x4,
         }
     }
 }
