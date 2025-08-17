@@ -33,8 +33,6 @@ namespace WitherTorch.Common.Intrinsics
 
         private static byte* GetValidStartAddress(nuint requestedSize)
         {
-            nuint addressAlignment = UnsafeHelper.PointerSizeUnsigned;
-            requestedSize = CeilDiv_Internal(requestedSize, addressAlignment) * addressAlignment;
             lock (_syncLock)
                 return GetValidStartAddressCore(requestedSize);
         }
@@ -42,15 +40,17 @@ namespace WitherTorch.Common.Intrinsics
         [Inline(InlineBehavior.Remove)]
         private static byte* GetValidStartAddressCore(nuint requestedSize)
         {
+            nuint addressAlignment = UnsafeHelper.PointerSizeUnsigned;
+
             byte* result = _pageNextAddress;
             if (result == null)
                 goto NewAllocate;
 
             byte* pageEndAddress = _pageEndAddress;
-            if ((result += requestedSize) > pageEndAddress)
+            if (result + requestedSize > pageEndAddress)
                 goto ChangeAddress;
 
-            _pageNextAddress = result;
+            _pageNextAddress = result + CeilDiv_Internal(requestedSize, addressAlignment) * addressAlignment;
             goto Result;
 
         ChangeAddress:
@@ -65,7 +65,7 @@ namespace WitherTorch.Common.Intrinsics
             result = (byte*)NativeMethods.AllocMemoryPage(pageSize, NativeMethods.ProtectMemoryPageFlags.CanExecute |
                 NativeMethods.ProtectMemoryPageFlags.CanWrite | NativeMethods.ProtectMemoryPageFlags.CanRead);
             _pageStartAddress = result;
-            _pageNextAddress = result + requestedSize;
+            _pageNextAddress = result + CeilDiv_Internal(requestedSize, addressAlignment) * addressAlignment;
             _pageEndAddress = result + pageSize;
 
         Result:

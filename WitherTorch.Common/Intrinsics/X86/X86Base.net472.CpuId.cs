@@ -87,18 +87,17 @@ namespace WitherTorch.Common.Intrinsics.X86
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static void* BuildCpuIdAsm_X64()
             {
-                const int Length = 38;
+                const int Length = 36;
                 byte[] data = new byte[Length] {
-                    0x48, 0x89, 0x5C, 0x24, 
+                    0x48, 0x89, 0x5C, 0x24,
                     0x08, 0x49, 0x89, 0xC9, 
-                    0x89, 0xD0, 0x44, 0x89, 
-                    0xC1, 0x0F, 0xA2, 0x41, 
+                    0x89, 0xD0, 0x44, 0x89,
+                    0xC1, 0x0F, 0xA2, 0x41,
                     0x89, 0x01, 0x41, 0x89, 
                     0x59, 0x04, 0x48, 0x8B, 
                     0x5C, 0x24, 0x08, 0x41, 
                     0x89, 0x49, 0x08, 0x41, 
-                    0x89, 0x51, 0x0C, 0xC2, 
-                    0x00, 0x00
+                    0x89, 0x51, 0x0C, 0xC3
                 };
                 return AsmCodeHelper.PackAsmCodeIntoNativeMemory(data, Length);
             }
@@ -109,7 +108,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static void* BuildCpuIdAsm_X64()
             {
-                const int Length = 38;
+                const int Length = 36;
                 ReadOnlySpan<byte> data = [
                     0x48, 0x89, 0x5C, 0x24,
                     0x08, 0x49, 0x89, 0xC9,
@@ -119,8 +118,7 @@ namespace WitherTorch.Common.Intrinsics.X86
                     0x59, 0x04, 0x48, 0x8B,
                     0x5C, 0x24, 0x08, 0x41,
                     0x89, 0x49, 0x08, 0x41,
-                    0x89, 0x51, 0x0C, 0xC2,
-                    0x00, 0x00
+                    0x89, 0x51, 0x0C, 0xC3
                 ];
                 return AsmCodeHelper.PackAsmCodeIntoNativeMemory(data, Length);
             }

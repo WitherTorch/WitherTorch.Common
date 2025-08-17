@@ -1,8 +1,8 @@
 ﻿#if NET472_OR_GREATER
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security;
 
 using LocalsInit;
 
@@ -10,6 +10,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Intrinsics.X86
 {
+    [SuppressUnmanagedCodeSecurity]
     unsafe partial class X86Base
     {
         private static readonly bool _isSupported;

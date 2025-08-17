@@ -85,7 +85,7 @@ namespace WitherTorch.Common.Helpers
                     M128.SizeInBytes => FindIndexForResultVector_128(vector),
                     M256.SizeInBytes => FindIndexForResultVector_256(vector),
                     M512.SizeInBytes => FindIndexForResultVector_512(vector),
-                    _ => FindIndexForResultVectorFallback(vector)
+                    _ => FindIndexForResultVector_Fallback(vector)
                 };
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -169,7 +169,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static int FindIndexForResultVectorFallback(in Vector<T> vector)
+            public static int FindIndexForResultVector_Fallback(in Vector<T> vector)
             {
                 ulong* ptrVector = (ulong*)UnsafeHelper.AsPointerIn(in vector);
                 for (int i = 0; i < Vector<ulong>.Count; i++)
