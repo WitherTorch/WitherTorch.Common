@@ -1,5 +1,6 @@
 ﻿#if NET472_OR_GREATER
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -32,8 +33,9 @@ namespace WitherTorch.Common.Intrinsics.X86
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial (int Eax, int Ebx, int Ecx, int Edx) CpuId(int functionId, int subFunctionId)
         {
-            ((delegate* unmanaged[Cdecl]<out Registers, int, int, void>)_cpuIdAsm)(out Registers result, functionId, subFunctionId);
-            return UnsafeHelper.As<Registers, (int Eax, int Ebx, int Ecx, int Edx)>(result);
+            UnsafeHelper.SkipInit(out Registers registers);
+            ((delegate* unmanaged[Cdecl]<Registers*, int, int, void>)_cpuIdAsm)(&registers, functionId, subFunctionId);
+            return UnsafeHelper.As<Registers, (int Eax, int Ebx, int Ecx, int Edx)>(registers);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -98,10 +100,13 @@ namespace WitherTorch.Common.Intrinsics.X86
 
         private static partial class StoreAsSpan { }
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        [StructLayout(LayoutKind.Sequential, Pack = 4, Size = sizeof(int) * 4)]
         private readonly struct Registers
         {
             private readonly int _eax, _ebx, _ecx, _edx;
+
+            public override readonly string ToString()
+                => $"{{EAX = {_eax}, EBX = {_ebx}, ECX = {_ecx}, EDX = {_edx}}}";
         }
     }
 }

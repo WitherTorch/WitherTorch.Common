@@ -77,7 +77,7 @@ namespace WitherTorch.Common.Helpers
 #else
             if (X86Base.X64.IsSupported)
             {
-                (long quotient, rem) = X86Base.X64.DivRem((ulong)a, a < 0 ? -1L : 0L, b);
+                (long quotient, rem) = X86Base.X64.DivRem((ulong)a, -BooleanToInt64(a < 0), b);
                 return quotient;
             }
             if (X86Base.IsSupported && b <= int.MaxValue)

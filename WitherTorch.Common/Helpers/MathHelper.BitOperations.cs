@@ -75,12 +75,12 @@ namespace WitherTorch.Common.Helpers
         private static int LeadingZeroCountCore(nuint value)
             => UnsafeHelper.PointerSizeConstant switch
             {
-                sizeof(uint) => LeadingZeroCountCore((uint)value),
-                sizeof(ulong) => LeadingZeroCountCore((ulong)value),
+                sizeof(uint) => LeadingZeroCount((uint)value),
+                sizeof(ulong) => LeadingZeroCount((ulong)value),
                 _ => UnsafeHelper.PointerSize switch
                 {
-                    sizeof(uint) => LeadingZeroCountCore((uint)value),
-                    sizeof(ulong) => LeadingZeroCountCore((ulong)value),
+                    sizeof(uint) => LeadingZeroCount((uint)value),
+                    sizeof(ulong) => LeadingZeroCount((ulong)value),
                     _ => throw new PlatformNotSupportedException()
                 }
             };
@@ -130,12 +130,12 @@ namespace WitherTorch.Common.Helpers
         private static int TrailingZeroCountCore(nuint value)
             => UnsafeHelper.PointerSizeConstant switch
             {
-                sizeof(uint) => TrailingZeroCountCore((uint)value),
-                sizeof(ulong) => TrailingZeroCountCore((ulong)value),
+                sizeof(uint) => TrailingZeroCount((uint)value),
+                sizeof(ulong) => TrailingZeroCount((ulong)value),
                 _ => UnsafeHelper.PointerSize switch
                 {
-                    sizeof(uint) => TrailingZeroCountCore((uint)value),
-                    sizeof(ulong) => TrailingZeroCountCore((ulong)value),
+                    sizeof(uint) => TrailingZeroCount((uint)value),
+                    sizeof(ulong) => TrailingZeroCount((ulong)value),
                     _ => throw new PlatformNotSupportedException()
                 }
             };

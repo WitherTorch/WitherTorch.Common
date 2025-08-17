@@ -24,6 +24,9 @@ namespace WitherTorch.Common.Native
             private static extern void HeapFree(IntPtr hHeap, int dwFlags, void* ptr);
 
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
+            private static extern void* VirtualAlloc(void* address, nuint dwSize, MemoryAllocationTypes allocationTypes, PageAccessRights rights);
+
+            [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern bool VirtualProtect(void* address, nuint dwSize, PageAccessRights rights, PageAccessRights* oldRights);
 
             [DllImport("ntdll", CallingConvention = CallingConvention.StdCall)]
@@ -47,34 +50,63 @@ namespace WitherTorch.Common.Native
 
             void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes) => RtlMoveMemory(destination, source, sizeInBytes);
 
-            public unsafe void ProtectMemory(void* ptr, nuint length, ProtectMemoryFlags flags)
+            void* INativeMethodInstance.AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags) 
+                => VirtualAlloc(null, size, MemoryAllocationTypes.Commit | MemoryAllocationTypes.Reserve, ConvertPageAccessRightsFromFlags(flags));
+
+            void INativeMethodInstance.ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
             {
-                PageAccessRights rights;
-                if ((flags & ProtectMemoryFlags.CanExecute) == ProtectMemoryFlags.CanExecute)
+                PageAccessRights rights = ConvertPageAccessRightsFromFlags(flags);
+                VirtualProtect(ptr, size, rights, &rights);
+            }
+
+            private static PageAccessRights ConvertPageAccessRightsFromFlags(ProtectMemoryPageFlags flags)
+            {
+                if ((flags & ProtectMemoryPageFlags.CanExecute) == ProtectMemoryPageFlags.CanExecute)
                 {
-                    if ((flags & ProtectMemoryFlags.CanRead) == ProtectMemoryFlags.CanRead)
+                    if ((flags & ProtectMemoryPageFlags.CanRead) == ProtectMemoryPageFlags.CanRead)
                     {
-                        if ((flags & ProtectMemoryFlags.CanWrite) == ProtectMemoryFlags.CanWrite)
-                            rights = PageAccessRights.ExecuteReadWrite;
-                        else
-                            rights = PageAccessRights.ExecuteRead;
+                        if ((flags & ProtectMemoryPageFlags.CanWrite) == ProtectMemoryPageFlags.CanWrite)
+                            return PageAccessRights.ExecuteReadWrite;
+                        return PageAccessRights.ExecuteRead;
                     }
-                    else
-                        rights = PageAccessRights.Execute;
+                    return PageAccessRights.Execute;
                 }
                 else
                 {
-                    if ((flags & ProtectMemoryFlags.CanRead) == ProtectMemoryFlags.CanRead)
+                    if ((flags & ProtectMemoryPageFlags.CanRead) == ProtectMemoryPageFlags.CanRead)
                     {
-                        if ((flags & ProtectMemoryFlags.CanWrite) == ProtectMemoryFlags.CanWrite)
-                            rights = PageAccessRights.ReadWrite;
-                        else
-                            rights = PageAccessRights.ReadOnly;
+                        if ((flags & ProtectMemoryPageFlags.CanWrite) == ProtectMemoryPageFlags.CanWrite)
+                            return PageAccessRights.ReadWrite;
+                        return PageAccessRights.ReadOnly;
                     }
-                    else
-                        rights = PageAccessRights.NoAccess;
+                    return PageAccessRights.NoAccess;
                 }
-                VirtualProtect(ptr, length, rights, &rights);
+            }
+
+            [Flags]
+            private enum MemoryAllocationTypes : uint
+            {
+                None = 0,
+                Commit = 0x00001000,
+                Reserve = 0x00002000,
+                ReplacePlaceholder = 0x00004000,
+                ReservePlaceholder = 0x00040000,
+                Reset = 0x00080000,
+                TopDown = 0x00100000,
+                WriteWatch = 0x00200000,
+                Physical = 0x00400000,
+                Rotate = 0x00800000,
+                DifferenceImageBaseOk = 0x00800000,
+                ResetUndo = 0x01000000,
+                LargePages = 0x20000000,
+                Alloc4MbPages = 0x80000000,
+                Alloc64KPages = (LargePages | Physical),
+                UnmapWithTransientBoost = 0x00000001,
+                Coalesce_Placeholders = 0x00000001,
+                PreservePlaceholder = 0x00000002,
+                Decommit = 0x00004000,
+                Release = 0x00008000,
+                Free = 0x00010000
             }
 
             [Flags]

@@ -45,6 +45,16 @@ namespace WitherTorch.Common.Helpers
             };
         }
 
+        public static uint PointerSizeUnsigned
+        {
+            [Inline(InlineBehavior.Keep, export: true)]
+            get => PointerSizeConstant switch
+            {
+                PointerSizeConstant_Indeterminate => SizeOf<nuint>(),
+                _ => PointerSizeConstant,
+            };
+        }
+
         public static void* PointerMinValue
         {
             [Inline(InlineBehavior.Keep, export: true)]

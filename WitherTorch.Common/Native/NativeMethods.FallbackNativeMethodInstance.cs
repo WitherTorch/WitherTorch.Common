@@ -21,42 +21,17 @@ namespace WitherTorch.Common.Native
             unsafe void INativeMethodInstance.FreeMemory(void* ptr) => Marshal.FreeHGlobal(new IntPtr(ptr));
 
             unsafe void INativeMethodInstance.CopyMemory(void* destination, void* source, nuint sizeInBytes)
-            {
-#pragma warning disable CS0162
-                switch (UnsafeHelper.PointerSizeConstant)
-                {
-                    case sizeof(uint):
-                        UnsafeHelper.CopyBlock(destination, source, unchecked((uint)sizeInBytes));
-                        break;
-                    case sizeof(ulong):
-                        UnsafeHelper.CopyBlock(destination, source, unchecked((uint)sizeInBytes));
-                        UnsafeHelper.CopyBlock(destination, source, unchecked((uint)((ulong)sizeInBytes >> 32)));
-                        break;
-                    default:
-                        switch (UnsafeHelper.PointerSize)
-                        {
-                            case sizeof(uint):
-                                UnsafeHelper.CopyBlock(destination, source, unchecked((uint)sizeInBytes));
-                                break;
-                            case sizeof(ulong):
-                                UnsafeHelper.CopyBlock(destination, source, unchecked((uint)sizeInBytes));
-                                UnsafeHelper.CopyBlock(destination, source, unchecked((uint)((ulong)sizeInBytes >> 32)));
-                                break;
-                            default:
-                                throw new NotSupportedException("Unsupported pointer size: " + UnsafeHelper.PointerSize);
-                        }
-                        break;
-                }
-#pragma warning restore CS0162
-            }
+                => UnsafeHelper.CopyBlockUnaligned(destination, source, sizeInBytes);
 
             unsafe void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes)
+                => Buffer.MemoryCopy(source, destination, sizeInBytes, sizeInBytes);
+
+            unsafe void* INativeMethodInstance.AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags)
             {
-                for (nuint i = 0; i < sizeInBytes; i++)
-                    ((byte*)destination)[i] = ((byte*)source)[i];
+                return AllocMemory(size);
             }
 
-            public unsafe void ProtectMemory(void* ptr, nuint length, ProtectMemoryFlags flags)
+            unsafe void INativeMethodInstance.ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
             {
                 // Do nothing
             }

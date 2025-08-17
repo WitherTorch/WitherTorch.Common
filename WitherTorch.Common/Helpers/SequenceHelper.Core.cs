@@ -1,6 +1,11 @@
-﻿using InlineMethod;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
+
+using InlineMethod;
 
 using LocalsInit;
+
+#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
