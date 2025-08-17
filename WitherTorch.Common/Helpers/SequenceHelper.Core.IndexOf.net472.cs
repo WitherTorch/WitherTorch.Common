@@ -88,6 +88,7 @@ namespace WitherTorch.Common.Helpers
                     _ => FindIndexForResultVectorFallback(vector)
                 };
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int FindIndexForResultVector_128(in Vector<T> vector)
             {
                 ulong* ptrVector = (ulong*)UnsafeHelper.AsPointerIn(in vector);
@@ -103,6 +104,7 @@ namespace WitherTorch.Common.Helpers
                 return Vector<T>.Count;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int FindIndexForResultVector_256(in Vector<T> vector)
             {
                 ulong* ptrVector = (ulong*)UnsafeHelper.AsPointerIn(in vector);
@@ -126,6 +128,7 @@ namespace WitherTorch.Common.Helpers
                 return Vector<T>.Count;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static int FindIndexForResultVector_512(in Vector<T> vector)
             {
                 ulong* ptrVector = (ulong*)UnsafeHelper.AsPointerIn(in vector);
