@@ -29,5 +29,29 @@ namespace WitherTorch.Common.Text
                 return StringSlice.Empty;
             return unchecked(new StringSlice(this, (nuint)startIndex, (nuint)count));
         }
+
+        public StringSlice Slice(nuint startIndex)
+        {
+            int length = Length;
+            if (length <= 0)
+                return StringSlice.Empty;
+            nuint castedLength = unchecked((nuint)length);
+            if (startIndex >= castedLength)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            return unchecked(new StringSlice(this, startIndex, castedLength - startIndex));
+        }
+
+        public StringSlice Slice(nuint startIndex, nuint count)
+        {
+            int length = Length;
+            if (length <= 0)
+                return StringSlice.Empty;
+            nuint castedLength = unchecked((nuint)length);
+            if (startIndex + count > castedLength)
+                throw new ArgumentOutOfRangeException(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
+            if (count == 0)
+                return StringSlice.Empty;
+            return unchecked(new StringSlice(this, startIndex, count));
+        }
     }
 }
