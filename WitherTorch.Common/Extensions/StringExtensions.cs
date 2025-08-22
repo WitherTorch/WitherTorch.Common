@@ -52,7 +52,7 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool EndsWith(this string str, params char[] chars)
+        public static bool EndsWithAny(this string str, params char[] chars)
         {
             int count = str.Length;
             if (count > 0)
@@ -73,7 +73,7 @@ namespace WitherTorch.Common.Extensions
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecuritySafeCritical]
-        public static bool StartsWith(this string str, params char[] chars)
+        public static bool StartsWithAny(this string str, params char[] chars)
         {
             if (StringHelper.IsNullOrEmpty(str))
                 return false;
