@@ -8,6 +8,8 @@ namespace WitherTorch.Common.Windows.Structures
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct RectF : IEquatable<RectF>
     {
+        public static readonly RectF Empty = default;
+
         public float Left;
         public float Top;
         public float Right;

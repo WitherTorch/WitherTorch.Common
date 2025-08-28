@@ -20,6 +20,10 @@ namespace WitherTorch.Common.Windows.Structures
             get => _value != 0;
         }
 
+        public readonly bool IsSuccessed => _value >= 0;
+
+        public readonly bool IsFailed => _value < 0;
+
         private SysBool(int value) => _value = value;
 
         public SysBool(bool value) : this(MathHelper.BooleanToInt32(value)) { }

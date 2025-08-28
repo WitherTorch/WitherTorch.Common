@@ -24,6 +24,22 @@ namespace WitherTorch.Common.Helpers
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        public static void ThrowUnless(bool condition)
+        {
+            if (!condition)
+                throw new DebugException($"{nameof(ThrowUnless)} called!");
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void ThrowUnless(bool condition, string message)
+        {
+            if (!condition)
+                throw new DebugException(message);
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
         public static void Throw()
         {
             throw new DebugException($"{nameof(Throw)} called!");

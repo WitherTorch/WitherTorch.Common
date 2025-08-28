@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace WitherTorch.Common.Windows.Structures
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Size = sizeof(int))]
     public readonly struct Point16
     {
         private readonly short _x, _y;

@@ -10,6 +10,8 @@ namespace WitherTorch.Common.Windows.Structures
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct Rect : IEquatable<Rect>
     {
+        public static readonly Rect Empty = default;
+
         public int Left;
         public int Top;
         public int Right;
