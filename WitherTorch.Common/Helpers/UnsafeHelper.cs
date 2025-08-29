@@ -620,6 +620,15 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static ref T AddByteOffset<T>(ref T source, nint byteOffset)
+        {
+            IL.PushInRef(ref source);
+            IL.Push(byteOffset);
+            IL.Emit.Add();
+            return ref IL.ReturnRef<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static ref T AddByteOffset<T>(ref T source, nuint byteOffset)
         {
             IL.PushInRef(ref source);
