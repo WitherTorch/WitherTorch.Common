@@ -70,18 +70,6 @@ namespace WitherTorch.Common.Buffers
         [Inline(InlineBehavior.Keep, export: true)]
         public void ReturnList(FixedArrayList<T> list, bool clearArray) => Return(list.AsArray(), clearArray);
 
-        private static ArrayPool<T> CreateSharedPool()
-        {
-            if (WTCommon.SystemBuffersExists)
-                return UnsafeCreateWrappedSystemArrayPool();
-            return new SharedArrayPoolImpl();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static SystemArrayPoolWrapper UnsafeCreateWrappedSystemArrayPool()
-        {
-            System.Buffers.ArrayPool<T> pool = System.Buffers.ArrayPool<T>.Shared;
-            return new SystemArrayPoolWrapper(pool);
-        }
+        private static partial ArrayPool<T> CreateSharedPool();
     }
 }
