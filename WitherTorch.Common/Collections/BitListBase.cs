@@ -37,7 +37,7 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static int GetRequiredSectionCount(int count) 
+        protected static int GetRequiredSectionCount(int count)
             => MathHelper.CeilDiv(MathHelper.Max(count, 0), SectionSize);
 
         public bool this[int index]
@@ -71,6 +71,24 @@ namespace WitherTorch.Common.Collections
         {
             _count = 0;
             Array.Clear(_array);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void SetAllBitsAsTrue()
+        {
+            nuint[] array = _array;
+            nuint length = MathHelper.CeilDiv(MathHelper.MakeUnsigned(_count), SectionSize);
+            fixed (nuint* ptr = _array)
+                UnsafeHelper.InitBlock(ptr, 0xFF, length * UnsafeHelper.SizeOf<nuint>());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe void SetAllBitsAsFalse()
+        {
+            nuint[] array = _array;
+            nuint length = MathHelper.CeilDiv(MathHelper.MakeUnsigned(_count), SectionSize);
+            fixed (nuint* ptr = _array)
+                UnsafeHelper.InitBlock(ptr, 0x00, length * UnsafeHelper.SizeOf<nuint>());
         }
 
         public unsafe bool Contains(bool item)
