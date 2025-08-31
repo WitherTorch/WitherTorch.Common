@@ -1,15 +1,14 @@
-﻿using System;
+﻿#if NET472_OR_GREATER
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
+using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
-using WitherTorch.Common.Native;
-
-#if NET472_OR_GREATER
+using WitherTorch.Common.Threading;
 using WitherTorch.Common.Extensions;
-#endif
 
 namespace WitherTorch.Common.Buffers
 {
@@ -22,141 +21,89 @@ namespace WitherTorch.Common.Buffers
             private const int GlobalArrayQueueCount = 20 - LocalArrayQueueCount - 3;
             private const int GlobalArraySizeLimit = 1 << 20;
 
-            private readonly ThreadLocal<Queue<DelayedArray>>[] _smallQueueLocal;
-            private readonly Lazy<ConcurrentQueue<DelayedArray>>[] _largeQueueLazy;
-            private readonly ThreadLocal<List<DelayedArray>> _restoreListLocal;
+            private readonly ThreadLocal<Queue<DelayedArrayHolder>>[] _smallQueueLocal;
+            private readonly LazyTiny<ConcurrentQueue<DelayedArrayHolder>>[] _largeQueueLazy;
+            private readonly ThreadLocal<UnwrappableList<DelayedArrayHolder>> _restoreListLocal;
 
             public SharedArrayPoolImpl()
             {
-                ThreadLocal<Queue<DelayedArray>>[] smallQueueLocal = new ThreadLocal<Queue<DelayedArray>>[LocalArrayQueueCount];
+                ThreadLocal<Queue<DelayedArrayHolder>>[] smallQueueLocal = new ThreadLocal<Queue<DelayedArrayHolder>>[LocalArrayQueueCount];
                 for (int i = 0; i < LocalArrayQueueCount; i++)
                 {
-                    smallQueueLocal[i] = new ThreadLocal<Queue<DelayedArray>>(() => new Queue<DelayedArray>(), false);
+                    smallQueueLocal[i] = new ThreadLocal<Queue<DelayedArrayHolder>>(() => new Queue<DelayedArrayHolder>(), false);
                 }
-                Lazy<ConcurrentQueue<DelayedArray>>[] largeQueueLazy = new Lazy<ConcurrentQueue<DelayedArray>>[GlobalArrayQueueCount];
+                LazyTiny<ConcurrentQueue<DelayedArrayHolder>>[] largeQueueLazy = new LazyTiny<ConcurrentQueue<DelayedArrayHolder>>[GlobalArrayQueueCount];
                 for (int i = 0; i < GlobalArrayQueueCount; i++)
                 {
-                    largeQueueLazy[i] = new Lazy<ConcurrentQueue<DelayedArray>>(() => new ConcurrentQueue<DelayedArray>(), LazyThreadSafetyMode.ExecutionAndPublication);
+                    largeQueueLazy[i] = new LazyTiny<ConcurrentQueue<DelayedArrayHolder>>(() => new ConcurrentQueue<DelayedArrayHolder>(), LazyThreadSafetyMode.ExecutionAndPublication);
                 }
                 _smallQueueLocal = smallQueueLocal;
                 _largeQueueLazy = largeQueueLazy;
-                _restoreListLocal = new ThreadLocal<List<DelayedArray>>(() => new List<DelayedArray>(2), false);
+                _restoreListLocal = new ThreadLocal<UnwrappableList<DelayedArrayHolder>>(() => new UnwrappableList<DelayedArrayHolder>(2), false);
             }
 
             public override T[] Rent(nuint capacity)
             {
                 if (capacity == 0)
                     return Array.Empty<T>();
-                if (capacity <= LocalArraySizeLimit)
-                    return RentSmall(capacity);
-                if (capacity <= GlobalArrayQueueCount)
-                    return RentLarge(capacity);
-                return new T[capacity];
-            }
+                if (capacity > GlobalArrayQueueCount)
+                    return new T[capacity];
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private T[] RentSmall(nuint capacity)
-            {
-                int index;
-                if (capacity <= MinimumArraySize)
-                    index = 0;
-                else if (capacity <= MinimumArraySize << 1)
-                    index = 1;
-                else if (capacity <= MinimumArraySize << 2)
-                    index = 2;
+                capacity >>= 4;
+                int index = MathHelper.Log2(capacity);
+                index += MathHelper.BooleanToInt32(capacity > (1U << index));
+
+                DelayedArrayHolder? holder;
+                if (index < LocalArrayQueueCount)
+                    _smallQueueLocal[index].Value!.TryDequeue(out holder);
                 else
-                    index = 3;
-                if (!_smallQueueLocal[index].Value!.TryDequeue(out DelayedArray? result) || result is null)
-                    result = new DelayedArray(MinimumArraySize << index);
-                result.AddRef();
-                _restoreListLocal.Value!.Add(result);
-                return result.Array;
+                    _largeQueueLazy[index - LocalArrayQueueCount].Value!.TryDequeue(out holder);
+                holder ??= new DelayedArrayHolder(MinimumArraySize << index);
+                holder.AddRef();
+                _restoreListLocal.Value!.Add(holder);
+                return holder.Array;
             }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private T[] RentLarge(nuint capacity)
+            public override void Return(T[] array, bool clearArray)
             {
-                int index = MathHelper.Log2(capacity - 1 | 15) - 3 - LocalArrayQueueCount;
-                if (!_largeQueueLazy[index].Value.TryDequeue(out DelayedArray? result))
-                {
-                    result = new DelayedArray(1U << (index + 4 + LocalArrayQueueCount));
-                }
-                result.AddRef();
-                _restoreListLocal.Value!.Add(result);
-                return result.Array;
-            }
-
-            public override void Return(T[] obj, bool clearArray)
-            {
-                if (obj is null)
-                    return;
-                int length = obj.Length;
+                int length = array.Length;
                 if (length <= 0 || length > GlobalArraySizeLimit)
                     return;
-                List<DelayedArray> restoreList = _restoreListLocal.Value!;
+                int index = MathHelper.Log2((uint)length) - 4;
+                if (index < 0 || !TryRemoveHolderInRentList(array, out DelayedArrayHolder? holder))
+                    return;
+                if (clearArray)
+                    SequenceHelper.Clear(array);
+                if (index < LocalArrayQueueCount)
+                    _smallQueueLocal[index].Value!.Enqueue(holder);
+                else
+                    _largeQueueLazy[index - LocalArrayQueueCount].Value.Enqueue(holder);
+                holder.RemoveRef();
+            }
+
+            private bool TryRemoveHolderInRentList(T[] array, [NotNullWhen(true)] out DelayedArrayHolder? holder)
+            {
+                UnwrappableList<DelayedArrayHolder> restoreList = _restoreListLocal.Value!;
                 int count = restoreList.Count;
                 if (count <= 0)
-                    return;
-                DelayedArray? array = null;
-                int i;
-                for (i = 0; i < count; i++)
-                {
-                    DelayedArray item = restoreList[i];
-                    if (ReferenceEquals(item.Array, obj))
-                    {
-                        array = item;
-                        break;
-                    }
-                }
-                if (i >= count)
-                    return;
-                restoreList.RemoveAt(i);
-                if (clearArray)
-                    Array.Clear(obj, 0, length);
-                if (length <= LocalArraySizeLimit)
-                {
-                    ReturnSmall(array!, obj);
-                    return;
-                }
-                ReturnLarge(array!, obj);
-                return;
-            }
+                    goto Failed;
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private void ReturnSmall(DelayedArray array, T[] obj)
-            {
-                int index;
-                uint capacity = unchecked((uint)obj.Length);
-                switch (capacity)
+                ref DelayedArrayHolder restoreListRef = ref restoreList.Unwrap()[0];
+                for (nuint i = 0, limit = (nuint)count; i < limit; i++)
                 {
-                    case MinimumArraySize:
-                        index = 0;
-                        break;
-                    case MinimumArraySize << 1:
-                        index = 1;
-                        break;
-                    case MinimumArraySize << 2:
-                        index = 2;
-                        break;
-                    case MinimumArraySize << 3:
-                        index = 3;
-                        break;
-                    default:
-                        return;
+                    DelayedArrayHolder item = UnsafeHelper.AddByteOffset(ref restoreListRef, i * UnsafeHelper.SizeOf<DelayedArrayHolder>());
+                    if (!ReferenceEquals(item.Array, array))
+                        continue;
+                    restoreList.Remove(item);
+                    holder = item;
+                    return true;
                 }
-                _smallQueueLocal[index].Value!.Enqueue(array);
-                array.RemoveRef();
-            }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private void ReturnLarge(DelayedArray array, T[] obj)
-            {
-                int index = MathHelper.Log2((uint)obj.Length - 1 | 15) - 3 - LocalArrayQueueCount;
-                if (index < 0)
-                    return;
-                _largeQueueLazy[index].Value.Enqueue(array);
-                array.RemoveRef();
+            Failed:
+                holder = null;
+                return false;
             }
         }
     }
 }
+#endif

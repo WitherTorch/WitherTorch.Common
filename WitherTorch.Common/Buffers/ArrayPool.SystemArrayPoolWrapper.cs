@@ -4,7 +4,7 @@ namespace WitherTorch.Common.Buffers
 {
     partial class ArrayPool<T>
     {
-        private sealed class SystemArrayPoolWrapper : ArrayPool<T>
+        internal sealed class SystemArrayPoolWrapper : ArrayPool<T>
         {
             private readonly System.Buffers.ArrayPool<T> _pool;
 
