@@ -112,6 +112,6 @@ namespace WitherTorch.Common.Structures
 
         public readonly override int GetHashCode() => _data.GetHashCode();
 
-        public readonly override string ToString() => $"0x{_data:X}";
+        public readonly override string ToString() => $"0x{_data:X8}";
     }
 }
