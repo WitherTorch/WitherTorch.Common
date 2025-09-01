@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 
@@ -90,7 +91,7 @@ namespace WitherTorch.Common.Extensions
             => SequenceHelper.Contains(array, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool Contains<T>(this T[] array, T value, int startIndex, int length) 
+        public static unsafe bool Contains<T>(this T[] array, T value, int startIndex, int length)
             => SequenceHelper.Contains(array, value, startIndex, length);
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -156,10 +157,113 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AddRange<T>(this IList<T> _this, IEnumerable<T> items)
+        public static void AddRange<T, TEnumerable>(this ICollection<T> _this, TEnumerable items) where TEnumerable : IEnumerable<T>
         {
+            switch (_this)
+            {
+                case List<T> list:
+                    list.AddRange(items);
+                    return;
+                case CustomListBase<T> list:
+                    if (typeof(TEnumerable) == typeof(T[]))
+                        list.AddRange(UnsafeHelper.As<TEnumerable, T[]>(items));
+                    else if (typeof(TEnumerable) == typeof(IList<T>))
+                        list.AddRange(UnsafeHelper.As<TEnumerable, IList<T>>(items));
+                    else
+                        list.AddRange(items);
+                    return;
+                default:
+                    break;
+            }
+
+            T[] array;
+            int length;
+
+            if (typeof(TEnumerable) == typeof(T[]) || items is T[])
+                goto IsArray;
+            if (typeof(TEnumerable) == typeof(UnwrappableList<T>) || items is UnwrappableList<T>)
+                goto IsUnwrappableList;
+            if (typeof(TEnumerable) == typeof(PooledList<T>) || items is PooledList<T>)
+                goto IsPooledList;
+
+            goto Fallback;
+
+        IsArray:
+            array = UnsafeHelper.As<TEnumerable, T[]>(items);
+            length = array.Length;
+            goto IsArray_Core;
+
+        IsUnwrappableList:
+            UnwrappableList<T> unwrappableList = UnsafeHelper.As<TEnumerable, UnwrappableList<T>>(items);
+            array = unwrappableList.Unwrap();
+            length = unwrappableList.Count;
+            goto IsArray_Core;
+
+        IsPooledList:
+            PooledList<T> pooledList = UnsafeHelper.As<TEnumerable, PooledList<T>>(items);
+            array = pooledList.GetBuffer();
+            length = pooledList.Count;
+            goto IsArray_Core;
+
+        IsArray_Core:
+            if (length <= 0)
+                return;
+            ref T itemRef = ref array[0];
+            for (nuint i = 0, limit = (nuint)length; i < limit; i++)
+                _this.Add(UnsafeHelper.AddByteOffset(ref itemRef, i * UnsafeHelper.SizeOf<T>()));
+            return;
+
+        Fallback:
             foreach (T item in items)
-                _this.Add(item);    
+                _this.Add(item);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void RemoveAll<T, TEnumerable>(this ICollection<T> _this, TEnumerable items) where TEnumerable : IEnumerable<T>
+        {
+            if (_this.IsReadOnly)
+                throw new InvalidOperationException("The collection is empty!");
+
+            T[] array;
+            int length;
+
+            if (typeof(TEnumerable) == typeof(T[]) || items is T[])
+                goto IsArray;
+            if (typeof(TEnumerable) == typeof(UnwrappableList<T>) || items is UnwrappableList<T>)
+                goto IsUnwrappableList;
+            if (typeof(TEnumerable) == typeof(PooledList<T>) || items is PooledList<T>)
+                goto IsPooledList;
+
+            goto Fallback;
+
+        IsArray:
+            array = UnsafeHelper.As<TEnumerable, T[]>(items);
+            length = array.Length;
+            goto IsArray_Core;
+
+        IsUnwrappableList:
+            UnwrappableList<T> unwrappableList = UnsafeHelper.As<TEnumerable, UnwrappableList<T>>(items);
+            array = unwrappableList.Unwrap();
+            length = unwrappableList.Count;
+            goto IsArray_Core;
+
+        IsPooledList:
+            PooledList<T> pooledList = UnsafeHelper.As<TEnumerable, PooledList<T>>(items);
+            array = pooledList.GetBuffer();
+            length = pooledList.Count;
+            goto IsArray_Core;
+
+        IsArray_Core:
+            if (length <= 0)
+                return;
+            ref T itemRef = ref array[0];
+            for (nuint i = 0, limit = (nuint)length; i < limit; i++)
+                _this.Remove(UnsafeHelper.AddByteOffset(ref itemRef, i * UnsafeHelper.SizeOf<T>()));
+            return;
+
+        Fallback:
+            foreach (T item in items)
+                _this.Remove(item);
         }
     }
 }

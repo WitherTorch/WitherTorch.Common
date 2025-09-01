@@ -60,6 +60,14 @@ namespace WitherTorch.Common.Buffers
             return array;
         }
 
+        internal T[] GetBuffer()
+        {
+            if (_disposed)
+                return Array.Empty<T>();
+
+            return _array;
+        }
+
         ~PooledList() => DisposeCore(disposing: false);
 
         public void Dispose()
