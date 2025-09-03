@@ -5,8 +5,6 @@ using System.Runtime.Intrinsics;
 
 using InlineMethod;
 
-#pragma warning disable CS8500
-
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
@@ -25,8 +23,17 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector512<T> valueVector = Vector512.Load(ptr);
                             Vector512<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (!resultVector.Equals(default))
-                                return accurateResult ? ptr + FindIndexForResultVector(resultVector) : (T*)Booleans.TrueNative;
+                            if (accurateResult)
+                            {
+                                ulong bits = resultVector.ExtractMostSignificantBits();
+                                if (bits != 0)
+                                    return ptr + MathHelper.TrailingZeroCount(bits);
+                            }
+                            else
+                            {
+                                if (resultVector != default)
+                                    return (T*)Booleans.TrueNative;
+                            }
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -43,8 +50,17 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector256<T> valueVector = Vector256.Load(ptr);
                             Vector256<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (!resultVector.Equals(default))
-                                return accurateResult ? ptr + FindIndexForResultVector(resultVector) : (T*)Booleans.TrueNative;
+                            if (accurateResult)
+                            {
+                                uint bits = resultVector.ExtractMostSignificantBits();
+                                if (bits != 0)
+                                    return ptr + MathHelper.TrailingZeroCount(bits);
+                            }
+                            else
+                            {
+                                if (resultVector != default)
+                                    return (T*)Booleans.TrueNative;
+                            }
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -61,8 +77,17 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector128<T> valueVector = Vector128.Load(ptr);
                             Vector128<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (!resultVector.Equals(default))
-                                return accurateResult ? ptr + FindIndexForResultVector(resultVector) : (T*)Booleans.TrueNative;
+                            if (accurateResult)
+                            {
+                                uint bits = resultVector.ExtractMostSignificantBits();
+                                if (bits != 0)
+                                    return ptr + MathHelper.TrailingZeroCount(bits);
+                            }
+                            else
+                            {
+                                if (resultVector != default)
+                                    return (T*)Booleans.TrueNative;
+                            }
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -79,8 +104,17 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector64<T> valueVector = Vector64.Load(ptr);
                             Vector64<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (!resultVector.Equals(default))
-                                return accurateResult ? ptr + FindIndexForResultVector(resultVector) : (T*)Booleans.TrueNative;
+                            if (accurateResult)
+                            {
+                                uint bits = resultVector.ExtractMostSignificantBits();
+                                if (bits != 0)
+                                    return ptr + MathHelper.TrailingZeroCount(bits);
+                            }
+                            else
+                            {
+                                if (resultVector != default)
+                                    return (T*)Booleans.TrueNative;
+                            }
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -226,22 +260,6 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.LessThanOrEquals => Vector64.LessThanOrEqual(valueVector, maskVector),
                     _ => throw new InvalidOperationException(),
                 };
-
-            [Inline(InlineBehavior.Remove)]
-            private static int FindIndexForResultVector(in Vector512<T> vector)
-                => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
-
-            [Inline(InlineBehavior.Remove)]
-            private static int FindIndexForResultVector(in Vector256<T> vector)
-                => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
-
-            [Inline(InlineBehavior.Remove)]
-            private static int FindIndexForResultVector(in Vector128<T> vector)
-                => MathHelper.TrailingZeroCount(vector.ExtractMostSignificantBits());
-
-            [Inline(InlineBehavior.Remove)]
-            private static int FindIndexForResultVector(in Vector64<T> vector)
-                => MathHelper.TrailingZeroCount(*(ulong*)UnsafeHelper.AsPointerIn(in vector)) / sizeof(T) / 8;
         }
     }
 }
