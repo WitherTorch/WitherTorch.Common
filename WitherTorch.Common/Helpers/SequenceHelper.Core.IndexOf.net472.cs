@@ -28,17 +28,8 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
                             Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (accurateResult)
-                            {
-                                ulong bits = resultVector.ExtractMostSignificantBits();
-                                if (bits != 0)
-                                    return ptr + MathHelper.TrailingZeroCount(bits);
-                            }
-                            else
-                            {
-                                if (resultVector != Vector<T>.Zero)
-                                    return (T*)Booleans.TrueNative;
-                            }
+                            if (resultVector != Vector<T>.Zero)
+                                return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)

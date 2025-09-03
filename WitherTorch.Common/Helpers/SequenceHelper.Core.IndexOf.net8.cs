@@ -23,17 +23,8 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector512<T> valueVector = Vector512.Load(ptr);
                             Vector512<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (accurateResult)
-                            {
-                                ulong bits = resultVector.ExtractMostSignificantBits();
-                                if (bits != 0)
-                                    return ptr + MathHelper.TrailingZeroCount(bits);
-                            }
-                            else
-                            {
-                                if (resultVector != default)
-                                    return (T*)Booleans.TrueNative;
-                            }
+                            if (resultVector != default)
+                                return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -50,17 +41,8 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector256<T> valueVector = Vector256.Load(ptr);
                             Vector256<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (accurateResult)
-                            {
-                                uint bits = resultVector.ExtractMostSignificantBits();
-                                if (bits != 0)
-                                    return ptr + MathHelper.TrailingZeroCount(bits);
-                            }
-                            else
-                            {
-                                if (resultVector != default)
-                                    return (T*)Booleans.TrueNative;
-                            }
+                            if (resultVector != default)
+                                return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -77,17 +59,8 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector128<T> valueVector = Vector128.Load(ptr);
                             Vector128<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (accurateResult)
-                            {
-                                uint bits = resultVector.ExtractMostSignificantBits();
-                                if (bits != 0)
-                                    return ptr + MathHelper.TrailingZeroCount(bits);
-                            }
-                            else
-                            {
-                                if (resultVector != default)
-                                    return (T*)Booleans.TrueNative;
-                            }
+                            if (resultVector != default)
+                                return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
@@ -104,17 +77,8 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector64<T> valueVector = Vector64.Load(ptr);
                             Vector64<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (accurateResult)
-                            {
-                                uint bits = resultVector.ExtractMostSignificantBits();
-                                if (bits != 0)
-                                    return ptr + MathHelper.TrailingZeroCount(bits);
-                            }
-                            else
-                            {
-                                if (resultVector != default)
-                                    return (T*)Booleans.TrueNative;
-                            }
+                            if (resultVector != default)
+                                return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);
                         if (ptr >= ptrEnd)
