@@ -155,7 +155,7 @@ namespace WitherTorch.Common.Text
                 return 1;
             }
             list.Add(new SplitRange(start, unchecked((nuint)Length) - start));
-            rangeBuffer = list.DestructAndReturnBuffer();
+            (rangeBuffer, _) = list;
             return counter;
         }
 
@@ -245,7 +245,7 @@ namespace WitherTorch.Common.Text
                 list.Add(new SplitRange((nuint)(previous - source), (nuint)(ptrEnd - previous)));
             }
 
-            rangeBuffer = list.DestructAndReturnBuffer();
+            (rangeBuffer, _) = list;
             return result;
         }
     }

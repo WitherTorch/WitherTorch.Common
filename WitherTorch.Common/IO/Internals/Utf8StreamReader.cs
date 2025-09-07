@@ -257,12 +257,11 @@ namespace WitherTorch.Common.IO.Internals
             }
 
             isEndOfStream = TryReadLineIntoPooledList(buffer, list);
-            int count = list.Count;
-            if (count <= 0)
-                return isEndOfStream ? null : StringBase.Empty;
-            buffer = list.DestructAndReturnBuffer();
             try
             {
+                (buffer, int count) = list;
+                if (count <= 0)
+                    return isEndOfStream ? null : StringBase.Empty;
                 fixed (byte* ptr = buffer)
                     return StringBase.CreateUtf8String(ptr, 0u, unchecked((nuint)count));
             }
@@ -306,12 +305,11 @@ namespace WitherTorch.Common.IO.Internals
             }
 
             ReadToEndIntoPooledList(buffer, list);
-            int count = list.Count;
-            if (count <= 0)
-                return StringBase.Empty;
-            buffer = list.DestructAndReturnBuffer();
             try
             {
+                (buffer, int count) = list;
+                if (count <= 0)
+                    return StringBase.Empty;
                 fixed (byte* ptr = buffer)
                     return StringBase.CreateUtf8String(ptr, 0u, unchecked((nuint)count));
             }

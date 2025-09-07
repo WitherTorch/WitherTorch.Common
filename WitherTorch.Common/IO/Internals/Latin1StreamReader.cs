@@ -171,12 +171,11 @@ namespace WitherTorch.Common.IO.Internals
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
             bool isEndOfStream = TryReadLineIntoPooledList(buffer, list);
-            int count = list.Count;
-            if (count <= 0)
-                return isEndOfStream ? null : StringBase.Empty;
-            buffer = list.DestructAndReturnBuffer();
             try
             {
+                (buffer, int count) = list;
+                if (count <= 0)
+                    return isEndOfStream ? null : StringBase.Empty;
                 fixed (byte* ptr = buffer)
                     return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
             }
@@ -194,12 +193,11 @@ namespace WitherTorch.Common.IO.Internals
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
             ReadToEndIntoPooledList(buffer, list);
-            int count = list.Count;
-            if (count <= 0)
-                return StringBase.Empty;
-            buffer = list.DestructAndReturnBuffer();
             try
             {
+                (buffer, int count) = list;
+                if (count <= 0)
+                    return StringBase.Empty;
                 fixed (byte* ptr = buffer)
                     return StringBase.CreateLatin1String(ptr, 0u, unchecked((nuint)count));
             }

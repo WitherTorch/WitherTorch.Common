@@ -164,13 +164,11 @@ namespace WitherTorch.Common.Extensions
                 case List<T> list:
                     list.AddRange(items);
                     return;
-                case CustomListBase<T> list:
-                    if (typeof(TEnumerable) == typeof(T[]))
-                        list.AddRange(UnsafeHelper.As<TEnumerable, T[]>(items));
-                    else if (typeof(TEnumerable) == typeof(IList<T>))
-                        list.AddRange(UnsafeHelper.As<TEnumerable, IList<T>>(items));
-                    else
-                        list.AddRange(items);
+                case IAddRangeCollectionGenerics<T> list:
+                    list.AddRange(items);
+                    return;
+                case IAddRangeCollection<T> list:
+                    list.AddRange(items);
                     return;
                 default:
                     break;

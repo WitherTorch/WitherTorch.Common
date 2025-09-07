@@ -9,8 +9,10 @@ using WitherTorch.Common.Native;
 namespace WitherTorch.Common.Collections
 {
 #pragma warning disable CS8500
-    public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>
+    public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAddRangeCollectionGenerics<T>
     {
+        private static readonly bool _isUnmanagedType = UnsafeHelper.IsUnmanagedType<T>();
+
         // Standard List Structure
         protected int _count;
         protected T[] _array;
@@ -63,52 +65,84 @@ namespace WitherTorch.Common.Collections
             _array[index] = item;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRange(T[] array)
-        {
-            int length = array.Length;
-            int index = _count;
-            _count = index + length;
-            EnsureCapacity();
-            T[] _array = this._array;
-            for (int i = 0, j = index; i < length; i++, j++)
-            {
-                _array[j] = array[i];
-            }
-        }
+#if NET472_OR_GREATER
+        void IAddRangeCollection<T>.AddRange(IEnumerable<T> collection) => AddRange(collection);
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRange(IList<T> array)
+        public void AddRange<TEnumerable>(TEnumerable items) where TEnumerable : IEnumerable<T>
         {
-            int length = array.Count;
-            int index = _count;
-            _count = index + length;
-            EnsureCapacity();
-            T[] _array = this._array;
-            for (int i = 0, j = index; i < length; i++, j++)
-            {
-                _array[j] = array[i];
-            }
-        }
+            T[] array;
+            int length;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddRange(IEnumerable<T> items)
-        {
-            switch (items)
+            if (typeof(TEnumerable) == typeof(T[]) || items is T[])
+                goto Array;
+            if (typeof(TEnumerable) == typeof(CustomListBase<T>) || items is CustomListBase<T>)
+                goto CustomListBase;
+            if (typeof(TEnumerable) == typeof(ObservableList<T>) || items is ObservableList<T>)
+                goto ObservableList;
+            if (typeof(TEnumerable) == typeof(IList<T>) || items is IList<T>)
+                goto ListLike;
+
+            goto Fallback;
+
+        ObservableList:
+            IList<T> underlyingList = UnsafeHelper.As<TEnumerable, ObservableList<T>>(items).GetUnderlyingList();
+            items = UnsafeHelper.As<IList<T>, TEnumerable>(underlyingList);
+            if (underlyingList is T[])
+                goto Array;
+            if (underlyingList is CustomListBase<T>)
+                goto CustomListBase;
+            if (underlyingList is ObservableList<T>)
+                goto ObservableList;
+            goto ListLike;
+
+        Array:
+            array = UnsafeHelper.As<TEnumerable, T[]>(items);
+            length = array.Length;
+            goto ArrayLike;
+
+        CustomListBase:
+            CustomListBase<T> customList = UnsafeHelper.As<TEnumerable, CustomListBase<T>>(items);
+            array = customList._array;
+            length = customList._count;
+            goto ArrayLike;
+
+        ArrayLike:
             {
-                case T[] array:
-                    AddRange(array);
+                if (length <= 0)
                     return;
-                case IList<T> list:
-                    AddRange(list);
-                    return;
-                default:
-                    IEnumerator<T> enumerator = items.GetEnumerator();
-                    while (enumerator.MoveNext())
-                        Add(enumerator.Current);
-                    enumerator.Dispose();
-                    break;
+                int index = _count;
+                _count = index + length;
+                EnsureCapacity();
+                if (_isUnmanagedType)
+                {
+                    fixed (T* source = array, destination = _array)
+                        UnsafeHelper.CopyBlockUnaligned(destination + index * sizeof(T), source, unchecked((uint)(length * sizeof(T))));
+                }
+                else
+                {
+                    Array.ConstrainedCopy(array, 0, _array, index, length);
+                }
             }
+            return;
+
+        ListLike:
+            {
+                IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
+                length = list.Count;
+                if (length <= 0)
+                    return;
+                int index = _count;
+                _count = index + length;
+                EnsureCapacity();
+                list.CopyTo(_array, index);
+            }
+            return;
+
+        Fallback:
+            foreach (T item in items)
+                Add(item);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -164,7 +198,7 @@ namespace WitherTorch.Common.Collections
         public void Clear()
         {
             _count = 0;
-            if (UnsafeHelper.IsUnmanagedType<T>())
+            if (_isUnmanagedType)
                 return;
             SequenceHelper.Clear(_array, 0, _count);
         }
@@ -180,7 +214,17 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(T[] array, int arrayIndex)
         {
-            Array.Copy(_array, 0, array, arrayIndex, _count);
+            int count = _count;
+            if (count <= 0)
+                return;
+            if (arrayIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            if (_isUnmanagedType)
+            {
+                SequenceHelper.Copy(_array, 0, array, (nuint)arrayIndex, (nuint)count);
+                return;
+            }
+            Array.ConstrainedCopy(_array, 0, array, arrayIndex, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

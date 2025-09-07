@@ -49,15 +49,28 @@ namespace WitherTorch.Common.Buffers
             pool.Return(array);
         }
 
-        public T[] DestructAndReturnBuffer()
+        public void Deconstruct(out T[] array, out int count)
         {
-            if (_disposed)
-                return Array.Empty<T>();
-            _disposed = true;
+            try
+            {
+                if (_disposed)
+                {
+                    array = _array;
+                    count = 0;
+                    return;
+                }
+                _disposed = true;
 
-            T[] array = _array;
-            _array = Array.Empty<T>();
-            return array;
+                (array, _array) = (_array, Array.Empty<T>());
+                (_count, count) = (0, _count);
+                return;
+            }
+            finally
+            {
+#pragma warning disable CA1816
+                GC.SuppressFinalize(this);
+#pragma warning restore CA1816
+            }
         }
 
         internal T[] GetBuffer()
