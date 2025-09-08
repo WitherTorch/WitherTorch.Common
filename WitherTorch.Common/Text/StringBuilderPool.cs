@@ -1,59 +1,62 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Extensions;
+using WitherTorch.Common.Native;
+using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed class StringBuilderPool : IPool<DelayedCollectingStringBuilder>
+    internal sealed class StringBuilderPool : IPool<StringBuilder>
     {
         private static readonly Lazy<StringBuilderPool> _sharedPoolLazy = new Lazy<StringBuilderPool>(() => new StringBuilderPool(1),
             System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
         public static StringBuilderPool Shared => _sharedPoolLazy.Value;
 
-        private readonly ConcurrentBag<DelayedCollectingStringBuilder> _bag;
+        private readonly ProcessorLocal<StringBuilderLocal> _localGroups;
 
         public StringBuilderPool(int initialLength)
         {
-            if (initialLength > 0)
+            _localGroups = new ProcessorLocal<StringBuilderLocal>(() =>
             {
-                DelayedCollectingStringBuilder[] builders = new DelayedCollectingStringBuilder[initialLength];
+                Queue<StringBuilder> queue = new Queue<StringBuilder>(initialLength);
                 for (int i = 0; i < initialLength; i++)
-                    builders[i] = new DelayedCollectingStringBuilder();
-                _bag = new ConcurrentBag<DelayedCollectingStringBuilder>(builders);
-            }
-            else
-            {
-                _bag = new ConcurrentBag<DelayedCollectingStringBuilder>();
-            }
+                    queue.Enqueue(new StringBuilder());
+                DelayedCall call = new DelayedCall(() =>
+                {
+                    int count = queue.Count;
+                    for (int i = initialLength; i < count; i++)
+                        queue.Dequeue();
+                });
+                return new StringBuilderLocal(call, queue);
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public DelayedCollectingStringBuilder Rent()
+        public StringBuilder Rent()
         {
-            DelayedCollectingStringBuilder result = RentCore();
-            result.AddRef();
+            StringBuilderLocal local = _localGroups.Value;
+            if (!local.Queue.TryDequeue(out StringBuilder? result) || result is null)
+                result = new StringBuilder();
+            local.Call.AddRef();
             return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private DelayedCollectingStringBuilder RentCore()
+        public void Return(StringBuilder obj)
         {
-            if (_bag.TryTake(out DelayedCollectingStringBuilder? result))
-            {
-                result.GetObject()?.Clear();
-                return result;
-            }
-            return new DelayedCollectingStringBuilder();
+            StringBuilderLocal local = _localGroups.Value;
+            local.Queue.Enqueue(obj.Clear());
+            local.Call.RemoveRef();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Return(DelayedCollectingStringBuilder obj)
-        {
-            obj.RemoveRef();
-            _bag.Add(obj);
-        }
+        private sealed record class StringBuilderLocal(
+            DelayedCall Call,
+            Queue<StringBuilder> Queue
+            );
     }
 }

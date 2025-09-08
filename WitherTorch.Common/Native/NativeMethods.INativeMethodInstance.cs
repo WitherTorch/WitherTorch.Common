@@ -9,6 +9,7 @@ namespace WitherTorch.Common.Native
         private unsafe interface INativeMethodInstance
         {
             int GetCurrentThreadId();
+            int GetCurrentProcessorId();
             void* AllocMemory(nuint size);
             void FreeMemory(void* ptr);
             void CopyMemory(void* destination, void* source, nuint sizeInBytes);

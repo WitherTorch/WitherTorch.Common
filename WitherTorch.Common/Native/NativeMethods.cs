@@ -40,99 +40,102 @@ namespace WitherTorch.Common.Native
         public static int GetCurrentThreadId() => _methodInstance.GetCurrentThreadId();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, int sizeInBytes) 
+        public static void CopyMemory(void* destination, void* source, int sizeInBytes)
             => _methodInstance.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, uint sizeInBytes) 
+        public static void CopyMemory(void* destination, void* source, uint sizeInBytes)
             => _methodInstance.CopyMemory(destination, source, sizeInBytes);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, long sizeInBytes) 
+        public static void CopyMemory(void* destination, void* source, long sizeInBytes)
             => _methodInstance.CopyMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, ulong sizeInBytes) 
+        public static void CopyMemory(void* destination, void* source, ulong sizeInBytes)
             => _methodInstance.CopyMemory(destination, source, unchecked((nuint)sizeInBytes));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, nint sizeInBytes) 
+        public static void CopyMemory(void* destination, void* source, nint sizeInBytes)
             => _methodInstance.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, nuint sizeInBytes) 
+        public static void CopyMemory(void* destination, void* source, nuint sizeInBytes)
             => _methodInstance.CopyMemory(destination, source, sizeInBytes);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, int sizeInBytes) 
+        public static void MoveMemory(void* destination, void* source, int sizeInBytes)
             => _methodInstance.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, uint sizeInBytes) 
+        public static void MoveMemory(void* destination, void* source, uint sizeInBytes)
             => _methodInstance.MoveMemory(destination, source, sizeInBytes);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, long sizeInBytes) 
+        public static void MoveMemory(void* destination, void* source, long sizeInBytes)
             => _methodInstance.MoveMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, ulong sizeInBytes) 
+        public static void MoveMemory(void* destination, void* source, ulong sizeInBytes)
             => _methodInstance.MoveMemory(destination, source, unchecked((nuint)sizeInBytes));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, nint sizeInBytes) 
+        public static void MoveMemory(void* destination, void* source, nint sizeInBytes)
             => _methodInstance.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, nuint sizeInBytes) 
+        public static void MoveMemory(void* destination, void* source, nuint sizeInBytes)
             => _methodInstance.MoveMemory(destination, source, sizeInBytes);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(int size, ProtectMemoryPageFlags flags) 
+        public static void* AllocMemoryPage(int size, ProtectMemoryPageFlags flags)
             => _methodInstance.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(uint size, ProtectMemoryPageFlags flags) 
+        public static void* AllocMemoryPage(uint size, ProtectMemoryPageFlags flags)
             => _methodInstance.AllocMemoryPage(size, flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(long size, ProtectMemoryPageFlags flags) 
+        public static void* AllocMemoryPage(long size, ProtectMemoryPageFlags flags)
             => _methodInstance.AllocMemoryPage(unchecked((nuint)MathHelper.MakeUnsigned(size)), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(ulong size, ProtectMemoryPageFlags flags) 
+        public static void* AllocMemoryPage(ulong size, ProtectMemoryPageFlags flags)
             => _methodInstance.AllocMemoryPage(unchecked((nuint)size), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(nint size, ProtectMemoryPageFlags flags) 
+        public static void* AllocMemoryPage(nint size, ProtectMemoryPageFlags flags)
             => _methodInstance.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags) 
+        public static void* AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags)
             => _methodInstance.AllocMemoryPage(size, flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, int size, ProtectMemoryPageFlags flags) 
+        public static void ProtectMemoryPage(void* ptr, int size, ProtectMemoryPageFlags flags)
             => _methodInstance.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, uint size, ProtectMemoryPageFlags flags) 
+        public static void ProtectMemoryPage(void* ptr, uint size, ProtectMemoryPageFlags flags)
             => _methodInstance.ProtectMemoryPage(ptr, size, flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, long size, ProtectMemoryPageFlags flags) 
+        public static void ProtectMemoryPage(void* ptr, long size, ProtectMemoryPageFlags flags)
             => _methodInstance.ProtectMemoryPage(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, ulong size, ProtectMemoryPageFlags flags) 
+        public static void ProtectMemoryPage(void* ptr, ulong size, ProtectMemoryPageFlags flags)
             => _methodInstance.ProtectMemoryPage(ptr, unchecked((nuint)size), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, nint size, ProtectMemoryPageFlags flags) 
+        public static void ProtectMemoryPage(void* ptr, nint size, ProtectMemoryPageFlags flags)
             => _methodInstance.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags) 
+        public static void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
             => _methodInstance.ProtectMemoryPage(ptr, size, flags);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetCurrentProcessorId() => _methodInstance.GetCurrentProcessorId();
     }
 }

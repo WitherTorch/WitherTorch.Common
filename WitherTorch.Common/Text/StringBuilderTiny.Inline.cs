@@ -1,7 +1,5 @@
 ﻿using InlineMethod;
 
-using WitherTorch.Common.Structures;
-
 namespace WitherTorch.Common.Text
 {
     unsafe partial struct StringBuilderTiny

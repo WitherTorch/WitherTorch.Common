@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 using WitherTorch.Common.Helpers;
 
@@ -34,6 +30,15 @@ namespace WitherTorch.Common.Native
             unsafe void INativeMethodInstance.ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
             {
                 // Do nothing
+            }
+
+            public int GetCurrentProcessorId()
+            {
+#if NET8_0_OR_GREATER
+                return Thread.GetCurrentProcessorId();
+#else
+                return Thread.CurrentThread.ManagedThreadId;
+#endif
             }
         }
     }

@@ -29,6 +29,9 @@ namespace WitherTorch.Common.Native
             [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* mprotect(void* ptr, nuint length, ProtectMemoryPageFlags flags);
 
+            [DllImport("libc", CallingConvention = CallingConvention.StdCall)]
+            private static extern int sched_getcpu();
+
             int INativeMethodInstance.GetCurrentThreadId() => gettid();
 
             void* INativeMethodInstance.AllocMemory(nuint size) => malloc(size);
@@ -44,6 +47,8 @@ namespace WitherTorch.Common.Native
 
             void INativeMethodInstance.ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags) 
                 => mprotect(ptr, size, flags);
+
+            int INativeMethodInstance.GetCurrentProcessorId() => sched_getcpu();
 
             private enum MemoryMapFlags : uint
             {

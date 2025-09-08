@@ -16,10 +16,10 @@ namespace WitherTorch.Common.Text
         [Inline(InlineBehavior.Remove)]
         private void AppendCore(char* ptr, [InlineParameter] int count)
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Append(ptr, count);
+                builder.Append(ptr, count);
                 return;
             }
             char* iterator = _iterator;
@@ -31,16 +31,16 @@ namespace WitherTorch.Common.Text
                 _iterator = endIterator + 1;
                 return;
             }
-            GetOrRentAlternateStringBuilder(count).Append(ptr, count);
+            GetAlternateStringBuilder(count).Append(ptr, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AppendCore(StringBase str, nuint startIndex, nuint count)
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                AppendCore(builder.GetObject(), str, startIndex, count);
+                AppendCore(builder, str, startIndex, count);
                 return;
             }
             char* iterator = _iterator;
@@ -52,7 +52,7 @@ namespace WitherTorch.Common.Text
                 _iterator = endIterator + 1;
                 return;
             }
-            AppendCore(GetOrRentAlternateStringBuilder(unchecked((int)count)), str, startIndex, count);
+            AppendCore(GetAlternateStringBuilder(unchecked((int)count)), str, startIndex, count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -231,35 +231,24 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private StringBuilder GetOrRentAlternateStringBuilder(int extraLength)
-        {
-            DelayedCollectingStringBuilder? builder = _builder;
-            if (builder is null)
-                return RentAlternateStringBuilder(extraLength);
-            return builder.GetObject();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private StringBuilder RentAlternateStringBuilder(int extraLength)
+        private StringBuilder GetAlternateStringBuilder(int extraLength)
         {
             char* start = _start;
             char* iterator = _iterator;
             int size = unchecked((int)(iterator - start));
-            DelayedCollectingStringBuilder builder = StringBuilderPool.Shared.Rent();
-            _builder = builder;
-            StringBuilder result = builder.GetObject();
-            result.EnsureCapacity(size + extraLength);
-            result.Append(start, size);
-            return result;
+
+            StringBuilder builder = _builderLazy.Value;
+            builder.EnsureCapacity(size + extraLength);
+            builder.Append(start, size);
+            return builder;
         }
 
         [Inline(InlineBehavior.Remove)]
-        private void ReturnStringBuilder()
+        private readonly void ReturnStringBuilder()
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is null)
                 return;
-            _builder = null;
             StringBuilderPool.Shared.Return(builder);
         }
     }

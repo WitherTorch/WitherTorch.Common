@@ -1,29 +1,40 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
+using WitherTorch.Common.Threading;
 
 #pragma warning disable CS8500
 
 namespace WitherTorch.Common.Text
 {
-    public unsafe ref partial struct StringBuilderTiny
+    public unsafe ref partial struct StringBuilderTiny : IDisposable
     {
         private char* _start, _iterator, _end;
-        private DelayedCollectingStringBuilder? _builder;
+        private LazyTinyRef<StringBuilder> _builderLazy;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public StringBuilderTiny()
+        {
+            _builderLazy = new LazyTinyRef<StringBuilder>(StringBuilderPool.Shared.Rent);
+            _start = null;
+            _iterator = null;
+            _end = null;
+        }
 
         public readonly int Length
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                DelayedCollectingStringBuilder? builder = _builder;
+                StringBuilder? builder = _builderLazy.GetValueDirectly();
                 if (builder is null)
                     return unchecked((int)(_iterator - _start));
-                return builder.GetObject().Length;
+                return builder.Length;
             }
         }
 
@@ -39,10 +50,10 @@ namespace WitherTorch.Common.Text
         [SecuritySafeCritical]
         public void Append(char value)
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Append(value);
+                builder.Append(value);
                 return;
             }
             char* iterator = _iterator;
@@ -53,7 +64,7 @@ namespace WitherTorch.Common.Text
                 _iterator = iterator + 1;
                 return;
             }
-            GetOrRentAlternateStringBuilder(1).Append(value);
+            GetAlternateStringBuilder(1).Append(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -62,10 +73,10 @@ namespace WitherTorch.Common.Text
         {
             if (repeatCount < 1)
                 return;
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Append(value, repeatCount);
+                builder.Append(value, repeatCount);
                 return;
             }
             char* iterator = _iterator;
@@ -80,7 +91,7 @@ namespace WitherTorch.Common.Text
                 _iterator = iterator;
                 return;
             }
-            GetOrRentAlternateStringBuilder(repeatCount).Append(value, repeatCount);
+            GetAlternateStringBuilder(repeatCount).Append(value, repeatCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -160,7 +171,7 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(string format, T arg0, T arg1)
         {
-            ParamArrayTiny<T> array = new (arg0, arg1);
+            ParamArrayTiny<T> array = new(arg0, arg1);
             if (UnsafeHelper.IsPrimitiveType<T>())
             {
                 AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 2);
@@ -182,23 +193,23 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(string format, params T[] args) 
+        public void AppendFormat<T>(string format, params T[] args)
             => AppendFormatCore(format, new ParamArrayTiny<T>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(string format, object arg0) 
+        public void AppendFormat(string format, object arg0)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(string format, object arg0, object arg1) 
+        public void AppendFormat(string format, object arg0, object arg1)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(string format, object arg0, object arg1, object arg2) 
+        public void AppendFormat(string format, object arg0, object arg1, object arg2)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(string format, params object[] args) 
+        public void AppendFormat(string format, params object[] args)
             => AppendFormatCore(format, new ParamArrayTiny<object>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -215,7 +226,7 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(StringBase format, T arg0, T arg1)
         {
-            ParamArrayTiny<T> array = new (arg0, arg1);
+            ParamArrayTiny<T> array = new(arg0, arg1);
             if (UnsafeHelper.IsPrimitiveType<T>())
             {
                 AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 2);
@@ -237,45 +248,45 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(StringBase format, params T[] args) 
+        public void AppendFormat<T>(StringBase format, params T[] args)
             => AppendFormatCore(format, new ParamArrayTiny<T>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, object arg0) 
+        public void AppendFormat(StringBase format, object arg0)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, object arg0, object arg1) 
+        public void AppendFormat(StringBase format, object arg0, object arg1)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, object arg0, object arg1, object arg2) 
+        public void AppendFormat(StringBase format, object arg0, object arg1, object arg2)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, params object[] args) 
+        public void AppendFormat(StringBase format, params object[] args)
             => AppendFormatCore(format, new ParamArrayTiny<object>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public StringBuilderTiny Clear()
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is null)
             {
                 _iterator = _start;
                 return this;
             }
-            builder.GetObject().Clear();
+            builder.Clear();
             return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Insert(int index, char value)
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Insert(index, value);
+                builder.Insert(index, value);
                 return;
             }
             char* iterator = _iterator;
@@ -292,7 +303,7 @@ namespace WitherTorch.Common.Text
                 _iterator = endIterator + 1;
                 return;
             }
-            GetOrRentAlternateStringBuilder(1).Insert(index, value);
+            GetAlternateStringBuilder(1).Insert(index, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -301,10 +312,10 @@ namespace WitherTorch.Common.Text
             int valueLength = value.Length;
             if (valueLength <= 0)
                 return;
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Insert(index, value);
+                builder.Insert(index, value);
                 return;
             }
             char* iterator = _iterator;
@@ -324,7 +335,7 @@ namespace WitherTorch.Common.Text
                 _iterator = endIterator + 1;
                 return;
             }
-            GetOrRentAlternateStringBuilder(valueLength).Insert(index, value);
+            GetAlternateStringBuilder(valueLength).Insert(index, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -333,10 +344,10 @@ namespace WitherTorch.Common.Text
             int valueLength = value.Length;
             if (valueLength <= 0)
                 return;
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Insert(index, value.ToString());
+                builder.Insert(index, value.ToString());
                 return;
             }
             char* iterator = _iterator;
@@ -351,7 +362,7 @@ namespace WitherTorch.Common.Text
                 _iterator = endIterator + 1;
                 return;
             }
-            GetOrRentAlternateStringBuilder(valueLength).Insert(index, value.ToString());
+            GetAlternateStringBuilder(valueLength).Insert(index, value.ToString());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -361,10 +372,10 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (length <= 0)
                 return;
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                builder.GetObject().Remove(startIndex, length);
+                builder.Remove(startIndex, length);
                 return;
             }
             char* start = _start + startIndex;
@@ -384,11 +395,10 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RemoveLast()
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
             {
-                StringBuilder inlineBuilder = builder.GetObject();
-                inlineBuilder.Remove(inlineBuilder.Length - 1, 1);
+                builder.Remove(builder.Length - 1, 1);
                 return;
             }
             char* start = _start;
@@ -400,9 +410,9 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override readonly string ToString()
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
-                return builder.GetObject().ToString();
+                return builder.ToString();
             char* start = _start;
             char* iterator = _iterator;
             if (start >= iterator)
@@ -413,9 +423,9 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly StringBase ToStringBase()
         {
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
-                return StringBase.Create(builder.GetObject().ToString());
+                return StringBase.Create(builder.ToString());
             char* start = _start;
             char* iterator = _iterator;
             if (start >= iterator)
@@ -428,9 +438,9 @@ namespace WitherTorch.Common.Text
         {
             if (length <= 0)
                 return string.Empty;
-            DelayedCollectingStringBuilder? builder = _builder;
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
-                return builder.GetObject().ToString(startIndex, length);
+                return builder.ToString(startIndex, length);
             char* start = _start + startIndex;
             char* end = start + length;
             char* iterator = _iterator;
@@ -441,6 +451,6 @@ namespace WitherTorch.Common.Text
             return new string(start, 0, unchecked((int)(end - start)));
         }
 
-        public void Dispose() => ReturnStringBuilder();
+        public readonly void Dispose() => ReturnStringBuilder();
     }
 }

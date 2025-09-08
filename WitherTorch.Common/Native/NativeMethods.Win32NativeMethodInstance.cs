@@ -29,6 +29,9 @@ namespace WitherTorch.Common.Native
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern bool VirtualProtect(void* address, nuint dwSize, PageAccessRights rights, PageAccessRights* oldRights);
 
+            [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
+            private static extern int GetCurrentProcessorNumber();
+
             [DllImport("ntdll", CallingConvention = CallingConvention.StdCall)]
             private static extern void RtlMoveMemory(void* dest, void* src, nuint sizeInBytes);
 
@@ -58,6 +61,8 @@ namespace WitherTorch.Common.Native
                 PageAccessRights rights = ConvertPageAccessRightsFromFlags(flags);
                 VirtualProtect(ptr, size, rights, &rights);
             }
+
+            int INativeMethodInstance.GetCurrentProcessorId() => GetCurrentProcessorNumber();
 
             private static PageAccessRights ConvertPageAccessRightsFromFlags(ProtectMemoryPageFlags flags)
             {
