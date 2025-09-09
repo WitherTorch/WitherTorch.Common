@@ -19,6 +19,7 @@ namespace WitherTorch.Common.Text
 
         // Utf16 編碼限制
         private const uint Utf16EncodingLimit = 0x10FFFFu;
+        private const uint Utf16SurrogateBase = 0x010000u;
 
         // UTF-8 碼點邊界
         private const uint Utf8Section1Limit = 0x007Fu;
@@ -73,11 +74,11 @@ namespace WitherTorch.Common.Text
             }
 
             char leadSurrogate = ptr[0];
-            if (!IsLeadSurrogate(leadSurrogate) || ptr + 1 < ptrEnd)
+            if (!IsLeadSurrogate(leadSurrogate) || ptr + 1 >= ptrEnd)
                 goto Single;
 
             char trailSurrogate = ptr[1];
-            if (!IsTrailSurrogate(trailSurrogate) || trailSurrogate > Utf16TrailSurrogateEnd)
+            if (!IsTrailSurrogate(trailSurrogate))
                 goto Single;
 
             unicodeValue = ComposeSurrogatePair(leadSurrogate, trailSurrogate);
@@ -92,11 +93,11 @@ namespace WitherTorch.Common.Text
         public static unsafe bool IsLeadSurrogate(char c) => c >= Utf16LeadSurrogateStart && c <= Utf16LeadSurrogateEnd;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe bool IsTrailSurrogate(char c) => c >= Utf16TrailSurrogateStart && c <= Utf16TrailSurrogateStart;
+        public static unsafe bool IsTrailSurrogate(char c) => c >= Utf16TrailSurrogateStart && c <= Utf16TrailSurrogateEnd;
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe uint ComposeSurrogatePair(char leadSurrogate, char trailSurrogate) 
-            => unchecked((uint)(((leadSurrogate - Utf16LeadSurrogateStart) << 10) + (trailSurrogate - Utf16TrailSurrogateEnd)));
+        private static unsafe uint ComposeSurrogatePair(char leadSurrogate, char trailSurrogate)
+            => Utf16SurrogateBase + unchecked(((uint)(leadSurrogate - Utf16LeadSurrogateStart) << 10) + (uint)(trailSurrogate - Utf16TrailSurrogateStart));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe char* TryWriteUtf16Character(char* ptr, char* ptrEnd, uint unicodeValue)
@@ -141,6 +142,7 @@ namespace WitherTorch.Common.Text
                 trailSurrogate = default;
                 return false;
             }
+            unicodeValue -= Utf16SurrogateBase;
             leadSurrogate = unchecked((char)(((unicodeValue >> 10) & Utf16SurrogateMask) | Utf16LeadSurrogateStart));
             trailSurrogate = unchecked((char)((unicodeValue & Utf16SurrogateMask) | Utf16TrailSurrogateStart));
             return true;
