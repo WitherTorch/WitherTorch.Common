@@ -403,7 +403,7 @@ namespace WitherTorch.Common.Text
             {
                 *destPtr = *sourcePtr;
             }
-            _iterator -= length;
+            _iterator = iterator - length;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
