@@ -81,61 +81,6 @@ namespace WitherTorch.Common.Helpers
                 StringHelper.WriteUtf32CharacterToUtf16Buffer(ptr, codePoint);
             return CharUnicodeInfo.GetUnicodeCategory(result, 0);
         }
-
-        // https://unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
-        // https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt
-
-        // ccs-base := [\p{L}\p{N}\p{P}\p{S}\p{Zs}]
-        private static bool IsCcsBase(UnicodeCategory category)
-            => category switch
-            {
-                // p{L}
-                UnicodeCategory.LowercaseLetter => true, // p{Ll}
-                UnicodeCategory.ModifierLetter => true, // p{Lm}
-                UnicodeCategory.OtherLetter => true, // p{Lo}
-                UnicodeCategory.TitlecaseLetter => true, // p{Lt}
-                UnicodeCategory.UppercaseLetter => true, // p{Lu}
-                // p{N}
-                UnicodeCategory.DecimalDigitNumber => true, // p{Nd}
-                UnicodeCategory.LetterNumber => true, // p{Nl}
-                UnicodeCategory.OtherNumber => true, // p{No}
-                // p{P}
-                UnicodeCategory.ConnectorPunctuation => true, // p{Pc}
-                UnicodeCategory.DashPunctuation => true, // p{Pd}
-                UnicodeCategory.ClosePunctuation => true, // p{Pe}
-                UnicodeCategory.FinalQuotePunctuation => true, // p{Pf}
-                UnicodeCategory.InitialQuotePunctuation => true, // p{Pi}
-                UnicodeCategory.OtherPunctuation => true, // p{Po}
-                UnicodeCategory.OpenPunctuation => true, // p{Ps}
-                // p{S}
-                UnicodeCategory.CurrencySymbol => true, // p{Sc}
-                UnicodeCategory.ModifierSymbol => true, // p{Sk}
-                UnicodeCategory.MathSymbol => true, // p{Sm}
-                UnicodeCategory.OtherSymbol => true, // p{So}
-                // p{Zs}
-                UnicodeCategory.SpaceSeparator => true,
-                _ => false
-            };
-
-        // ccs-extended := [\p{M}\p{Join_Control}]
-        private static bool IsCcsExtended(char c, UnicodeCategory category)
-            => category switch
-            {
-                // p{M}
-                UnicodeCategory.SpacingCombiningMark => true, // p{Mc}
-                UnicodeCategory.EnclosingMark => true, // p{Me}
-                UnicodeCategory.NonSpacingMark => true, // p{Mn}
-                _ => IsJoinControl(c)
-            };
-
-        // p{Join_Control} := [\u200C \u200D]
-        private static bool IsJoinControl(char c)
-            => c switch
-            {
-                '\u200C' => true,
-                '\u200D' => true,
-                _ => false
-            };
     }
 }
 #endif
