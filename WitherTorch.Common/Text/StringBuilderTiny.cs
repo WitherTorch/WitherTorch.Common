@@ -47,6 +47,20 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EnsureCapacity(int capacity)
+        {
+            StringBuilder? builder = _builderLazy.GetValueDirectly();
+            if (builder is not null)
+            {
+                builder.EnsureCapacity(capacity);
+                return;
+            }
+            if (_end - _start >= capacity)
+                return;
+            _builderLazy.Value.EnsureCapacity(capacity);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecuritySafeCritical]
         public void Append(char value)
         {

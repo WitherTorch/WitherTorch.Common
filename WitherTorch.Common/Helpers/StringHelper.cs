@@ -441,7 +441,7 @@ namespace WitherTorch.Common.Helpers
         public static bool Contains(string str, char value) => SequenceHelper.Contains(str, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Contains(string str, params char[] values)
+        public static bool ContainsAny(string str, params char[] values)
         {
             for (int i = 0, valuesLength = values.Length; i < valuesLength; i++)
             {

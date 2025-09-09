@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Extensions
             => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[obj.Length - 1];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool Contains(this string obj, params char[] values) => StringHelper.Contains(obj, values);
+        public static unsafe bool ContainsAny(this string obj, params char[] values) => StringHelper.ContainsAny(obj, values);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal) => array.IndexOf(value, 0, array.Length, comparison) < 0;
