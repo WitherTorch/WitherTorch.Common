@@ -2,13 +2,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
-using WitherTorch.Common.Collections;
-using WitherTorch.Common.Helpers;
-using WitherTorch.Common.Threading;
 using WitherTorch.Common.Extensions;
+using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
+using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Buffers
 {
@@ -16,30 +15,57 @@ namespace WitherTorch.Common.Buffers
     {
         private sealed partial class SharedArrayPoolImpl : ArrayPool<T>
         {
+            private const int LocalArrayQueuePreserveCount = 1;
+            private const int GlobalArrayQueuePreserveCount = 1;
+
             private const int LocalArrayQueueCount = 4;
             private const int LocalArraySizeLimit = 1 << (LocalArrayQueueCount + 3);
             private const int GlobalArrayQueueCount = 20 - LocalArrayQueueCount - 3;
             private const int GlobalArraySizeLimit = 1 << 20;
 
-            private readonly ThreadLocal<Queue<DelayedArrayHolder>>[] _smallQueueLocal;
-            private readonly LazyTiny<ConcurrentQueue<DelayedArrayHolder>>[] _largeQueueLazy;
-            private readonly ThreadLocal<UnwrappableList<DelayedArrayHolder>> _restoreListLocal;
+            private readonly ProcessorLocal<ArrayQueue>[] _localArrayQueues;
+            private readonly LazyTiny<ConcurrentArrayQueue>[] _globalArrayQueues;
 
             public SharedArrayPoolImpl()
             {
-                ThreadLocal<Queue<DelayedArrayHolder>>[] smallQueueLocal = new ThreadLocal<Queue<DelayedArrayHolder>>[LocalArrayQueueCount];
-                for (int i = 0; i < LocalArrayQueueCount; i++)
-                {
-                    smallQueueLocal[i] = new ThreadLocal<Queue<DelayedArrayHolder>>(() => new Queue<DelayedArrayHolder>(), false);
-                }
-                LazyTiny<ConcurrentQueue<DelayedArrayHolder>>[] largeQueueLazy = new LazyTiny<ConcurrentQueue<DelayedArrayHolder>>[GlobalArrayQueueCount];
+                ProcessorLocal<ArrayQueue>[] localArrayQueues = new ProcessorLocal<ArrayQueue>[LocalArrayQueueCount];
+                localArrayQueues[0] = new(static () => CreateLocalArrayQueue(16));
+                localArrayQueues[1] = new(static () => CreateLocalArrayQueue(32));
+                localArrayQueues[2] = new(static () => CreateLocalArrayQueue(64));
+                localArrayQueues[3] = new(static () => CreateLocalArrayQueue(128));
+                LazyTiny<ConcurrentArrayQueue>[] globalArrayQueues = new LazyTiny<ConcurrentArrayQueue>[GlobalArrayQueueCount];
                 for (int i = 0; i < GlobalArrayQueueCount; i++)
                 {
-                    largeQueueLazy[i] = new LazyTiny<ConcurrentQueue<DelayedArrayHolder>>(() => new ConcurrentQueue<DelayedArrayHolder>(), LazyThreadSafetyMode.ExecutionAndPublication);
+                    globalArrayQueues[i] = new LazyTiny<ConcurrentArrayQueue>(CreateGlobalArrayQueue, LazyThreadSafetyMode.ExecutionAndPublication);
                 }
-                _smallQueueLocal = smallQueueLocal;
-                _largeQueueLazy = largeQueueLazy;
-                _restoreListLocal = new ThreadLocal<UnwrappableList<DelayedArrayHolder>>(() => new UnwrappableList<DelayedArrayHolder>(2), false);
+                _localArrayQueues = localArrayQueues;
+                _globalArrayQueues = globalArrayQueues;
+            }
+
+            private static ArrayQueue CreateLocalArrayQueue(int arraySize)
+            {
+                Queue<T[]> queue = new Queue<T[]>(LocalArrayQueuePreserveCount);
+                for (int i = 0; i < LocalArrayQueuePreserveCount; i++)
+                    queue.Enqueue(new T[arraySize]);
+                DelayedCall call = new DelayedCall(() =>
+                {
+                    int count = queue.Count;
+                    for (int i = LocalArrayQueuePreserveCount; i < count; i++)
+                        queue.Dequeue();
+                });
+                return new ArrayQueue(call, queue);
+            }
+
+            private static ConcurrentArrayQueue CreateGlobalArrayQueue()
+            {
+                ConcurrentQueue<T[]> queue = new ConcurrentQueue<T[]>();
+                DelayedCall call = new DelayedCall(() =>
+                {
+                    int count = queue.Count;
+                    for (int i = GlobalArrayQueuePreserveCount; i < count; i++)
+                        queue.TryDequeue(out _);
+                });
+                return new ConcurrentArrayQueue(call, queue);
             }
 
             public override T[] Rent(nuint capacity)
@@ -53,56 +79,63 @@ namespace WitherTorch.Common.Buffers
                 int index = MathHelper.Log2(capacity);
                 index += MathHelper.BooleanToInt32(capacity > (1U << index));
 
-                DelayedArrayHolder? holder;
+                DelayedCall call;
+                T[]? array;
                 if (index < LocalArrayQueueCount)
-                    _smallQueueLocal[index].Value!.TryDequeue(out holder);
+                {
+                    ArrayQueue queue = _localArrayQueues[index].Value!;
+                    queue.Queue.TryDequeue(out array);
+                    call = queue.Call;
+                }
                 else
-                    _largeQueueLazy[index - LocalArrayQueueCount].Value!.TryDequeue(out holder);
-                holder ??= new DelayedArrayHolder(MinimumArraySize << index);
-                holder.AddRef();
-                _restoreListLocal.Value!.Add(holder);
-                return holder.Array;
+                {
+                    ConcurrentArrayQueue queue = _globalArrayQueues[index - LocalArrayQueueCount].Value;
+                    queue.Queue.TryDequeue(out array);
+                    call = queue.Call;
+                }
+                try
+                {
+                    return array ?? new T[MinimumArraySize << index];
+                }
+                finally
+                {
+                    call.AddRef();
+                }
             }
 
             public override void Return(T[] array, bool clearArray)
             {
                 int length = array.Length;
-                if (length <= 0 || length > GlobalArraySizeLimit)
+                if (length < 16 || length > GlobalArraySizeLimit || !MathHelper.IsPow2(length))
                     return;
                 int index = MathHelper.Log2((uint)length) - 4;
-                if (index < 0 || !TryRemoveHolderInRentList(array, out DelayedArrayHolder? holder))
-                    return;
                 if (clearArray)
                     SequenceHelper.Clear(array);
+                DelayedCall call;
                 if (index < LocalArrayQueueCount)
-                    _smallQueueLocal[index].Value!.Enqueue(holder);
-                else
-                    _largeQueueLazy[index - LocalArrayQueueCount].Value.Enqueue(holder);
-                holder.RemoveRef();
-            }
-
-            private bool TryRemoveHolderInRentList(T[] array, [NotNullWhen(true)] out DelayedArrayHolder? holder)
-            {
-                UnwrappableList<DelayedArrayHolder> restoreList = _restoreListLocal.Value!;
-                int count = restoreList.Count;
-                if (count <= 0)
-                    goto Failed;
-
-                ref DelayedArrayHolder restoreListRef = ref restoreList.Unwrap()[0];
-                for (nuint i = 0, limit = (nuint)count; i < limit; i++)
                 {
-                    DelayedArrayHolder item = UnsafeHelper.AddByteOffset(ref restoreListRef, i * UnsafeHelper.SizeOf<DelayedArrayHolder>());
-                    if (!ReferenceEquals(item.Array, array))
-                        continue;
-                    restoreList.Remove(item);
-                    holder = item;
-                    return true;
+                    ArrayQueue queue = _localArrayQueues[index].Value!;
+                    queue.Queue.Enqueue(array);
+                    call = queue.Call;
                 }
-
-            Failed:
-                holder = null;
-                return false;
+                else
+                {
+                    ConcurrentArrayQueue queue = _globalArrayQueues[index - LocalArrayQueueCount].Value;
+                    queue.Queue.Enqueue(array);
+                    call = queue.Call;
+                }
+                call.RemoveRef();
             }
+
+            private sealed record class ArrayQueue(
+                DelayedCall Call,
+                Queue<T[]> Queue
+                );
+
+            private sealed record class ConcurrentArrayQueue(
+                DelayedCall Call,
+                ConcurrentQueue<T[]> Queue
+                );
         }
     }
 }

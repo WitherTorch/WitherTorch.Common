@@ -324,6 +324,66 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPow2(nuint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.IsPow2(value);
+#else
+            return (value & (value - 1)) == 0 && value != 0;
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPow2(ulong value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.IsPow2(value);
+#else
+            return (value & (value - 1)) == 0 && value != 0;
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPow2(uint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.IsPow2(value);
+#else
+            return (value & (value - 1)) == 0 && value != 0;
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPow2(nint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.IsPow2(value);
+#else
+            return (value & (value - 1)) == 0 && value > 0;
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPow2(long value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.IsPow2(value);
+#else
+            return (value & (value - 1)) == 0 && value > 0;
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsPow2(int value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.IsPow2(value);
+#else
+            return (value & (value - 1)) == 0 && value > 0;
+#endif
+        }
+
         [Inline(InlineBehavior.Remove)]
         private static T AbsCore<T>(T value, T offset) where T : unmanaged
         {
