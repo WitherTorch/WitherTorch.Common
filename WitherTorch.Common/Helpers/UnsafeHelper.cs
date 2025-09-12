@@ -637,7 +637,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref T source, nint typedOffset) => ref AddByteOffset(ref source, typedOffset * (nint)SizeOf<T>());
+        public static ref T AddTypedOffset<T>(ref T source, nint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOfSigned<T>());
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static ref T AddTypedOffset<T>(ref T source, nuint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOf<T>());
@@ -705,6 +705,13 @@ namespace WitherTorch.Common.Helpers
         {
             IL.PushOutRef(out value);
             return (T*)IL.ReturnPointer();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe int SizeOfSigned<T>()
+        {
+            IL.Emit.Sizeof<T>();
+            return IL.Return<int>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

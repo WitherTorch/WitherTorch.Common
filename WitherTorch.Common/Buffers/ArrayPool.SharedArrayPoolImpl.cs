@@ -83,13 +83,13 @@ namespace WitherTorch.Common.Buffers
                 T[]? array;
                 if (index < LocalArrayQueueCount)
                 {
-                    ArrayQueue queue = _localArrayQueues[index].Value!;
+                    ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _localArrayQueues[0], index).Value;
                     queue.Queue.TryDequeue(out array);
                     call = queue.Call;
                 }
                 else
                 {
-                    ConcurrentArrayQueue queue = _globalArrayQueues[index - LocalArrayQueueCount].Value;
+                    ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _globalArrayQueues[0], index - LocalArrayQueueCount).Value;
                     queue.Queue.TryDequeue(out array);
                     call = queue.Call;
                 }
@@ -114,13 +114,13 @@ namespace WitherTorch.Common.Buffers
                 DelayedCall call;
                 if (index < LocalArrayQueueCount)
                 {
-                    ArrayQueue queue = _localArrayQueues[index].Value!;
+                    ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _localArrayQueues[0], index).Value;
                     queue.Queue.Enqueue(array);
                     call = queue.Call;
                 }
                 else
                 {
-                    ConcurrentArrayQueue queue = _globalArrayQueues[index - LocalArrayQueueCount].Value;
+                    ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _globalArrayQueues[0], index - LocalArrayQueueCount).Value;
                     queue.Queue.Enqueue(array);
                     call = queue.Call;
                 }
