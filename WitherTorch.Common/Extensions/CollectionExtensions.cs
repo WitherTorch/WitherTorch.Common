@@ -208,7 +208,7 @@ namespace WitherTorch.Common.Extensions
                 return;
             ref T itemRef = ref array[0];
             for (nuint i = 0, limit = (nuint)length; i < limit; i++)
-                _this.Add(UnsafeHelper.AddByteOffset(ref itemRef, i * UnsafeHelper.SizeOf<T>()));
+                _this.Add(UnsafeHelper.AddTypedOffset(ref itemRef, i));
             return;
 
         Fallback:
@@ -256,7 +256,7 @@ namespace WitherTorch.Common.Extensions
                 return;
             ref T itemRef = ref array[0];
             for (nuint i = 0, limit = (nuint)length; i < limit; i++)
-                _this.Remove(UnsafeHelper.AddByteOffset(ref itemRef, i * UnsafeHelper.SizeOf<T>()));
+                _this.Remove(UnsafeHelper.AddTypedOffset(ref itemRef, i));
             return;
 
         Fallback:
