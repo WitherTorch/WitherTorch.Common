@@ -636,6 +636,12 @@ namespace WitherTorch.Common.Helpers
             return ref IL.ReturnRef<T>();
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ref T AddTypedOffset<T>(ref T source, nint typedOffset) => ref AddByteOffset(ref source, typedOffset * (nint)SizeOf<T>());
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ref T AddTypedOffset<T>(ref T source, nuint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOf<T>());
+
         [LocalsInit(false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void SkipInit<T>(out T value)
