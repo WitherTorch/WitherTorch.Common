@@ -17,7 +17,7 @@ namespace WitherTorch.Common.Helpers
             {
                 list.Add(length - span.Length);
                 span = span.Slice(StringInfo.GetNextTextElementLength(span));
-            } while (span.IsEmpty);
+            } while (!span.IsEmpty);
 
             return list.ToArray();
         }
