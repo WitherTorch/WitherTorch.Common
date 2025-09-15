@@ -33,14 +33,14 @@ namespace WitherTorch.Common.Collections
 
         public Queue<T> Swap()
         {
-            OptimisticLock.Enter(ref _version);
-
+            OptimisticLock.Enter(ref _version, out ulong version);
             Queue<T> queue;
-            Thread.BeginCriticalRegion();
-            queue = _frontQueue;
-            (_frontQueue, _backQueue) = (_backQueue, queue);
-            Thread.EndCriticalRegion();
-
+            do
+            {
+                queue = _frontQueue;
+                (_frontQueue, _backQueue) = (_backQueue, queue);
+            }
+            while (!OptimisticLock.TryLeave(ref _version, ref version));
             return queue;
         }
 

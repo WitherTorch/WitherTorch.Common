@@ -138,6 +138,28 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Offset(Point point) => Offset(point.X, point.Y);
+
+        public void Offset(int x, int y)
+        {
+            Left += x;
+            Right += x;
+            Top += y;
+            Bottom += y;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void OffsetNegative(Point point) => OffsetNegative(point.X, point.Y);
+
+        public void OffsetNegative(int x, int y)
+        {
+            Left -= x;
+            Right -= x;
+            Top -= y;
+            Bottom -= y;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly bool Contains(int x, int y) => x >= Left && y >= Top && x <= Right && y <= Bottom;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

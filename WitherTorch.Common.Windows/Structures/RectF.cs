@@ -9,6 +9,7 @@ namespace WitherTorch.Common.Windows.Structures
     public struct RectF : IEquatable<RectF>
     {
         public static readonly RectF Empty = default;
+        public static readonly RectF Infinite = new RectF(float.NegativeInfinity, float.NegativeInfinity, float.PositiveInfinity, float.PositiveInfinity);
 
         public float Left;
         public float Top;
@@ -129,6 +130,28 @@ namespace WitherTorch.Common.Windows.Structures
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Left < Right && Top < Bottom;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Offset(PointF point) => Offset(point.X, point.Y);
+
+        public void Offset(float x, float y)
+        {
+            Left += x;
+            Right += x;
+            Top += y;
+            Bottom += y;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void OffsetNegative(PointF point) => OffsetNegative(point.X, point.Y);
+
+        public void OffsetNegative(float x, float y)
+        {
+            Left -= x;
+            Right -= x;
+            Top -= y;
+            Bottom -= y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
