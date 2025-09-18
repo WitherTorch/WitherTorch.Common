@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
 
@@ -6,6 +7,14 @@ namespace WitherTorch.Common.Threading
 {
     public static class OptimisticLock
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static OptimisticLock<T> Create<T>() where T : new()
+            => new OptimisticLock<T>(new T());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static OptimisticLock<T> Create<T>(T value)
+            => new OptimisticLock<T>(value);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Enter(ref int versionReference, out int currentVersion) => currentVersion = versionReference;
 
@@ -71,5 +80,71 @@ namespace WitherTorch.Common.Threading
             nuint newVersion = InterlockedHelper.CompareExchange(ref versionReference, version + 1, version);
             return newVersion == version;
         }
+    }
+
+    public sealed class OptimisticLock<T>
+    {
+        private T _value;
+        private nuint _version;
+
+        public T Value
+        {
+            get => GetValueCore();
+            set
+            {
+                _value = value;
+                _version++;
+            }
+        }
+
+        public OptimisticLock(T value)
+        {
+            _value = value;
+            _version = 0;
+        }
+
+        private T GetValueCore()
+        {
+            T result;
+            ref nuint versionRef = ref _version;
+
+            OptimisticLock.Enter(ref versionRef, out nuint currentVersion);
+            do
+            {
+                result = _value;
+            } while (!OptimisticLock.TryLeave(ref versionRef, ref currentVersion));
+            return result;
+        }
+
+        public TResult Read<TResult>(Func<T, TResult> factory)
+        {
+            TResult result;
+            ref nuint versionRef = ref _version;
+            OptimisticLock.Enter(ref versionRef, out nuint currentVersion);
+            do
+            {
+                result = factory.Invoke(_value);
+            } while (!OptimisticLock.TryLeave(ref versionRef, ref currentVersion));
+            return result;
+        }
+
+        public void Write(Action<T> action)
+        {
+            T value = GetValueCore();
+            action.Invoke(value);
+            _version++;
+        }
+
+        public TResult Write<TResult>(Func<T, TResult> factory)
+        {
+            T value = GetValueCore();
+            TResult result = factory.Invoke(value);
+            _version++;
+            return result;
+        }
+
+        public void MarkChanged() => _version++;
+
+        public override string? ToString() => GetValueCore()?.ToString();
     }
 }

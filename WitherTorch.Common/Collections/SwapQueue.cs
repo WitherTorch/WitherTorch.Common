@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Threading;
 
-using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Collections
@@ -33,17 +31,34 @@ namespace WitherTorch.Common.Collections
 
         public Queue<T> Swap()
         {
+            Queue<T> backQueue, frontQueue;
             OptimisticLock.Enter(ref _version, out ulong version);
-            Queue<T> queue;
             do
             {
-                queue = _frontQueue;
-                (_frontQueue, _backQueue) = (_backQueue, queue);
+                backQueue = _backQueue;
+                frontQueue = _frontQueue;
             }
             while (!OptimisticLock.TryLeave(ref _version, ref version));
-            return queue;
+
+            _frontQueue = backQueue;
+            _backQueue = frontQueue;
+            _version++;
+            return _frontQueue;
         }
 
-        public Queue<T> Value => InterlockedHelper.Read(ref _frontQueue);
+        public Queue<T> Value
+        {
+            get
+            {
+                Queue<T> queue;
+                OptimisticLock.Enter(ref _version, out ulong version);
+                do
+                {
+                    queue = _frontQueue;
+                }
+                while (!OptimisticLock.TryLeave(ref _version, ref version));
+                return queue;
+            }
+        }
     }
 }
