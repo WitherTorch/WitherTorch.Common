@@ -701,10 +701,26 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void** AsPointerin(in void* value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe T* AsPointerOut<T>(out T value)
         {
             IL.PushOutRef(out value);
             return (T*)IL.ReturnPointer();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void** AsPointerOut(out void* value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
