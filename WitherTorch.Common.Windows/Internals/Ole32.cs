@@ -11,5 +11,8 @@ namespace WitherTorch.Common.Windows.Internals
 
         [DllImport(LibraryName, EntryPoint = nameof(CoCreateInstance), CallingConvention = CallingConvention.Winapi)]
         public static unsafe extern int CoCreateInstance(Guid* rclsid, void* pUnkOuter, ClassContextFlags dwClsContext, Guid* riid, void** ppv);
+
+        [DllImport(LibraryName, EntryPoint = nameof(CoTaskMemFree), CallingConvention = CallingConvention.Winapi)]
+        public static unsafe extern void CoTaskMemFree(void* pv);
     }
 }

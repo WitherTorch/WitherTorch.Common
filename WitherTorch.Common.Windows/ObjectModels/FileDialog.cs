@@ -8,6 +8,7 @@ using LocalsInit;
 
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
+using WitherTorch.Common.Windows.Internals;
 
 namespace WitherTorch.Common.Windows.ObjectModels
 {
@@ -16,8 +17,12 @@ namespace WitherTorch.Common.Windows.ObjectModels
     {
         //CLSID_FileOpenDialog = {dc1c5a9c-e88a-4dde-a5a1-60f82a20aef7}
         public static readonly Guid CLSID_FileOpenDialog = new Guid(0xdc1c5a9c, 0xe88a, 0x4dde, 0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7);
+        //CLSID_FileOpenDialog = {c0b4e2f3-ba21-4773-8dba-335ec946eb8b}
+        public static readonly Guid CLSID_FileSaveDialog = new Guid(0xc0b4e2f3, 0xba21, 0x4773, 0x8d, 0xba, 0x33, 0x5e, 0xc9, 0x46, 0xeb, 0x8b);
         //IID_FileOpenDialog = {42f85136-db7e-439c-85f1-e4075d135fc8}
         public static readonly Guid IID_FileOpenDialog = new Guid(0x42f85136, 0xdb7e, 0x439c, 0x85, 0xf1, 0xe4, 0x07, 0x5d, 0x13, 0x5f, 0xc8);
+        //IID_FileOpenDialog = {84bccd23-5fde-4cdb-aea4-af64b83d78ab}
+        public static readonly Guid IID_FileSaveDialog = new Guid(0x84bccd23, 0x5fde, 0x4cdb, 0xae, 0xa4, 0xaf, 0x64, 0xb8, 0x3d, 0x78, 0xab);
 
         private new enum MethodTable
         {
@@ -54,22 +59,28 @@ namespace WitherTorch.Common.Windows.ObjectModels
             return result is null ? throw new InvalidOperationException("result is null!") : result;
         }
 
+        public static FileDialog CreateFileSaveDialog()
+        {
+            FileDialog? result = CoCreateInstance<FileDialog>(CLSID_FileSaveDialog, IID_FileSaveDialog);
+            return result is null ? throw new InvalidOperationException("result is null!") : result;
+        }
+
         public FileDialog() : base() { }
 
         public FileDialog(void* nativePointer, ReferenceType pointerType) : base(nativePointer, pointerType) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetFileTypes(params ComDialogFilterSpecification[] rgFilterSpec)
+        public void SetFileTypes(params FileDialogFilterSpecification[] rgFilterSpec)
         {
-            fixed (ComDialogFilterSpecification* ptr = rgFilterSpec)
+            fixed (FileDialogFilterSpecification* ptr = rgFilterSpec)
                 SetFileTypes(unchecked((uint)rgFilterSpec.Length), ptr);
         }
 
-        public void SetFileTypes(uint cFileTypes, ComDialogFilterSpecification* rgFilterSpec)
+        public void SetFileTypes(uint cFileTypes, FileDialogFilterSpecification* rgFilterSpec)
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetFileTypes);
-            int hr = ((delegate*<void*, uint, ComDialogFilterSpecification*, int>)functionPointer)(nativePointer, cFileTypes, rgFilterSpec);
+            int hr = ((delegate*<void*, uint, FileDialogFilterSpecification*, int>)functionPointer)(nativePointer, cFileTypes, rgFilterSpec);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -135,6 +146,34 @@ namespace WitherTorch.Common.Windows.ObjectModels
             int hr = ((delegate*<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
             return new ShellItem(nativePointer, ReferenceType.Owned);
+        }
+
+        public void SetFileName(string filename)
+        {
+            void* nativePointer = NativePointer;
+            void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetFileName);
+            fixed (char* ptr = filename)
+            {
+                int hr = ((delegate*<void*, void*, int>)functionPointer)(nativePointer, ptr);
+                ThrowHelper.ThrowExceptionForHR(hr);
+            }
+        }
+
+        [LocalsInit(false)]
+        public string GetFileName()
+        {
+            void* nativePointer = NativePointer;
+            void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetFileName);
+            int hr = ((delegate*<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
+            ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
+            try
+            {
+                return new string((char*)nativePointer);
+            }
+            finally
+            {
+                Ole32.CoTaskMemFree(nativePointer);
+            }
         }
 
         public void SetTitle(string title)

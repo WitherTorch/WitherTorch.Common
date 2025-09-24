@@ -116,6 +116,22 @@ namespace WitherTorch.Common.Text
 
         public StringBase ToStringBase() => _original.SubstringCore((nuint)_startIndex, (nuint)_length);
 
+        public unsafe char[] ToCharArray()
+        {
+            int length = _length;
+            if (length <= 0)
+                return Array.Empty<char>();
+            StringBase original = _original;
+            int startIndex = _startIndex;
+            if (startIndex == 0 && length == original.Length)
+                return original.ToCharArray();
+
+            char[] result = new char[length];
+            fixed (char* ptr = result)
+                original.CopyToCore(ptr, (nuint)startIndex, (nuint)length);
+            return result;
+        }
+
         public override unsafe string ToString()
         {
             int length = _length;

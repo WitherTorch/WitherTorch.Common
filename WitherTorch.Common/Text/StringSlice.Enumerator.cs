@@ -10,10 +10,10 @@ namespace WitherTorch.Common.Text
         public struct Enumerator : IEnumerator<char>
         {
             private readonly StringBase _original;
-            private readonly nuint _startIndex, _length;
+            private readonly int _startIndex, _length;
 
             private bool _initialized;
-            private nuint _index;
+            private int _index;
 
             public Enumerator(StringSlice slice)
             {
@@ -32,10 +32,12 @@ namespace WitherTorch.Common.Text
                 {
                     if (!_initialized)
                         throw new InvalidOperationException("Enumerator not initialized. Call MoveNext() first.");
-                    nuint index = _index;
+                    int index = _index;
+                    if (index < 0)
+                        throw new InvalidOperationException("Enumerator not initialized. Call MoveNext() first.");
                     if (index >= _length)
                         throw new InvalidOperationException("Enumerator has reached the end of the collection.");
-                    return _original.GetCharAt(_startIndex + index);
+                    return _original.GetCharAt((nuint)(_startIndex + index));
                 }
             }
 
@@ -52,7 +54,7 @@ namespace WitherTorch.Common.Text
                     return _length > 0;
                 }
 
-                nuint nextIndex = _index + 1;
+                int nextIndex = _index + 1;
                 if (nextIndex >= _length)
                     return false;
 

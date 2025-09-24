@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 
@@ -130,10 +129,13 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Append(StringSlice value)
         {
-            nuint count = value.Length;
+            int count = value.Length;
             if (count <= 0)
                 return;
-            AppendCore(value.Original, value.StartIndex, count);
+            int startIndex = value.StartIndex;
+            if (startIndex < 0)
+                return;
+            AppendCore(value.Original, (nuint)startIndex, (nuint)count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

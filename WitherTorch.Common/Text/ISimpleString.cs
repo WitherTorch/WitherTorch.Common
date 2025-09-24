@@ -26,8 +26,6 @@ namespace WitherTorch.Common.Text
         bool PartiallyEquals(string other, int startIndex, int count);
         bool PartiallyEquals(StringBase other, int startIndex);
         bool PartiallyEquals(StringBase other, int startIndex, int count);
-        StringBase Remove(int startIndex);
-        StringBase Remove(int startIndex, int count);
         StringSlice Slice(int startIndex);
         StringSlice Slice(int startIndex, int count);
         StringSlice Slice(nuint startIndex);

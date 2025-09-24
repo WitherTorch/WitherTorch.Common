@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Windows.Extensions
 
         public static unsafe void SetFileType(this FileDialog _this, string name, string pattern)
         {
-            ComDialogFilterSpecification filterSpec = new ComDialogFilterSpecification()
+            FileDialogFilterSpecification filterSpec = new FileDialogFilterSpecification()
             {
                 Name = NativeMethods.AllocCStyleUtf16String(name),
                 Specfication = NativeMethods.AllocCStyleUtf16String(pattern)
@@ -47,31 +47,31 @@ namespace WitherTorch.Common.Windows.Extensions
 
             uint count = unchecked((uint)length);
 
-            ArrayPool<ComDialogFilterSpecification> pool = ArrayPool<ComDialogFilterSpecification>.Shared;
-            ComDialogFilterSpecification[] buffer = pool.Rent(count);
+            ArrayPool<FileDialogFilterSpecification> pool = ArrayPool<FileDialogFilterSpecification>.Shared;
+            FileDialogFilterSpecification[] buffer = pool.Rent(count);
 
             ref (string name, string pattern) fileTypeRef = ref fileTypes[0];
-            ref ComDialogFilterSpecification bufferRef = ref buffer[0];
+            ref FileDialogFilterSpecification bufferRef = ref buffer[0];
             try
             {
                 for (uint i = 0; i < count; i++)
                 {
                     (string name, string pattern) = UnsafeHelper.AddTypedOffset(ref fileTypeRef, i);
                     UnsafeHelper.AddTypedOffset(ref bufferRef, i)
-                        = new ComDialogFilterSpecification()
+                        = new FileDialogFilterSpecification()
                         {
                             Name = NativeMethods.AllocCStyleUtf16String(name),
                             Specfication = NativeMethods.AllocCStyleUtf16String(pattern)
                         };
                 }
-                fixed (ComDialogFilterSpecification* ptr = buffer)
+                fixed (FileDialogFilterSpecification* ptr = buffer)
                     _this.SetFileTypes(count, ptr);
             }
             finally
             {
                 for (uint i = 0; i < count; i++)
                 {
-                    ComDialogFilterSpecification specification = UnsafeHelper.AddTypedOffset(ref bufferRef, i);
+                    FileDialogFilterSpecification specification = UnsafeHelper.AddTypedOffset(ref bufferRef, i);
                     NativeMethods.FreeMemory(specification.Name);
                     NativeMethods.FreeMemory(specification.Specfication);
                 }
