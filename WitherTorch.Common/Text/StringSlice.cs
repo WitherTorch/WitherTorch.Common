@@ -7,18 +7,18 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    public readonly partial struct StringSlice : IEnumerable<char>
+    public readonly partial struct StringSlice
     {
-        public static readonly StringSlice Empty = new StringSlice(StringBase.Empty, 0u, 0u);
+        public static readonly StringSlice Empty = new StringSlice(StringBase.Empty, 0, 0);
 
         private readonly StringBase _original;
-        private readonly nuint _startIndex, _length;
+        private readonly int _startIndex, _length;
 
         public StringBase Original => _original ?? StringBase.Empty;
-        public nuint StartIndex => _startIndex;
-        public nuint Length => _length;
+        public int StartIndex => _startIndex;
+        public int Length => _length;
 
-        internal StringSlice(StringBase original, nuint startIndex, nuint length)
+        internal StringSlice(StringBase original, int startIndex, int length)
         {
             _original = original;
             _startIndex = startIndex;
@@ -31,10 +31,9 @@ namespace WitherTorch.Common.Text
             {
                 if (index < 0)
                     throw new IndexOutOfRangeException();
-                nuint castedIndex = unchecked((nuint)index);
-                if (castedIndex >= _length)
+                if (index >= _length)
                     throw new IndexOutOfRangeException();
-                return _original.GetCharAt(_startIndex + castedIndex);
+                return _original.GetCharAt(unchecked((nuint)(_startIndex + index)));
             }
         }
 
@@ -43,7 +42,7 @@ namespace WitherTorch.Common.Text
             int length = original.Length;
             if (length <= 0)
                 return Empty;
-            return new StringSlice(original, 0, unchecked((nuint)length));
+            return new StringSlice(original, 0, length);
         }
 
         public static StringSlice Create(StringBase original, int startIndex, int length)
@@ -56,7 +55,7 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(startIndex >= original.Length ? nameof(startIndex) : nameof(length));
             if (length == 0)
                 return Empty;
-            return new StringSlice(original, unchecked((nuint)startIndex), unchecked((nuint)length));
+            return new StringSlice(original, startIndex, length);
         }
 
         public StringSlice Slice(int startIndex)
@@ -65,13 +64,12 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (startIndex == 0)
                 return this;
-            nuint castedStartIndex = unchecked((nuint)startIndex);
-            nuint length = _length;
-            if (castedStartIndex >= length)
+            int length = _length;
+            if (startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (length == 0)
                 return this;
-            return new StringSlice(_original, _startIndex + castedStartIndex, length - castedStartIndex);
+            return new StringSlice(_original, _startIndex + startIndex, length - startIndex);
         }
 
         public StringSlice Slice(int startIndex, int count)
@@ -80,16 +78,14 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (count < 0)
                 throw new ArgumentOutOfRangeException(nameof(count));
-            nuint castedStartIndex = unchecked((nuint)startIndex);
-            nuint castedCount = unchecked((nuint)count);
-            nuint length = _length;
-            if (castedStartIndex + castedCount > length)
-                throw new ArgumentOutOfRangeException(castedStartIndex >= length ? nameof(startIndex) : nameof(count));
+            int length = _length;
+            if (startIndex + count > length)
+                throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
             if (count == 0)
                 return Empty;
-            if (castedStartIndex == 0 && castedStartIndex + castedCount == length)
+            if (startIndex == 0 && startIndex + count == length)
                 return this;
-            return new StringSlice(_original, _startIndex + castedStartIndex, castedCount);
+            return new StringSlice(_original, _startIndex + startIndex, count);
         }
 
         public Enumerator GetEnumerator() => new Enumerator(this);
@@ -118,21 +114,21 @@ namespace WitherTorch.Common.Text
 
         public override bool Equals(object? obj) => obj is StringSlice other && Equals(other);
 
-        public StringBase ToStringBase() => _original.SubstringCore(_startIndex, _length);
+        public StringBase ToStringBase() => _original.SubstringCore((nuint)_startIndex, (nuint)_length);
 
         public override unsafe string ToString()
         {
-            nuint length = _length;
-            if (length == 0)
+            int length = _length;
+            if (length <= 0)
                 return string.Empty;
             StringBase original = _original;
-            nuint startIndex = _startIndex;
-            if (startIndex == 0 && length == unchecked((nuint)original.Length))
+            int startIndex = _startIndex;
+            if (startIndex == 0 && length == original.Length)
                 return original.ToString();
 
-            string result = StringHelper.AllocateRawString((int)length);
+            string result = StringHelper.AllocateRawString(length);
             fixed (char* ptr = result)
-                original.CopyToCore(ptr, startIndex, length);
+                original.CopyToCore(ptr, (nuint)startIndex, (nuint)length);
             return result;
         }
     }

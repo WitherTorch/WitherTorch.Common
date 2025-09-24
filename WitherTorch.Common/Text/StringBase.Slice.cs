@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             if (length == 0)
                 return StringSlice.Empty;
-            return unchecked(new StringSlice(this, (nuint)startIndex, (nuint)(length - startIndex)));
+            return unchecked(new StringSlice(this, startIndex, length - startIndex));
         }
 
         public StringSlice Slice(int startIndex, int count)
@@ -27,7 +27,7 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
             if (count == 0)
                 return StringSlice.Empty;
-            return unchecked(new StringSlice(this, (nuint)startIndex, (nuint)count));
+            return unchecked(new StringSlice(this, startIndex, count));
         }
 
         public StringSlice Slice(nuint startIndex)
@@ -38,7 +38,7 @@ namespace WitherTorch.Common.Text
             nuint castedLength = unchecked((nuint)length);
             if (startIndex >= castedLength)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
-            return unchecked(new StringSlice(this, startIndex, castedLength - startIndex));
+            return unchecked(new StringSlice(this, (int)startIndex, (int)(castedLength - startIndex)));
         }
 
         public StringSlice Slice(nuint startIndex, nuint count)
@@ -51,7 +51,7 @@ namespace WitherTorch.Common.Text
                 throw new ArgumentOutOfRangeException(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
             if (count == 0)
                 return StringSlice.Empty;
-            return unchecked(new StringSlice(this, startIndex, count));
+            return unchecked(new StringSlice(this, (int)startIndex, (int)count));
         }
     }
 }
