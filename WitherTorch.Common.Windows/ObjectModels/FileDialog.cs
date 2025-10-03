@@ -80,7 +80,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetFileTypes);
-            int hr = ((delegate*<void*, uint, FileDialogFilterSpecification*, int>)functionPointer)(nativePointer, cFileTypes, rgFilterSpec);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, uint, FileDialogFilterSpecification*, int>)functionPointer)(nativePointer, cFileTypes, rgFilterSpec);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -88,7 +88,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetFileTypeIndex);
-            int hr = ((delegate*<void*, uint, int>)functionPointer)(nativePointer, iFileType);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, uint, int>)functionPointer)(nativePointer, iFileType);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -98,7 +98,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             uint iFileType;
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetFileTypeIndex);
-            int hr = ((delegate*<void*, uint*, int>)functionPointer)(nativePointer, &iFileType);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, uint*, int>)functionPointer)(nativePointer, &iFileType);
             ThrowHelper.ThrowExceptionForHR(hr);
             return iFileType;
         }
@@ -109,7 +109,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             FileOpenDialogOptions result;
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetOptions);
-            int hr = ((delegate*<void*, FileOpenDialogOptions*, int>)functionPointer)(nativePointer, &result);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, FileOpenDialogOptions*, int>)functionPointer)(nativePointer, &result);
             ThrowHelper.ThrowExceptionForHR(hr);
             return result;
         }
@@ -118,7 +118,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetOptions);
-            int hr = ((delegate*<void*, FileOpenDialogOptions, int>)functionPointer)(nativePointer, fos);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, FileOpenDialogOptions, int>)functionPointer)(nativePointer, fos);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -126,7 +126,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetDefaultFolder);
-            int hr = ((delegate*<void*, void*, int>)functionPointer)(nativePointer, item == null ? null : item.NativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, void*, int>)functionPointer)(nativePointer, item == null ? null : item.NativePointer);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -134,7 +134,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetFolder);
-            int hr = ((delegate*<void*, void*, int>)functionPointer)(nativePointer, item == null ? null : item.NativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, void*, int>)functionPointer)(nativePointer, item == null ? null : item.NativePointer);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -143,7 +143,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetFolder);
-            int hr = ((delegate*<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
             return new ShellItem(nativePointer, ReferenceType.Owned);
         }
@@ -154,7 +154,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetFileName);
             fixed (char* ptr = filename)
             {
-                int hr = ((delegate*<void*, void*, int>)functionPointer)(nativePointer, ptr);
+                int hr = ((delegate* unmanaged[Stdcall]<void*, void*, int>)functionPointer)(nativePointer, ptr);
                 ThrowHelper.ThrowExceptionForHR(hr);
             }
         }
@@ -164,7 +164,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetFileName);
-            int hr = ((delegate*<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
             try
             {
@@ -187,7 +187,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetTitle);
-            int hr = ((delegate*<void*, char*, int>)functionPointer)(nativePointer, title);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, char*, int>)functionPointer)(nativePointer, title);
             ThrowHelper.ThrowExceptionForHR(hr);
         }
 
@@ -196,7 +196,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetResult);
-            int hr = ((delegate*<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, void**, int>)functionPointer)(nativePointer, &nativePointer);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
             return new ShellItem(nativePointer, ReferenceType.Owned);
         }
@@ -205,7 +205,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddPlace);
-            int hr = ((delegate*<void*, void*, FolderDirectionOfAddPlace, int>)functionPointer)(nativePointer, psi.NativePointer, fdap);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, void*, FolderDirectionOfAddPlace, int>)functionPointer)(nativePointer, psi.NativePointer, fdap);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
         }
 
@@ -217,7 +217,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetClientGuid);
-            int hr = ((delegate*<void*, Guid*, int>)functionPointer)(nativePointer, guid);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, Guid*, int>)functionPointer)(nativePointer, guid);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
         }
 
@@ -225,7 +225,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.ClearClientData);
-            int hr = ((delegate*<void*, int>)functionPointer)(nativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, int>)functionPointer)(nativePointer);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
         }
     }

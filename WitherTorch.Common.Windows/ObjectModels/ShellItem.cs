@@ -64,7 +64,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         {
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.GetDisplayName);
-            int hr = ((delegate*<void*, ShellItemGetDisplayName, char**, int>)functionPointer)(nativePointer, sigdnName, (char**)&nativePointer);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, ShellItemGetDisplayName, char**, int>)functionPointer)(nativePointer, sigdnName, (char**)&nativePointer);
             ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
             try
             {

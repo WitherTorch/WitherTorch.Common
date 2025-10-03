@@ -31,7 +31,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
 
             void* nativePointer = NativePointer;
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Show);
-            int hr = ((delegate*<void*, nint, int>)functionPointer)(nativePointer, hwndOwner);
+            int hr = ((delegate* unmanaged[Stdcall]<void*, nint, int>)functionPointer)(nativePointer, hwndOwner);
             if (hr >= 0)
                 return true;
             if (hr != E_CANCEL)
