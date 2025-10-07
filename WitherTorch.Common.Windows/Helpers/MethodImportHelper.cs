@@ -1,4 +1,6 @@
-﻿using InlineMethod;
+﻿using System;
+
+using InlineMethod;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Structures;
@@ -10,13 +12,13 @@ namespace WitherTorch.Common.Windows.Helpers
     {
         public static void* GetImportedMethodPointer(string dllName, int methodIndex)
         {
-            nint module = Kernel32.LoadLibrary(dllName);
+            IntPtr module = Kernel32.LoadLibrary(dllName);
             return Kernel32.GetProcAddress(module, (byte*)methodIndex);
         }
 
         public static void* GetImportedMethodPointer(string dllName, string methodName)
         {
-            nint module = Kernel32.LoadLibrary(dllName);
+            IntPtr module = Kernel32.LoadLibrary(dllName);
 
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
 

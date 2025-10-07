@@ -11,24 +11,45 @@ namespace WitherTorch.Common.Native
         {
             private readonly IntPtr _heap;
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern int GetCurrentThreadId();
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern IntPtr GetProcessHeap();
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void* HeapAlloc(IntPtr hHeap, int dwFlags, nuint size);
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void HeapFree(IntPtr hHeap, int dwFlags, void* ptr);
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void* VirtualAlloc(void* address, nuint dwSize, MemoryAllocationTypes allocationTypes, PageAccessRights rights);
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern bool VirtualProtect(void* address, nuint dwSize, PageAccessRights rights, PageAccessRights* oldRights);
 
+#if NET8_0_OR_GREATER
+            [SuppressGCTransition]
+#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern int GetCurrentProcessorNumber();
 
@@ -53,7 +74,7 @@ namespace WitherTorch.Common.Native
 
             void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes) => RtlMoveMemory(destination, source, sizeInBytes);
 
-            void* INativeMethodInstance.AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags) 
+            void* INativeMethodInstance.AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags)
                 => VirtualAlloc(null, size, MemoryAllocationTypes.Commit | MemoryAllocationTypes.Reserve, ConvertPageAccessRightsFromFlags(flags));
 
             void INativeMethodInstance.ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
