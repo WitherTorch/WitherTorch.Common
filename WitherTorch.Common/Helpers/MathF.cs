@@ -23,7 +23,25 @@ namespace System
         public static float Round(float val) => unchecked((float)Math.Round(val));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        public static float Round(float val, int digit) => unchecked((float)Math.Round(val, digit));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float Round(float val, MidpointRounding mode) => unchecked((float)Math.Round(val, mode));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float Round(float val, int digit, MidpointRounding mode) => unchecked((float)Math.Round(val, digit, mode));
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static float Round(double val) => unchecked((float)Math.Round(val));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float Round(double val, int digit) => unchecked((float)Math.Round(val, digit));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float Round(double val, MidpointRounding mode) => unchecked((float)Math.Round(val, mode));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float Round(double val, int digit, MidpointRounding mode) => unchecked((float)Math.Round(val, digit, mode));
     }
 }
 #endif
