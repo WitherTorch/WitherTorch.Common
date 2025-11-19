@@ -28,6 +28,38 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe nint Abs(nint value) => AbsCore(value, sizeof(nint) * 8 - 1);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static byte DivRem(byte a, byte b, out byte rem)
+        {
+            uint quantity = DivRem(a, b, out uint remInt);
+            rem = unchecked((byte)remInt);
+            return unchecked((byte)quantity);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static sbyte DivRem(sbyte a, sbyte b, out sbyte rem)
+        {
+            int quantity = DivRem(a, b, out int remInt);
+            rem = unchecked((sbyte)remInt);
+            return unchecked((sbyte)quantity);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static short DivRem(short a, short b, out short rem)
+        {
+            int quantity = DivRem(a, b, out int remInt);
+            rem = unchecked((short)remInt);
+            return unchecked((short)quantity);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ushort DivRem(ushort a, ushort b, out ushort rem)
+        {
+            uint quantity = DivRem(a, b, out uint remInt);
+            rem = unchecked((ushort)remInt);
+            return unchecked((ushort)quantity);
+        }
+
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #else
