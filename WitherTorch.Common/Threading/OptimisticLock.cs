@@ -128,6 +128,18 @@ namespace WitherTorch.Common.Threading
             return result;
         }
 
+        public TResult Read<TArg, TResult>(Func<T, TArg, TResult> factory, TArg argument)
+        {
+            TResult result;
+            ref nuint versionRef = ref _version;
+            OptimisticLock.Enter(ref versionRef, out nuint currentVersion);
+            do
+            {
+                result = factory.Invoke(_value, argument);
+            } while (!OptimisticLock.TryLeave(ref versionRef, ref currentVersion));
+            return result;
+        }
+
         public void Write(Action<T> action)
         {
             T value = GetValueCore();
@@ -139,6 +151,14 @@ namespace WitherTorch.Common.Threading
         {
             T value = GetValueCore();
             TResult result = factory.Invoke(value);
+            _version++;
+            return result;
+        }
+
+        public TResult Write<TArg, TResult>(Func<T, TArg, TResult> factory, TArg argument)
+        {
+            T value = GetValueCore();
+            TResult result = factory.Invoke(value, argument);
             _version++;
             return result;
         }
