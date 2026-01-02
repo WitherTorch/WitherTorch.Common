@@ -74,12 +74,11 @@ namespace WitherTorch.Common.Collections
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void EnsureCapacity()
+        public override void EnsureCapacity(int capacityAtLeast)
         {
             T[] array = _array;
             int capacity = array.Length;
-            int count = _count;
-            if (capacity >= count)
+            if (capacity >= capacityAtLeast)
                 return;
 
             int newCapacity;
@@ -90,7 +89,7 @@ namespace WitherTorch.Common.Collections
                 newCapacity = Limits.MaxArrayLength;
             }
             else
-                newCapacity = MathHelper.Max(capacity * 2, count);
+                newCapacity = MathHelper.Max(capacity * 2, capacityAtLeast);
 
             T[] newArray = new T[newCapacity];
             Array.Copy(array, newArray, capacity);

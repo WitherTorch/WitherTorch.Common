@@ -19,17 +19,18 @@ namespace WitherTorch.Common.Buffers
 
         public PooledList(ArrayPool<T> pool) : this(pool, capacity: 16) { }
 
-        public PooledList(ArrayPool<T> pool, int capacity) : base(pool.Rent(capacity), initialCount: 0)
+        public PooledList(ArrayPool<T> pool, int capacity) : this(pool, pool.Rent(capacity)) { }
+
+        private PooledList(ArrayPool<T> pool, T[] array) : base(array, initialCount: 0)
         {
             _pool = pool;
         }
 
-        protected override void EnsureCapacity()
+        public override void EnsureCapacity(int capacityAtLeast)
         {
             T[] array = _array;
             int capacity = array.Length;
-            int count = _count;
-            if (capacity >= count)
+            if (capacity >= capacityAtLeast)
                 return;
 
             int newCapacity;
@@ -40,7 +41,7 @@ namespace WitherTorch.Common.Buffers
                 newCapacity = Limits.MaxArrayLength;
             }
             else
-                newCapacity = MathHelper.Max(capacity * 2, count);
+                newCapacity = MathHelper.Max(capacity * 2, capacityAtLeast);
 
             ArrayPool<T> pool = _pool;
             T[] newArray = pool.Rent(newCapacity);

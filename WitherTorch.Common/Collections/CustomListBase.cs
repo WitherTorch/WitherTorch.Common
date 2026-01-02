@@ -319,7 +319,9 @@ namespace WitherTorch.Common.Collections
             return array;
         }
 
-        protected abstract void EnsureCapacity();
+        public void EnsureCapacity() => EnsureCapacity(_count);
+
+        public abstract void EnsureCapacity(int capacityAtLeast);
 
 #pragma warning disable CS8500
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

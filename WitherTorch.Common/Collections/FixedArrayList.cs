@@ -8,9 +8,9 @@ namespace WitherTorch.Common.Collections
 
         public FixedArrayList(T[] array, int initialCount) : base(array, initialCount) { }
 
-        protected override void EnsureCapacity()
+        public override void EnsureCapacity(int capacityAtLeast)
         {
-            if (_array.Length < _count)
+            if (_array.Length < capacityAtLeast)
                 throw new InvalidOperationException(nameof(FixedArrayList<>) + " cannot resizing!");
         }
 
