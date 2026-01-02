@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WitherTorch.Common.Buffers
+﻿namespace WitherTorch.Common.Buffers
 {
     partial class ArrayPool<T>
     {
@@ -10,13 +8,9 @@ namespace WitherTorch.Common.Buffers
 
             private EmptyArrayPoolImpl() { }
 
-            public override T[] Rent(nuint capacity) => new T[capacity];
+            protected override T[] RentCore(nuint capacity) => new T[capacity];
 
-            public override void Return(T[] obj, bool clearArray)
-            {
-                if (clearArray)
-                    Array.Clear(obj, 0, obj.Length);
-            }
+            protected override void ReturnCore(T[] array) { }
         }
     }
 }

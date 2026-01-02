@@ -68,10 +68,8 @@ namespace WitherTorch.Common.Buffers
                 return new ConcurrentArrayQueue(call, queue);
             }
 
-            public override T[] Rent(nuint capacity)
+            protected override T[] RentCore(nuint capacity)
             {
-                if (capacity == 0)
-                    return Array.Empty<T>();
                 if (capacity > GlobalArrayQueueCount)
                     return new T[capacity];
 
@@ -103,14 +101,12 @@ namespace WitherTorch.Common.Buffers
                 }
             }
 
-            public override void Return(T[] array, bool clearArray)
+            protected override void ReturnCore(T[] array)
             {
                 int length = array.Length;
                 if (length < 16 || length > GlobalArraySizeLimit || !MathHelper.IsPow2(length))
                     return;
                 int index = MathHelper.Log2((uint)length) - 4;
-                if (clearArray)
-                    SequenceHelper.Clear(array);
                 DelayedCall call;
                 if (index < LocalArrayQueueCount)
                 {

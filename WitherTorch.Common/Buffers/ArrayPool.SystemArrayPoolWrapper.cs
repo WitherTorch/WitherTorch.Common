@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Buffers
                 _pool = pool;
             }
 
-            public override T[] Rent(nuint capacity)
+            protected override T[] RentCore(nuint capacity)
             {
                 if (capacity == 0)
                     return Array.Empty<T>();
@@ -22,9 +22,9 @@ namespace WitherTorch.Common.Buffers
                 return _pool.Rent(unchecked((int)capacity));
             }
 
-            public override void Return(T[] obj, bool clearArray)
+            protected override void ReturnCore(T[] array)
             {
-                _pool.Return(obj, clearArray);
+                _pool.Return(array, clearArray: false);
             }
         }
     }
