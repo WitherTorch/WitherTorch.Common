@@ -177,11 +177,18 @@ namespace WitherTorch.Common.Extensions
             T[] array;
             int length;
 
-            if (typeof(TEnumerable) == typeof(T[]) || items is T[])
+            if (typeof(TEnumerable) == typeof(T[]))
                 goto IsArray;
-            if (typeof(TEnumerable) == typeof(UnwrappableList<T>) || items is UnwrappableList<T>)
+            if (typeof(TEnumerable) == typeof(UnwrappableList<T>))
                 goto IsUnwrappableList;
-            if (typeof(TEnumerable) == typeof(PooledList<T>) || items is PooledList<T>)
+            if (typeof(TEnumerable) == typeof(PooledList<T>))
+                goto IsPooledList;
+
+            if (items is T[])
+                goto IsArray;
+            if (items is UnwrappableList<T>)
+                goto IsUnwrappableList;
+            if (items is PooledList<T>)
                 goto IsPooledList;
 
             goto Fallback;
@@ -225,11 +232,18 @@ namespace WitherTorch.Common.Extensions
             T[] array;
             int length;
 
-            if (typeof(TEnumerable) == typeof(T[]) || items is T[])
+            if (typeof(TEnumerable) == typeof(T[]))
                 goto IsArray;
-            if (typeof(TEnumerable) == typeof(UnwrappableList<T>) || items is UnwrappableList<T>)
+            if (typeof(TEnumerable) == typeof(UnwrappableList<T>))
                 goto IsUnwrappableList;
-            if (typeof(TEnumerable) == typeof(PooledList<T>) || items is PooledList<T>)
+            if (typeof(TEnumerable) == typeof(PooledList<T>))
+                goto IsPooledList;
+
+            if (items is T[])
+                goto IsArray;
+            if (items is UnwrappableList<T>)
+                goto IsUnwrappableList;
+            if (items is PooledList<T>)
                 goto IsPooledList;
 
             goto Fallback;

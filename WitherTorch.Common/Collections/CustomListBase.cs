@@ -75,13 +75,22 @@ namespace WitherTorch.Common.Collections
             T[] array;
             int length;
 
-            if (typeof(TEnumerable) == typeof(T[]) || items is T[])
+            if (typeof(TEnumerable) == typeof(T[]))
                 goto Array;
-            if (typeof(TEnumerable) == typeof(CustomListBase<T>) || items is CustomListBase<T>)
+            if (typeof(TEnumerable) == typeof(CustomListBase<T>))
                 goto CustomListBase;
-            if (typeof(TEnumerable) == typeof(ObservableList<T>) || items is ObservableList<T>)
+            if (typeof(TEnumerable) == typeof(ObservableList<T>))
                 goto ObservableList;
-            if (typeof(TEnumerable) == typeof(IList<T>) || items is IList<T>)
+            if (typeof(TEnumerable) == typeof(IList<T>))
+                goto ListLike;
+
+            if (items is T[])
+                goto Array;
+            if (items is CustomListBase<T>)
+                goto CustomListBase;
+            if (items is ObservableList<T>)
+                goto ObservableList;
+            if (items is IList<T>)
                 goto ListLike;
 
             goto Fallback;

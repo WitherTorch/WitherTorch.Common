@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -101,6 +102,64 @@ namespace WitherTorch.Common.Text
                 Append(format, lastPos, lastCount);
         }
 
+        private void AppendFormatCore<T, TList>(string format, TList args) where TList : IEnumerable<T>
+        {
+            int length = format.Length;
+            int lastPos = 0, indexOfLeft, indexOfRight;
+            do
+            {
+                indexOfLeft = StringHelper.IndexOf(format, '{', lastPos);
+                if (indexOfLeft < 0)
+                    break;
+                indexOfRight = StringHelper.IndexOf(format, '}', indexOfLeft);
+                if (indexOfRight < 0)
+                    break;
+                Append(format, lastPos, indexOfLeft - lastPos);
+                int count = indexOfRight - indexOfLeft - 1;
+                int delimiterIndex = StringHelper.IndexOf(format, ':', indexOfLeft, count);
+                if (delimiterIndex < 0)
+                {
+                    int index = ParseHelper.ParseToInt32(format, indexOfLeft + 1, count);
+                    T? arg;
+                    if (typeof(TList) == typeof(T[]))
+                        arg = UnsafeHelper.As<TList, T[]>(args)[index];
+                    else if (typeof(TList) == typeof(IList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else if (typeof(TList) == typeof(IReadOnlyList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else
+                        throw new InvalidOperationException();
+                    Append(arg?.ToString() ?? "null");
+                }
+                else
+                {
+                    int index = ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1);
+                    T? arg;
+                    if (typeof(TList) == typeof(T[]))
+                        arg = UnsafeHelper.As<TList, T[]>(args)[index];
+                    else if (typeof(TList) == typeof(IList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else if (typeof(TList) == typeof(IReadOnlyList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else
+                        throw new InvalidOperationException();
+                    if (arg is IFormattable formattable)
+                    {
+                        string subFormat = format.Substring(delimiterIndex + 1, indexOfRight - delimiterIndex - 1);
+                        Append(formattable.ToString(subFormat, null));
+                    }
+                    else
+                    {
+                        Append(arg?.ToString() ?? "null");
+                    }
+                }
+                lastPos = indexOfRight + 1;
+            } while (lastPos < length);
+            int lastCount = length - lastPos;
+            if (lastCount > 0)
+                Append(format, lastPos, lastCount);
+        }
+
         // 允許 Span<T> 參與高性能 AppendFormat 操作，並優化 unmanaged 類型在 AppendFormat 時的性能消耗
         internal void AppendFormatCore<T>(string format, T* args, int argc)
         {
@@ -167,6 +226,64 @@ namespace WitherTorch.Common.Text
                 else
                 {
                     T arg = args[ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1)];
+                    if (arg is IFormattable formattable)
+                    {
+                        string subFormat = format.Slice(delimiterIndex + 1, indexOfRight - delimiterIndex - 1).ToString();
+                        Append(formattable.ToString(subFormat, null));
+                    }
+                    else
+                    {
+                        Append(arg?.ToString() ?? "null");
+                    }
+                }
+                lastPos = indexOfRight + 1;
+            } while (lastPos < length);
+            int lastCount = length - lastPos;
+            if (lastCount > 0)
+                Append(format, lastPos, lastCount);
+        }
+
+        private void AppendFormatCore<T, TList>(StringBase format, TList args) where TList : IEnumerable<T>
+        {
+            int length = format.Length;
+            int lastPos = 0, indexOfLeft, indexOfRight;
+            do
+            {
+                indexOfLeft = format.IndexOf('{', lastPos, length - lastPos);
+                if (indexOfLeft < 0)
+                    break;
+                indexOfRight = format.IndexOf('}', indexOfLeft, length - indexOfLeft);
+                if (indexOfRight < 0)
+                    break;
+                Append(format, lastPos, indexOfLeft - lastPos);
+                int count = indexOfRight - indexOfLeft - 1;
+                int delimiterIndex = format.IndexOf(':', indexOfLeft, count);
+                if (delimiterIndex < 0)
+                {
+                    int index = ParseHelper.ParseToInt32(format, indexOfLeft + 1, count);
+                    T? arg;
+                    if (typeof(TList) == typeof(T[]))
+                        arg = UnsafeHelper.As<TList, T[]>(args)[index];
+                    else if (typeof(TList) == typeof(IList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else if (typeof(TList) == typeof(IReadOnlyList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else
+                        throw new InvalidOperationException();
+                    Append(arg?.ToString() ?? "null");
+                }
+                else
+                {
+                    int index = ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1);
+                    T? arg;
+                    if (typeof(TList) == typeof(T[]))
+                        arg = UnsafeHelper.As<TList, T[]>(args)[index];
+                    else if (typeof(TList) == typeof(IList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else if (typeof(TList) == typeof(IReadOnlyList<T>))
+                        arg = UnsafeHelper.As<TList, IList<T>>(args)[index];
+                    else
+                        throw new InvalidOperationException();
                     if (arg is IFormattable formattable)
                     {
                         string subFormat = format.Slice(delimiterIndex + 1, indexOfRight - delimiterIndex - 1).ToString();

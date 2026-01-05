@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text;
 
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 using WitherTorch.Common.Threading;
@@ -176,7 +178,7 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(string format, T arg0)
         {
-            if (UnsafeHelper.IsPrimitiveType<T>())
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
                 AppendFormatCore(format, &arg0, 1);
                 return;
@@ -188,7 +190,7 @@ namespace WitherTorch.Common.Text
         public void AppendFormat<T>(string format, T arg0, T arg1)
         {
             ParamArrayTiny<T> array = new(arg0, arg1);
-            if (UnsafeHelper.IsPrimitiveType<T>())
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
                 AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 2);
                 return;
@@ -200,7 +202,7 @@ namespace WitherTorch.Common.Text
         public void AppendFormat<T>(string format, T arg0, T arg1, T arg2)
         {
             ParamArrayTiny<T> array = new(arg0, arg1, arg2);
-            if (UnsafeHelper.IsPrimitiveType<T>())
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
                 AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 3);
                 return;
@@ -210,7 +212,59 @@ namespace WitherTorch.Common.Text
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(string format, params T[] args)
-            => AppendFormatCore(format, new ParamArrayTiny<T>(args));
+        {
+            if (UnsafeHelper.IsUnmanagedType<T>())
+            {
+                fixed (T* ptr = args)
+                    AppendFormatCore(format, ptr, args.Length);
+                return;
+            }
+            AppendFormatCore<T, T[]>(format, args);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormatWithArgs<T, TEnumerable>(string format, TEnumerable args) where TEnumerable : IEnumerable<T>
+        {
+            if (typeof(TEnumerable) == typeof(T[]))
+                goto Array;
+            if (typeof(TEnumerable) == typeof(IList<T>))
+                goto List;
+            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+                goto ReadOnlyList;
+
+            if (args is T[])
+                goto Array;
+            if (args is IList<T>)
+                goto List;
+            if (args is IReadOnlyList<T>)
+                goto ReadOnlyList;
+
+            goto Fallback;
+
+        Array:
+            T[] argArray = UnsafeHelper.As<TEnumerable, T[]>(args);
+            if (UnsafeHelper.IsUnmanagedType<T>())
+            {
+                fixed (T* ptr = argArray)
+                    AppendFormatCore(format, ptr, argArray.Length);
+            }
+            else
+                AppendFormatCore<T, T[]>(format, argArray);
+            return;
+
+        List:
+            AppendFormatCore<T, IList<T>>(format, UnsafeHelper.As<TEnumerable, IList<T>>(args));
+            return;
+
+        ReadOnlyList:
+            AppendFormatCore<T, IReadOnlyList<T>>(format, UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(args));
+            return;
+
+        Fallback:
+            using PooledList<T> list = new PooledList<T>(capacity: 0);
+            list.AddRange(args);
+            AppendFormatCore<T, IList<T>>(format, UnsafeHelper.As<IList<T>>(list));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat(string format, object arg0)
@@ -231,7 +285,7 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(StringBase format, T arg0)
         {
-            if (UnsafeHelper.IsPrimitiveType<T>())
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
                 AppendFormatCore(format, &arg0, 1);
                 return;
@@ -243,7 +297,7 @@ namespace WitherTorch.Common.Text
         public void AppendFormat<T>(StringBase format, T arg0, T arg1)
         {
             ParamArrayTiny<T> array = new(arg0, arg1);
-            if (UnsafeHelper.IsPrimitiveType<T>())
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
                 AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 2);
                 return;
@@ -255,7 +309,7 @@ namespace WitherTorch.Common.Text
         public void AppendFormat<T>(StringBase format, T arg0, T arg1, T arg2)
         {
             ParamArrayTiny<T> array = new(arg0, arg1, arg2);
-            if (UnsafeHelper.IsPrimitiveType<T>())
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
                 AppendFormatCore(format, (T*)(((byte*)&array) + ParamArrayTiny<T>.ArrayOffset), 3);
                 return;
@@ -265,7 +319,59 @@ namespace WitherTorch.Common.Text
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat<T>(StringBase format, params T[] args)
-            => AppendFormatCore(format, new ParamArrayTiny<T>(args));
+        {
+            if (UnsafeHelper.IsUnmanagedType<T>())
+            {
+                fixed (T* ptr = args)
+                    AppendFormatCore(format, ptr, args.Length);
+                return;
+            }
+            AppendFormatCore<T, T[]>(format, args);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AppendFormatWithArgs<T, TEnumerable>(StringBase format, TEnumerable args) where TEnumerable : IEnumerable<T>
+        {
+            if (typeof(TEnumerable) == typeof(T[]))
+                goto Array;
+            if (typeof(TEnumerable) == typeof(IList<T>))
+                goto List;
+            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+                goto ReadOnlyList;
+
+            if (args is T[])
+                goto Array;
+            if (args is IList<T>)
+                goto List;
+            if (args is IReadOnlyList<T>)
+                goto ReadOnlyList;
+
+            goto Fallback;
+
+        Array:
+            T[] argArray = UnsafeHelper.As<TEnumerable, T[]>(args);
+            if (UnsafeHelper.IsUnmanagedType<T>())
+            {
+                fixed (T* ptr = argArray)
+                    AppendFormatCore(format, ptr, argArray.Length);
+            }
+            else
+                AppendFormatCore<T, T[]>(format, argArray);
+            return;
+
+        List:
+            AppendFormatCore<T, IList<T>>(format, UnsafeHelper.As<TEnumerable, IList<T>>(args));
+            return;
+
+        ReadOnlyList:
+            AppendFormatCore<T, IReadOnlyList<T>>(format, UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(args));
+            return;
+
+        Fallback:
+            using PooledList<T> list = new PooledList<T>(capacity: 0);
+            list.AddRange(args);
+            AppendFormatCore<T, IList<T>>(format, UnsafeHelper.As<IList<T>>(list));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AppendFormat(StringBase format, object arg0)
