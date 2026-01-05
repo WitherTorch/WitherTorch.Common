@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -161,14 +161,14 @@ namespace WitherTorch.Common.Extensions
         {
             switch (_this)
             {
-                case List<T> list:
-                    list.AddRange(items);
+                case List<T> _list:
+                    _list.AddRange(items);
                     return;
-                case IAddRangeCollectionGenerics<T> list:
-                    list.AddRange(items);
+                case IAddRangeCollectionGenerics<T> _list:
+                    _list.AddRange(items);
                     return;
-                case IAddRangeCollection<T> list:
-                    list.AddRange(items);
+                case IAddRangeCollection<T> _list:
+                    _list.AddRange(items);
                     return;
                 default:
                     break;
@@ -183,6 +183,10 @@ namespace WitherTorch.Common.Extensions
                 goto IsUnwrappableList;
             if (typeof(TEnumerable) == typeof(PooledList<T>))
                 goto IsPooledList;
+            if (typeof(TEnumerable) == typeof(IList<T>))
+                goto IsList;
+            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+                goto IsReadOnlyList;
 
             if (items is T[])
                 goto IsArray;
@@ -190,6 +194,10 @@ namespace WitherTorch.Common.Extensions
                 goto IsUnwrappableList;
             if (items is PooledList<T>)
                 goto IsPooledList;
+            if (items is IList<T>)
+                goto IsList;
+            if (items is IReadOnlyList<T>)
+                goto IsReadOnlyList;
 
             goto Fallback;
 
@@ -218,6 +226,24 @@ namespace WitherTorch.Common.Extensions
                 _this.Add(UnsafeHelper.AddTypedOffset(ref itemRef, i));
             return;
 
+        IsList:
+            IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
+            length = list.Count;
+            if (length <= 0)
+                return;
+            for (int i = 0; i < length; i++)
+                _this.Add(list[i]);
+            return;
+
+        IsReadOnlyList:
+            IReadOnlyList<T> readOnlyList = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
+            length = readOnlyList.Count;
+            if (length <= 0)
+                return;
+            for (int i = 0; i < length; i++)
+                _this.Add(readOnlyList[i]);
+            return;
+
         Fallback:
             foreach (T item in items)
                 _this.Add(item);
@@ -238,6 +264,10 @@ namespace WitherTorch.Common.Extensions
                 goto IsUnwrappableList;
             if (typeof(TEnumerable) == typeof(PooledList<T>))
                 goto IsPooledList;
+            if (typeof(TEnumerable) == typeof(IList<T>))
+                goto IsList;
+            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+                goto IsReadOnlyList;
 
             if (items is T[])
                 goto IsArray;
@@ -245,6 +275,10 @@ namespace WitherTorch.Common.Extensions
                 goto IsUnwrappableList;
             if (items is PooledList<T>)
                 goto IsPooledList;
+            if (items is IList<T>)
+                goto IsList;
+            if (items is IReadOnlyList<T>)
+                goto IsReadOnlyList;
 
             goto Fallback;
 
@@ -271,6 +305,24 @@ namespace WitherTorch.Common.Extensions
             ref T itemRef = ref array[0];
             for (nuint i = 0, limit = (nuint)length; i < limit; i++)
                 _this.Remove(UnsafeHelper.AddTypedOffset(ref itemRef, i));
+            return;
+
+        IsList:
+            IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
+            length = list.Count;
+            if (length <= 0)
+                return;
+            for (int i = 0; i < length; i++)
+                _this.Remove(list[i]);
+            return;
+
+        IsReadOnlyList:
+            IReadOnlyList<T> readOnlyList = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
+            length = readOnlyList.Count;
+            if (length <= 0)
+                return;
+            for (int i = 0; i < length; i++)
+                _this.Add(readOnlyList[i]);
             return;
 
         Fallback:

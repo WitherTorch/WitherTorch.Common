@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -83,6 +83,8 @@ namespace WitherTorch.Common.Collections
                 goto ObservableList;
             if (typeof(TEnumerable) == typeof(IList<T>))
                 goto ListLike;
+            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+                goto ReadOnlyListLike;
 
             if (items is T[])
                 goto Array;
@@ -91,6 +93,8 @@ namespace WitherTorch.Common.Collections
             if (items is ObservableList<T>)
                 goto ObservableList;
             if (items is IList<T>)
+                goto ListLike;
+            if (items is IReadOnlyList<T>)
                 goto ListLike;
 
             goto Fallback;
@@ -146,6 +150,20 @@ namespace WitherTorch.Common.Collections
                 _count = index + length;
                 EnsureCapacity();
                 list.CopyTo(_array, index);
+            }
+            return;
+
+        ReadOnlyListLike:
+            {
+                IReadOnlyList<T> list = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
+                length = list.Count;
+                if (length <= 0)
+                    return;
+                int index = _count;
+                _count = index + length;
+                EnsureCapacity();
+                for (int i = 0; i < length; i++)
+                    _array[index + i] = list[i];
             }
             return;
 

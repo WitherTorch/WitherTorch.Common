@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -26,13 +26,23 @@ namespace WitherTorch.Common.Collections
 
             public void Append(T item) { }
 
+            public void Append(IEnumerable<T> items) { }
+
             public int BinarySearch(T item) => -1;
 
             public int BinarySearch(T item, IComparer<T> comparer) => -1;
 
             public void Clear() { }
 
+            public bool Contains(T item) => false;
+
+            public bool Contains(T item, IEqualityComparer<T> comparer) => false;
+
             public IEnumerator<T> GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<T>();
+
+            public int IndexOf(T item) => -1;
+
+            public int IndexOf(T item, IEqualityComparer<T> comparer) => -1;
 
             IEnumerator IEnumerable.GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<T>();
         }

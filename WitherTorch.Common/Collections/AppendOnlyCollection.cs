@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace WitherTorch.Common.Collections
@@ -17,20 +17,32 @@ namespace WitherTorch.Common.Collections
         public static IAppendOnlyCollection<T> CreateUnlimitedCollection<T>() => new UnlimitedAOCollection<T>();
     }
 
-    public interface IAppendOnlyCollection<T> : IEnumerable<T>
+    public interface IAppendOnlyCollection<T> : IReadOnlyList<T>
     {
-        int Count { get; }
-
         int Capacity { get; }
 
-        T this[int index] { get; set; }
+        new T this[int index] { get; set; }
 
         void Append(T item);
+
+        void Append(IEnumerable<T> items);
 
         int BinarySearch(T item);
 
         int BinarySearch(T item, IComparer<T> comparer);
 
+        bool Contains(T item);
+
+        bool Contains(T item, IEqualityComparer<T> comparer);
+
+        int IndexOf(T item);
+
+        int IndexOf(T item, IEqualityComparer<T> comparer);
+
         void Clear();
+
+#if NET8_0_OR_GREATER
+        T IReadOnlyList<T>.this[int index] => this[index];
+#endif
     }
 }
