@@ -10,6 +10,16 @@ namespace WitherTorch.Common.Helpers
     public static partial class ArrayHelper
     {
         [Inline(InlineBehavior.Keep, export: true)]
+        public static T[] CreateUninitializedArray<T>(int length)
+        {
+#if NET472_OR_GREATER
+            return new T[length];
+#else
+            return GC.AllocateUninitializedArray<T>(length);
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsNullOrEmpty<T>([InlineParameter] T?[] array) => array is null || array.Length == 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

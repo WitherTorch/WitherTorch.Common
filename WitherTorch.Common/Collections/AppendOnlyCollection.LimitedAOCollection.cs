@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Collections
 
             public LimitedAOCollection(int capacity)
             {
-                _array = new T[capacity];
+                _array = ArrayHelper.CreateUninitializedArray<T>(capacity);
                 _startIndex = 0;
                 _count = 0;
             }
@@ -393,7 +393,7 @@ namespace WitherTorch.Common.Collections
                 DebugHelper.ThrowIf(count > capacity);
                 int index = SequenceHelper.IndexOf(array, item, 0, count);
                 if (index < 0 || index >= count || count < capacity)
-                    return index;
+                    return -1;
                 int startIndex = _startIndex;
                 return index >= startIndex ? index - startIndex : (capacity - startIndex + index);
             }
@@ -417,7 +417,7 @@ namespace WitherTorch.Common.Collections
                 else
                     index = IndexOfCore(item, array, count, comparer);
                 if (index < 0 || index >= count || count < capacity)
-                    return index;
+                    return -1;
                 int startIndex = _startIndex;
                 return index >= startIndex ? index - startIndex : (capacity - startIndex + index);
             }

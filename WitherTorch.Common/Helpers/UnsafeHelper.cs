@@ -189,7 +189,11 @@ namespace WitherTorch.Common.Helpers
 #pragma warning disable CS0618
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsUnmanagedType<T>()
+#if NET472_OR_GREATER
                 => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || IsUnmanageTypeSlow(typeof(T));
+#else
+                => !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecuritySafeCritical]

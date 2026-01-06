@@ -34,7 +34,7 @@ namespace WitherTorch.Common.Collections
             public UnlimitedAOCollection(int nodeSize)
             {
                 _nodeSize = nodeSize;
-                _treeHeadNode = new T[nodeSize];
+                _treeHeadNode = ArrayHelper.CreateUninitializedArray<T>(nodeSize);
                 _depth = 1;
                 _count = 0;
             }
@@ -341,13 +341,13 @@ namespace WitherTorch.Common.Collections
                 {
                     if (nearLeafNode)
                     {
-                        T[] newNode = new T[_nodeSize];
+                        T[] newNode = ArrayHelper.CreateUninitializedArray<T>(_nodeSize);
                         node[*path] = newNode;
                         return ref GetNodeReference(newNode, path[1]);
                     }
                     else
                     {
-                        object[] newNode = new object[_nodeSize];
+                        object[] newNode = ArrayHelper.CreateUninitializedArray<object>(_nodeSize);
                         node[*path] = newNode;
                         return ref GetNodeReference(newNode, path + 1, depth - 1);
                     }
