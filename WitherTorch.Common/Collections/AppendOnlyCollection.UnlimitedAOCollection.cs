@@ -15,6 +15,7 @@ namespace WitherTorch.Common.Collections
     {
         private sealed class UnlimitedAOCollection<T> : IAppendOnlyCollection<T>
         {
+            private const int MinimumNodeSize = 16;
             private static readonly int DefaultNodeSize;
             private readonly int _nodeSize;
 
@@ -24,7 +25,7 @@ namespace WitherTorch.Common.Collections
             static unsafe UnlimitedAOCollection()
             {
 #pragma warning disable CS8500
-                DefaultNodeSize = Environment.SystemPageSize / sizeof(T);
+                DefaultNodeSize = MathHelper.Max((Environment.SystemPageSize - UnsafeHelper.PointerSize * 3) / sizeof(T), MinimumNodeSize);
 #pragma warning restore CS8500
             }
 
