@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace WitherTorch.Common.Helpers
 {
-    public static class CollectionHelper
+    public static partial class CollectionHelper
     {
         public static ICollection EmptyCollection() => EmptyReadOnlyCollectionImpl<object>.Instance;
 
@@ -16,53 +16,8 @@ namespace WitherTorch.Common.Helpers
 
         public static IEnumerator<T> EmptyEnumerator<T>() => EmptyEnumeratorImpl<T>.Instance;
 
-        private sealed class EmptyReadOnlyCollectionImpl<T> : ICollection, ICollection<T>, IReadOnlyCollection<T>
-        {
-            private static readonly EmptyReadOnlyCollectionImpl<T> _instance = new EmptyReadOnlyCollectionImpl<T>();
+        public static IDictionary<TKey, TValue> EmptyDictionary<TKey, TValue>() => EmptyReadOnlyDictionaryImpl<TKey, TValue>.Instance;
 
-            public static EmptyReadOnlyCollectionImpl<T> Instance => _instance;
-
-            public int Count => 0;
-
-            public bool IsReadOnly => true;
-
-            public object SyncRoot => this;
-
-            public bool IsSynchronized => true;
-
-            public void Add(T item) { }
-
-            public void Clear() { }
-
-            public bool Contains(T item) => false;
-
-            public void CopyTo(Array array, int arrayIndex) { }
-
-            public void CopyTo(T[] array, int arrayIndex) { }
-
-            public bool Remove(T item) => false;
-
-            public IEnumerator<T> GetEnumerator() => EmptyEnumeratorImpl<T>.Instance;
-
-            IEnumerator IEnumerable.GetEnumerator() => EmptyEnumeratorImpl<T>.Instance;
-        }
-
-        private sealed class EmptyEnumeratorImpl<T> : IEnumerator<T>
-        {
-            private static readonly EmptyEnumeratorImpl<T> _instance = new EmptyEnumeratorImpl<T>();
-
-            public static EmptyEnumeratorImpl<T> Instance => _instance;
-
-            public T Current => throw new InvalidOperationException();
-
-            object IEnumerator.Current => throw new InvalidOperationException();
-
-            public void Dispose() { }
-
-            public bool MoveNext() => false;
-
-            public void Reset() { }
-        }
-
+        public static IReadOnlyDictionary<TKey, TValue> EmptyReadOnlyDictionary<TKey, TValue>() => EmptyReadOnlyDictionaryImpl<TKey, TValue>.Instance;
     }
 }
