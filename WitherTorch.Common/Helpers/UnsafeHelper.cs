@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -656,10 +656,23 @@ namespace WitherTorch.Common.Helpers
 
 #pragma warning disable CS8500
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsNullRef<T>(ref readonly T source)
+        {
+            IL.PushInRef(in source);
+            IL.Emit.Ldc_I4_0();
+            IL.Emit.Conv_U();
+            IL.Emit.Ceq();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T NullRef<T>()
         {
-            IL.Emit.Ldnull();
-            return ref IL.ReturnRef<T>();
+            IL.Emit.Ldc_I4_0();
+            IL.Emit.Conv_U();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

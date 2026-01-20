@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -23,6 +23,24 @@ namespace WitherTorch.Common.Helpers
                 return;
             for (int i = 0, length = array.Length; i < length; i++)
                 (array[i] as IDisposable)?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeAllWeakUnsafe<T>(ref T? arrayReference, nint length)
+        {
+            if (UnsafeHelper.IsNullRef(ref arrayReference) || length <= 0)
+                return;
+            for (nint i = 0; i < length; i++)
+                (UnsafeHelper.AddTypedOffset(ref arrayReference, i) as IDisposable)?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeAllWeakUnsafe<T>(ref T? arrayReference, nuint length)
+        {
+            if (UnsafeHelper.IsNullRef(ref arrayReference) || length == 0)
+                return;
+            for (nuint i = 0; i < length; i++)
+                (UnsafeHelper.AddTypedOffset(ref arrayReference, i) as IDisposable)?.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
