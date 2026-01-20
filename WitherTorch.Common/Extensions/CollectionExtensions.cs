@@ -23,7 +23,7 @@ namespace WitherTorch.Common.Extensions
             => collection as IReadOnlyList<T> ?? new ReadOnlyListAdapter<T>(collection);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasNonNullItem<T>(this IEnumerable<T> enumerable) where T : class
+        public static bool HasNonNullItem<T>(this IEnumerable<T?> enumerable) where T : class
         {
             return enumerable switch
             {

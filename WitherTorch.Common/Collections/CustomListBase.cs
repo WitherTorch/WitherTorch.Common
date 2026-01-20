@@ -9,7 +9,7 @@ using WitherTorch.Common.Native;
 namespace WitherTorch.Common.Collections
 {
 #pragma warning disable CS8500
-    public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAddRangeCollectionGenerics<T>
+    public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAddRangeCollectionGenerics<T>, IReversibleEnumerable<T>
     {
         private static readonly bool _isUnmanagedType = UnsafeHelper.IsUnmanagedType<T>();
 
@@ -86,18 +86,21 @@ namespace WitherTorch.Common.Collections
             if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
                 goto ReadOnlyListLike;
 
-            if (items is T[])
-                goto Array;
-            if (items is CustomListBase<T>)
-                goto CustomListBase;
-            if (items is ObservableList<T>)
-                goto ObservableList;
-            if (items is IList<T>)
-                goto ListLike;
-            if (items is IReadOnlyList<T>)
-                goto ListLike;
-
-            goto Fallback;
+            switch (items)
+            {
+                case T[]:
+                    goto Array;
+                case CustomListBase<T>:
+                    goto CustomListBase;
+                case ObservableList<T>:
+                    goto ObservableList;
+                case IList<T>:
+                    goto ListLike;
+                case IReadOnlyList<T>:
+                    goto ReadOnlyListLike;
+                default:
+                    goto Fallback;
+            }
 
         ObservableList:
             IList<T> underlyingList = UnsafeHelper.As<TEnumerable, ObservableList<T>>(items).GetUnderlyingList();
@@ -311,9 +314,14 @@ namespace WitherTorch.Common.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Enumerator GetEnumerator() => new Enumerator(_array, _count);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReversedEnumerator GetReversedEnumerator() => new ReversedEnumerator(_array, _count);
+
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        IEnumerator<T> IReversibleEnumerable<T>.GetReversedEnumerator() => GetReversedEnumerator();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T? Find(Predicate<T> predicate)
@@ -477,22 +485,65 @@ namespace WitherTorch.Common.Collections
 
             public bool MoveNext()
             {
-                int newIndex = _index + 1;
-                if (newIndex < _count)
+                int index = _index + 1;
+                int count = _count;
+                if (index < count)
                 {
-                    _index = newIndex;
-                    return true;
+                    _index = index;
+                    return index >= 0;
                 }
-                else
-                {
-                    _index = _count;
-                    return false;
-                }
+                return false;
             }
 
             public void Reset()
             {
                 _index = 0;
+            }
+        }
+
+        public struct ReversedEnumerator : IEnumerator<T>
+        {
+            private readonly T[] _array;
+            private readonly int _count;
+
+            private int _index;
+
+            public ReversedEnumerator(T[] array, int count)
+            {
+                _array = array;
+                _count = count;
+                _index = count;
+            }
+
+            public readonly T Current
+            {
+                get
+                {
+                    int index = _index;
+                    if (index < 0 || index >= _count)
+                        throw new InvalidOperationException();
+                    return _array[index];
+                }
+            }
+
+            readonly object? IEnumerator.Current => Current;
+
+            public readonly void Dispose() { }
+
+            public bool MoveNext()
+            {
+                int index = _index - 1;
+                if (index >= 0)
+                {
+                    _index = index;
+                    return index < _count;
+                }
+                return false;
+            }
+
+            public void Reset()
+            {
+                _index = _count;
             }
         }
     }

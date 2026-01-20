@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
@@ -13,6 +13,153 @@ namespace WitherTorch.Common.Extensions
 {
     public static class LinqExtensions
     {
+        /// <inheritdoc cref="Enumerable.Concat{TSource}(IEnumerable{TSource}, IEnumerable{TSource})"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<TSource> ConcatOptimized<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
+        {
+            switch (first)
+            {
+                case TSource[] array:
+                    if (array.Length <= 0)
+                        goto ReturnSecond;
+                    break;
+                case ICollection<TSource> collection:
+                    if (collection.Count <= 0)
+                        goto ReturnSecond;
+                    break;
+                case IReadOnlyCollection<TSource> collection:
+                    if (collection.Count <= 0)
+                        goto ReturnSecond;
+                    break;
+            }
+            switch (second)
+            {
+                case TSource[] array:
+                    if (array.Length <= 0)
+                        goto ReturnFirst;
+                    break;
+                case ICollection<TSource> collection:
+                    if (collection.Count <= 0)
+                        goto ReturnFirst;
+                    break;
+                case IReadOnlyCollection<TSource> collection:
+                    if (collection.Count <= 0)
+                        goto ReturnFirst;
+                    break;
+            }
+
+            return first.Concat(second);
+
+        ReturnSecond:
+            return second ?? throw new ArgumentNullException(nameof(second));
+
+        ReturnFirst:
+            return first ?? throw new ArgumentNullException(nameof(first));
+        }
+
+        /// <inheritdoc cref="Enumerable.Reverse{TSource}(IEnumerable{TSource})"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<TSource> ReverseOptimized<TSource>(this IEnumerable<TSource> source)
+            => source switch
+            {
+                IReversibleEnumerable<TSource> reversibleSource => EnumerableHelper.Wrap(reversibleSource.GetReversedEnumerator()),
+                TSource[] array => ReverseFast(array),
+                IList<TSource> list => ReverseFast(list),
+                ICollection<TSource> collection => ReverseFast(collection),
+                _ => ReverseSlow(source),
+            };
+
+        private static IEnumerable<TSource> ReverseFast<TSource>(TSource[] source)
+        {
+            int length = source.Length;
+            if (length <= 1)
+                return source;
+            return ReverseFastCore(source, length);
+        }
+
+        private static IEnumerable<TSource> ReverseFast<TSource>(IList<TSource> source)
+        {
+            int count = source.Count;
+            if (count <= 1)
+                return source;
+            return ReverseFastCore(source, count);
+        }
+
+        private static IEnumerable<TSource> ReverseFast<TSource>(ICollection<TSource> source)
+        {
+            int count = source.Count;
+            if (count <= 1)
+                return source;
+            return ReverseFastCore(source, count);
+        }
+
+        private static IEnumerable<TSource> ReverseFastCore<TSource>(TSource[] source, int length)
+        {
+            for (int i = length - 1; i >= 0; i--)
+                yield return source[i];
+        }
+
+        private static IEnumerable<TSource> ReverseFastCore<TSource>(IList<TSource> source, int count)
+        {
+            for (int i = count - 1; i >= 0; i--)
+                yield return source[i];
+        }
+
+        private static IEnumerable<TSource> ReverseFastCore<TSource>(ICollection<TSource> source, int count)
+        {
+            ArrayPool<TSource> pool = ArrayPool<TSource>.Shared;
+            TSource[] buffer = pool.Rent(count);
+            try
+            {
+                source.CopyTo(buffer, 0);
+                for (int i = count - 1; i >= 0; i--)
+                    yield return buffer[i];
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
+        }
+
+        private static IEnumerable<TSource> ReverseSlow<TSource>(IEnumerable<TSource> source)
+        {
+            using IEnumerator<TSource> enumerator = source.GetEnumerator();
+            if (!enumerator.MoveNext())
+                return source;
+            TSource firstItem = enumerator.Current;
+            if (!enumerator.MoveNext())
+                return source;
+
+            ArrayPool<TSource> pool = ArrayPool<TSource>.Shared;
+            TSource[] array;
+            int count;
+
+            using (PooledList<TSource> tempList = new PooledList<TSource>(pool, capacity: 16))
+            {
+                tempList.Add(firstItem);
+                do
+                {
+                    tempList.Add(enumerator.Current);
+                } while (enumerator.MoveNext());
+                (array, count) = tempList;
+            }
+
+            try
+            {
+                return ReverseSlowCore(array, count);
+            }
+            finally
+            {
+                pool.Return(array);
+            }
+        }
+
+        private static IEnumerable<TSource> ReverseSlowCore<TSource>(TSource[] array, int count)
+        {
+            for (int i = count - 1; i >= 0; i--)
+                yield return array[i];
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<IndexedValue<TSource>> WithIndex<TSource>(this IEnumerable<TSource> _this)
         {

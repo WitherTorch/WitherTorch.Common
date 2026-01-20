@@ -38,13 +38,15 @@ namespace WitherTorch.Common.Collections
 
             public bool Contains(T item, IEqualityComparer<T> comparer) => false;
 
-            public IEnumerator<T> GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<T>();
-
             public int IndexOf(T item) => -1;
 
             public int IndexOf(T item, IEqualityComparer<T> comparer) => -1;
 
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<T>();
+
             IEnumerator IEnumerable.GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<T>();
+
+            IEnumerator<T> IReversibleEnumerable<T>.GetReversedEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<T>();
         }
     }
 }

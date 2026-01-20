@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace WitherTorch.Common.Collections
@@ -17,7 +18,7 @@ namespace WitherTorch.Common.Collections
         public static IAppendOnlyCollection<T> CreateUnlimitedCollection<T>() => new UnlimitedAOCollection<T>();
     }
 
-    public interface IAppendOnlyCollection<T> : IReadOnlyList<T>
+    public interface IAppendOnlyCollection<T> : IReadOnlyList<T>, IReversibleEnumerable<T>
     {
         int Capacity { get; }
 

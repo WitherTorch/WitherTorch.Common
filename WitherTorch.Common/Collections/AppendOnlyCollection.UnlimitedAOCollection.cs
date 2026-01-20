@@ -196,9 +196,11 @@ namespace WitherTorch.Common.Collections
             [Inline(InlineBehavior.Remove)]
             private static int GetMiddleIndex(int lowerBound, int higherBound) => lowerBound + ((higherBound - lowerBound) >> 1);
 
-            IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator<T>(this);
 
-            IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+            IEnumerator IEnumerable.GetEnumerator() => new Enumerator<T>(this);
+
+            IEnumerator<T> IReversibleEnumerable<T>.GetReversedEnumerator() => new ReversedEnumerator<T>(this);
 
             public void Clear()
             {
@@ -423,36 +425,6 @@ namespace WitherTorch.Common.Collections
                 if (node is not T[] items)
                     return;
                 SequenceHelper.Clear(items, 0, nodeSize);
-            }
-
-            private sealed class Enumerator : IEnumerator<T>
-            {
-                private readonly UnlimitedAOCollection<T> _collection;
-                private int _index;
-
-                public Enumerator(UnlimitedAOCollection<T> list)
-                {
-                    _collection = list;
-                    _index = -1;
-                }
-
-                public T Current => _collection[_index];
-
-                object? IEnumerator.Current => Current;
-
-                public void Dispose() { }
-
-                public bool MoveNext()
-                {
-                    if (_index + 1 < _collection.Count)
-                    {
-                        _index++;
-                        return true;
-                    }
-                    return false;
-                }
-
-                public void Reset() => _index = -1;
             }
         }
     }

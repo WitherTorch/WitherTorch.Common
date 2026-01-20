@@ -336,9 +336,11 @@ namespace WitherTorch.Common.Collections
                 _count = 0;
             }
 
-            IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(this);
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator<T>(this);
 
-            IEnumerator IEnumerable.GetEnumerator() => new Enumerator(this);
+            IEnumerator IEnumerable.GetEnumerator() => new Enumerator<T>(this);
+
+            IEnumerator<T> IReversibleEnumerable<T>.GetReversedEnumerator() => new ReversedEnumerator<T>(this);
 
             [Inline(InlineBehavior.Remove)]
             private ref T GetItemRef(int index)
@@ -442,36 +444,6 @@ namespace WitherTorch.Common.Collections
                         return i;
                 }
                 return -1;
-            }
-
-            public sealed class Enumerator : IEnumerator<T>
-            {
-                private readonly LimitedAOCollection<T> _list;
-                private int _index;
-
-                public Enumerator(LimitedAOCollection<T> list)
-                {
-                    _list = list;
-                    _index = -1;
-                }
-
-                public T Current => _list[_index];
-
-                object? IEnumerator.Current => Current;
-
-                public void Dispose() { }
-
-                public bool MoveNext()
-                {
-                    if (_index + 1 < _list.Count)
-                    {
-                        _index++;
-                        return true;
-                    }
-                    return false;
-                }
-
-                public void Reset() => _index = -1;
             }
         }
     }
