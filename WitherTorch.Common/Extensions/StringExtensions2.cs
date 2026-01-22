@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -26,5 +26,10 @@ namespace WitherTorch.Common.Extensions
             fixed (char* source = str, compare = chars)
                 return SequenceHelper.Contains(compare, unchecked((nuint)chars.Length), source[str.Length - 1]);
         }
+
+#if NET8_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool ContainsAny(this string obj, params ReadOnlySpan<char> values) => StringHelperExtensions.ContainsAny(obj, values);
+#endif
     }
 }

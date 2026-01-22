@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -19,8 +19,13 @@ namespace WitherTorch.Common.Extensions
         public static char LastOrDefault(this string obj, char defaultValue = '\0')
             => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[obj.Length - 1];
 
+#if !NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool ContainsAny(this string obj, params char[] values) => StringHelper.ContainsAny(obj, values);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool ContainsAny(this string obj, string values) => StringHelper.ContainsAny(obj, values);
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains(this string[] array, string value, StringComparison comparison = StringComparison.Ordinal) => array.IndexOf(value, 0, array.Length, comparison) < 0;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -440,15 +440,67 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool Contains(string str, char value) => SequenceHelper.Contains(str, value);
 
+#if !NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool ContainsAny(string str, params char[] values)
         {
-            for (int i = 0, valuesLength = values.Length; i < valuesLength; i++)
+            int length = values.Length;
+            if (length <= 0)
+                return false;
+            ref char valueRef = ref values[0];
+            for (int i = 0; i < length; i++)
             {
-                if (Contains(str, values[i]))
+                if (SequenceHelper.Contains(str, UnsafeHelper.AddTypedOffset(ref valueRef, i)))
                     return true;
             }
             return false;
+        }
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe string GetStringForFirstNonEmptyLine(string original)
+        {
+            int length = original.Length;
+            if (length <= 0)
+                return original;
+            fixed (char* ptr = original)
+                return GetStringForFirstNonEmptyLineCore(ptr, length, original);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe string GetStringForFirstNonEmptyLineCore(char* original, int length, string originalInManaged)
+        {
+            char* start = original, end = original + length;
+            do
+            {
+                switch (*start)
+                {
+                    case '\r':
+                    case '\n':
+                        start++;
+                        if (++start >= end)
+                            return originalInManaged;
+                        continue;
+                    default:
+                        goto OutOfLoop;
+                }
+            } while (true);
+
+        OutOfLoop:
+            char* newLine = SequenceHelper.PointerIndexOf(start, end, '\n');
+            char* newLine2 = SequenceHelper.PointerIndexOf(start, end, '\r');
+            if (newLine < start)
+            {
+                if (newLine2 < start)
+                    return originalInManaged;
+                newLine = newLine2;
+            }
+            else
+            {
+                if (newLine2 >= start)
+                    newLine = MathHelper.Min(newLine, newLine2);
+            }
+            return new string(start, 0, (int)(newLine - start));
         }
     }
 }

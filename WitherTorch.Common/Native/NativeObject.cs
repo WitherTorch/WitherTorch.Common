@@ -10,7 +10,7 @@ namespace WitherTorch.Common
     /// <summary>
     /// Represents a native object
     /// </summary>
-    public abstract unsafe partial class NativeObject : CriticalFinalizerObject, ISafeDisposable<ReferenceType>
+    public abstract unsafe partial class NativeObject : CriticalFinalizerObject, ICheckableDisposable
     {
         private ReferenceType _referenceType;
         private void* _nativePointer;
@@ -75,10 +75,12 @@ namespace WitherTorch.Common
 
         protected virtual void DisposeManaged() { }
 
-        ReferenceType ISafeDisposable<ReferenceType>.MarkAsDisposed() => ReferenceHelper.Exchange(ref _referenceType, ReferenceType.Disposed);
-
-        void ISafeDisposable<ReferenceType>.DisposeCore(ReferenceType oldState, bool disposing)
+        private void DisposeCore(bool disposing)
         {
+            ReferenceType oldState = ReferenceHelper.Exchange(ref _referenceType, ReferenceType.Disposed);
+            if (oldState == ReferenceType.Disposed)
+                return;
+
             if (disposing)
                 DisposeManaged();
 
@@ -93,8 +95,12 @@ namespace WitherTorch.Common
                 ReleasePointer(nativePointer);
         }
 
-        ~NativeObject() => SafeDisposableDefaults.Finalize(this, ReferenceType.Disposed);
+        ~NativeObject() => DisposeCore(disposing: false);
 
-        public void Dispose() => SafeDisposableDefaults.Dispose(this, ReferenceType.Disposed);
+        public void Dispose()
+        {
+            DisposeCore(disposing: true);
+            GC.SuppressFinalize(this);
+        }
     }
 }
