@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     public struct RectU : IEquatable<RectU>
     {
@@ -170,11 +170,20 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out uint left, out uint top, out uint right, out uint bottom)
+        {
+            left = Left;
+            top = Top;
+            right = Right;
+            bottom = Bottom;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override readonly bool Equals(object? obj) => obj is RectU other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(RectU other)
-            => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
+        public readonly unsafe bool Equals(RectU other)
+            => SequenceHelper.Equals(UnsafeHelper.AsPointerIn(this), UnsafeHelper.AsPointerIn(other), sizeof(RectU));
 
         public override readonly unsafe int GetHashCode() => unchecked((int)(Left ^ Top ^ Right ^ Bottom));
 

@@ -1,9 +1,11 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WitherTorch.Common.Windows.Structures
+using WitherTorch.Common.Helpers;
+
+namespace WitherTorch.Common.Structures
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct RectF : IEquatable<RectF>
@@ -196,12 +198,22 @@ namespace WitherTorch.Common.Windows.Structures
             return false;
         }
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out float left, out float top, out float right, out float bottom)
+        {
+            left = Left;
+            top = Top;
+            right = Right;
+            bottom = Bottom;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override readonly bool Equals(object? obj) => obj is RectF other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(RectF other)
-            => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
+        public readonly unsafe bool Equals(RectF other)
+            => SequenceHelper.Equals(UnsafeHelper.AsPointerIn(this), UnsafeHelper.AsPointerIn(other), sizeof(RectF));
 
         public override readonly unsafe int GetHashCode()
         {

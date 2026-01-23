@@ -420,7 +420,7 @@ namespace WitherTorch.Common.Collections
                         return;
                     ref object arrayRef = ref array[0];
                     for (int i = 0; i < nodeSize; i++)
-                        ClearCore(UnsafeHelper.AddTypedOffset(ref arrayRef, i), depth, nodeSize);
+                        ClearCore(UnsafeHelper.AddTypedOffset(ref arrayRef, i), depth - 1, nodeSize);
                 }
                 if (node is not T[] items)
                     return;

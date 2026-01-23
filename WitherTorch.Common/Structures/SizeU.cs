@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     public struct SizeU : IEquatable<SizeU>
     {
@@ -22,6 +22,13 @@ namespace WitherTorch.Common.Windows.Structures
         public static explicit operator SizeU(Size size) => new SizeU(MathHelper.MakeUnsigned(size.Width), MathHelper.MakeUnsigned(size.Height));
 
         public static explicit operator Size(SizeU size) => new Size(MathHelper.MakeSigned(size.Width), MathHelper.MakeSigned(size.Height));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out uint width, out uint height)
+        {
+            width = Width;
+            height = Height;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override bool Equals(object? obj) => obj is SizeU other && Equals(other);

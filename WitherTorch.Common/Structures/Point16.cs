@@ -1,9 +1,9 @@
-﻿
+
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     [StructLayout(LayoutKind.Sequential, Size = sizeof(int))]
     public readonly struct Point16
@@ -21,9 +21,13 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Point ToPoint32()
+        public Point ToPoint32() => new Point(_x, _y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out short x, out short y)
         {
-            return new Point(_x, _y);
+            x = X;
+            y = Y;
         }
 
         public override readonly int GetHashCode()

@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     public struct PointD : IEquatable<PointD>
     {
@@ -22,6 +22,13 @@ namespace WitherTorch.Common.Windows.Structures
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator PointD(PointF point) => new PointD(point.X, point.Y);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out double x, out double y)
+        {
+            x = X;
+            y = Y;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override bool Equals(object? obj) => obj is PointD other && Equals(other);

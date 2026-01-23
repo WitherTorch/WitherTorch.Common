@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     public struct PointU : IEquatable<PointU>
     {
@@ -24,6 +24,13 @@ namespace WitherTorch.Common.Windows.Structures
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Point(PointU point) => new Point(MathHelper.MakeSigned(point.X), MathHelper.MakeSigned(point.Y));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out uint x, out uint y)
+        {
+            x = X;
+            y = Y;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override bool Equals(object? obj) => obj is PointU other && Equals(other);

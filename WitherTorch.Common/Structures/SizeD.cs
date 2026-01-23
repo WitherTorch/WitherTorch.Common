@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     public struct SizeD : IEquatable<SizeD>
     {
@@ -20,6 +20,13 @@ namespace WitherTorch.Common.Windows.Structures
         public static explicit operator SizeF(SizeD size) => new SizeF((float)size.Width, (float)size.Height);
 
         public static implicit operator SizeD(SizeF size) => new SizeD(size.Width, size.Height);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out double width, out double height)
+        {
+            width = Width;
+            height = Height;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly override bool Equals(object? obj) => obj is SizeD other && Equals(other);

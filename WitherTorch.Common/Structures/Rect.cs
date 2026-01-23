@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Windows.Structures
+namespace WitherTorch.Common.Structures
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct Rect : IEquatable<Rect>
@@ -202,11 +202,23 @@ namespace WitherTorch.Common.Windows.Structures
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly void Deconstruct(out int left, out int top, out int right, out int bottom)
+        {
+            left = Left;
+            top = Top;
+            right = Right;
+            bottom = Bottom;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly (int Left, int Top, int Right, int Bottom) Deconstruct() => (Left, Top, Right, Bottom);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override readonly bool Equals(object? obj) => obj is Rect other && Equals(other);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly bool Equals(Rect other)
-            => X == other.X && Y == other.Y && Right == other.Right && Bottom == other.Bottom;
+        public readonly unsafe bool Equals(Rect other) 
+            => SequenceHelper.Equals(UnsafeHelper.AsPointerIn(this), UnsafeHelper.AsPointerIn(other), sizeof(Rect));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override readonly int GetHashCode()
