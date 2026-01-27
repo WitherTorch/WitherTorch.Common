@@ -1,15 +1,31 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace WitherTorch.Common.Windows.Internals
 {
-    internal static unsafe partial class Kernel32
+    internal static unsafe class Kernel32
     {
-        public static partial bool CloseHandle(IntPtr hObject);
-        public static partial void* GetProcAddress(IntPtr hModule, byte* lpProcName);
-        public static partial IntPtr LoadLibraryW(char* lpLibFileName);
-        public static partial IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
-        public static partial int GetCurrentThreadId();
+        private const string LibraryName = "kernel32.dll";
+
+        [SuppressGCTransition]
+        [DllImport(LibraryName)]
+        public static extern bool CloseHandle(IntPtr hObject);
+
+        [SuppressGCTransition]
+        [DllImport(LibraryName)]
+        public static extern void* GetProcAddress(IntPtr hModule, byte* lpProcName);
+
+        [DllImport(LibraryName)]
+        public static extern IntPtr LoadLibraryW(char* lpLibFileName);
+
+        [SuppressGCTransition]
+        [DllImport(LibraryName)]
+        public static extern IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+
+        [SuppressGCTransition]
+        [DllImport(LibraryName)]
+        public static extern int GetCurrentThreadId();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IntPtr LoadLibrary(string lpLibFileName)
