@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
+using System.Runtime.InteropServices;
 
 using WitherTorch.Common.Native;
 
@@ -30,13 +32,13 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return false;
         }
 
-        public ulong AddRef() => ((NativeDataHolder*)_handleLazy.Value)->AddRef();
+        public uint AddRef() => ((NativeDataHolder*)_handleLazy.Value)->AddRef();
 
-        public ulong Release()
+        public uint Release()
         {
             Lazy<nint> handleLazy = _handleLazy;
             if (!handleLazy.IsValueCreated)
-                return 0UL;
+                return 0U;
             return ((NativeDataHolder*)handleLazy.Value)->Release();
         }
 
@@ -46,9 +48,9 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
 
         protected virtual void FillMethodTable(ref VTableStack table)
         {
-            table.Push((delegate*<NativeDataHolder*, Guid*, void**, uint>)&QueryInterface);
-            table.Push((delegate*<NativeDataHolder*, ulong>)&AddRef);
-            table.Push((delegate*<NativeDataHolder*, ulong>)&Release);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, Guid*, void**, uint>)&QueryInterface);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, uint>)&AddRef);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, uint>)&Release);
         }
 
         private nint CreateUnsafeHandle()
@@ -60,6 +62,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return (nint)NativeMethods.AllocUnmanagedStructure(new NativeDataHolder(methodTable, this));
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint QueryInterface(NativeDataHolder* nativePointer, Guid* riid, void** ppvObject)
         {
             const uint S_OK = 0x00000000;
@@ -78,9 +81,11 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return E_NOINTERFACE;
         }
 
-        private static ulong AddRef(NativeDataHolder* nativePointer) => nativePointer->AddRef();
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static uint AddRef(NativeDataHolder* nativePointer) => nativePointer->AddRef();
 
-        private static ulong Release(NativeDataHolder* nativePointer) => nativePointer->Release();
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+        private static uint Release(NativeDataHolder* nativePointer) => nativePointer->Release();
 
         private void Dispose(bool disposing)
         {

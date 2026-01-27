@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
+using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Windows.ObjectModels.Adapters
@@ -11,7 +12,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
         private readonly void* _methodTable;
         private readonly GCHandle _handle;
 
-        private ulong _refCount;
+        private uint _refCount;
 
         public NativeDataHolder(void* methodTable, CustomUnknownAdapterBase adapter)
         {
@@ -20,26 +21,14 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             _refCount = 1;
         }
 
-        public ulong AddRef()
-        {
-            ulong refCount = _refCount;
-            if (refCount == ulong.MaxValue)
-                throw new OverflowException();
-            refCount++;
-            _refCount = refCount;
-            return refCount;
-        }
+        public uint AddRef() => InterlockedHelper.Increment(ref _refCount);
 
-        public ulong Release()
+        public uint Release()
         {
-            ulong refCount = _refCount;
-            if (refCount == 0)
-                return 0;
-            refCount--;
-            _refCount = refCount;
-            if (refCount == 0)
+            uint referenceCount = InterlockedHelper.Add(ref _refCount, unchecked((uint)-1));
+            if (referenceCount == 0)
                 Dispose();
-            return refCount;
+            return referenceCount;
         }
 
         public readonly bool TryGetAdapter<T>([NotNullWhen(true)] out T? adapter) where T : CustomUnknownAdapterBase

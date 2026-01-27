@@ -33,7 +33,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static ulong AddRefCore(void* nativePointer)
+        private static uint AddRefCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddRef);
             return ((delegate* unmanaged
@@ -42,14 +42,14 @@ namespace WitherTorch.Common.Windows.ObjectModels
 #else
                 [Stdcall]
 #endif
-                <void*, ulong>)functionPointer)(nativePointer);
+                <void*, uint>)functionPointer)(nativePointer);
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static ulong ReleaseCore(void* nativePointer)
+        private static uint ReleaseCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Release);
-            return ((delegate* unmanaged[Stdcall]<void*, ulong>)functionPointer)(nativePointer);
+            return ((delegate* unmanaged[Stdcall]<void*, uint>)functionPointer)(nativePointer);
         }
     }
 }

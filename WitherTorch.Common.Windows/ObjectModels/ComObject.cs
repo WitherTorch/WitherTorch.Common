@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -64,9 +64,9 @@ namespace WitherTorch.Common.Windows.ObjectModels
             return true;
         }
 
-        public ulong AddRef() => AddRefCore(NativePointer);
+        public uint AddRef() => AddRefCore(NativePointer);
 
-        public ulong Release() => ReleaseCore(NativePointer);
+        public uint Release() => ReleaseCore(NativePointer);
 
         protected override void AfterPointerCopied() => AddRefCore(NativePointer);
 
