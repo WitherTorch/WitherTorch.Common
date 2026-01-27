@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -36,7 +36,13 @@ namespace WitherTorch.Common.Windows.ObjectModels
         private static ulong AddRefCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddRef);
-            return ((delegate* unmanaged[Stdcall]<void*, ulong>)functionPointer)(nativePointer);
+            return ((delegate* unmanaged
+#if NET8_0_OR_GREATER
+                [Stdcall, SuppressGCTransition]
+#else
+                [Stdcall]
+#endif
+                <void*, ulong>)functionPointer)(nativePointer);
         }
 
         [Inline(InlineBehavior.Remove)]
