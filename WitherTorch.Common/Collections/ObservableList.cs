@@ -11,9 +11,16 @@ namespace WitherTorch.Common.Collections
     public delegate void BeforeListAddOrRemoveEventHandler<T>(object? sender, BeforeListAddOrRemoveEventArgs<T> e);
     public delegate void BeforeListModifyEventHandler<T>(object? sender, BeforeListModifyEventArgs<T> e);
 
-    public sealed class ObservableList<T> : IList<T>, IReadOnlyList<T>
+    public sealed class ObservableList<T> : ObservableList<IList<T>, T>
     {
-        private readonly IList<T> _list;
+        public ObservableList() : base(new List<T>()) { }
+
+        public ObservableList(IList<T> list) : base(list) { }
+    }
+
+    public class ObservableList<TList, T> : IList<T>, IReadOnlyList<T> where TList : IList<T>
+    {
+        private readonly TList _list;
         private readonly bool _isReadOnly;
 
         public event BeforeListAddOrRemoveEventHandler<T>? BeforeAdd;
@@ -24,16 +31,14 @@ namespace WitherTorch.Common.Collections
         public event CancelEventHandler? BeforeClear;
         public event EventHandler? Updated;
 
-        public ObservableList() : this(new List<T>()) { }
-        
-        public ObservableList(IList<T> list)
+        public ObservableList(TList list)
         {
             _list = list;
             _isReadOnly = list.IsReadOnly;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IList<T> GetUnderlyingList() => _list;
+        public TList GetUnderlyingList() => _list;
 
         public T this[int index]
         {
@@ -98,7 +103,8 @@ namespace WitherTorch.Common.Collections
             BeforeListAddOrRemoveEventHandler<T>? handler = BeforeAdd;
             if (handler is null)
             {
-                switch (list) {
+                switch (list)
+                {
                     case List<T> castedList:
                         castedList.AddRange(items);
                         break;
@@ -107,7 +113,7 @@ namespace WitherTorch.Common.Collections
                         break;
                     default:
                         foreach (T item in items)
-                            list.Add(item); 
+                            list.Add(item);
                         break;
                 }
             }
@@ -215,7 +221,7 @@ namespace WitherTorch.Common.Collections
                     return;
             }
 
-            _list.RemoveAt(index); 
+            _list.RemoveAt(index);
             Updated?.Invoke(this, EventArgs.Empty);
         }
 
