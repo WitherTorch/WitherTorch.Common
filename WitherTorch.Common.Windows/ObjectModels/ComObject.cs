@@ -40,6 +40,17 @@ namespace WitherTorch.Common.Windows.ObjectModels
             return GetFunctionPointerCore(nativePointer, offset);
         }
 
+        public ComObject? QueryInterface(in Guid iid, bool throwWhenQueryFailed = true)
+        {
+            void* nativePointer = NativePointer;
+            int hr = QueryInterfaceCore(ref nativePointer, iid);
+            if (throwWhenQueryFailed)
+                ThrowHelper.ThrowExceptionForHR(hr, nativePointer);
+            else
+                ThrowHelper.ResetPointerForHR(hr, ref nativePointer);
+            return new ComObject(nativePointer, ReferenceType.Owned);
+        }
+
         public T? QueryInterface<T>(in Guid iid, bool throwWhenQueryFailed = true) where T : ComObject, new()
         {
             void* nativePointer = NativePointer;
@@ -51,7 +62,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             return FromNativePointer<T>(nativePointer, ReferenceType.Owned);
         }
 
-        public bool TryQueryInterface(in Guid guid, [NotNullWhen(true)] out IUnknown? queriedObject)
+        public bool TryQueryInterface(in Guid guid, [NotNullWhen(true)] out ComObject? queriedObject)
         {
             void* nativePointer = NativePointer;
             int hr = QueryInterfaceCore(ref nativePointer, guid);
@@ -61,6 +72,31 @@ namespace WitherTorch.Common.Windows.ObjectModels
                 return false;
             }
             queriedObject = new ComObject(nativePointer, ReferenceType.Owned);
+            return true;
+        }
+
+        public bool TryQueryInterface<T>(in Guid guid, [NotNullWhen(true)] out T? queriedObject) where T : ComObject, new()
+        {
+            void* nativePointer = NativePointer;
+            int hr = QueryInterfaceCore(ref nativePointer, guid);
+            if (hr < 0)
+            {
+                queriedObject = null;
+                return false;
+            }
+            queriedObject = FromNativePointer<T>(nativePointer, ReferenceType.Owned);
+            return queriedObject is not null;
+        }
+
+        bool IUnknown.TryQueryInterface(in Guid guid, [NotNullWhen(true)] out IUnknown? queriedObjectAsUnknown)
+        {
+            if (!TryQueryInterface(guid, out ComObject? queriedObject))
+            {
+                queriedObjectAsUnknown = null;
+                return false;
+            }
+
+            queriedObjectAsUnknown = queriedObject;
             return true;
         }
 
