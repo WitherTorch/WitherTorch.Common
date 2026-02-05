@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -34,15 +34,17 @@ namespace WitherTorch.Common.Windows.Structures
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator SysBool(bool boolean) => new SysBool(boolean);
 
-        public override bool Equals(object? obj) => obj is SysBool other && Equals(other);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override readonly bool Equals(object? obj) => obj is SysBool other && Equals(other);
 
-        public bool Equals(SysBool other) => _value == other._value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly bool Equals(SysBool other) => (_value == 0) != (other._value == 0);
 
-        public int CompareTo(SysBool other) => _value.CompareTo(other._value);
+        public readonly int CompareTo(SysBool other) => _value.CompareTo(other._value);
 
-        public override int GetHashCode() => _value.GetHashCode();
+        public override int GetHashCode() => _value != 0 ? 1 : 0;
 
-        public override readonly string ToString() => _value == 0x1 ? bool.TrueString : bool.FalseString;
+        public override readonly string ToString() => _value != 0 ? bool.TrueString : bool.FalseString;
 
         public static bool operator ==(SysBool a, SysBool b) => a.Equals(b);
 

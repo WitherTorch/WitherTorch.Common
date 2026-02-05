@@ -2,6 +2,8 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+using WitherTorch.Common.Windows.Structures;
+
 namespace WitherTorch.Common.Windows.Internals
 {
     internal static unsafe class Kernel32
@@ -10,7 +12,7 @@ namespace WitherTorch.Common.Windows.Internals
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
-        public static extern bool CloseHandle(IntPtr hObject);
+        public static extern SysBool CloseHandle(IntPtr hObject);
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
@@ -21,7 +23,7 @@ namespace WitherTorch.Common.Windows.Internals
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
-        public static extern IntPtr OpenThread(uint dwDesiredAccess, bool bInheritHandle, uint dwThreadId);
+        public static extern IntPtr OpenThread(uint dwDesiredAccess, SysBool bInheritHandle, uint dwThreadId);
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
