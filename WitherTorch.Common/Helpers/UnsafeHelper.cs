@@ -718,7 +718,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void** AsPointerin(in void* value)
+        public static unsafe void** AsPointerIn(in void* value)
         {
             IL.Emit.Ldarg_0();
             IL.Emit.Ret();
