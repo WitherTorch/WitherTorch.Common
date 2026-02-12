@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -40,6 +39,24 @@ namespace WitherTorch.Common.Windows.ObjectModels
             else
                 ThrowHelper.ResetPointerForHR(hr, ref nativePointer);
             return nativePointer;
+        }
+
+        public new static ComObjectReference<T> CopyReferenceLater<T>(T? obj) where T : ComObject, new()
+        {
+            if (obj is null || obj.IsEmpty || obj.IsDisposed)
+                return default;
+            return CopyReferenceLaterCore(obj, obj.ReferenceType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static ComObjectReference<T> CopyReferenceLaterCore<T>(T obj, ReferenceType pointerType) where T : ComObject, new()
+        {
+            void* nativePointer = obj.NativePointer;
+            if (nativePointer is null)
+                return default;
+            if (pointerType == ReferenceType.Owned)
+                AddRefCore(nativePointer);
+            return new ComObjectReference<T>(nativePointer, pointerType);
         }
     }
 }

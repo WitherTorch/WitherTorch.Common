@@ -33,7 +33,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         public ComObject(nint handle, ReferenceType referenceType) : base(handle, referenceType) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static void* GetFunctionPointerOrThrow(void* nativePointer, int offset)
+        internal protected static void* GetFunctionPointerOrThrow(void* nativePointer, int offset)
         {
             if (nativePointer == null)
                 throw new NullReferenceException(nameof(nativePointer));

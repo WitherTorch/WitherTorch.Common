@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+
+#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
@@ -15,6 +17,22 @@ namespace WitherTorch.Common.Helpers
         public static T? Exchange<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value)
         {
             T? result = location;
+            location = value;
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void* Exchange(ref void* location, void* value)
+        {
+            void* result = location;
+            location = value;
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe T* Exchange<T>(ref T* location, T* value)
+        {
+            T* result = location;
             location = value;
             return result;
         }
@@ -45,6 +63,24 @@ namespace WitherTorch.Common.Helpers
             goto Result;
 
         Result:
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void* CompareExchange(ref void* location, void* value, void* comparand)
+        {
+            void* result = location;
+            if (location == comparand)
+                location = value;
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe T* CompareExchange<T>(ref T* location, T* value, T* comparand)
+        {
+            T* result = location;
+            if (location == comparand)
+                location = value;
             return result;
         }
 

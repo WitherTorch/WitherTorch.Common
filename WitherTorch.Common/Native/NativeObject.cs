@@ -3,9 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 
 using WitherTorch.Common.Helpers;
-using WitherTorch.Common.Native;
 
-namespace WitherTorch.Common
+namespace WitherTorch.Common.Native
 {
     /// <summary>
     /// Represents a native object
@@ -92,7 +91,10 @@ namespace WitherTorch.Common
             _nativePointer = null;
 
             if (oldState == ReferenceType.Owned)
-                ReleasePointer(nativePointer);
+            {
+                lock (this)
+                    ReleasePointer(nativePointer);
+            }
         }
 
         ~NativeObject() => DisposeCore(disposing: false);

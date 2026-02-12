@@ -1,9 +1,7 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
-using WitherTorch.Common.Native;
-
-namespace WitherTorch.Common
+namespace WitherTorch.Common.Native
 {
     unsafe partial class NativeObject
     {
@@ -32,37 +30,28 @@ namespace WitherTorch.Common
             return result;
         }
 
-        public static T? CopyReference<T>(T obj) where T : NativeObject, new()
+        public static NativeObject? CopyReference(NativeObject? obj)
         {
             if (obj is null)
                 return null;
-            if (obj.IsEmpty)
-                return null;
-            if (obj.IsDisposed)
-                return null;
-            return CopyReferenceCore(obj, obj.ReferenceType);
+            lock (obj)
+            {
+                if (obj.IsEmpty || obj.IsDisposed)
+                    return null;
+                return CopyReferenceCore(obj, obj.ReferenceType);
+            }
         }
 
-        public static NativeObject? CopyReference(NativeObject obj)
+        public static T? CopyReference<T>(T? obj) where T : NativeObject, new()
         {
             if (obj is null)
                 return null;
-            if (obj.IsEmpty)
-                return null;
-            if (obj.IsDisposed)
-                return null;
-            return CopyReferenceCore(obj, obj.ReferenceType);
-        }
-
-        public static T? CopyReference<T>(T obj, ReferenceType referenceType) where T : NativeObject, new()
-        {
-            if (obj is null)
-                return null;
-            if (obj.IsEmpty)
-                return null;
-            if (obj.IsDisposed)
-                return null;
-            return CopyReferenceCore(obj, referenceType);
+            lock (obj)
+            {
+                if (obj.IsEmpty || obj.IsDisposed)
+                    return null;
+                return CopyReferenceCore(obj, obj.ReferenceType);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -85,6 +74,29 @@ namespace WitherTorch.Common
             if (pointerType == ReferenceType.Owned)
                 newObj.AfterPointerCopied();
             return newObj;
+        }
+
+        public static NativeObjectReference<T> CopyReferenceLater<T>(T? obj) where T : NativeObject, new()
+        {
+            if (obj is null)
+                return default;
+            lock (obj)
+            {
+                if (obj.IsEmpty || obj.IsDisposed)
+                    return default;
+                return CopyReferenceLaterCore(obj, obj.ReferenceType);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static NativeObjectReference<T> CopyReferenceLaterCore<T>(T obj, ReferenceType pointerType) where T : NativeObject, new()
+        {
+            void* nativePointer = obj._nativePointer;   
+            if (nativePointer is null)
+                return default;
+            if (pointerType == ReferenceType.Owned)
+                obj.AfterPointerCopied();
+            return new NativeObjectReference<T>(nativePointer, pointerType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

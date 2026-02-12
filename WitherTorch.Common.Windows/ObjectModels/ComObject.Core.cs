@@ -25,7 +25,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             };
 
         [Inline(InlineBehavior.Remove)]
-        private static int QueryInterfaceCore(ref void* nativePointer, in Guid iid)
+        internal static int QueryInterfaceCore(ref void* nativePointer, in Guid iid)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
             return ((delegate* unmanaged[Stdcall]<void*, Guid*, void**, int>)functionPointer)(nativePointer, 
@@ -33,7 +33,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static uint AddRefCore(void* nativePointer)
+        internal static uint AddRefCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddRef);
             return ((delegate* unmanaged
@@ -46,7 +46,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static uint ReleaseCore(void* nativePointer)
+        internal static uint ReleaseCore(void* nativePointer)
         {
             void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Release);
             return ((delegate* unmanaged[Stdcall]<void*, uint>)functionPointer)(nativePointer);

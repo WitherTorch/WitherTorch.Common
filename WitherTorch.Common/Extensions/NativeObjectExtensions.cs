@@ -1,6 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 using InlineMethod;
+
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Extensions
 {
@@ -13,5 +15,9 @@ namespace WitherTorch.Common.Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? CloneOrNull<T>(this T _this) where T : NativeObject
             => NativeObject.CopyReference(_this) as T;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static NativeObjectReference<T> CloneReference<T>(this T _this) where T : NativeObject, new()
+            => NativeObject.CopyReferenceLater(_this);
     }
 }
