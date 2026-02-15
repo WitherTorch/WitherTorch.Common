@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
         internal ComObjectReference(void* handle, ReferenceType type)
         {
             _handle = handle;
-            _type = type;   
+            _type = type;
         }
 
         public readonly bool IsDisposed => _handle == null;
