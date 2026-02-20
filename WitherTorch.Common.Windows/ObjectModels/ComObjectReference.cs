@@ -8,7 +8,7 @@ using WitherTorch.Common.Native;
 namespace WitherTorch.Common.Windows.ObjectModels
 {
     [StructLayout(LayoutKind.Auto)]
-    public unsafe ref struct ComObjectReference<T> : ICheckableDisposable, IUnknown where T : ComObject, new()
+    public unsafe ref struct ComObjectReference<T> : IUnknown where T : ComObject, new()
     {
         private readonly ReferenceType _type;
         private void* _handle;
@@ -19,7 +19,7 @@ namespace WitherTorch.Common.Windows.ObjectModels
             _type = type;
         }
 
-        public readonly bool IsDisposed => _handle == null;
+        public readonly bool IsEmpty => _handle is null;
 
         public readonly uint AddRef()
         {

@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Threading
 {
@@ -56,15 +58,32 @@ namespace WitherTorch.Common.Threading
         public T Value
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _value ?? LazyTinyHelper.InitializeAndReturn(ref _value, _factory, _isThreadSafe, _syncRoot);
+            get
+            {
+                T? result;
+                if (_isThreadSafe)
+                    result = InterlockedHelper.Read(ref _value);
+                else
+                    result = _value;
+                return result ?? LazyTinyHelper.InitializeAndReturn(ref _value, _factory, _isThreadSafe, _syncRoot);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T? GetValueDirectly() => _value;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset()
+        {
+            if (_isThreadSafe)
+                DisposeHelper.SwapDisposeInterlockedWeak(ref _value);
+            else
+                DisposeHelper.SwapDisposeWeak(ref _value);
+        }
+
         ~LazyTiny()
         {
-            (_value as IDisposable)?.Dispose(); 
+            (_value as IDisposable)?.Dispose();
         }
     }
 }
