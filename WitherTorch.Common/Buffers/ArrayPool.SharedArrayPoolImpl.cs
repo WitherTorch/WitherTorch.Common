@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -70,12 +70,12 @@ namespace WitherTorch.Common.Buffers
 
             protected override T[] RentCore(nuint capacity)
             {
-                if (capacity > GlobalArrayQueueCount)
+                if (capacity > GlobalArraySizeLimit)
                     return new T[capacity];
 
                 capacity >>= 4;
                 int index = MathHelper.Log2(capacity);
-                index += MathHelper.BooleanToInt32(capacity > (1U << index));
+                index += MathHelper.BooleanToInt32(capacity >= (1U << index));
 
                 DelayedCall call;
                 T[]? array;
@@ -91,14 +91,8 @@ namespace WitherTorch.Common.Buffers
                     queue.Queue.TryDequeue(out array);
                     call = queue.Call;
                 }
-                try
-                {
-                    return array ?? new T[MinimumArraySize << index];
-                }
-                finally
-                {
-                    call.AddRef();
-                }
+                call.AddRef();
+                return array ?? new T[MinimumArraySize << index];
             }
 
             protected override void ReturnCore(T[] array)

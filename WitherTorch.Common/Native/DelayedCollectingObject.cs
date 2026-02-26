@@ -33,7 +33,8 @@ namespace WitherTorch.Common.Native
             switch (InterlockedHelper.Increment(ref _refCount))
             {
                 case 0:
-                    throw new InvalidOperationException();
+                    InterlockedHelper.CompareExchange(ref _refCount, ulong.MaxValue, 0);
+                    break;
                 case 1:
                     DelayedCollector.Instance.AddObject(this);
                     TryGenerateObject();
@@ -49,11 +50,12 @@ namespace WitherTorch.Common.Native
                 return;
             switch (InterlockedHelper.Add(ref _refCount, ulong.MaxValue))
             {
+                case ulong.MaxValue:
+                    InterlockedHelper.CompareExchange(ref _refCount, 0, ulong.MaxValue);
+                    break;
                 case 0:
                     InterlockedHelper.Exchange(ref _lastDerefTime, (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
                     break;
-                case ulong.MaxValue:
-                    throw new InvalidOperationException();
                 default:
                     break;
             }
