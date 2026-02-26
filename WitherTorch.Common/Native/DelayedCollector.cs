@@ -1,4 +1,4 @@
-﻿using InlineMethod;
+using InlineMethod;
 
 using System;
 using System.Collections.Generic;
@@ -110,7 +110,7 @@ namespace WitherTorch.Common.Native
         {
             if (list.Count <= 0)
                 return;
-            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            ulong now = unchecked((ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
 #if DEBUG
             int count =
 #endif

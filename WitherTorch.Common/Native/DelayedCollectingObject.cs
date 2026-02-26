@@ -1,54 +1,62 @@
-﻿using InlineMethod;
-
 using System;
-using System.Threading;
+
+using InlineMethod;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Native
 {
-    public abstract class DelayedCollectingObject : IDisposable
+    public abstract class DelayedCollectingObject : ICheckableDisposable
     {
-        private long disposed, created, refCount, lastDerefTime;
+        private ulong _disposed, _created, _refCount, _lastDerefTime;
 
         public bool IsDisposed => CheckDisposed();
 
-        public bool IsCreated => Interlocked.Read(ref created) > 0;
+        public bool IsCreated => InterlockedHelper.Read(ref _created) > 0;
 
-        public bool IsInReference => Interlocked.Read(ref refCount) > 0;
+        public bool IsInReference => InterlockedHelper.Read(ref _refCount) > 0;
 
-        public long LastRefTime => Interlocked.Read(ref lastDerefTime);
+        public ulong LastRefTime => InterlockedHelper.Read(ref _lastDerefTime);
 
         protected DelayedCollectingObject()
         {
-            disposed = 0;
-            created = 0;
-            refCount = 0;
-            lastDerefTime = 0;
+            _disposed = 0;
+            _created = 0;
+            _refCount = 0;
+            _lastDerefTime = 0;
         }
 
         public void AddRef()
         {
             if (CheckDisposed())
                 return;
-            if (Interlocked.Increment(ref refCount) == 1)
+            switch (InterlockedHelper.Increment(ref _refCount))
             {
-                DelayedCollector.Instance.AddObject(this);
-                TryGenerateObject();
+                case 0:
+                    throw new InvalidOperationException();
+                case 1:
+                    DelayedCollector.Instance.AddObject(this);
+                    TryGenerateObject();
+                    break;
+                default:
+                    break;
             }
         }
 
         public void RemoveRef()
         {
-            long refCount = Interlocked.Decrement(ref this.refCount);
-            if (refCount == 0)
+            if (CheckDisposed())
+                return;
+            switch (InterlockedHelper.Add(ref _refCount, ulong.MaxValue))
             {
-                Interlocked.Exchange(ref lastDerefTime, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-                if (CheckDisposed())
-                {
-                    TryDestroyObject();
-                }
+                case 0:
+                    InterlockedHelper.Exchange(ref _lastDerefTime, (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                    break;
+                case ulong.MaxValue:
+                    throw new InvalidOperationException();
+                default:
+                    break;
             }
-            else if (refCount < 0)
-                Interlocked.Exchange(ref refCount, 0);
         }
 
         internal void RemoveObject()
@@ -61,19 +69,17 @@ namespace WitherTorch.Common.Native
         [Inline(InlineBehavior.Remove)]
         private void TryGenerateObject()
         {
-            if (Interlocked.CompareExchange(ref created, 1, 0) == 0)
-            {
-                GenerateObject();
-            }
+            if (InterlockedHelper.Exchange(ref _created, ulong.MaxValue) != 0)
+                return;
+            GenerateObject();
         }
 
         [Inline(InlineBehavior.Remove)]
         private void TryDestroyObject()
         {
-            if (Interlocked.CompareExchange(ref created, 0, 1) == 1)
-            {
-                DestroyObject();
-            }
+            if (InterlockedHelper.Exchange(ref _created, 0) == 0)
+                return;
+            DestroyObject();
         }
 
         protected abstract void GenerateObject();
@@ -81,31 +87,20 @@ namespace WitherTorch.Common.Native
         protected abstract void DestroyObject();
 
         [Inline(InlineBehavior.Remove)]
-        private bool CheckDisposed()
-        {
-            return Interlocked.Read(ref disposed) > 0;
-        }
+        private bool CheckDisposed() => InterlockedHelper.Read(ref _disposed) != 0;
 
         protected virtual void Dispose(bool disposing)
         {
             if (IsInReference && disposing)
                 return;
-            if (Interlocked.CompareExchange(ref disposed, 1, 0) == 0)
-            {
+            if (InterlockedHelper.CompareExchange(ref _disposed, 1, 0) == 0)
                 TryDestroyObject();
-            }
         }
 
-        // TODO: 僅有當 'Dispose(bool disposing)' 具有會釋出非受控資源的程式碼時，才覆寫完成項
-        ~DelayedCollectingObject()
-        {
-            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
-            Dispose(disposing: false);
-        }
+        ~DelayedCollectingObject() => Dispose(disposing: false);
 
         public void Dispose()
         {
-            // 請勿變更此程式碼。請將清除程式碼放入 'Dispose(bool disposing)' 方法
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
