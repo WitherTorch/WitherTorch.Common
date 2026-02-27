@@ -421,9 +421,26 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Read<T>(ref readonly byte source)
+        {
+            IL.PushInRef(in source);
+            IL.Emit.Ldobj(typeof(T));
+            return IL.Return<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ReadUnaligned<T>(void* source)
         {
             IL.Push(source);
+            IL.Emit.Unaligned(1);
+            IL.Emit.Ldobj(typeof(T));
+            return IL.Return<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T ReadUnaligned<T>(ref readonly byte source)
+        {
+            IL.PushInRef(in source);
             IL.Emit.Unaligned(1);
             IL.Emit.Ldobj(typeof(T));
             return IL.Return<T>();
@@ -507,7 +524,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe ref TTo As<TFrom, TTo>(ref TFrom source)
+        public static ref TTo As<TFrom, TTo>(ref TFrom source)
         {
 #if NET8_0_OR_GREATER
             return ref Unsafe.As<TFrom, TTo>(ref source);
@@ -517,8 +534,12 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
+#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe TTo As<TFrom, TTo>(TFrom source)
+#else
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public static TTo As<TFrom, TTo>(TFrom source)
         {
 #if NET8_0_OR_GREATER
             return Unsafe.As<TFrom, TTo>(ref source);
@@ -529,7 +550,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T As<T>(object source) where T : class
+        public static T As<T>(object source) where T : class
         {
 #if NET8_0_OR_GREATER
             return Unsafe.As<T>(source);
@@ -540,7 +561,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe TTo RewriteManagedObjectType<TFrom, TTo>(TFrom obj, TTo template) where TFrom : class where TTo : class
+        public static TTo RewriteManagedObjectType<TFrom, TTo>(TFrom obj, TTo template) where TFrom : class where TTo : class
         {
 #pragma warning disable CS8500
             **(nuint***)&obj = **(nuint***)&template;
@@ -549,7 +570,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlock(ref byte location, byte value, uint count)
+        public static void InitBlock(ref byte location, byte value, uint count)
         {
             IL.PushInRef(ref location);
             IL.Push(value);
@@ -558,7 +579,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlock(ref byte location, byte value, nuint count)
+        public static void InitBlock(ref byte location, byte value, nuint count)
         {
             IL.PushInRef(ref location);
             IL.Push(value);
@@ -567,7 +588,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlock(void* ptr, byte value, uint size)
+        public static void InitBlock(void* ptr, byte value, uint size)
         {
             IL.Push(ptr);
             IL.Push(value);
@@ -576,7 +597,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlock(void* ptr, byte value, nuint size)
+        public static void InitBlock(void* ptr, byte value, nuint size)
         {
             IL.Push(ptr);
             IL.Push(value);
@@ -585,7 +606,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlockUnaligned(void* ptr, byte value, uint size)
+        public static void InitBlockUnaligned(void* ptr, byte value, uint size)
         {
             IL.Push(ptr);
             IL.Push(value);
@@ -595,7 +616,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void InitBlockUnaligned(void* ptr, byte value, nuint size)
+        public static void InitBlockUnaligned(void* ptr, byte value, nuint size)
         {
             IL.Push(ptr);
             IL.Push(value);
@@ -648,7 +669,7 @@ namespace WitherTorch.Common.Helpers
 
         [LocalsInit(false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void SkipInit<T>(out T value)
+        public static void SkipInit<T>(out T value)
         {
             IL.Emit.Ret();
             throw IL.Unreachable();
@@ -675,65 +696,69 @@ namespace WitherTorch.Common.Helpers
             throw IL.Unreachable();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T AsRef<T>(T* value)
         {
             IL.Emit.Ldarg_0();
             return ref IL.ReturnRef<T>();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T AsRefIn<T>(in T value)
         {
             IL.Emit.Ldarg_0();
             return ref IL.ReturnRef<T>();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ref T AsRefOut<T>(out T value)
         {
             IL.PushOutRef(out value);
             return ref IL.ReturnRef<T>();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* AsPointerRef<T>(ref T value)
-        {
-            IL.Emit.Ldarg_0();
-            return (T*)IL.ReturnPointer();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void** AsPointerRef(ref void* value)
-        {
-            IL.Emit.Ldarg_0();
-            return (void**)IL.ReturnPointer();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* AsPointerIn<T>(in T value)
-        {
-            IL.Emit.Ldarg_0();
-            return (T*)IL.ReturnPointer();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void** AsPointerIn(in void* value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T* AsPointerRef<T>(ref T value)
         {
             IL.Emit.Ldarg_0();
             IL.Emit.Ret();
             throw IL.Unreachable();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe T* AsPointerOut<T>(out T value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void** AsPointerRef(ref void* value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T* AsPointerIn<T>(in T value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void** AsPointerIn(in void* value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T* AsPointerOut<T>(out T value)
         {
             IL.PushOutRef(out value);
-            return (T*)IL.ReturnPointer();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe void** AsPointerOut(out void* value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void** AsPointerOut(out void* value)
         {
             IL.Emit.Ldarg_0();
             IL.Emit.Ret();
@@ -741,14 +766,14 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe int SizeOfSigned<T>()
+        public static int SizeOfSigned<T>()
         {
             IL.Emit.Sizeof<T>();
             return IL.Return<int>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe uint SizeOf<T>()
+        public static uint SizeOf<T>()
         {
             IL.Emit.Sizeof<T>();
             return IL.Return<uint>();
