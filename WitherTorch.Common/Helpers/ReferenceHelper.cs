@@ -13,6 +13,14 @@ namespace WitherTorch.Common.Helpers
             => (location1, location2) = (location2, location1);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe void Swap<T>(ref T* location1, ref T* location2)
+        {
+            T* temp = location1;
+            location1 = location2;
+            location2 = temp;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: NotNullIfNotNull(nameof(location))]
         public static T? Exchange<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value)
         {
