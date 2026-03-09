@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -10,6 +10,9 @@ namespace WitherTorch.Common.Native
         {
             int GetCurrentThreadId();
             int GetCurrentProcessorId();
+            ulong GetTicksForSystem();
+            bool SleepInRelativeTicks(ulong ticks);
+            bool SleepInAbsoluteTicks(ulong ticks);
             void* AllocMemory(nuint size);
             void FreeMemory(void* ptr);
             void CopyMemory(void* destination, void* source, nuint sizeInBytes);

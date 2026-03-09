@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Native
 
         public bool IsInReference => InterlockedHelper.Read(ref _refCount) > 0;
 
-        public ulong LastRefTime => InterlockedHelper.Read(ref _lastDerefTime);
+        public ulong LastDereferenceTime => InterlockedHelper.Read(ref _lastDerefTime);
 
         protected DelayedCollectingObject()
         {

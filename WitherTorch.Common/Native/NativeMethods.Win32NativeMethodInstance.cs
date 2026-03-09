@@ -1,6 +1,9 @@
-﻿using System;
+using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Native
 {
@@ -11,45 +14,27 @@ namespace WitherTorch.Common.Native
         {
             private readonly IntPtr _heap;
 
-#if NET8_0_OR_GREATER
             [SuppressGCTransition]
-#endif
-            [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
-            private static extern int GetCurrentThreadId();
+            [DllImport("kernel32", CallingConvention = CallingConvention.StdCall, EntryPoint = nameof(GetCurrentThreadId))]
+            private static extern int GetCurrentThreadIdCore();
 
-#if NET8_0_OR_GREATER
             [SuppressGCTransition]
-#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern IntPtr GetProcessHeap();
 
-#if NET8_0_OR_GREATER
-            [SuppressGCTransition]
-#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void* HeapAlloc(IntPtr hHeap, int dwFlags, nuint size);
 
-#if NET8_0_OR_GREATER
-            [SuppressGCTransition]
-#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void HeapFree(IntPtr hHeap, int dwFlags, void* ptr);
 
-#if NET8_0_OR_GREATER
-            [SuppressGCTransition]
-#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern void* VirtualAlloc(void* address, nuint dwSize, MemoryAllocationTypes allocationTypes, PageAccessRights rights);
 
-#if NET8_0_OR_GREATER
-            [SuppressGCTransition]
-#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern bool VirtualProtect(void* address, nuint dwSize, PageAccessRights rights, PageAccessRights* oldRights);
 
-#if NET8_0_OR_GREATER
             [SuppressGCTransition]
-#endif
             [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
             private static extern int GetCurrentProcessorNumber();
 
@@ -59,31 +44,63 @@ namespace WitherTorch.Common.Native
             [DllImport("ntdll", CallingConvention = CallingConvention.StdCall)]
             private static extern void RtlCopyMemory(void* dest, void* src, nuint sizeInBytes);
 
+            [SuppressGCTransition]
+            [DllImport("kernel32")]
+            public static extern void QueryUnbiasedInterruptTime(ulong* pUnbiasedTime);
+
+            [DllImport("ntdll")]
+            public static extern uint NtDelayExecution(int alertable, long* delayInterval);
+
             public Win32NativeMethodInstance()
             {
                 _heap = GetProcessHeap();
             }
 
-            int INativeMethodInstance.GetCurrentThreadId() => GetCurrentThreadId();
+            public int GetCurrentThreadId() => GetCurrentThreadIdCore();
 
-            void* INativeMethodInstance.AllocMemory(nuint size) => HeapAlloc(_heap, 0, size);
+            public int GetCurrentProcessorId() => GetCurrentProcessorNumber();
 
-            void INativeMethodInstance.FreeMemory(void* ptr) => HeapFree(_heap, 0, ptr);
+            public ulong GetTicksForSystem()
+            {
+                ulong result;
+                QueryUnbiasedInterruptTime(&result);
+                return result;
+            }
 
-            void INativeMethodInstance.CopyMemory(void* destination, void* source, nuint sizeInBytes) => RtlCopyMemory(destination, source, sizeInBytes);
+            public bool SleepInRelativeTicks(ulong ticks)
+            {
+                if (ticks <= 0)
+                    return false;
+                SleepInRelativeTicksCore(ticks);
+                return true;
+            }
 
-            void INativeMethodInstance.MoveMemory(void* destination, void* source, nuint sizeInBytes) => RtlMoveMemory(destination, source, sizeInBytes);
+            public bool SleepInAbsoluteTicks(ulong ticks)
+            {
+                ulong currentTicks;
+                QueryUnbiasedInterruptTime(&currentTicks);
+                if (ticks <= currentTicks)
+                    return false;
+                SleepInRelativeTicksCore(ticks - currentTicks);
+                return true;
+            }
 
-            void* INativeMethodInstance.AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags)
+            public void* AllocMemory(nuint size) => HeapAlloc(_heap, 0, size);
+
+            public void FreeMemory(void* ptr) => HeapFree(_heap, 0, ptr);
+
+            public void CopyMemory(void* destination, void* source, nuint sizeInBytes) => RtlCopyMemory(destination, source, sizeInBytes);
+
+            public void MoveMemory(void* destination, void* source, nuint sizeInBytes) => RtlMoveMemory(destination, source, sizeInBytes);
+
+            public void* AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags)
                 => VirtualAlloc(null, size, MemoryAllocationTypes.Commit | MemoryAllocationTypes.Reserve, ConvertPageAccessRightsFromFlags(flags));
 
-            void INativeMethodInstance.ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
+            public void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
             {
                 PageAccessRights rights = ConvertPageAccessRightsFromFlags(flags);
                 VirtualProtect(ptr, size, rights, &rights);
             }
-
-            int INativeMethodInstance.GetCurrentProcessorId() => GetCurrentProcessorNumber();
 
             private static PageAccessRights ConvertPageAccessRightsFromFlags(ProtectMemoryPageFlags flags)
             {
@@ -108,6 +125,24 @@ namespace WitherTorch.Common.Native
                     return PageAccessRights.NoAccess;
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void SleepInRelativeTicksCore(ulong ticks)
+            {
+                if (ticks > long.MaxValue)
+                {
+                    long time = -long.MaxValue;
+                    NtDelayExecution(alertable: Booleans.FalseInt, &time);
+                    time = -(long)(ticks - long.MaxValue);
+                    NtDelayExecution(alertable: Booleans.FalseInt, &time);
+                }
+                else
+                {
+                    ticks = UnsafeHelper.Negate(ticks);
+                    NtDelayExecution(alertable: Booleans.FalseInt, (long*)&ticks);
+                }
+            }
+
 
             [Flags]
             private enum MemoryAllocationTypes : uint

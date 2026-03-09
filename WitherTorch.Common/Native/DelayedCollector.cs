@@ -1,17 +1,17 @@
-using InlineMethod;
-
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Collections.Concurrent;
+
+using InlineMethod;
 
 namespace WitherTorch.Common.Native
 {
     internal sealed class DelayedCollector : IDisposable
     {
-        private const int DelayedCollectingPeriod = 5000;
-        private const int DelayedCollectingNoRefTime = DelayedCollectingPeriod / 2;
+        private const ulong DelayedCollectingPeriod = 5000 * TimeSpan.TicksPerMillisecond;
+        private const ulong DelayedCollectingNoRefTime = DelayedCollectingPeriod / 2;
 
         private static readonly DelayedCollector _instance = new DelayedCollector();
 
@@ -72,12 +72,11 @@ namespace WitherTorch.Common.Native
         {
             HashSet<DelayedCollectingObject> innerSet = _innerSet;
             ConcurrentQueue<DelayedCollectingObject> bag = _queue;
-            Stopwatch stopwatch = new Stopwatch();
             AutoResetEvent waitingEvent = _waitingEvent;
             waitingEvent.WaitOne();
             while (!CheckDisposed())
             {
-                stopwatch.Restart();
+                ulong predictedTicks = NativeMethods.GetTicksForSystem() + DelayedCollectingPeriod;
 
                 while (bag.TryDequeue(out DelayedCollectingObject? obj))
                     innerSet.Add(obj);
@@ -87,20 +86,11 @@ namespace WitherTorch.Common.Native
                 if (innerSet.Count <= 0)
                 {
                     Debug.WriteLine($"[{nameof(DelayedCollector)}] No object needs collecting, sleeping...");
-                    stopwatch.Stop();
                     waitingEvent.WaitOne();
                     continue;
                 }
 
-                stopwatch.Stop();
-                long time = stopwatch.ElapsedMilliseconds;
-
-
-                if (time < 0L)
-                    Thread.Sleep(DelayedCollectingPeriod);
-                else if (time < DelayedCollectingPeriod)
-                    Thread.Sleep(DelayedCollectingPeriod - unchecked((int)time));
-                else
+                if (!NativeMethods.SleepInAbsoluteTicks(predictedTicks))
                     Thread.Yield();
             }
         }
@@ -120,7 +110,7 @@ namespace WitherTorch.Common.Native
                     return true;
                 if (obj.IsInReference)
                     return false;
-                if ((now - obj.LastRefTime) > DelayedCollectingNoRefTime)
+                if ((now - obj.LastDereferenceTime) > DelayedCollectingNoRefTime)
                 {
                     obj.RemoveObject();
                     return true;

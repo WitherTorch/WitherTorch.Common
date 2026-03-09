@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -61,7 +61,7 @@ namespace WitherTorch.Common.Native
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void FreeMemoryBlock<T>(TypedNativeMemoryBlock<T> block) where T : unmanaged
+        public static unsafe void FreeMemoryBlock<T>(in TypedNativeMemoryBlock<T> block) where T : unmanaged
         {
             void* ptr = block.NativePointer;
             if (ptr == null)

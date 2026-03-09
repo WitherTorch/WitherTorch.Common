@@ -1,56 +1,53 @@
-﻿using System;
+using System;
 using System.Threading;
 
 namespace WitherTorch.Common.Native
 {
     public sealed class DelayedGCCaller : DelayedCollectingObject
     {
-        private const int DelayedGCCallerCooldown = 15000;
-
         private static readonly object _syncRoot = new object();
+        private static readonly DelayedGCCaller _secretGCCaller = new DelayedGCCaller();
 
-        private static readonly Lazy<DelayedGCCaller> secretGCCallerLazy = new Lazy<DelayedGCCaller>(() => new DelayedGCCaller(), LazyThreadSafetyMode.ExecutionAndPublication);
-
-        private static long activeInstanceCount = 0L;
-
-        private static long lastCollectingTime = 0L;
+        private static ulong _lastCollectingTime = 0UL;
+        private static long _activeInstanceCount = 0L;
 
         public DelayedGCCaller() { }
 
         protected override void GenerateObject()
         {
-            Interlocked.Increment(ref activeInstanceCount);
+            Interlocked.Increment(ref _activeInstanceCount);
         }
 
         protected override void DestroyObject()
         {
-            long instCount = Interlocked.Decrement(ref activeInstanceCount);
+            const ulong DelayedGCCallerCooldown = 15000 * TimeSpan.TicksPerMillisecond;
+
+            long instanceCount = Interlocked.Decrement(ref _activeInstanceCount);
             if (IsDisposed)
                 return;
             bool shouldCollecting;
             lock (_syncRoot)
             {
-                Thread.MemoryBarrier();
-                long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                long lastCollectingTime = DelayedGCCaller.lastCollectingTime;
-                if (now - lastCollectingTime < DelayedGCCallerCooldown)
+                ulong now = NativeMethods.GetTicksForSystem();
+                ulong lastCollectingTime = _lastCollectingTime;
+                if (now <= lastCollectingTime || now - lastCollectingTime < DelayedGCCallerCooldown)
                     shouldCollecting = false;
                 else
                 {
                     shouldCollecting = true;
-                    DelayedGCCaller.lastCollectingTime = now;
+                    _lastCollectingTime = now;
                 }
             }
             if (shouldCollecting)
             {
-                if (instCount <= 0L)
-                    GC.Collect(2, GCCollectionMode.Forced, true, true);
+                if (instanceCount <= 0L)
+                    GC.Collect(2, GCCollectionMode.Forced, blocking: true, compacting: true);
                 else
-                    GC.Collect(2, GCCollectionMode.Optimized, false, true);
+                    GC.Collect(2, GCCollectionMode.Optimized, blocking: false, compacting: true);
             }
             else
             {
-                DelayedGCCaller secretGCCaller = secretGCCallerLazy.Value;
+                DelayedGCCaller secretGCCaller = _secretGCCaller;
                 secretGCCaller.AddRef();
                 secretGCCaller.RemoveRef();
             }

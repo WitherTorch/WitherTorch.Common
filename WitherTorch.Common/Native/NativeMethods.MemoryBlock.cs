@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -76,11 +76,7 @@ namespace WitherTorch.Common.Native
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [SecurityCritical]
-#if B64_ARCH
-        public static unsafe void FreeMemoryBlock(in NativeMemoryBlock block)
-#else
-        public static unsafe void FreeMemoryBlock(NativeMemoryBlock block)
-#endif
+        internal static unsafe void FreeMemoryBlock(in NativeMemoryBlock block)
         {
             void* ptr = block.NativePointer;
             if (ptr == null)
