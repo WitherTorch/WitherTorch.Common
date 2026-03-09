@@ -100,7 +100,7 @@ namespace WitherTorch.Common.Native
         {
             if (list.Count <= 0)
                 return;
-            ulong now = unchecked((ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            ulong now = NativeMethods.GetTicksForSystem();
 #if DEBUG
             int count =
 #endif
