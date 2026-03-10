@@ -106,6 +106,31 @@ namespace WitherTorch.Common.Native
 
             public void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<string> methodNames) => GetImportedMethodPointersCore(dllName, methodNames);
 
+            public IntPtr CreateWaitingHandle(bool initialState, bool autoReset)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ResetWaitingHandle(IntPtr handle)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetWaitingHandle(IntPtr handle)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DestroyWaitingHandle(IntPtr handle)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool WaitForWaitingHandle(IntPtr handle, uint timeout)
+            {
+                throw new NotImplementedException();
+            }
+
             public bool SleepInRelativeTicks(ulong ticks)
             {
                 const int CLOCK_MONOTONIC = 1;
@@ -236,31 +261,6 @@ namespace WitherTorch.Common.Native
             [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
 #endif
             private static int gettid_fallback() => (int)syscall_fast(_syscallGetTIDIndex);
-
-            public IntPtr CreateWaitingHandle(bool initialState, bool autoReset)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void ResetWaitingHandle(IntPtr handle)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void SetWaitingHandle(IntPtr handle)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void DestroyWaitingHandle(IntPtr handle)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool WaitForWaitingHandle(IntPtr handle, uint timeout)
-            {
-                throw new NotImplementedException();
-            }
 
             private enum MemoryMapFlags : uint
             {
