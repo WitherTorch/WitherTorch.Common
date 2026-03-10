@@ -1,9 +1,11 @@
 using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Native
 {
@@ -82,423 +84,71 @@ namespace WitherTorch.Common.Native
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, int sizeInBytes)
+        public static void* GetImportedMethodPointer(string dllName, int methodIndex) => _methodInstance switch
         {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                default:
-                    _methodInstance.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-            }
-        }
+            Win32NativeMethodInstance inst => inst.GetImportedMethodPointer(dllName, methodIndex),
+            UnixNativeMethodInstance inst => inst.GetImportedMethodPointer(dllName, methodIndex),
+            FallbackNativeMethodInstance inst => inst.GetImportedMethodPointer(dllName, methodIndex),
+            _ => _methodInstance.GetImportedMethodPointer(dllName, methodIndex)
+        };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, uint sizeInBytes)
+        public static void* GetImportedMethodPointer(string dllName, string methodName) => _methodInstance switch
         {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, sizeInBytes);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, sizeInBytes);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, sizeInBytes);
-                    break;
-                default:
-                    _methodInstance.CopyMemory(destination, source, sizeInBytes);
-                    break;
-            }
-        }
+            Win32NativeMethodInstance inst => inst.GetImportedMethodPointer(dllName, methodName),
+            UnixNativeMethodInstance inst => inst.GetImportedMethodPointer(dllName, methodName),
+            FallbackNativeMethodInstance inst => inst.GetImportedMethodPointer(dllName, methodName),
+            _ => _methodInstance.GetImportedMethodPointer(dllName, methodName)
+        };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, long sizeInBytes)
+        private static void*[] GetImportedMethodPointers(string dllName, int methodIndex)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndex));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, int methodIndex1, int methodIndex2)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndex1, methodIndex2));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, int methodIndex1, int methodIndex2, int methodIndex3)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndex1, methodIndex2, methodIndex3));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, params int[] methodIndices)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndices));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, string methodName)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodName));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, string methodName1, string methodName2)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodName1, methodName2));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, string methodName1, string methodName2, string methodName3)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodName1, methodName2, methodName3));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, params string[] methodNames)
+            => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodNames));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void*[] GetImportedMethodPointers(string dllName, in ParamArrayTiny<int> methodIndices) => _methodInstance switch
         {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-                default:
-                    _methodInstance.CopyMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-            }
-        }
+            Win32NativeMethodInstance inst => inst.GetImportedMethodPointers(dllName, methodIndices),
+            UnixNativeMethodInstance inst => inst.GetImportedMethodPointers(dllName, methodIndices),
+            FallbackNativeMethodInstance inst => inst.GetImportedMethodPointers(dllName, methodIndices),
+            _ => _methodInstance.GetImportedMethodPointers(dllName, methodIndices)
+        };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, ulong sizeInBytes)
+        private static void*[] GetImportedMethodPointers(string dllName, in ParamArrayTiny<string> methodNames) => _methodInstance switch
         {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-                default:
-                    _methodInstance.CopyMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, nint sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                default:
-                    _methodInstance.CopyMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void CopyMemory(void* destination, void* source, nuint sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, sizeInBytes);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, sizeInBytes);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.CopyMemory(destination, source, sizeInBytes);
-                    break;
-                default:
-                    _methodInstance.CopyMemory(destination, source, sizeInBytes);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, int sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                default:
-                    _methodInstance.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, uint sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, sizeInBytes);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, sizeInBytes);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, sizeInBytes);
-                    break;
-                default:
-                    _methodInstance.MoveMemory(destination, source, sizeInBytes);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, long sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-                default:
-                    _methodInstance.MoveMemory(destination, source, unchecked((nuint)MathHelper.MakeUnsigned(sizeInBytes)));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, ulong sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-                default:
-                    _methodInstance.MoveMemory(destination, source, unchecked((nuint)sizeInBytes));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, nint sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-                default:
-                    _methodInstance.MoveMemory(destination, source, MathHelper.MakeUnsigned(sizeInBytes));
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void MoveMemory(void* destination, void* source, nuint sizeInBytes)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, sizeInBytes);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, sizeInBytes);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.MoveMemory(destination, source, sizeInBytes);
-                    break;
-                default:
-                    _methodInstance.MoveMemory(destination, source, sizeInBytes);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(int size, ProtectMemoryPageFlags flags)
-            => _methodInstance switch
-            {
-                Win32NativeMethodInstance inst => inst.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags),
-                UnixNativeMethodInstance inst => inst.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags),
-                FallbackNativeMethodInstance inst => inst.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags),
-                _ => _methodInstance.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(uint size, ProtectMemoryPageFlags flags)
-            => _methodInstance switch
-            {
-                Win32NativeMethodInstance inst => inst.AllocMemoryPage(size, flags),
-                UnixNativeMethodInstance inst => inst.AllocMemoryPage(size, flags),
-                FallbackNativeMethodInstance inst => inst.AllocMemoryPage(size, flags),
-                _ => _methodInstance.AllocMemoryPage(size, flags)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(long size, ProtectMemoryPageFlags flags)
-            => _methodInstance switch
-            {
-                Win32NativeMethodInstance inst => inst.AllocMemoryPage(unchecked((nuint)MathHelper.MakeUnsigned(size)), flags),
-                UnixNativeMethodInstance inst => inst.AllocMemoryPage(unchecked((nuint)MathHelper.MakeUnsigned(size)), flags),
-                FallbackNativeMethodInstance inst => inst.AllocMemoryPage(unchecked((nuint)MathHelper.MakeUnsigned(size)), flags),
-                _ => _methodInstance.AllocMemoryPage(unchecked((nuint)MathHelper.MakeUnsigned(size)), flags)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(ulong size, ProtectMemoryPageFlags flags)
-            => _methodInstance switch
-            {
-                Win32NativeMethodInstance inst => inst.AllocMemoryPage(unchecked((nuint)size), flags),
-                UnixNativeMethodInstance inst => inst.AllocMemoryPage(unchecked((nuint)size), flags),
-                FallbackNativeMethodInstance inst => inst.AllocMemoryPage(unchecked((nuint)size), flags),
-                _ => _methodInstance.AllocMemoryPage(unchecked((nuint)size), flags)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(nint size, ProtectMemoryPageFlags flags)
-            => _methodInstance switch
-            {
-                Win32NativeMethodInstance inst => inst.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags),
-                UnixNativeMethodInstance inst => inst.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags),
-                FallbackNativeMethodInstance inst => inst.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags),
-                _ => _methodInstance.AllocMemoryPage(MathHelper.MakeUnsigned(size), flags)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void* AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags)
-            => _methodInstance switch
-            {
-                Win32NativeMethodInstance inst => inst.AllocMemoryPage(size, flags),
-                UnixNativeMethodInstance inst => inst.AllocMemoryPage(size, flags),
-                FallbackNativeMethodInstance inst => inst.AllocMemoryPage(size, flags),
-                _ => _methodInstance.AllocMemoryPage(size, flags)
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, int size, ProtectMemoryPageFlags flags)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-                default:
-                    _methodInstance.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, uint size, ProtectMemoryPageFlags flags)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, size, flags);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, size, flags);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, size, flags);
-                    break;
-                default:
-                    _methodInstance.ProtectMemoryPage(ptr, size, flags);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, long size, ProtectMemoryPageFlags flags)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)), flags);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)), flags);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)), flags);
-                    break;
-                default:
-                    _methodInstance.ProtectMemoryPage(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)), flags);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, ulong size, ProtectMemoryPageFlags flags)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, unchecked((nuint)size), flags);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, unchecked((nuint)size), flags);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, unchecked((nuint)size), flags);
-                    break;
-                default:
-                    _methodInstance.ProtectMemoryPage(ptr, unchecked((nuint)size), flags);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, nint size, ProtectMemoryPageFlags flags)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-                default:
-                    _methodInstance.ProtectMemoryPage(ptr, MathHelper.MakeUnsigned(size), flags);
-                    break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
-        {
-            switch (_methodInstance)
-            {
-                case Win32NativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, size, flags);
-                    break;
-                case UnixNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, size, flags);
-                    break;
-                case FallbackNativeMethodInstance inst:
-                    inst.ProtectMemoryPage(ptr, size, flags);
-                    break;
-                default:
-                    _methodInstance.ProtectMemoryPage(ptr, size, flags);
-                    break;
-            }
-        }
+            Win32NativeMethodInstance inst => inst.GetImportedMethodPointers(dllName, methodNames),
+            UnixNativeMethodInstance inst => inst.GetImportedMethodPointers(dllName, methodNames),
+            FallbackNativeMethodInstance inst => inst.GetImportedMethodPointers(dllName, methodNames),
+            _ => _methodInstance.GetImportedMethodPointers(dllName, methodNames)
+        };
     }
 }

@@ -5,6 +5,7 @@ using System.Threading;
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Native
 {
@@ -14,14 +15,13 @@ namespace WitherTorch.Common.Native
         {
             public int GetCurrentThreadId() => Environment.CurrentManagedThreadId;
 
-            public int GetCurrentProcessorId()
-            {
+            public int GetCurrentProcessorId() =>
 #if NET8_0_OR_GREATER
-                return Thread.GetCurrentProcessorId();
+                Thread.GetCurrentProcessorId();
 #else
-                return Thread.CurrentThread.ManagedThreadId;
+                Thread.CurrentThread.ManagedThreadId;
 #endif
-            }
+
 
             public ulong GetTicksForSystem()
 #if NET8_0_OR_GREATER
@@ -45,6 +45,47 @@ namespace WitherTorch.Common.Native
                     return false;
                 SleepCore(ticks - currentTicks);
                 return true;
+            }
+
+            public void* GetImportedMethodPointer(string? dllName, int methodIndex) => null;
+
+            public void* GetImportedMethodPointer(string? dllName, string methodName) => null;
+
+            public void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<int> methodIndices) => new void*[methodIndices.Length];
+
+            public void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<string> methodNames) => new void*[methodNames.Length];
+
+            public IntPtr CreateWaitingHandle(bool initialState, bool autoReset)
+                => (IntPtr)GCHandle.Alloc(autoReset ? new AutoResetEvent(initialState) : new ManualResetEvent(initialState), GCHandleType.Normal);
+
+            public void ResetWaitingHandle(IntPtr handle)
+            {
+                if (GCHandle.FromIntPtr(handle).Target is not EventWaitHandle waitHandle)
+                    return;
+                waitHandle.Reset();
+            }
+
+            public void SetWaitingHandle(IntPtr handle)
+            {
+                if (GCHandle.FromIntPtr(handle).Target is not EventWaitHandle waitHandle)
+                    return;
+                waitHandle.Set();
+            }
+
+            public void DestroyWaitingHandle(IntPtr handle)
+            {
+                GCHandle gcHandle = GCHandle.FromIntPtr(handle);
+                if (gcHandle.Target is not EventWaitHandle waitHandle)
+                    return;
+                gcHandle.Free();
+                waitHandle.Dispose();
+            }
+
+            public bool WaitForWaitingHandle(IntPtr handle, uint timeout)
+            {
+                if (GCHandle.FromIntPtr(handle).Target is not EventWaitHandle waitHandle)
+                    return false;
+                return waitHandle.WaitOne((int)timeout);
             }
 
             public void* AllocMemory(nuint size) => Marshal.AllocHGlobal(unchecked((nint)size)).ToPointer();

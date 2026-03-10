@@ -1,9 +1,11 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Threading;
 
-using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Structures;
+using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.Native
 {
@@ -12,38 +14,68 @@ namespace WitherTorch.Common.Native
         [SuppressUnmanagedCodeSecurity]
         private sealed unsafe class UnixNativeMethodInstance : INativeMethodInstance
         {
-            [SuppressGCTransition]
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
-            private static extern int gettid();
+            private static readonly void* _gettidFunc;
+            private static readonly int _syscallGetTIDIndex;
 
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            static UnixNativeMethodInstance()
+            {
+                void* func = GetImportedMethodPointerCore(null, nameof(gettid));
+                if (func is null)
+                {
+#if NET8_0_OR_GREATER
+                    func = (delegate* unmanaged[Cdecl]<int>)&gettid_fallback;
+#else
+                    func = (delegate*<int>)&gettid_fallback;
+#endif
+                    _syscallGetTIDIndex = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? 178 : 186;
+                }
+                _gettidFunc = func;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static int gettid() => ((delegate* unmanaged[Cdecl]<int>)_gettidFunc)();
+
+            [SuppressGCTransition]
+            [DllImport("c", EntryPoint = nameof(syscall))]
+            private static extern nint syscall_fast(nint number);
+
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
+            private static extern nint syscall(nint number);
+
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* malloc(nuint size);
 
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void free(void* memblock);
 
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("dl", CallingConvention = CallingConvention.Cdecl)]
+            private static extern IntPtr dlopen(byte* filename, int flags);
+
+            [DllImport("dl", CallingConvention = CallingConvention.Cdecl)]
+            private static extern void* dlsym(IntPtr handle, byte* symbol);
+
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* memmove(void* dest, void* src, nuint sizeInBytes);
 
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* memcpy(void* dest, void* src, nuint sizeInBytes);
 
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* mmap(void* ptr, nuint length, ProtectMemoryPageFlags prot, MemoryMapFlags flags, int fd, nint offset);
 
-            [DllImport("libc", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* mprotect(void* ptr, nuint length, ProtectMemoryPageFlags flags);
 
             [SuppressGCTransition]
-            [DllImport("libc", CallingConvention = CallingConvention.StdCall)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern int sched_getcpu();
 
             [SuppressGCTransition]
-            [DllImport("libc", CallingConvention = CallingConvention.StdCall)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern int clock_gettime(int clk_id, Timespec* t);
 
             [SuppressGCTransition]
-            [DllImport("libc", CallingConvention = CallingConvention.StdCall)]
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern int clock_nanosleep(int clk_id, int flags, Timespec* t, Timespec* remain);
 
             public int GetCurrentThreadId() => gettid();
@@ -65,6 +97,14 @@ namespace WitherTorch.Common.Native
                 }
                 return ts.tv_sec * TimeSpan.TicksPerSecond + ts.tv_nsec / 100;
             }
+
+            public void* GetImportedMethodPointer(string? dllName, int methodIndex) => null;
+
+            public void* GetImportedMethodPointer(string? dllName, string methodName) => GetImportedMethodPointerCore(dllName, methodName);
+
+            public void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<int> methodIndices) => new void*[methodIndices.Length];
+
+            public void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<string> methodNames) => GetImportedMethodPointersCore(dllName, methodNames);
 
             public bool SleepInRelativeTicks(ulong ticks)
             {
@@ -113,6 +153,114 @@ namespace WitherTorch.Common.Native
 
             public void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
                 => mprotect(ptr, size, flags);
+
+            private static void* GetImportedMethodPointerCore(string? dllName, string methodName)
+            {
+                const int RTLD_NOW = 2;
+                const int RTLD_LOCAL = 0;
+
+                IntPtr module = dlopen(dllName, RTLD_NOW | RTLD_LOCAL);
+
+                ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+
+                return GetImportedMethodPointerCore(pool, module, methodName);
+            }
+
+            private static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<string> methodNames)
+            {
+                const int RTLD_NOW = 2;
+                const int RTLD_LOCAL = 0;
+
+                IntPtr module = dlopen(dllName, RTLD_NOW | RTLD_LOCAL);
+
+                ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+
+                int length = methodNames.Length;
+                void*[] pointers = new void*[length];
+
+                for (int i = 0; i < length; i++)
+                {
+                    string methodName = methodNames[i];
+                    pointers[i] = GetImportedMethodPointerCore(pool, module, methodName);
+                }
+
+                return pointers;
+            }
+
+            private static void* GetImportedMethodPointerCore(ArrayPool<byte> pool, IntPtr module, string methodName)
+            {
+                int length = methodName.Length;
+                byte[] buffer = pool.Rent(length + 1);
+                try
+                {
+                    fixed (char* source = methodName)
+                    fixed (byte* destination = buffer)
+                    {
+                        AsciiEncodingHelper.ReadFromUtf16Buffer(source, source + length, destination, destination + length);
+                        destination[length] = 0;
+                        return dlsym(module, destination);
+                    }
+                }
+                finally
+                {
+                    pool.Return(buffer);
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static IntPtr dlopen(string? filename, int flags)
+            {
+                if (filename is null)
+                    return dlopen((byte*)null, flags);
+
+                int length = filename.Length;
+
+                ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+                byte[] buffer = pool.Rent(Utf8EncodingHelper.GetWorstCaseForEncodeLength(length) + 1);
+                try
+                {
+                    fixed (char* source = filename)
+                    fixed (byte* destination = buffer)
+                    {
+                        Utf8EncodingHelper.ReadFromUtf16Buffer(source, source + length, destination, destination + buffer.Length);
+                        return dlopen(destination, flags);
+                    }
+                }
+                finally
+                {
+                    pool.Return(buffer);
+                }
+            }
+
+#if NET8_0_OR_GREATER
+            [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+#endif
+            private static int gettid_fallback() => (int)syscall_fast(_syscallGetTIDIndex);
+
+            public IntPtr CreateWaitingHandle(bool initialState, bool autoReset)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void ResetWaitingHandle(IntPtr handle)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void SetWaitingHandle(IntPtr handle)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void DestroyWaitingHandle(IntPtr handle)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool WaitForWaitingHandle(IntPtr handle, uint timeout)
+            {
+                throw new NotImplementedException();
+            }
 
             private enum MemoryMapFlags : uint
             {

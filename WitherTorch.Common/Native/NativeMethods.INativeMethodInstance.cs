@@ -1,6 +1,6 @@
 using System;
-using System.Runtime.CompilerServices;
-using System.Security;
+
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Native
 {
@@ -11,8 +11,17 @@ namespace WitherTorch.Common.Native
             int GetCurrentThreadId();
             int GetCurrentProcessorId();
             ulong GetTicksForSystem();
+            void* GetImportedMethodPointer(string? dllName, int methodIndex);
+            void* GetImportedMethodPointer(string? dllName, string methodName);
+            void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<int> methodIndices);
+            void*[] GetImportedMethodPointers(string? dllName, in ParamArrayTiny<string> methodNames);
             bool SleepInRelativeTicks(ulong ticks);
             bool SleepInAbsoluteTicks(ulong ticks);
+            IntPtr CreateWaitingHandle(bool initialState, bool autoReset);
+            void ResetWaitingHandle(IntPtr handle);
+            void SetWaitingHandle(IntPtr handle);
+            void DestroyWaitingHandle(IntPtr handle);
+            bool WaitForWaitingHandle(IntPtr handle, uint timeout);
             void* AllocMemory(nuint size);
             void FreeMemory(void* ptr);
             void CopyMemory(void* destination, void* source, nuint sizeInBytes);
