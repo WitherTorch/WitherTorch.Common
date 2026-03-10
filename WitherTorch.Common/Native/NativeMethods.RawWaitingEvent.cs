@@ -11,14 +11,15 @@ namespace WitherTorch.Common.Native
         [StructLayout(LayoutKind.Sequential, Size = 8)]
         private unsafe struct RawWaitingEvent
         {
+            public const int HandleSize = sizeof(uint);
+
             private readonly SysBool32 _autoReset;
 
-            private SysBool32 _state;
+            private uint _state;
 
             public readonly bool IsAutoReset => _autoReset;
 
-            public readonly SysBool32 State => UnsafeHelper.As<int, SysBool32>(
-                    InterlockedHelper.Read(in UnsafeHelper.As<SysBool32, int>(ref UnsafeHelper.AsRefIn(in _state))));
+            public readonly bool State => MathHelper.ToBoolean(InterlockedHelper.Read(in _state));
 
             public static IntPtr GetWaitingHandleFromEvent(RawWaitingEvent* source)
                 => (IntPtr)(&source->_state);
@@ -29,14 +30,12 @@ namespace WitherTorch.Common.Native
             public RawWaitingEvent(bool initialState, bool autoReset)
             {
                 _autoReset = autoReset;
-                _state = initialState;
+                _state = MathHelper.BooleanToUInt32(initialState);
             }
 
-            public bool Set() => !UnsafeHelper.As<int, SysBool32>(
-                InterlockedHelper.Exchange(ref UnsafeHelper.As<SysBool32, int>(ref _state), UnsafeHelper.As<SysBool32, int>(SysBool32.True)));
+            public bool Set() => InterlockedHelper.Exchange(ref _state, Booleans.TrueInt) == Booleans.FalseInt;
 
-            public bool Reset() => UnsafeHelper.As<int, SysBool32>(
-                InterlockedHelper.Exchange(ref UnsafeHelper.As<SysBool32, int>(ref _state), UnsafeHelper.As<SysBool32, int>(SysBool32.False)));
+            public bool Reset() => InterlockedHelper.Exchange(ref _state, Booleans.FalseInt) != Booleans.FalseInt;
         }
     }
 }

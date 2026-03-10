@@ -320,13 +320,13 @@ namespace WitherTorch.Common.Native
                     do
                     {
                         result = SysBool32.False;
-                        result = WaitOnAddress((void*)waitingHandle, &result, UnsafeHelper.SizeOf<SysBool32>(), timeout);
+                        result = WaitOnAddress((void*)waitingHandle, &result, RawWaitingEvent.HandleSize, timeout);
                     } while (result && !ptr->Reset());
                 }
                 else
                 {
                     result = SysBool32.False;
-                    result = WaitOnAddress((void*)waitingHandle, &result, UnsafeHelper.SizeOf<SysBool32>(), timeout);
+                    result = WaitOnAddress((void*)waitingHandle, &result, RawWaitingEvent.HandleSize, timeout);
                 }
                 if (result || timeout == INFINITE || (lastError = GetLastError()) == ERROR_TIMEOUT)
                     return result;
