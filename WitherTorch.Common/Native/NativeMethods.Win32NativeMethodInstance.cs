@@ -74,29 +74,29 @@ namespace WitherTorch.Common.Native
             private static extern IntPtr GetModuleHandleW(char* lpModuleName);
 
             [DllImport("kernel32")]
-            public static extern IntPtr CreateEventW(void* lpEventAttributes, uint bManualReset, uint bInitialState, char* lpName);
+            private static extern IntPtr CreateEventW(void* lpEventAttributes, SysBool32 bManualReset, SysBool32 bInitialState, char* lpName);
 
             [DllImport("kernel32")]
-            public static extern uint SetEvent(IntPtr hEvent);
+            private static extern SysBool32 SetEvent(IntPtr hEvent);
 
             [DllImport("kernel32")]
-            public static extern uint ResetEvent(IntPtr hEvent);
+            private static extern SysBool32 ResetEvent(IntPtr hEvent);
 
             [DllImport("kernel32")]
-            public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
+            private static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
             [DllImport("kernel32")]
-            public static extern uint CloseHandle(IntPtr hObject);
+            private static extern SysBool32 CloseHandle(IntPtr hObject);
 
             [SuppressGCTransition]
             [DllImport("kernel32")]
-            public static extern uint GetLastError();
+            private static extern uint GetLastError();
 
-            private static bool WaitOnAddress(void* address, void* compareAddress, nuint addressSize, uint dwMilliseconds)
+            private static SysBool32 WaitOnAddress(void* address, void* compareAddress, nuint addressSize, uint dwMilliseconds)
             {
                 void* func = _waitOnAddressFunc;
                 DebugHelper.ThrowIf(func is null);
-                return ((delegate* unmanaged[Stdcall]<void*, void*, nuint, uint, uint>)func)(address, compareAddress, addressSize, dwMilliseconds) != 0;
+                return ((delegate* unmanaged[Stdcall]<void*, void*, nuint, uint, SysBool32>)func)(address, compareAddress, addressSize, dwMilliseconds);
             }
 
             private static void WakeByAddressAll(void* address)
@@ -151,11 +151,11 @@ namespace WitherTorch.Common.Native
             public IntPtr CreateWaitingHandle(bool initialState, bool autoReset)
             {
                 if (_waitOnAddressFunc is null)
-                    return CreateEventW(null, bManualReset: MathHelper.BooleanToUInt32(!autoReset), MathHelper.BooleanToUInt32(initialState), null);
+                    return CreateEventW(null, !autoReset, initialState, null);
                 else
                 {
                     RawWaitingEvent* ptr = (RawWaitingEvent*)AllocMemory(UnsafeHelper.SizeOf<RawWaitingEvent>());
-                    *ptr = new RawWaitingEvent(!autoReset);
+                    *ptr = new RawWaitingEvent(initialState, autoReset);
                     return RawWaitingEvent.GetWaitingHandleFromEvent(ptr);
                 }
             }
@@ -165,17 +165,19 @@ namespace WitherTorch.Common.Native
                 if (_waitOnAddressFunc is null)
                     ResetEvent(handle);
                 else
-                    RawWaitingEvent.GetEventFromWaitingHandle(handle)->State = false;
+                {
+                    RawWaitingEvent.GetEventFromWaitingHandle(handle)->Reset();
+                }
             }
 
             public void SetWaitingHandle(IntPtr handle)
             {
                 if (_waitOnAddressFunc is null)
-                    ResetEvent(handle);
+                    SetEvent(handle);
                 else
                 {
-                    RawWaitingEvent.GetEventFromWaitingHandle(handle)->State = true;
-                    WakeByAddressAll((void*)handle);
+                    if (RawWaitingEvent.GetEventFromWaitingHandle(handle)->Set())
+                        WakeByAddressAll((void*)handle);
                 }
             }
 
@@ -221,7 +223,7 @@ namespace WitherTorch.Common.Native
                 return GetProcAddress(module, (byte*)methodIndex);
             }
 
-            private static void* GetImportedMethodPointerCore(string dllName, string methodName)
+            private static void* GetImportedMethodPointerCore(string? dllName, string methodName)
             {
                 IntPtr module = dllName is null ? GetModuleHandleW(null) : LoadLibrary(dllName);
 
@@ -230,7 +232,7 @@ namespace WitherTorch.Common.Native
                 return GetImportedMethodPointerCore(pool, module, methodName);
             }
 
-            private static void*[] GetImportedMethodPointersCore(string dllName, ParamArrayTiny<int> methodIndices)
+            public static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<int> methodIndices)
             {
                 IntPtr module = dllName is null ? GetModuleHandleW(null) : LoadLibrary(dllName);
 
@@ -246,7 +248,7 @@ namespace WitherTorch.Common.Native
                 return pointers;
             }
 
-            private static void*[] GetImportedMethodPointersCore(string dllName, ParamArrayTiny<string> methodNames)
+            private static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<string> methodNames)
             {
                 IntPtr module = dllName is null ? GetModuleHandleW(null) : LoadLibrary(dllName);
 
@@ -307,38 +309,29 @@ namespace WitherTorch.Common.Native
 
             private static bool ModernWait(IntPtr waitingHandle, uint timeout)
             {
-                RawWaitingEvent* ptr = RawWaitingEvent.GetEventFromWaitingHandle(waitingHandle);
-                if (ptr->IsManuallyReset)
-                    return ModernWaitCore(waitingHandle, timeout);
-                try
-                {
-                    return ModernWaitCore(waitingHandle, timeout);
-                }
-                finally
-                {
-                    ptr->State = false;
-                }
-            }
-
-            private static bool ModernWaitCore(IntPtr waitingHandle, uint timeout)
-            {
                 const uint INFINITE = unchecked((uint)Timeout.Infinite);
                 const int ERROR_TIMEOUT = 0x5B4;
+                uint lastError;
 
-                nuint referenceValue = 0;
-
-                bool result = WaitOnAddress((void*)waitingHandle, &referenceValue, UnsafeHelper.SizeOf<nuint>(), timeout);
-
-                if (timeout == INFINITE)
+                SysBool32 result;
+                RawWaitingEvent* ptr = RawWaitingEvent.GetEventFromWaitingHandle(waitingHandle);
+                if (ptr->IsAutoReset)
+                {
+                    do
+                    {
+                        result = SysBool32.False;
+                        result = WaitOnAddress((void*)waitingHandle, &result, UnsafeHelper.SizeOf<SysBool32>(), timeout);
+                    } while (result && !ptr->Reset());
+                }
+                else
+                {
+                    result = SysBool32.False;
+                    result = WaitOnAddress((void*)waitingHandle, &result, UnsafeHelper.SizeOf<SysBool32>(), timeout);
+                }
+                if (result || timeout == INFINITE || (lastError = GetLastError()) == ERROR_TIMEOUT)
                     return result;
 
-                if (result)
-                    return true;
-
-                uint lastError = GetLastError();
-                if (lastError != ERROR_TIMEOUT)
-                    throw new Win32Exception((int)lastError);
-                return false;
+                throw new Win32Exception((int)lastError);
             }
 
             private static PageAccessRights ConvertPageAccessRightsFromFlags(ProtectMemoryPageFlags flags)
@@ -441,33 +434,6 @@ namespace WitherTorch.Common.Native
                 EnclaveSSFirst = (EnclaveMask | 1),
                 EnclaveSSRest = (EnclaveMask | 2),
             }
-
-            [StructLayout(LayoutKind.Sequential, Pack = 4)]
-            private struct RawWaitingEvent
-            {
-                private readonly nuint _manualReset;
-                private nuint _state;
-
-                public readonly bool IsManuallyReset => _manualReset != 0;
-                public bool State
-                {
-                    readonly get => _state != 0;
-                    set => _state = value ? 1u : 0u;
-                }
-
-                public static IntPtr GetWaitingHandleFromEvent(RawWaitingEvent* source)
-                    => (IntPtr)(&source->_state);
-
-                public static RawWaitingEvent* GetEventFromWaitingHandle(IntPtr waitingHandle)
-                    => (RawWaitingEvent*)(((nuint*)waitingHandle) - 1);
-
-                public RawWaitingEvent(bool manualReset)
-                {
-                    _manualReset = manualReset ? 1u : 0u;
-                    _state = 0;
-                }
-            }
-
         }
     }
 }

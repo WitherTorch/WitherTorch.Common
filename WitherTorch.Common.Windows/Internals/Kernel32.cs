@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-using WitherTorch.Common.Windows.Structures;
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Windows.Internals
 {
@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Windows.Internals
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
-        public static extern SysBool CloseHandle(IntPtr hObject);
+        public static extern SysBool32 CloseHandle(IntPtr hObject);
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
@@ -23,7 +23,7 @@ namespace WitherTorch.Common.Windows.Internals
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]
-        public static extern IntPtr OpenThread(uint dwDesiredAccess, SysBool bInheritHandle, uint dwThreadId);
+        public static extern IntPtr OpenThread(uint dwDesiredAccess, SysBool32 bInheritHandle, uint dwThreadId);
 
         [SuppressGCTransition]
         [DllImport(LibraryName)]

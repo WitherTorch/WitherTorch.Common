@@ -1,10 +1,9 @@
 using System;
-using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 using InlineMethod;
 
-using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Native
@@ -65,6 +64,94 @@ namespace WitherTorch.Common.Native
             _ => _methodInstance.GetTicksForSystem()
         };
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static IntPtr CreateWaitingHandle(bool autoReset) => CreateWaitingHandle(initialState: false, autoReset);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IntPtr CreateWaitingHandle(bool initialState, bool autoReset) => _methodInstance switch
+        {
+            Win32NativeMethodInstance inst => inst.CreateWaitingHandle(initialState, autoReset),
+            UnixNativeMethodInstance inst => inst.CreateWaitingHandle(initialState, autoReset),
+            FallbackNativeMethodInstance inst => inst.CreateWaitingHandle(initialState, autoReset),
+            _ => _methodInstance.CreateWaitingHandle(initialState, autoReset)
+        };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void ResetWaitingHandle(IntPtr handle)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.ResetWaitingHandle(handle);
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.ResetWaitingHandle(handle);
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.ResetWaitingHandle(handle);
+                    break;
+                default:
+                    _methodInstance.ResetWaitingHandle(handle);
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetWaitingHandle(IntPtr handle)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.SetWaitingHandle(handle);
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.SetWaitingHandle(handle);
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.SetWaitingHandle(handle);
+                    break;
+                default:
+                    _methodInstance.SetWaitingHandle(handle);
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DestroyWaitingHandle(IntPtr handle)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.DestroyWaitingHandle(handle);
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.DestroyWaitingHandle(handle);
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.DestroyWaitingHandle(handle);
+                    break;
+                default:
+                    _methodInstance.DestroyWaitingHandle(handle);
+                    break;
+            }
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool WaitForWaitingHandle(IntPtr handle) => WaitForWaitingHandle(handle, unchecked((uint)Timeout.Infinite));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool WaitForWaitingHandle(IntPtr handle, TimeSpan timeout)
+            => WaitForWaitingHandle(handle, (uint)(ulong)timeout.Ticks);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool WaitForWaitingHandle(IntPtr handle, uint timeout) => _methodInstance switch
+        {
+            Win32NativeMethodInstance inst => inst.WaitForWaitingHandle(handle, timeout),
+            UnixNativeMethodInstance inst => inst.WaitForWaitingHandle(handle, timeout),
+            FallbackNativeMethodInstance inst => inst.WaitForWaitingHandle(handle, timeout),
+            _ => _methodInstance.WaitForWaitingHandle(handle, timeout)
+        };
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool SleepInRelativeTicks(ulong ticks) => _methodInstance switch
         {
@@ -102,35 +189,35 @@ namespace WitherTorch.Common.Native
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, int methodIndex)
+        public static void*[] GetImportedMethodPointers(string dllName, int methodIndex)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndex));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, int methodIndex1, int methodIndex2)
+        public static void*[] GetImportedMethodPointers(string dllName, int methodIndex1, int methodIndex2)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndex1, methodIndex2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, int methodIndex1, int methodIndex2, int methodIndex3)
+        public static void*[] GetImportedMethodPointers(string dllName, int methodIndex1, int methodIndex2, int methodIndex3)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndex1, methodIndex2, methodIndex3));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, params int[] methodIndices)
+        public static void*[] GetImportedMethodPointers(string dllName, params int[] methodIndices)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<int>(methodIndices));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, string methodName)
+        public static void*[] GetImportedMethodPointers(string dllName, string methodName)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodName));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, string methodName1, string methodName2)
+        public static void*[] GetImportedMethodPointers(string dllName, string methodName1, string methodName2)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodName1, methodName2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, string methodName1, string methodName2, string methodName3)
+        public static void*[] GetImportedMethodPointers(string dllName, string methodName1, string methodName2, string methodName3)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodName1, methodName2, methodName3));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void*[] GetImportedMethodPointers(string dllName, params string[] methodNames)
+        public static void*[] GetImportedMethodPointers(string dllName, params string[] methodNames)
             => GetImportedMethodPointers(dllName, new ParamArrayTiny<string>(methodNames));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

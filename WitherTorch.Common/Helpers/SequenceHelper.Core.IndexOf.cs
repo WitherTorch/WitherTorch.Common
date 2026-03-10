@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using InlineMethod;
@@ -975,22 +975,22 @@ namespace WitherTorch.Common.Helpers
         unsafe partial class FastCore<T>
         {
             public static bool Contains(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: false), usePreciseBooleanDefination: true);
+                => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: false));
 
             public static bool ContainsExclude(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: false), usePreciseBooleanDefination: true);
+                => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: false));
 
             public static bool ContainsGreaterThan(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: false), usePreciseBooleanDefination: true);
+                => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: false));
 
             public static bool ContainsLessThan(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false), usePreciseBooleanDefination: true);
+                => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false));
 
             public static bool ContainsGreaterThanOrEquals(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: false), usePreciseBooleanDefination: true);
+                => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: false));
 
             public static bool ContainsLessThanOrEquals(T* ptr, nuint length, T value)
-                => MathHelper.ToBoolean(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: false), usePreciseBooleanDefination: true);
+                => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: false));
 
             public static T* PointerIndexOf(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: true);

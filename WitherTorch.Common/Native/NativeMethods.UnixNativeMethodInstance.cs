@@ -1,9 +1,13 @@
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading;
 
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 using WitherTorch.Common.Text;
 
@@ -15,10 +19,27 @@ namespace WitherTorch.Common.Native
         private sealed unsafe class UnixNativeMethodInstance : INativeMethodInstance
         {
             private static readonly void* _gettidFunc;
-            private static readonly int _syscallGetTIDIndex;
+            private static readonly nint _syscallID_gettid, _syscallID_futex;
 
             static UnixNativeMethodInstance()
             {
+                (_syscallID_gettid, _syscallID_futex) = RuntimeInformation.ProcessArchitecture switch
+                {
+                    Architecture.X86 => (224, 240),
+                    Architecture.X64 => (186, 202),
+                    Architecture.Arm => (224, 240),
+                    Architecture.Arm64 => (178, 98),
+#if NET8_0_OR_GREATER
+                    Architecture.S390x => (236, 238),
+                    Architecture.LoongArch64 => (178, 98),
+                    Architecture.Armv6 => (224, 240),
+                    Architecture.Ppc64le => (179, 221),
+                    //Architecture.RiscV64 => (178, 98),
+#endif
+                    _ => (0, 0)
+                };
+                if (_syscallID_futex == 0)
+                    Debug.WriteLine($"This platform doesn't support futex, so {nameof(SetWaitingHandle)}, {nameof(WaitForWaitingHandle)} cannot work correctly!");
                 void* func = GetImportedMethodPointerCore(null, nameof(gettid));
                 if (func is null)
                 {
@@ -27,7 +48,6 @@ namespace WitherTorch.Common.Native
 #else
                     func = (delegate*<int>)&gettid_fallback;
 #endif
-                    _syscallGetTIDIndex = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? 178 : 186;
                 }
                 _gettidFunc = func;
             }
@@ -41,6 +61,12 @@ namespace WitherTorch.Common.Native
 
             [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern nint syscall(nint number);
+
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
+            private static extern nint syscall(nint number, uint* uaddr, FutexMode mode, uint val, TimeSpecification* timeout);
+
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
+            private static extern nint syscall(nint number, uint* uaddr, FutexMode mode, uint val);
 
             [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
             private static extern void* malloc(nuint size);
@@ -72,11 +98,11 @@ namespace WitherTorch.Common.Native
 
             [SuppressGCTransition]
             [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
-            private static extern int clock_gettime(int clk_id, Timespec* t);
+            private static extern int clock_gettime(int clk_id, TimeSpecification* t);
 
             [SuppressGCTransition]
             [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
-            private static extern int clock_nanosleep(int clk_id, int flags, Timespec* t, Timespec* remain);
+            private static extern int clock_nanosleep(int clk_id, int flags, TimeSpecification* t, TimeSpecification* remain);
 
             public int GetCurrentThreadId() => gettid();
 
@@ -86,7 +112,7 @@ namespace WitherTorch.Common.Native
             {
                 const int CLOCK_MONOTONIC = 1;
 
-                Timespec ts;
+                TimeSpecification ts;
                 if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
                 {
 #if NET8_0_OR_GREATER
@@ -108,28 +134,112 @@ namespace WitherTorch.Common.Native
 
             public IntPtr CreateWaitingHandle(bool initialState, bool autoReset)
             {
-                throw new NotImplementedException();
+                RawWaitingEvent* ptr = (RawWaitingEvent*)AllocMemory(UnsafeHelper.SizeOf<RawWaitingEvent>());
+                *ptr = new RawWaitingEvent(initialState, autoReset);
+                return RawWaitingEvent.GetWaitingHandleFromEvent(ptr);
             }
 
-            public void ResetWaitingHandle(IntPtr handle)
-            {
-                throw new NotImplementedException();
-            }
+            public void ResetWaitingHandle(IntPtr handle) => RawWaitingEvent.GetEventFromWaitingHandle(handle)->Reset();
 
             public void SetWaitingHandle(IntPtr handle)
             {
-                throw new NotImplementedException();
+                if (!RawWaitingEvent.GetEventFromWaitingHandle(handle)->Set())
+                    return;
+                syscall(_syscallID_futex, (uint*)(SysBool32*)handle, FutexMode.WakeInPrivate, int.MaxValue);
             }
 
             public void DestroyWaitingHandle(IntPtr handle)
             {
-                throw new NotImplementedException();
+                RawWaitingEvent* ptr = RawWaitingEvent.GetEventFromWaitingHandle(handle);
+                FreeMemory(ptr);
             }
 
             public bool WaitForWaitingHandle(IntPtr handle, uint timeout)
             {
-                throw new NotImplementedException();
+                const uint INFINITE = unchecked((uint)Timeout.Infinite);
+                const int EINTR = 4;
+                const int EAGAIN = 11;
+                const int ETIMEDOUT = 110;
+
+                int lastError;
+
+                TimeSpecification ts;
+                TimeSpecification* pTimeout;
+                if (timeout == INFINITE)
+                    pTimeout = null;
+                else
+                {
+                    ts = new TimeSpecification()
+                    {
+                        tv_sec = timeout / 1000,
+                        tv_nsec = (nuint)(timeout % 1000) * 1000_000,
+                    };
+                    pTimeout = &ts;
+                }
+
+                RawWaitingEvent* ptr = RawWaitingEvent.GetEventFromWaitingHandle(handle);
+                if (ptr->IsAutoReset)
+                {
+                    do
+                    {
+                        if (ptr->Reset())
+                            return true;
+                        if (WaitCore(handle, pTimeout))
+                            goto Success;
+
+                        switch (lastError = Marshal.GetLastWin32Error())
+                        {
+                            case EINTR:
+                                goto Continue;
+                            case EAGAIN:
+                                goto Success;
+                            default:
+                                goto Fault;
+                        }
+
+                    Success:
+                        if (ptr->Reset())
+                            return true;
+                        else
+                            goto Continue;
+
+                    Continue:
+                        Thread.Yield();
+                        continue;
+                    } while (true);
+                }
+                else
+                {
+                    do
+                    {
+                        if (ptr->State)
+                            return true;
+                        if (WaitCore(handle, pTimeout))
+                            return true;
+
+                        switch (lastError = Marshal.GetLastWin32Error())
+                        {
+                            case EINTR:
+                                goto Continue;
+                            case EAGAIN:
+                                return true;
+                            default:
+                                goto Fault;
+                        }
+
+                    Continue:
+                        Thread.Yield();
+                        continue;
+                    } while (true);
+                }
+
+            Fault:
+                return (timeout < INFINITE && lastError == ETIMEDOUT) ? false : throw new Win32Exception(lastError);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static bool WaitCore(IntPtr handle, TimeSpecification* timeout) 
+                => syscall(_syscallID_futex, (uint*)handle, FutexMode.WaitInPrivate, Booleans.FalseInt, timeout) == 0;
 
             public bool SleepInRelativeTicks(ulong ticks)
             {
@@ -141,7 +251,7 @@ namespace WitherTorch.Common.Native
 
                 nuint secs = (nuint)(ticks / TimeSpan.TicksPerSecond);
                 nuint nanos = (nuint)((ticks % TimeSpan.TicksPerSecond) * 100);
-                Timespec ts = new Timespec() { tv_sec = secs, tv_nsec = nanos };
+                TimeSpecification ts = new TimeSpecification() { tv_sec = secs, tv_nsec = nanos };
                 while (clock_nanosleep(CLOCK_MONOTONIC, flags: 0, &ts, &ts) == EINTR) ;
                 return true;
             }
@@ -152,7 +262,7 @@ namespace WitherTorch.Common.Native
                 const int TIMER_ABSTIME = 1;
                 const int EINTR = 4;
 
-                Timespec ts;
+                TimeSpecification ts;
                 if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
                     return false;
                 nuint secs = (nuint)(ticks / TimeSpan.TicksPerSecond);
@@ -179,7 +289,7 @@ namespace WitherTorch.Common.Native
             public void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
                 => mprotect(ptr, size, flags);
 
-            private static void* GetImportedMethodPointerCore(string? dllName, string methodName)
+            public static void* GetImportedMethodPointerCore(string? dllName, string methodName)
             {
                 const int RTLD_NOW = 2;
                 const int RTLD_LOCAL = 0;
@@ -191,7 +301,7 @@ namespace WitherTorch.Common.Native
                 return GetImportedMethodPointerCore(pool, module, methodName);
             }
 
-            private static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<string> methodNames)
+            public static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<string> methodNames)
             {
                 const int RTLD_NOW = 2;
                 const int RTLD_LOCAL = 0;
@@ -212,7 +322,7 @@ namespace WitherTorch.Common.Native
                 return pointers;
             }
 
-            private static void* GetImportedMethodPointerCore(ArrayPool<byte> pool, IntPtr module, string methodName)
+            public static void* GetImportedMethodPointerCore(ArrayPool<byte> pool, IntPtr module, string methodName)
             {
                 int length = methodName.Length;
                 byte[] buffer = pool.Rent(length + 1);
@@ -260,7 +370,7 @@ namespace WitherTorch.Common.Native
 #if NET8_0_OR_GREATER
             [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
 #endif
-            private static int gettid_fallback() => (int)syscall_fast(_syscallGetTIDIndex);
+            private static int gettid_fallback() => (int)syscall_fast(_syscallID_gettid);
 
             private enum MemoryMapFlags : uint
             {
@@ -285,8 +395,44 @@ namespace WitherTorch.Common.Native
                 File = 0
             }
 
+            private enum FutexMode : uint
+            {
+                Wait = 0,
+                Wake = 1,
+                FileDescriptor = 2,
+                Requeue = 3,
+                CompareAndRequeue = 4,
+                WakeWithOperation = 5,
+                LockWithPI = 6,
+                UnlockWithPI = 7,
+                TryLockWithPI = 8,
+                WaitForBitset = 9,
+                WakeByBitset = 10,
+                WaitAndRequeueWithPI = 11,
+                CompareAndRequeueWithPI = 12,
+                LockWithPI_2 = 13,
+
+                WithPrivateFlag = 128,
+                WithClockRealTime = 256,
+                CommandMask = ~(WithPrivateFlag | WithClockRealTime),
+
+                WaitInPrivate = (Wait | WithPrivateFlag),
+                WakeInPrivate = (Wake | WithPrivateFlag),
+                RequeueInPrivate = (Requeue | WithPrivateFlag),
+                CompareAndRequeueInPrivate = (CompareAndRequeue | WithPrivateFlag),
+                WakeWithOperationInPrivate = (WakeWithOperation | WithPrivateFlag),
+                LockWithPI_Private = (LockWithPI | WithPrivateFlag),
+                LockWithPI2_Private = (LockWithPI_2 | WithPrivateFlag),
+                UnlockWithPI_Private = (UnlockWithPI | WithPrivateFlag),
+                TryLockWithPI_Private = (TryLockWithPI | WithPrivateFlag),
+                WaitForBitsetInPrivate = (WaitForBitset | WithPrivateFlag),
+                WakeByBitsetInPrivate = (WakeByBitset | WithPrivateFlag),
+                WaitAndRequeueWithPI_Private = (WaitAndRequeueWithPI | WithPrivateFlag),
+                CompareAndRequeueWithPI_Private = (CompareAndRequeueWithPI | WithPrivateFlag)
+            }
+
             [StructLayout(LayoutKind.Sequential)]
-            private struct Timespec
+            private struct TimeSpecification
             {
                 public nuint tv_sec;
                 public nuint tv_nsec;

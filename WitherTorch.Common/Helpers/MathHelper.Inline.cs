@@ -1,4 +1,7 @@
-﻿using InlineIL;
+using System;
+using System.Runtime.CompilerServices;
+
+using InlineIL;
 
 using InlineMethod;
 
@@ -6,88 +9,72 @@ namespace WitherTorch.Common.Helpers
 {
     partial class MathHelper
     {
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static bool ToBoolean(int value, [InlineParameter] bool usePreciseBooleanDefination)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ToBoolean<T>(T value) where T : unmanaged
         {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != Booleans.FalseInt;
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ldc_I4_0();
+            IL.Emit.Cgt_Un();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe bool ToBoolean(void* value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ldc_I4_0();
+            IL.Emit.Cgt_Un();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ref readonly bool ToBooleanUnsafe<T>(in T value) where T : unmanaged
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static unsafe ref readonly bool ToBooleanUnsafe(in void* value)
+        {
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool ToBoolean(uint value, [InlineParameter] bool usePreciseBooleanDefination)
+        public static sbyte BooleanToInt8(bool value)
         {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != Booleans.FalseInt;
+            IL.Push(value);
+            IL.Emit.Conv_I4();
+            return IL.Return<sbyte>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool ToBoolean(long value, [InlineParameter] bool usePreciseBooleanDefination)
+        public static byte BooleanToUInt8(bool value)
         {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != Booleans.FalseLong;
+            IL.Push(value);
+            IL.Emit.Conv_U4();
+            return IL.Return<byte>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool ToBoolean(ulong value, [InlineParameter] bool usePreciseBooleanDefination)
+        public static short BooleanToInt16(bool value)
         {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != Booleans.FalseLong;
+            IL.Push(value);
+            IL.Emit.Conv_I2();
+            return IL.Return<short>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static bool ToBoolean(nint value, [InlineParameter] bool usePreciseBooleanDefination)
+        public static ushort BooleanToUInt16(bool value)
         {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != Booleans.FalseNative;
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static bool ToBoolean(nuint value, [InlineParameter] bool usePreciseBooleanDefination)
-        {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != (nuint)Booleans.FalseNative;
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe bool ToBoolean(void* value, [InlineParameter] bool usePreciseBooleanDefination)
-        {
-            if (usePreciseBooleanDefination)
-            {
-                IL.Push(value);
-                IL.Emit.Conv_U1();
-                return IL.Return<bool>();
-            }
-            return value != null;
+            IL.Push(value);
+            IL.Emit.Conv_U2();
+            return IL.Return<ushort>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]

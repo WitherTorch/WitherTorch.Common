@@ -1,13 +1,10 @@
-using System;
 using System.Runtime.CompilerServices;
-
-using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Native
 {
-    partial class NativeMethods
+    unsafe partial class NativeMethods
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CopyMemory(void* destination, void* source, int sizeInBytes)

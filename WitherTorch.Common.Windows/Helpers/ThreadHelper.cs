@@ -1,6 +1,6 @@
-﻿using System;
 using System.Threading;
 
+using WitherTorch.Common.Native;
 using WitherTorch.Common.Windows.Internals;
 
 namespace WitherTorch.Common.Windows.Helpers
@@ -8,7 +8,7 @@ namespace WitherTorch.Common.Windows.Helpers
     public static unsafe class ThreadHelper
     {
         private static readonly void* _setThreadDescriptionMethodPointer
-            = MethodImportHelper.GetImportedMethodPointer("kernel32.dll", "SetThreadDescription");
+            = NativeMethods.GetImportedMethodPointer("kernel32.dll", "SetThreadDescription");
 
         public static void SetCurrentThreadName(string name)
         {
