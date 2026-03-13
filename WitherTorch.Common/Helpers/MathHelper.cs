@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineIL;
@@ -27,6 +27,76 @@ namespace WitherTorch.Common.Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe nint Abs(nint value) => AbsCore(value, sizeof(nint) * 8 - 1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static byte DivRemForConstantDivisor(byte a, byte b, out byte rem)
+        {
+            rem = unchecked((byte)(a % b));
+            return unchecked((byte)(a / b));
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static sbyte DivRemForConstantDivisor(sbyte a, sbyte b, out sbyte rem)
+        {
+            rem = unchecked((sbyte)(a % b));
+            return unchecked((sbyte)(a / b));
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static short DivRemForConstantDivisor(short a, short b, out short rem)
+        {
+            rem = unchecked((short)(a % b));
+            return unchecked((short)(a / b));
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ushort DivRemForConstantDivisor(ushort a, ushort b, out ushort rem)
+        {
+            rem = unchecked((ushort)(a % b));
+            return unchecked((ushort)(a / b));
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static int DivRemForConstantDivisor(int a, int b, out int rem)
+        {
+            rem = a % b;
+            return a / b;
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static uint DivRemForConstantDivisor(uint a, uint b, out uint rem)
+        {
+            rem = a % b;
+            return a / b;
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static long DivRemForConstantDivisor(long a, long b, out long rem)
+        {
+            rem = a % b;
+            return a / b;
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ulong DivRemForConstantDivisor(ulong a, ulong b, out ulong rem)
+        {
+            rem = a % b;
+            return a / b;
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static nint DivRemForConstantDivisor(nint a, nint b, out nint rem)
+        {
+            rem = a % b;
+            return a / b;
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static nuint DivRemForConstantDivisor(nuint a, nuint b, out nuint rem)
+        {
+            rem = a % b;
+            return a / b;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte DivRem(byte a, byte b, out byte rem)

@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
@@ -244,10 +245,10 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrEmpty(StringBase str) => str is null || str.Length <= 0;
+        public static bool IsNullOrEmpty([NotNullWhen(false)] StringBase? str) => str is null || str.Length <= 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrWhiteSpace(StringBase str) => str is null || str.IsFullyWhitespaced();
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] StringBase? str) => str is null || str.IsFullyWhitespaced();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe nuint FindLength<T>(T* ptr) where T : unmanaged
