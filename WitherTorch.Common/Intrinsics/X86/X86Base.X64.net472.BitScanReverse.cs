@@ -1,68 +1,71 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Runtime.CompilerServices;
+
+using InlineIL;
 
 namespace WitherTorch.Common.Intrinsics.X86
 {
     partial class X86Base
     {
-        unsafe partial class X64
+        partial class X64
         {
 #if ((X86_ARCH && B64_ARCH) || ANYCPU)
-            /*
-             * extern "C"
-             *
-             * unsigned long bsr_wrap(__int64 value)
-             * {
-             *     unsigned long result;
-             *     _BitScanReverse64(&result, value);
-             *     return result;
-             * }
-             */
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void* BuildBsrAsm()
+            private static void InjectBsrAsm()
             {
-#if B64_ARCH
-                return BuildBsrAsm_X64();
-#else
-                return Helpers.PlatformHelper.IsX64 ? BuildBsrAsm_X64() : null;
+#if !B64_ARCH
+                if (!Helpers.PlatformHelper.IsX64)
+                    return;
 #endif
+                InjectBsrAsm_X64();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void* BuildBsrAsm_X64()
-                => WTCommon.SystemBuffersExists ? StoreAsSpan.BuildBsrAsm_X64() : StoreAsArray.BuildBsrAsm_X64();
+            private static void InjectBsrAsm_X64()
+            {
+                if (WTCommon.SystemBuffersExists)
+                    StoreAsSpan.InjectBsrAsm_X64();
+                else 
+                    StoreAsArray.InjectBsrAsm_X64();
+            }
 
             partial class StoreAsArray
             {
                 [MethodImpl(MethodImplOptions.NoInlining)]
-                public static void* BuildBsrAsm_X64()
+                public static void InjectBsrAsm_X64()
                 {
-                    const int Length = 7;
-                    byte[] data = new byte[Length] { 
+                    const int Length = 8;
+                    byte[] data = new byte[Length] {
                         0x48, 0x0F, 0xBD, 0xC1,
-                        0xC2, 0x00, 0x00 
+                        0xC3, 
+                        0xCC, 0xCC, 0xCC
                     };
-                    return AsmCodeHelper.PackAsmCodeIntoNativeMemory(data, Length);
+                    IL.Emit.Ldtoken(MethodRef.Method(typeof(X64), nameof(BitScanReverse)));
+                    IL.Pop(out RuntimeMethodHandle method);
+                    AsmCodeHelper.InjectAsmCode(method, data, Length);
                 }
             }
 
             partial class StoreAsSpan
             {
                 [MethodImpl(MethodImplOptions.NoInlining)]
-                public static void* BuildBsrAsm_X64()
+                public static void InjectBsrAsm_X64()
                 {
-                    const int Length = 7;
+                    const int Length = 8;
                     ReadOnlySpan<byte> data = [
                         0x48, 0x0F, 0xBD, 0xC1,
-                        0xC2, 0x00, 0x00
+                        0xC3, 
+                        0xCC, 0xCC, 0xCC
                     ];
-                    return AsmCodeHelper.PackAsmCodeIntoNativeMemory(data, Length);
+                    IL.Emit.Ldtoken(MethodRef.Method(typeof(X64), nameof(BitScanReverse)));
+                    IL.Pop(out RuntimeMethodHandle method);
+                    AsmCodeHelper.InjectAsmCode(method, data, Length);
                 }
             }
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void* BuildBsrAsm() => null;
+            private static void InjectBsrAsm() {};
 #endif
         }
     }

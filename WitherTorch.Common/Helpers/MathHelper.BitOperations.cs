@@ -1,6 +1,5 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
-using System.Runtime.CompilerServices;
 
 using InlineMethod;
 

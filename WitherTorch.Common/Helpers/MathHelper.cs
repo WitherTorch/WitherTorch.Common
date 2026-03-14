@@ -142,7 +142,7 @@ namespace WitherTorch.Common.Helpers
 #else
             if (X86Base.IsSupported)
             {
-                (int quotient, rem) = X86Base.DivRem(a, b);
+                (int quotient, rem) = X86Base.DivRem((uint)a, -BooleanToInt32(a < 0), b);
                 return quotient;
             }
 
@@ -159,7 +159,7 @@ namespace WitherTorch.Common.Helpers
 #else
             if (X86Base.IsSupported)
             {
-                (uint quotient, rem) = X86Base.DivRem(a, b);
+                (uint quotient, rem) = X86Base.DivRem(a, 0, b);
                 return quotient;
             }
 
@@ -180,11 +180,6 @@ namespace WitherTorch.Common.Helpers
             if (X86Base.X64.IsSupported)
             {
                 (long quotient, rem) = X86Base.X64.DivRem((ulong)a, -BooleanToInt64(a < 0), b);
-                return quotient;
-            }
-            if (X86Base.IsSupported && b <= int.MaxValue)
-            {
-                (int quotient, rem) = X86Base.DivRem(a, (int)b);
                 return quotient;
             }
 

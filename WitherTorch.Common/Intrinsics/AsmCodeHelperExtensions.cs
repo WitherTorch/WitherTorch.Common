@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Intrinsics
@@ -12,6 +12,13 @@ namespace WitherTorch.Common.Intrinsics
             {
                 fixed (byte* ptr = span)
                     return AsmCodeHelper.PackAsmCodeIntoNativeMemory(ptr, length);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe void InjectAsmCode(RuntimeMethodHandle method, in ReadOnlySpan<byte> span, nuint length)
+            {
+                fixed (byte* ptr = span)
+                    AsmCodeHelper.InjectAsmCode(method, ptr, length);
             }
         }
     }

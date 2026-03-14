@@ -1,70 +1,79 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Runtime.CompilerServices;
+
+using InlineIL;
 
 namespace WitherTorch.Common.Intrinsics.X86
 {
     partial class X86Base
     {
-        unsafe partial class X64
+        partial class X64
         {
 #if ((X86_ARCH && B64_ARCH) || ANYCPU)
-            /*
-             * extern "C"
-             *
-             * using uint64 = unsigned __int64;
-             * 
-             * uint64 __cdecl udiv64_wrapper(uint64 lower, uint64 upper, uint64 divisor, uint64* remainder)
-             * {
-             *     return _udiv128(upper, lower, divisor, remainder);
-             * }
-             */
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void* BuildUDiv128Asm()
+            private static void InjectUDiv128Asm()
             {
-#if B64_ARCH
-                return BuildUDiv128Asm_X64();
-#else
-                return Helpers.PlatformHelper.IsX64 ? BuildUDiv128Asm_X64() : null;
+#if !B64_ARCH
+                if (!Helpers.PlatformHelper.IsX64)
+                    return;
 #endif
+                InjectUDiv128Asm_X64();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void* BuildUDiv128Asm_X64()
-                => WTCommon.SystemBuffersExists ? StoreAsSpan.BuildUDiv128Asm_X64() : StoreAsArray.BuildUDiv128Asm_X64();
+            private static void InjectUDiv128Asm_X64()
+            {
+                if (WTCommon.SystemBuffersExists)
+                    StoreAsSpan.InjectUDiv128Asm_X64();
+                else
+                    StoreAsArray.InjectUDiv128Asm_X64();
+            }
 
             partial class StoreAsArray
             {
                 [MethodImpl(MethodImplOptions.NoInlining)]
-                public static void* BuildUDiv128Asm_X64()
+                public static void InjectUDiv128Asm_X64()
                 {
-                    const int Length = 12;
+                    const int Length = 20;
                     byte[] data = new byte[Length] {
-                        0x48, 0x89, 0xC8, 0x49, 
-                        0xF7, 0xF0, 0x49, 0x89, 
-                        0x11, 0xC2, 0x00, 0x00
+                        0x48, 0x89, 0xD0,
+                        0x4C, 0x89, 0xC2,
+                        0x49, 0xF7, 0xF1,
+                        0x48, 0x89, 0x01,
+                        0x48, 0x89, 0x51, 0x08,
+                        0x48, 0x89, 0xC8,
+                        0xC3
                     };
-                    return AsmCodeHelper.PackAsmCodeIntoNativeMemory(data, Length);
+                    IL.Emit.Ldtoken(MethodRef.Method(typeof(X64), nameof(DivRem), typeof(ulong), typeof(ulong), typeof(ulong)));
+                    IL.Pop(out RuntimeMethodHandle method);
+                    AsmCodeHelper.InjectAsmCode(method, data, Length);
                 }
             }
 
             partial class StoreAsSpan
             {
                 [MethodImpl(MethodImplOptions.NoInlining)]
-                public static void* BuildUDiv128Asm_X64()
+                public static void InjectUDiv128Asm_X64()
                 {
-                    const int Length = 12;
+                    const int Length = 20;
                     ReadOnlySpan<byte> data = [
-                        0x48, 0x89, 0xC8, 0x49,
-                        0xF7, 0xF0, 0x49, 0x89,
-                        0x11, 0xC2, 0x00, 0x00
+                        0x48, 0x89, 0xD0,
+                        0x4C, 0x89, 0xC2,
+                        0x49, 0xF7, 0xF1,
+                        0x48, 0x89, 0x01,
+                        0x48, 0x89, 0x51, 0x08,
+                        0x48, 0x89, 0xC8,
+                        0xC3
                     ];
-                    return AsmCodeHelper.PackAsmCodeIntoNativeMemory(data, Length);
+                    IL.Emit.Ldtoken(MethodRef.Method(typeof(X64), nameof(DivRem), typeof(ulong), typeof(ulong), typeof(ulong)));
+                    IL.Pop(out RuntimeMethodHandle method);
+                    AsmCodeHelper.InjectAsmCode(method, data, Length);
                 }
             }
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void* BuildUDiv128Asm() => null;
+            private static void InjectUDiv128Asm() {};
 #endif
         }
     }

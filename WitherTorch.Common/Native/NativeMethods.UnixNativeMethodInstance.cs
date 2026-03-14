@@ -18,7 +18,7 @@ namespace WitherTorch.Common.Native
         [SuppressUnmanagedCodeSecurity]
         private sealed unsafe class UnixNativeMethodInstance : INativeMethodInstance
         {
-            private static readonly void* _gettidFunc;
+            private static readonly void* _gettidFunc, _cacheflushFunc;
             private static readonly nint _syscallID_gettid, _syscallID_futex;
 
             static UnixNativeMethodInstance()
@@ -50,6 +50,7 @@ namespace WitherTorch.Common.Native
 #endif
                 }
                 _gettidFunc = func;
+                _cacheflushFunc = GetImportedMethodPointerCore(null, nameof(cacheflush));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,7 +91,15 @@ namespace WitherTorch.Common.Native
             private static extern void* mmap(void* ptr, nuint length, ProtectMemoryPageFlags prot, MemoryMapFlags flags, int fd, nint offset);
 
             [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
-            private static extern void* mprotect(void* ptr, nuint length, ProtectMemoryPageFlags flags);
+            private static extern int mprotect(void* ptr, nuint length, ProtectMemoryPageFlags flags);
+
+            public static int cacheflush(void* addr, int nbytes, int cache)
+            {
+                void* func = _cacheflushFunc;
+                if (func is null)
+                    return 0;
+                return ((delegate* unmanaged[Cdecl]<void*, int, int, int>)func)(addr, nbytes, cache);
+            }
 
             [SuppressGCTransition]
             [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
@@ -238,7 +247,7 @@ namespace WitherTorch.Common.Native
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static bool WaitCore(IntPtr handle, TimeSpecification* timeout) 
+            private static bool WaitCore(IntPtr handle, TimeSpecification* timeout)
                 => syscall(_syscallID_futex, (uint*)handle, FutexMode.WaitInPrivate, Booleans.FalseInt, timeout) == 0;
 
             public bool SleepInRelativeTicks(ulong ticks)
@@ -288,6 +297,20 @@ namespace WitherTorch.Common.Native
 
             public void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags)
                 => mprotect(ptr, size, flags);
+
+            public void FlushInstructionCache(void* ptr, nuint size)
+            {
+                const int ICACHE = 1 << 0;
+                const int DCACHE = 1 << 1;
+                const int BCACHE = ICACHE | DCACHE;
+                for (; size > int.MaxValue; size -= int.MaxValue, ptr = (byte*)ptr + int.MaxValue)
+                {
+                    if (cacheflush(ptr, int.MaxValue, BCACHE) != 0)
+                        return;
+                }
+                if (size > 0)
+                    cacheflush(ptr, (int)size, BCACHE);
+            }
 
             public static void* GetImportedMethodPointerCore(string? dllName, string methodName)
             {

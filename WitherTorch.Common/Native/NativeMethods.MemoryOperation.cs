@@ -425,5 +425,125 @@ namespace WitherTorch.Common.Native
                     break;
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void FlushInstructionCache(void* ptr, int size)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+                default:
+                    _methodInstance.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void FlushInstructionCache(void* ptr, uint size)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, size);
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, size);
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, size);
+                    break;
+                default:
+                    _methodInstance.FlushInstructionCache(ptr, size);
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void FlushInstructionCache(void* ptr, long size)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)));
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)));
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)));
+                    break;
+                default:
+                    _methodInstance.FlushInstructionCache(ptr, unchecked((nuint)MathHelper.MakeUnsigned(size)));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void FlushInstructionCache(void* ptr, ulong size)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, unchecked((nuint)size));
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, unchecked((nuint)size));
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, unchecked((nuint)size));
+                    break;
+                default:
+                    _methodInstance.FlushInstructionCache(ptr, unchecked((nuint)size));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void FlushInstructionCache(void* ptr, nint size)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+                default:
+                    _methodInstance.FlushInstructionCache(ptr, MathHelper.MakeUnsigned(size));
+                    break;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void FlushInstructionCache(void* ptr, nuint size)
+        {
+            switch (_methodInstance)
+            {
+                case Win32NativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, size);
+                    break;
+                case UnixNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, size);
+                    break;
+                case FallbackNativeMethodInstance inst:
+                    inst.FlushInstructionCache(ptr, size);
+                    break;
+                default:
+                    _methodInstance.FlushInstructionCache(ptr, size);
+                    break;
+            }
+        }
     }
 }

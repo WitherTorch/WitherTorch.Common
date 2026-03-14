@@ -105,6 +105,11 @@ namespace WitherTorch.Common.Native
                 // Do nothing
             }
 
+            public void FlushInstructionCache(void* ptr, nuint size)
+            {
+                // Do nothing
+            }
+
             [Inline(InlineBehavior.Remove)]
             private static void SleepCore(ulong ticks) => Thread.Sleep((int)MathHelper.MakeSigned(ticks / TimeSpan.TicksPerMillisecond));
         }

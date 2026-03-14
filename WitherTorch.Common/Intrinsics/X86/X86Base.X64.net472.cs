@@ -1,4 +1,6 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
+using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
@@ -7,43 +9,137 @@ namespace WitherTorch.Common.Intrinsics.X86
 {
     partial class X86Base
     {
-        unsafe partial class X64
+        partial class X64
         {
             private static readonly bool _isSupported;
-            private static readonly void* _bsfAsm, _bsrAsm, _div128Asm, _udiv128Asm;
 
             static X64()
             {
                 if (!PlatformHelper.IsX64)
                     return;
                 _isSupported = true;
-                _bsfAsm = BuildBsfAsm();
-                _bsrAsm = BuildBsrAsm();
-                _div128Asm = BuildDiv128Asm();
-                _udiv128Asm = BuildUDiv128Asm();
             }
 
             public static partial bool IsSupported => _isSupported;
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static partial uint BitScanForward(ulong value) => ((delegate* unmanaged[Cdecl]<ulong, uint>)_bsfAsm)(value);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static partial uint BitScanReverse(ulong value) => ((delegate* unmanaged[Cdecl]<ulong, uint>)_bsrAsm)(value);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static partial (long Quotient, long Remainder) DivRem(ulong lower, long upper, long divisor)
+            [DebuggerHidden]
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+            public static partial uint BitScanForward(ulong value)
             {
-                long remainder;
-                long quotient = ((delegate* unmanaged[Cdecl]<ulong, long, long, long*, long>)_div128Asm)(lower, upper, divisor, &remainder);
-                return (quotient, remainder);
+                InjectBsfAsm();
+
+                switch (value)
+                {
+                    case ulong.MaxValue:
+                        return 0;
+                    case 0:
+                        return 64;
+                    default:
+                        uint result = 0;
+                        while ((value & 1) == 0)
+                        {
+                            value >>= 1;
+                            result++;
+                        }
+                        return result;
+                }
             }
 
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DebuggerHidden]
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+            public static partial uint BitScanReverse(ulong value)
+            {
+                InjectBsrAsm();
+
+                switch (value)
+                {
+                    case ulong.MaxValue:
+                        return 63;
+                    case 0:
+                        return 0;
+                    default:
+                        for (int i = 63; i >= 0; i--)
+                        {
+                            if (((value >> i) & 1) != 0)
+                                return (uint)i;
+                        }
+                        return 0;
+                }
+            }
+
+            [DebuggerHidden]
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+            public static partial (long Quotient, long Remainder) DivRem(ulong lower, long upper, long divisor)
+            {
+                InjectDiv128Asm();
+
+                if (divisor == 0)
+                    throw new DivideByZeroException();
+
+                if (upper == ((long)lower >> 63))
+                    return ((long)lower / divisor, (long)lower % divisor);
+
+                bool isNegativeDividend = upper < 0;
+                bool isNegativeDivisor = divisor < 0;
+                bool isNegativeQuotient = isNegativeDividend ^ isNegativeDivisor;
+
+                ulong uUpper = (ulong)upper;
+                ulong uLower = lower;
+                if (isNegativeDividend)
+                {
+                    uLower = ~uLower;
+                    uUpper = ~uUpper;
+                    if (++uLower == 0) uUpper++;
+                }
+                ulong uDivisor = (ulong)(isNegativeDivisor ? -divisor : divisor);
+
+                if (uUpper >= uDivisor) throw new OverflowException();
+
+                (ulong uQ, ulong uR) = DivRem(uLower, uUpper, uDivisor);
+
+                long q = (long)uQ;
+                long r = (long)uR;
+
+                if (isNegativeQuotient) q = -q;
+                if (isNegativeDividend) r = -r;
+
+                return (q, r);
+            }
+
+            [DebuggerHidden]
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
             public static partial (ulong Quotient, ulong Remainder) DivRem(ulong lower, ulong upper, ulong divisor)
             {
-                ulong remainder;
-                ulong quotient = ((delegate* unmanaged[Cdecl]<ulong, ulong, ulong, ulong*, ulong>)_udiv128Asm)(lower, upper, divisor, &remainder);
+                InjectUDiv128Asm();
+
+                if (divisor == 0)
+                    throw new DivideByZeroException();
+
+                if (upper == 0)
+                    return (lower / divisor, lower % divisor);
+
+                if (upper >= divisor)
+                    throw new OverflowException("Quotient is too large (Integer Overflow).");
+
+                ulong quotient = 0;
+                ulong remainder = upper;
+
+                for (int i = 63; i >= 0; i--)
+                {
+                    ulong bit = (lower >> i) & 1;
+                    remainder = (remainder << 1) | bit;
+
+                    if (remainder >= divisor)
+                    {
+                        remainder -= divisor;
+                        quotient |= (1UL << i);
+                    }
+                }
+
                 return (quotient, remainder);
             }
 

@@ -1,5 +1,6 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
@@ -14,7 +15,7 @@ namespace WitherTorch.Common.Intrinsics.X86
     unsafe partial class X86Base
     {
         private static readonly bool _isSupported;
-        private static readonly void* _cpuIdAsm, _bsfAsm, _bsrAsm, _div64Asm, _udiv64Asm;
+        private static readonly void* _cpuIdAsm, _div64Asm, _udiv64Asm;
 
         static X86Base()
         {
@@ -22,8 +23,6 @@ namespace WitherTorch.Common.Intrinsics.X86
                 return;
             _isSupported = true;
             _cpuIdAsm = BuildCpuIdAsm();
-            _bsfAsm = BuildBsfAsm();
-            _bsrAsm = BuildBsrAsm();
             _div64Asm = BuildDiv64Asm();
             _udiv64Asm = BuildUDiv64Asm();
         }
@@ -39,11 +38,53 @@ namespace WitherTorch.Common.Intrinsics.X86
             return UnsafeHelper.As<Registers, (int Eax, int Ebx, int Ecx, int Edx)>(registers);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial uint BitScanForward(uint value) => ((delegate* unmanaged[Cdecl]<uint, uint>)_bsfAsm)(value);
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static partial uint BitScanForward(uint value)
+        {
+            InjectBsfAsm();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial uint BitScanReverse(uint value) => ((delegate* unmanaged[Cdecl]<uint, uint>)_bsrAsm)(value);
+            switch (value)
+            {
+                case uint.MaxValue:
+                    return 0;
+                case 0:
+                    return 32;
+                default:
+                    uint result = 0;
+                    while ((value & 1) == 0)
+                    {
+                        value >>= 1;
+                        result++;
+                    }
+                    return result;
+            }
+        }
+
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static partial uint BitScanReverse(uint value)
+        {
+            InjectBsrAsm();
+
+            switch (value)
+            {
+                case uint.MaxValue:
+                    return 31;
+                case 0:
+                    return 0;
+                default:
+                    for (int i = 31; i >= 0; i--)
+                    {
+                        if (((value >> i) & 1) != 0)
+                            return (uint)i;
+                    }
+                    return 0;
+            }
+        }
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial (int Quotient, int Remainder) DivRem(long dividend, int divisor)
@@ -68,7 +109,6 @@ namespace WitherTorch.Common.Intrinsics.X86
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial (uint Quotient, uint Remainder) DivRem(uint lower, uint upper, uint divisor)
             => DivRem(unchecked((ulong)upper << 32 | lower), divisor);
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial (nint Quotient, nint Remainder) DivRem(nuint lower, nint upper, nint divisor)
             => UnsafeHelper.PointerSizeConstant switch

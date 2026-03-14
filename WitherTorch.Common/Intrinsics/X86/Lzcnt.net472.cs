@@ -1,4 +1,5 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Intrinsics.X86
@@ -6,14 +7,12 @@ namespace WitherTorch.Common.Intrinsics.X86
     unsafe partial class Lzcnt
     {
         private static readonly bool _isSupported;
-        private static readonly void* _lzcntFunc;
 
-        unsafe static Lzcnt()
+        static Lzcnt()
         {
             if (!CheckIsSupported())
                 return;
             _isSupported = true;
-            _lzcntFunc = BuildLzcntAsm();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -22,7 +21,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             if (!X86Base.IsSupported)
                 return false;
             const int LzcntMask = 1 << 5;
-            return (X86Base.CpuId(unchecked((int)0x80000001), 0).Ebx & LzcntMask) == LzcntMask;
+            return (X86Base.CpuId(unchecked((int)0x80000001), 0).Ecx & LzcntMask) == LzcntMask;
         }
 
         public static partial bool IsSupported
@@ -31,8 +30,32 @@ namespace WitherTorch.Common.Intrinsics.X86
             get => _isSupported;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial uint LeadingZeroCount(uint value) => ((delegate* unmanaged[Cdecl]<uint, uint>)_lzcntFunc)(value);
+        [DebuggerHidden]
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+        public static partial uint LeadingZeroCount(uint value)
+        {
+            InjectLzcntAsm();
+
+            switch (value)
+            {
+                case uint.MaxValue:
+                    return 0;
+                case 0:
+                    return 32;
+                default:
+                    {
+                        uint count = 0;
+                        for (int i = 31; i >= 0; i--)
+                        {
+                            if (((value >> i) & 1) != 0)
+                                break;
+                            count++;
+                        }
+                        return count;
+                    }
+            }
+        }
 
         private static partial class StoreAsArray { }
 

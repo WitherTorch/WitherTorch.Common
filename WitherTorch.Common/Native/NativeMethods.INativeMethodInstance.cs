@@ -28,6 +28,7 @@ namespace WitherTorch.Common.Native
             void MoveMemory(void* destination, void* source, nuint sizeInBytes);
             void* AllocMemoryPage(nuint size, ProtectMemoryPageFlags flags);
             void ProtectMemoryPage(void* ptr, nuint size, ProtectMemoryPageFlags flags);
+            void FlushInstructionCache(void* ptr, nuint size);
         }
 
         [Flags]

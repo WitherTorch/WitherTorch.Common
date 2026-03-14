@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Text;
 
 using InlineMethod;
 
@@ -17,14 +19,14 @@ namespace WitherTorch.Common.Intrinsics
         private static byte* _pageStartAddress, _pageNextAddress, _pageEndAddress;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void* PackAsmCodeIntoNativeMemory(byte[] source, nuint length)
+        public static void* PackAsmCodeIntoNativeMemory(byte[] source, nuint length)
         {
             fixed (byte* ptr = source)
                 return PackAsmCodeIntoNativeMemory(ptr, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void* PackAsmCodeIntoNativeMemory(byte* source, nuint length)
+        public static void* PackAsmCodeIntoNativeMemory(byte* source, nuint length)
         {
             byte* result = GetValidStartAddress(length);
             UnsafeHelper.CopyBlockUnaligned(result, source, length);
@@ -76,6 +78,47 @@ namespace WitherTorch.Common.Intrinsics
         {
             nuint quotient = a / b;
             return quotient + MathHelper.BooleanToNativeUnsigned((a - quotient * b) != 0);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InjectAsmCode(RuntimeMethodHandle method, byte[] source, nuint length)
+        {
+            fixed (byte* ptr = source)
+                InjectAsmCode(method, ptr, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InjectAsmCode(RuntimeMethodHandle method, byte* source, nuint length)
+        {
+            RuntimeHelpers.PrepareMethod(method);
+
+            void* dest = (void*)method.GetFunctionPointer();
+
+            while (true)
+            {
+                switch (*(byte*)dest)
+                {
+                    case 0xE8:
+                    case 0xE9:
+                        int offset = *(int*)((byte*)dest + 1);
+                        dest = (byte*)dest + 5 + offset;
+                        continue;
+                    case 0xEB:
+                        sbyte shortOffset = *(sbyte*)((byte*)dest + 1);
+                        dest = (byte*)dest + 2 + shortOffset;
+                        continue;
+                    default:
+                        goto OutOfLoop;
+                }
+            }
+        OutOfLoop:
+
+            NativeMethods.ProtectMemoryPage(dest, length, 
+                NativeMethods.ProtectMemoryPageFlags.CanRead | 
+                NativeMethods.ProtectMemoryPageFlags.CanWrite | 
+                NativeMethods.ProtectMemoryPageFlags.CanExecute);
+            UnsafeHelper.CopyBlock(dest, source, length);
+            NativeMethods.FlushInstructionCache(dest, length);
         }
     }
 }
