@@ -151,9 +151,12 @@ namespace WitherTorch.Common.Helpers
 
         internal static int TrailingZeroCountSoftwareFallback(ulong value)
         {
-            return UnsafeHelper.AddByteOffset(
-                ref TrailingZeroCountDeBruijn32[0],
-                (nuint)(int)((((value ^ (value - 1)) * 0x03F79D71B4CB0A89uL) >> 58)));
+            uint lo = (uint)value;
+
+            if (lo == 0)
+                return 32 + TrailingZeroCount((uint)(value >> 32));
+
+            return TrailingZeroCount(lo);
         }
     }
 }
