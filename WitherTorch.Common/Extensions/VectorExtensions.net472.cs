@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Diagnostics;
 using System.Numerics;
@@ -13,7 +13,7 @@ using WitherTorch.Common.Intrinsics;
 
 namespace WitherTorch.Common.Extensions
 {
-    partial class VectorExtensions
+    unsafe partial class VectorExtensions
     {
         public static partial ulong ExtractMostSignificantBits<T>(this in Vector<T> _this) where T : struct
             => UnsafeHelper.SizeOf<Vector<T>>() switch
@@ -26,42 +26,35 @@ namespace WitherTorch.Common.Extensions
             };
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe ulong ExtractMostSignificantBits_64<T>(in Vector<T> vector) where T : struct
-            => ExtractMostSignificantBitsCore<T>(
-                UnsafeHelper.As<Vector<T>, ulong>(ref UnsafeHelper.AsRefIn(in vector)));
+        private static ulong ExtractMostSignificantBits_64<T>(in Vector<T> vector) where T : struct
+            => ExtractMostSignificantBitsCore<T>(*(ulong*)UnsafeHelper.AsPointerIn(in vector));
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe ulong ExtractMostSignificantBits_128<T>(in Vector<T> vector) where T : struct
-            => ExtractMostSignificantBitsCore_128<T>(
-                in UnsafeHelper.As<Vector<T>, Vector<ulong>>(ref UnsafeHelper.AsRefIn(in vector)), 
-                sizeof(ulong) / sizeof(T));
+        private static ulong ExtractMostSignificantBits_128<T>(in Vector<T> vector) where T : struct
+            => ExtractMostSignificantBitsCore_128<T>((ulong*)UnsafeHelper.AsPointerIn(in vector), sizeof(ulong) / sizeof(T));
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe ulong ExtractMostSignificantBits_256<T>(in Vector<T> vector) where T : struct 
-            => ExtractMostSignificantBitsCore_256<T>(
-                in UnsafeHelper.As<Vector<T>, Vector<ulong>>(ref UnsafeHelper.AsRefIn(in vector)),
-                sizeof(ulong) / sizeof(T));
+        private static ulong ExtractMostSignificantBits_256<T>(in Vector<T> vector) where T : struct
+            => ExtractMostSignificantBitsCore_256<T>((ulong*)UnsafeHelper.AsPointerIn(in vector), sizeof(ulong) / sizeof(T));
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe ulong ExtractMostSignificantBits_512<T>(in Vector<T> vector) where T : struct
-            => ExtractMostSignificantBitsCore_512<T>(
-                in UnsafeHelper.As<Vector<T>, Vector<ulong>>(ref UnsafeHelper.AsRefIn(in vector)),
-                sizeof(ulong) / sizeof(T));
+        private static ulong ExtractMostSignificantBits_512<T>(in Vector<T> vector) where T : struct
+            => ExtractMostSignificantBitsCore_512<T>((ulong*)UnsafeHelper.AsPointerIn(in vector), sizeof(ulong) / sizeof(T));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ulong ExtractMostSignificantBitsCore_128<T>(in Vector<ulong> vector, int bitCountPer64) where T : struct
+        private static ulong ExtractMostSignificantBitsCore_128<T>(ulong* vector, int bitCountPer64) where T : struct
             => ExtractMostSignificantBitsCore<T>(vector[0]) |
             (ExtractMostSignificantBitsCore<T>(vector[1]) << bitCountPer64);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ulong ExtractMostSignificantBitsCore_256<T>(in Vector<ulong> vector, int bitCountPer64) where T : struct
+        private static ulong ExtractMostSignificantBitsCore_256<T>(ulong* vector, int bitCountPer64) where T : struct
             => ExtractMostSignificantBitsCore<T>(vector[0]) |
             (ExtractMostSignificantBitsCore<T>(vector[1]) << bitCountPer64) |
             (ExtractMostSignificantBitsCore<T>(vector[2]) << (bitCountPer64 * 2)) |
             (ExtractMostSignificantBitsCore<T>(vector[3]) << (bitCountPer64 * 3));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static ulong ExtractMostSignificantBitsCore_512<T>(in Vector<ulong> vector, int bitCountPer64) where T : struct
+        private static ulong ExtractMostSignificantBitsCore_512<T>(ulong* vector, int bitCountPer64) where T : struct
             => ExtractMostSignificantBitsCore<T>(vector[0]) |
             (ExtractMostSignificantBitsCore<T>(vector[1]) << bitCountPer64) |
             (ExtractMostSignificantBitsCore<T>(vector[2]) << (bitCountPer64 * 2)) |
