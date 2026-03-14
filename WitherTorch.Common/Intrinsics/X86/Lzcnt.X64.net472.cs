@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.Common.Intrinsics.X86
 {
     partial class Lzcnt
@@ -39,24 +41,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectLzcntAsm();
 
-                switch (value)
-                {
-                    case ulong.MaxValue:
-                        return 0;
-                    case 0:
-                        return 64;
-                    default:
-                        {
-                            uint count = 0;
-                            for (int i = 63; i >= 0; i--)
-                            {
-                                if (((value >> i) & 1) != 0)
-                                    break;
-                                count++;
-                            }
-                            return count;
-                        }
-                }
+                return 31UL ^ (ulong)MathHelper.Log2SoftwareFallback(value);
             }
 
             private static partial class StoreAsArray { }

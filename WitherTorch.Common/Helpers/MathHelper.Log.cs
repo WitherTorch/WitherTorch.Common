@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -114,7 +114,7 @@ namespace WitherTorch.Common.Helpers
                 }
             };
 
-        private static unsafe int Log2SoftwareFallback(uint value)
+        internal static int Log2SoftwareFallback(uint value)
         {
             // The 0->0 contract is fulfilled by setting the LSB to 1.
             // Log(1) is 0, and setting the LSB for values > 1 does not change the log2 result.
@@ -135,7 +135,7 @@ namespace WitherTorch.Common.Helpers
                 (uint)(int)((value * 0x07C4ACDDu) >> 27));
         }
 
-        private static unsafe int Log2SoftwareFallback(ulong value)
+        internal static int Log2SoftwareFallback(ulong value)
         {
             value |= 1;
 

@@ -139,8 +139,7 @@ namespace WitherTorch.Common.Helpers
                 }
             };
 
-
-        private static int TrailingZeroCountSoftwareFallback(uint value)
+        internal static int TrailingZeroCountSoftwareFallback(uint value)
         {
             // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
             return UnsafeHelper.AddByteOffset(
@@ -150,7 +149,7 @@ namespace WitherTorch.Common.Helpers
                 (nuint)(int)(((value & (uint)-(int)value) * 0x077CB531u) >> 27)); // Multi-cast mitigates redundant conv.u8
         }
 
-        private static int TrailingZeroCountSoftwareFallback(ulong value)
+        internal static int TrailingZeroCountSoftwareFallback(ulong value)
         {
             return UnsafeHelper.AddByteOffset(
                 ref TrailingZeroCountDeBruijn32[0],

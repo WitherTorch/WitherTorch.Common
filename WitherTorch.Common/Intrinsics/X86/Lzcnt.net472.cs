@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.Common.Intrinsics.X86
 {
     unsafe partial class Lzcnt
@@ -37,24 +39,7 @@ namespace WitherTorch.Common.Intrinsics.X86
         {
             InjectLzcntAsm();
 
-            switch (value)
-            {
-                case uint.MaxValue:
-                    return 0;
-                case 0:
-                    return 32;
-                default:
-                    {
-                        uint count = 0;
-                        for (int i = 31; i >= 0; i--)
-                        {
-                            if (((value >> i) & 1) != 0)
-                                break;
-                            count++;
-                        }
-                        return count;
-                    }
-            }
+            return 31u ^ (uint)MathHelper.Log2SoftwareFallback(value);
         }
 
         private static partial class StoreAsArray { }

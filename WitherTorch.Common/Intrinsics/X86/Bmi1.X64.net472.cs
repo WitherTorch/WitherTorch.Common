@@ -4,6 +4,10 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
+using InlineIL;
+
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.Common.Intrinsics.X86
 {
     partial class Bmi1
@@ -41,21 +45,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectTzcntAsm();
 
-                switch (value)
-                {
-                    case ulong.MaxValue:
-                        return 0;
-                    case 0:
-                        return 64;
-                    default:
-                        ulong result = 0;
-                        while ((value & 1) == 0)
-                        {
-                            value >>= 1;
-                            result++;
-                        }
-                        return result;
-                }
+                return (uint)MathHelper.TrailingZeroCountSoftwareFallback(value);
             }
 
             private static partial class StoreAsArray { }

@@ -29,21 +29,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectBsfAsm();
 
-                switch (value)
-                {
-                    case ulong.MaxValue:
-                        return 0;
-                    case 0:
-                        return 64;
-                    default:
-                        uint result = 0;
-                        while ((value & 1) == 0)
-                        {
-                            value >>= 1;
-                            result++;
-                        }
-                        return result;
-                }
+                return (uint)MathHelper.TrailingZeroCountSoftwareFallback(value);
             }
 
             [DebuggerHidden]
@@ -53,20 +39,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectBsrAsm();
 
-                switch (value)
-                {
-                    case ulong.MaxValue:
-                        return 63;
-                    case 0:
-                        return 0;
-                    default:
-                        for (int i = 63; i >= 0; i--)
-                        {
-                            if (((value >> i) & 1) != 0)
-                                return (uint)i;
-                        }
-                        return 0;
-                }
+                return (uint)MathHelper.Log2SoftwareFallback(value);
             }
 
             [DebuggerHidden]
