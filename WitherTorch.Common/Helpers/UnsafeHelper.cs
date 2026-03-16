@@ -534,11 +534,7 @@ namespace WitherTorch.Common.Helpers
 #endif
         }
 
-#if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
         public static TTo As<TFrom, TTo>(TFrom source)
         {
 #if NET8_0_OR_GREATER
