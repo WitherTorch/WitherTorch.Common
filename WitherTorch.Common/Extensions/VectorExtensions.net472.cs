@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
-using WitherTorch.Common.Intrinsics;
 
 #pragma warning disable CS8500
 
@@ -19,9 +18,9 @@ namespace WitherTorch.Common.Extensions
             => UnsafeHelper.SizeOf<Vector<T>>() switch
             {
                 sizeof(ulong) => ExtractMostSignificantBits_64(in _this),
-                M128.SizeInBytes => ExtractMostSignificantBits_128(in _this),
-                M256.SizeInBytes => ExtractMostSignificantBits_256(in _this),
-                M512.SizeInBytes => ExtractMostSignificantBits_512(in _this),
+                sizeof(ulong) * 2 => ExtractMostSignificantBits_128(in _this),
+                sizeof(ulong) * 4 => ExtractMostSignificantBits_256(in _this),
+                sizeof(ulong) * 8 => ExtractMostSignificantBits_512(in _this),
                 _ => throw new PlatformNotSupportedException()
             };
 
