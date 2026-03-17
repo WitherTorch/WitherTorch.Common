@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -28,7 +28,7 @@ namespace WitherTorch.Common.Helpers
                         {
                             Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
                             Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (resultVector != Vector<T>.Zero)
+                            if (Vector.Eq(resultVector != Vector<T>.)
                                 return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                             ptr = (T*)ptrLimit;
                         } while (++ptrLimit < ptrEnd);

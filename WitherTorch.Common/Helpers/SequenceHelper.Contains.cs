@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
@@ -616,10 +616,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsGreaterThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsGreaterThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsGreaterThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, length, value)
+                    _ => SlowCore<T>.ContainsGreaterThanOrEquals(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsGreaterOrEqualsThan(ptr, length, value);
+            return SlowCore<T>.ContainsGreaterThanOrEquals(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -722,10 +722,10 @@ namespace WitherTorch.Common.Helpers
                     TypeCode.UInt64 => FastCore<ulong>.ContainsLessThanOrEquals((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value)),
                     TypeCode.Single => FastCore<float>.ContainsLessThanOrEquals((float*)ptr, length, UnsafeHelper.As<T, float>(value)),
                     TypeCode.Double => FastCore<double>.ContainsLessThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(value)),
-                    _ => SlowCore<T>.ContainsLessOrEqualsThan(ptr, length, value)
+                    _ => SlowCore<T>.ContainsLessThanOrEquals(ptr, length, value)
                 };
             }
-            return SlowCore<T>.ContainsLessOrEqualsThan(ptr, length, value);
+            return SlowCore<T>.ContainsLessThanOrEquals(ptr, length, value);
         }
         #endregion
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
@@ -691,11 +691,11 @@ namespace WitherTorch.Common.Helpers
                         FastCore<double>.ReplaceGreaterThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(filter), UnsafeHelper.As<T, double>(replacement));
                         return;
                     default:
-                        SlowCore<T>.ReplaceGreaterOrEqualsThan(ptr, length, filter, replacement);
+                        SlowCore<T>.ReplaceGreaterThanOrEquals(ptr, length, filter, replacement);
                         return;
                 }
             }
-            SlowCore<T>.ReplaceGreaterOrEqualsThan(ptr, length, filter, replacement);
+            SlowCore<T>.ReplaceGreaterThanOrEquals(ptr, length, filter, replacement);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -913,11 +913,11 @@ namespace WitherTorch.Common.Helpers
                         FastCore<double>.ReplaceLessThanOrEquals((double*)ptr, length, UnsafeHelper.As<T, double>(filter), UnsafeHelper.As<T, double>(replacement));
                         return;
                     default:
-                        SlowCore<T>.ReplaceLessOrEqualsThan(ptr, length, filter, replacement);
+                        SlowCore<T>.ReplaceLessThanOrEquals(ptr, length, filter, replacement);
                         return;
                 }
             }
-            SlowCore<T>.ReplaceLessOrEqualsThan(ptr, length, filter, replacement);
+            SlowCore<T>.ReplaceLessThanOrEquals(ptr, length, filter, replacement);
         }
         #endregion
     }

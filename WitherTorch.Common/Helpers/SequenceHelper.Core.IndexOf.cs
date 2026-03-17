@@ -1107,10 +1107,10 @@ namespace WitherTorch.Common.Helpers
             public static bool ContainsLessThan(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan) != null;
 
-            public static bool ContainsGreaterOrEqualsThan(T* ptr, nuint length, T value)
+            public static bool ContainsGreaterThanOrEquals(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals) != null;
 
-            public static bool ContainsLessOrEqualsThan(T* ptr, nuint length, T value)
+            public static bool ContainsLessThanOrEquals(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals) != null;
 
             public static T* PointerIndexOf(T* ptr, nuint length, T value)
@@ -1125,10 +1125,10 @@ namespace WitherTorch.Common.Helpers
             public static T* PointerIndexOfLessThan(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan);
 
-            public static T* PointerIndexOfGreaterOrEqualsThan(T* ptr, nuint length, T value)
+            public static T* PointerIndexOfGreaterThanOrEquals(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals);
 
-            public static T* PointerIndexOfLessOrEqualsThan(T* ptr, nuint length, T value)
+            public static T* PointerIndexOfLessThanOrEquals(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals);
 
             public static void Replace(T* ptr, nuint length, T filter, T replacement)
@@ -1143,10 +1143,10 @@ namespace WitherTorch.Common.Helpers
             public static void ReplaceLessThan(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
 
-            public static void ReplaceGreaterOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
+            public static void ReplaceGreaterThanOrEquals(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThanOrEquals);
 
-            public static void ReplaceLessOrEqualsThan(T* ptr, nuint length, T filter, T replacement)
+            public static void ReplaceLessThanOrEquals(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThanOrEquals);
 
             [Inline(InlineBehavior.Remove)]
