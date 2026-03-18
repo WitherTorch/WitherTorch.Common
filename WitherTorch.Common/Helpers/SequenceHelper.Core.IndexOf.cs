@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
@@ -974,81 +975,202 @@ namespace WitherTorch.Common.Helpers
 
         unsafe partial class FastCore<T>
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Contains(T* ptr, nuint length, T value)
                 => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: false));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool ContainsExclude(T* ptr, nuint length, T value)
                 => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: false));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool ContainsGreaterThan(T* ptr, nuint length, T value)
                 => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: false));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool ContainsLessThan(T* ptr, nuint length, T value)
                 => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool ContainsGreaterThanOrEquals(T* ptr, nuint length, T value)
                 => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: false));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool ContainsLessThanOrEquals(T* ptr, nuint length, T value)
                 => MathHelper.ToBooleanUnsafe(PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: false));
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T* PointerIndexOf(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: true);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T* PointerIndexOfExclude(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: true);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T* PointerIndexOfGreaterThan(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: true);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T* PointerIndexOfLessThan(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: true);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T* PointerIndexOfGreaterThanOrEquals(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: true);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static T* PointerIndexOfLessThanOrEquals(T* ptr, nuint length, T value)
                 => PointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: true);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Replace(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Include);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void ReplaceExclude(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Exclude);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void ReplaceGreaterThan(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThan);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void ReplaceLessThan(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void ReplaceGreaterThanOrEquals(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThanOrEquals);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void ReplaceLessThanOrEquals(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThanOrEquals);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedContains(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: false);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedContainsExclude(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: false);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedContainsGreaterThan(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: false);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedContainsLessThan(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: false);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedContainsGreaterThanOrEquals(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: false);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedContainsLessThanOrEquals(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: false);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedPointerIndexOf(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Include, accurateResult: true);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedPointerIndexOfExclude(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.Exclude, accurateResult: true);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedPointerIndexOfGreaterThan(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThan, accurateResult: true);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedPointerIndexOfLessThan(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThan, accurateResult: true);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedPointerIndexOfGreaterThanOrEquals(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.GreaterThanOrEquals, accurateResult: true);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static T* VectorizedPointerIndexOfLessThanOrEquals(T* ptr, nuint length, T value)
+                => VectorizedPointerIndexOfCore(ref ptr, length, value, IndexOfMethod.LessThanOrEquals, accurateResult: true);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedReplace(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Include);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedReplaceExclude(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.Exclude);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedReplaceGreaterThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThan);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedReplaceLessThan(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThan);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedReplaceGreaterThanOrEquals(T* ptr, nuint length, T filter, T replacement)
+                => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.GreaterThanOrEquals);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedReplaceLessThanOrEquals(T* ptr, nuint length, T filter, T replacement)
                 => ReplaceCore(ref ptr, length, filter, replacement, IndexOfMethod.LessThanOrEquals);
 
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
-                T* ptrEnd = ptr + length;
-                if (CheckTypeCanBeVectorized())
-                    return VectorizedPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
+                if (CheckTypeCanBeVectorized() && length >= GetMinimumVectorCount())
+                    return method switch
+                    {
+                        IndexOfMethod.Include => accurateResult ? VectorizedPointerIndexOf(ptr, length, value) : VectorizedContains(ptr, length, value),
+                        IndexOfMethod.Exclude => accurateResult ? VectorizedPointerIndexOfExclude(ptr, length, value) : VectorizedContainsExclude(ptr, length, value),
+                        IndexOfMethod.GreaterThan => accurateResult ? VectorizedPointerIndexOfGreaterThan(ptr, length, value) : VectorizedContainsGreaterThan(ptr, length, value),
+                        IndexOfMethod.GreaterThanOrEquals => accurateResult ? VectorizedPointerIndexOfGreaterThanOrEquals(ptr, length, value) : VectorizedContainsGreaterThanOrEquals(ptr, length, value),
+                        IndexOfMethod.LessThan => accurateResult ? VectorizedPointerIndexOfLessThan(ptr, length, value) : VectorizedContainsLessThan(ptr, length, value),
+                        IndexOfMethod.LessThanOrEquals => accurateResult ? VectorizedPointerIndexOfLessThanOrEquals(ptr, length, value) : VectorizedContainsLessThanOrEquals(ptr, length, value),
+                        _ => throw new ArgumentOutOfRangeException(nameof(method))
+                    };
 
-                return LegacyPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
+                return LegacyPointerIndexOfCore(ref ptr, length, value, method, accurateResult);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult);
+            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult);
 
             [Inline(InlineBehavior.Remove)]
-            private static T* LegacyPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
+            private static T* LegacyPointerIndexOfCore(ref T* ptr, nuint length, T value, [InlineParameter] IndexOfMethod method, [InlineParameter] bool accurateResult)
             {
-                for (; ptr < ptrEnd; ptr++)
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
                 {
-                    if (LegacyIndexOfCore(*ptr, value, method))
+                    if (LegacyIndexOfCore(ptr[0], value, method))
                         return accurateResult ? ptr : (T*)Booleans.TrueNative;
+                    if (LegacyIndexOfCore(ptr[1], value, method))
+                        return accurateResult ? ptr + 1 : (T*)Booleans.TrueNative;
+                    if (LegacyIndexOfCore(ptr[2], value, method))
+                        return accurateResult ? ptr + 2 : (T*)Booleans.TrueNative;
+                    if (LegacyIndexOfCore(ptr[3], value, method))
+                        return accurateResult ? ptr + 3 : (T*)Booleans.TrueNative;
                 }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    goto NotFound;
+                if (LegacyIndexOfCore(*ptr, value, method))
+                    return accurateResult ? ptr : (T*)Booleans.TrueNative;
+                ptr++;
+                if (ptr >= ptrEnd)
+                    goto NotFound;
+                if (LegacyIndexOfCore(*ptr, value, method))
+                    return accurateResult ? ptr : (T*)Booleans.TrueNative;
+                ptr++;
+                if (ptr >= ptrEnd)
+                    goto NotFound;
+                if (LegacyIndexOfCore(*ptr, value, method))
+                    return accurateResult ? ptr : (T*)Booleans.TrueNative;
+
+            NotFound:
                 return null;
             }
 
@@ -1062,7 +1184,7 @@ namespace WitherTorch.Common.Helpers
                     IndexOfMethod.GreaterThanOrEquals => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsGreaterThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsGreaterThanOrEquals(item, value),
                     IndexOfMethod.LessThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessThanUnsigned(item, value) : UnsafeHelper.IsLessThan(item, value),
                     IndexOfMethod.LessThanOrEquals => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsLessThanOrEquals(item, value),
-                    _ => throw new InvalidOperationException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
 
             [Inline(InlineBehavior.Remove)]

@@ -1,21 +1,16 @@
-﻿using System.Numerics;
-using System.Runtime.CompilerServices;
-
-using InlineMethod;
+﻿using InlineMethod;
 
 using LocalsInit;
-
-#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
     {
         [LocalsInit(false)]
-        private static unsafe partial class FastCore { }
+        private static partial class FastCore { }
 
         [LocalsInit(false)]
-        private static unsafe partial class FastCore<T> where T : unmanaged
+        private static partial class FastCore<T> where T : unmanaged
         {
             [Inline(InlineBehavior.Remove)]
             public static bool CheckTypeCanBeVectorized()
@@ -33,12 +28,50 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
 #endif
+
+            [Inline(InlineBehavior.Remove)]
+            public static nuint GetMaximumVectorCount()
+            {
+#if NET8_0_OR_GREATER
+                if (Limits.UseVector512())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector512<T>.Count);
+                if (Limits.UseVector256())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector256<T>.Count);
+                if (Limits.UseVector128())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector128<T>.Count);
+                if (Limits.UseVector64())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector64<T>.Count);
+#else
+                if (Limits.UseVector())
+                    return unchecked((nuint)System.Numerics.Vector<T>.Count);
+#endif
+                return UnsafeHelper.GetMaxValue<nuint>(); // Don't let program go vectorize!
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static nuint GetMinimumVectorCount()
+            {
+#if NET8_0_OR_GREATER
+                if (Limits.UseVector64())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector64<T>.Count);
+                if (Limits.UseVector128())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector128<T>.Count);
+                if (Limits.UseVector256())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector256<T>.Count);
+                if (Limits.UseVector512())
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector512<T>.Count);
+#else
+                if (Limits.UseVector())
+                    return unchecked((nuint)System.Numerics.Vector<T>.Count);
+#endif
+                return UnsafeHelper.GetMaxValue<nuint>(); // Don't let program go vectorize!
+            }
         }
 
         [LocalsInit(false)]
-        private static unsafe partial class SlowCore { }
+        private static partial class SlowCore { }
 
         [LocalsInit(false)]
-        private static unsafe partial class SlowCore<T> { }
+        private static partial class SlowCore<T> { }
     }
 }

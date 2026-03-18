@@ -16,27 +16,63 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, T* ptrEnd, T value, IndexOfMethod method, bool accurateResult)
+            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, nuint length, T value, IndexOfMethod method, bool accurateResult)
             {
-                if (Limits.UseVector())
+                Vector<T> valueVector = new Vector<T>(value);
+
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
                 {
-                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
+                    headRemainder = (UnsafeHelper.SizeOf<Vector<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                    Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                    Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
+                    if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
                     {
-                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                        do
+                        if (length >= (nuint)Vector<T>.Count * 2)
                         {
-                            Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                            Vector<T> resultVector = VectorizedIndexOfCore(valueVector, maskVector, method);
-                            if (Vector.Eq(resultVector != Vector<T>.)
-                                return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return null;
+                            ptr += headRemainder;
+                            length -= headRemainder;
+                            goto VectorizedLoop;
+                        }
+                        else
+                        {
+                            ptr += (nuint)Vector<T>.Count;
+                            length -= (nuint)Vector<T>.Count;
+                            goto TailProcess;
+                        }
                     }
+                    return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                 }
-                return LegacyPointerIndexOfCore(ref ptr, ptrEnd, value, method, accurateResult);
+
+            VectorizedLoop:
+                do
+                {
+                    Vector<T> sourceVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                    Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
+                    if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
+                    {
+                        ptr += (nuint)Vector<T>.Count;
+                        length -= (nuint)Vector<T>.Count;
+                        continue;
+                    }
+                    return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
+                } while (length >= (nuint)Vector<T>.Count);
+                goto TailProcess;
+
+            TailProcess:
+                if (length >= (nuint)Vector<T>.Count / 2)
+                {
+                    ptr = ptr + length - (nuint)Vector<T>.Count;
+                    Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                    Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
+                    if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
+                        return null;
+                    return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
+                }
+                else
+                    return LegacyPointerIndexOfCore(ref ptr, length, value, method, accurateResult);
             }
 
             private static partial void VectorizedReplaceCore(ref T* ptr, T* ptrEnd, T filter, T replacement, IndexOfMethod method)
@@ -66,15 +102,15 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector<T> VectorizedIndexOfCore(in Vector<T> valueVector, in Vector<T> maskVector, [InlineParameter] IndexOfMethod method)
+            private static Vector<T> VectorizedIndexOfCore(in Vector<T> sourceVector, in Vector<T> valueVector, [InlineParameter] IndexOfMethod method)
                 => method switch
                 {
-                    IndexOfMethod.Include => Vector.Equals(valueVector, maskVector),
-                    IndexOfMethod.Exclude => ~Vector.Equals(valueVector, maskVector),
-                    IndexOfMethod.GreaterThan => Vector.GreaterThan(valueVector, maskVector),
-                    IndexOfMethod.GreaterThanOrEquals => Vector.GreaterThanOrEqual(valueVector, maskVector),
-                    IndexOfMethod.LessThan => Vector.LessThan(valueVector, maskVector),
-                    IndexOfMethod.LessThanOrEquals => Vector.LessThanOrEqual(valueVector, maskVector),
+                    IndexOfMethod.Include => Vector.Equals(sourceVector, valueVector),
+                    IndexOfMethod.Exclude => ~Vector.Equals(sourceVector, valueVector),
+                    IndexOfMethod.GreaterThan => Vector.GreaterThan(sourceVector, valueVector),
+                    IndexOfMethod.GreaterThanOrEquals => Vector.GreaterThanOrEqual(sourceVector, valueVector),
+                    IndexOfMethod.LessThan => Vector.LessThan(sourceVector, valueVector),
+                    IndexOfMethod.LessThanOrEquals => Vector.LessThanOrEqual(sourceVector, valueVector),
                     _ => throw new InvalidOperationException(),
                 };
         }

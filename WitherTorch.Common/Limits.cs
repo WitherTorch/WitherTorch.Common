@@ -25,12 +25,11 @@ namespace WitherTorch.Common
         /// 是否啟用基於 <see cref="System.Runtime.Intrinsics.Vector64{T}"/> 的 64-bit 向量化加速
         /// </summary>
         public const bool UseVector64Acceleration = false;
-#else
+#endif
         /// <summary>
         /// 是否啟用基於 <see cref="System.Numerics.Vector{T}"/> 的向量化加速
         /// </summary>
         public const bool UseVectorAcceleration = true;
-#endif
         /// <summary>
         /// 在堆疊上配置位元組區塊的上限值
         /// </summary>
@@ -72,9 +71,9 @@ namespace WitherTorch.Common
 #else
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool UseAnyVector() => UseVector();
+#endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool UseVector() => UseVectorAcceleration && System.Numerics.Vector.IsHardwareAccelerated;
-#endif
     }
 }
