@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, nuint length, T value, IndexOfMethod method, bool accurateResult)
+            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, ref nuint length, T value, IndexOfMethod method, bool accurateResult)
             {
                 Vector<T> valueVector = new Vector<T>(value);
 
@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Helpers
                     Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
                     if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
                     {
-                        if (length >= (nuint)Vector<T>.Count * 2)
+                        if (length > (nuint)Vector<T>.Count * 2)
                         {
                             ptr += headRemainder;
                             length -= headRemainder;
