@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Numerics;
 
@@ -10,40 +10,69 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial void VectorizedBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, BinaryOperationMethod method)
+            private static partial void VectorizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, BinaryOperationMethod method)
             {
-                if (Limits.UseVector())
+                Vector<T> valueVector = new Vector<T>(value);
+
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
                 {
-                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
+                    if (length > (nuint)Vector<T>.Count * 2)
                     {
-                        Vector<T> maskVector = new Vector<T>(value); // 將要比對的項目擴充成向量
-                        do
-                        {
-                            Vector<T> valueVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                            UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperationCore(valueVector, maskVector, method));
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        headRemainder = (UnsafeHelper.SizeOf<Vector<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                        ScalarizedBinaryOperationCore(ref ptr, ref headRemainder, value, method);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector<T>.Count * 2)
+                    {
+                        T* ptr2 = ptr + Vector<T>.Count;
+                        Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                        Vector<T> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2);
+                        UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperation(sourceVector, valueVector, method));
+                        UnsafeHelper.WriteUnaligned(ptr2, VectorizedBinaryOperation(sourceVector2, valueVector, method));
+                        return;
+                    }
+                    else
+                    {
+                        Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                        UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperation(sourceVector, valueVector, method));
+                        ptr += (nuint)Vector<T>.Count;
+                        length -= (nuint)Vector<T>.Count;
+                        goto TailProcess;
                     }
                 }
-                LegacyBinaryOperationCore(ref ptr, ptrEnd, value, method);
+
+            VectorizedLoop:
+                do
+                {
+                    Vector<T> sourceVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                    UnsafeHelper.Write(ptr, VectorizedBinaryOperation(sourceVector, valueVector, method));
+                    ptr += (nuint)Vector<T>.Count;
+                    length -= (nuint)Vector<T>.Count;
+                } while (length >= (nuint)Vector<T>.Count);
+                goto TailProcess;
+
+            TailProcess:
+                ScalarizedBinaryOperationCore(ref ptr, ref length, value, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector<T> VectorizedBinaryOperationCore(in Vector<T> valueVector, in Vector<T> maskVector,
+            private static Vector<T> VectorizedBinaryOperation(in Vector<T> sourceVector, in Vector<T> valueVector,
                 [InlineParameter] BinaryOperationMethod method)
                 => method switch
                 {
-                    BinaryOperationMethod.Or => valueVector | maskVector,
-                    BinaryOperationMethod.And => valueVector & maskVector,
-                    BinaryOperationMethod.Xor => valueVector ^ maskVector,
-                    BinaryOperationMethod.Add => valueVector + maskVector,
-                    BinaryOperationMethod.Substract => valueVector - maskVector,
-                    BinaryOperationMethod.Multiply => valueVector * maskVector,
-                    BinaryOperationMethod.Divide => valueVector / maskVector,
-                    _ => throw new InvalidOperationException(),
+                    BinaryOperationMethod.Or => sourceVector | valueVector,
+                    BinaryOperationMethod.And => sourceVector & valueVector,
+                    BinaryOperationMethod.Xor => sourceVector ^ valueVector,
+                    BinaryOperationMethod.Add => sourceVector + valueVector,
+                    BinaryOperationMethod.Substract => sourceVector - valueVector,
+                    BinaryOperationMethod.Multiply => sourceVector * valueVector,
+                    BinaryOperationMethod.Divide => sourceVector / valueVector,
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
@@ -62,7 +62,7 @@ namespace WitherTorch.Common.Text
                 return PartiallyEqualsCore(ptr, startIndex, count);
         }
 
-        private unsafe bool PartiallyEqualsCore(Utf8String other, nuint startIndex, nuint count)
+        private bool PartiallyEqualsCore(Utf8String other, nuint startIndex, nuint count)
             => this.SkipAndTake(startIndex, count).SequenceEqual(other);
 
         private unsafe bool PartiallyEqualsCore(Latin1String other, nuint startIndex, nuint count)

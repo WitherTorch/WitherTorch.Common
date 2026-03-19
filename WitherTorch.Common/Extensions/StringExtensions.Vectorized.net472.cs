@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System.Numerics;
 
 using InlineMethod;
@@ -52,7 +52,7 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe Vector<ushort> VectorizedToLowerOrUpperAsciiCore(in Vector<ushort> valueVector, in Vector<ushort> operationVector,
+        private static Vector<ushort> VectorizedToLowerOrUpperAsciiCore(in Vector<ushort> valueVector, in Vector<ushort> operationVector,
             in Vector<ushort> maskVector, [InlineParameter] bool isUpper)
         {
             if (isUpper)

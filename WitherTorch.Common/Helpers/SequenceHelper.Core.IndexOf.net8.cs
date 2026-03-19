@@ -1,6 +1,5 @@
 #if NET8_0_OR_GREATER
 using System;
-using System.Numerics;
 using System.Runtime.Intrinsics;
 
 using InlineMethod;
@@ -35,13 +34,13 @@ namespace WitherTorch.Common.Helpers
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                     Vector512<T> sourceVector = Vector512.Load(ptr);
-                    Vector512<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector512<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector512.EqualsAll(resultVector, Vector512<T>.Zero))
                     {
                         if (length > (nuint)Vector512<T>.Count * 2)
                         {
+                            headRemainder = (UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             length -= headRemainder;
                             goto VectorizedLoop;
@@ -60,7 +59,7 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector512<T> sourceVector = Vector512.LoadAligned(ptr);
-                    Vector512<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector512<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector512.EqualsAll(resultVector, Vector512<T>.Zero))
                     {
                         ptr += (nuint)Vector512<T>.Count;
@@ -76,7 +75,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     ptr = ptr + length - (nuint)Vector512<T>.Count;
                     Vector512<T> sourceVector = Vector512.Load(ptr);
-                    Vector512<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector512<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector512.EqualsAll(resultVector, Vector512<T>.Zero))
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
@@ -95,13 +94,13 @@ namespace WitherTorch.Common.Helpers
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                     Vector256<T> sourceVector = Vector256.Load(ptr);
-                    Vector256<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector256<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector256.EqualsAll(resultVector, Vector256<T>.Zero))
                     {
                         if (length > (nuint)Vector256<T>.Count * 2)
                         {
+                            headRemainder = (UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             length -= headRemainder;
                             goto VectorizedLoop;
@@ -120,7 +119,7 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector256<T> sourceVector = Vector256.LoadAligned(ptr);
-                    Vector256<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector256<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector256.EqualsAll(resultVector, Vector256<T>.Zero))
                     {
                         ptr += (nuint)Vector256<T>.Count;
@@ -136,7 +135,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     ptr = ptr + length - (nuint)Vector256<T>.Count;
                     Vector256<T> sourceVector = Vector256.Load(ptr);
-                    Vector256<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector256<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector256.EqualsAll(resultVector, Vector256<T>.Zero))
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
@@ -155,13 +154,13 @@ namespace WitherTorch.Common.Helpers
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                     Vector128<T> sourceVector = Vector128.Load(ptr);
-                    Vector128<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector128<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector128.EqualsAll(resultVector, Vector128<T>.Zero))
                     {
                         if (length > (nuint)Vector128<T>.Count * 2)
                         {
+                            headRemainder = (UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             length -= headRemainder;
                             goto VectorizedLoop;
@@ -180,7 +179,7 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector128<T> sourceVector = Vector128.LoadAligned(ptr);
-                    Vector128<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector128<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector128.EqualsAll(resultVector, Vector128<T>.Zero))
                     {
                         ptr += (nuint)Vector128<T>.Count;
@@ -196,7 +195,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     ptr = ptr + length - (nuint)Vector128<T>.Count;
                     Vector128<T> sourceVector = Vector128.Load(ptr);
-                    Vector128<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector128<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector128.EqualsAll(resultVector, Vector128<T>.Zero))
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
@@ -215,13 +214,13 @@ namespace WitherTorch.Common.Helpers
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                     Vector64<T> sourceVector = Vector64.Load(ptr);
-                    Vector64<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector64<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector64.EqualsAll(resultVector, Vector64<T>.Zero))
                     {
                         if (length > (nuint)Vector64<T>.Count * 2)
                         {
+                            headRemainder = (UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             length -= headRemainder;
                             goto VectorizedLoop;
@@ -240,7 +239,7 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector64<T> sourceVector = Vector64.LoadAligned(ptr);
-                    Vector64<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector64<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector64.EqualsAll(resultVector, Vector64<T>.Zero))
                     {
                         ptr += (nuint)Vector64<T>.Count;
@@ -256,7 +255,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     ptr = ptr + length - (nuint)Vector64<T>.Count;
                     Vector64<T> sourceVector = Vector64.Load(ptr);
-                    Vector64<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
+                    Vector64<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
                     if (Vector64.EqualsAll(resultVector, Vector64<T>.Zero))
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
@@ -281,41 +280,27 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void VectorizedReplaceCore_512(ref T* ptr, ref nuint length, T filter, T replacement, [InlineParameter] CompareMethod method)
             {
-                Vector512<T> filterVector = Vector512.Create(filter);
-                Vector512<T> replacementVector = Vector512.Create(replacement);
+                Vector512<T> filterVector = Vector512.Create(filter), replacementVector = Vector512.Create(replacement);
 
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector512<T>>();
                 if (headRemainder == 0)
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                    Vector512<T> sourceVector = Vector512.Load(ptr);
+                    Vector512.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
                     if (length > (nuint)Vector512<T>.Count * 2)
                     {
-                        ScalarizedReplaceCore(ref ptr, ref headRemainder, filter, replacement, method);
+                        headRemainder = (UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                         ptr += headRemainder;
                         length -= headRemainder;
                         goto VectorizedLoop;
                     }
-                    else if (length == (nuint)Vector512<T>.Count * 2)
-                    {
-                        T* ptr2 = ptr + Vector512<T>.Count;
-                        Vector512<T> sourceVector = Vector512.Load(ptr);
-                        Vector512<T> sourceVector2 = Vector512.Load(ptr2);
-                        Vector512.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
-                        Vector512.ConditionalSelect(condition: VectorizedCompareCore(sourceVector2, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector2).Store(ptr2);
-                        return;
-                    }
                     else
                     {
-                        Vector512<T> sourceVector = Vector512.Load(ptr);
-                        Vector512.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
                         ptr += (nuint)Vector512<T>.Count;
                         length -= (nuint)Vector512<T>.Count;
                         goto TailProcess;
@@ -326,56 +311,52 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector512<T> sourceVector = Vector512.LoadAligned(ptr);
-                    Vector512.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                    left: replacementVector,
-                                                    right: sourceVector).StoreAligned(ptr);
+                    Vector512.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).StoreAligned(ptr);
                     ptr += (nuint)Vector512<T>.Count;
                     length -= (nuint)Vector512<T>.Count;
+                    continue;
                 } while (length >= (nuint)Vector512<T>.Count);
                 goto TailProcess;
 
             TailProcess:
-                ScalarizedReplaceCore(ref ptr, ref length, filter, replacement, method);
+                if (length > 0)
+                {
+                    ptr = ptr + length - (nuint)Vector512<T>.Count;
+                    Vector512<T> sourceVector = Vector512.Load(ptr);
+                    Vector512.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
+                }
             }
 
             [Inline(InlineBehavior.Remove)]
             private static void VectorizedReplaceCore_256(ref T* ptr, ref nuint length, T filter, T replacement, [InlineParameter] CompareMethod method)
             {
-                Vector256<T> filterVector = Vector256.Create(filter);
-                Vector256<T> replacementVector = Vector256.Create(replacement);
+                Vector256<T> filterVector = Vector256.Create(filter), replacementVector = Vector256.Create(replacement);
 
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector256<T>>();
                 if (headRemainder == 0)
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                    Vector256<T> sourceVector = Vector256.Load(ptr);
+                    Vector256.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
                     if (length > (nuint)Vector256<T>.Count * 2)
                     {
-                        ScalarizedReplaceCore(ref ptr, ref headRemainder, filter, replacement, method);
+                        headRemainder = (UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                         ptr += headRemainder;
                         length -= headRemainder;
                         goto VectorizedLoop;
                     }
-                    else if (length == (nuint)Vector256<T>.Count * 2)
-                    {
-                        T* ptr2 = ptr + Vector256<T>.Count;
-                        Vector256<T> sourceVector = Vector256.Load(ptr);
-                        Vector256<T> sourceVector2 = Vector256.Load(ptr2);
-                        Vector256.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
-                        Vector256.ConditionalSelect(condition: VectorizedCompareCore(sourceVector2, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector2).Store(ptr2);
-                        return;
-                    }
                     else
                     {
-                        Vector256<T> sourceVector = Vector256.Load(ptr);
-                        Vector256.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
                         ptr += (nuint)Vector256<T>.Count;
                         length -= (nuint)Vector256<T>.Count;
                         goto TailProcess;
@@ -386,56 +367,52 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector256<T> sourceVector = Vector256.LoadAligned(ptr);
-                    Vector256.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                    left: replacementVector,
-                                                    right: sourceVector).StoreAligned(ptr);
+                    Vector256.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).StoreAligned(ptr);
                     ptr += (nuint)Vector256<T>.Count;
                     length -= (nuint)Vector256<T>.Count;
+                    continue;
                 } while (length >= (nuint)Vector256<T>.Count);
                 goto TailProcess;
 
             TailProcess:
-                ScalarizedReplaceCore(ref ptr, ref length, filter, replacement, method);
+                if (length > 0)
+                {
+                    ptr = ptr + length - (nuint)Vector256<T>.Count;
+                    Vector256<T> sourceVector = Vector256.Load(ptr);
+                    Vector256.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
+                }
             }
 
             [Inline(InlineBehavior.Remove)]
             private static void VectorizedReplaceCore_128(ref T* ptr, ref nuint length, T filter, T replacement, [InlineParameter] CompareMethod method)
             {
-                Vector128<T> filterVector = Vector128.Create(filter);
-                Vector128<T> replacementVector = Vector128.Create(replacement);
+                Vector128<T> filterVector = Vector128.Create(filter), replacementVector = Vector128.Create(replacement);
 
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector128<T>>();
                 if (headRemainder == 0)
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                    Vector128<T> sourceVector = Vector128.Load(ptr);
+                    Vector128.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
                     if (length > (nuint)Vector128<T>.Count * 2)
                     {
-                        ScalarizedReplaceCore(ref ptr, ref headRemainder, filter, replacement, method);
+                        headRemainder = (UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                         ptr += headRemainder;
                         length -= headRemainder;
                         goto VectorizedLoop;
                     }
-                    else if (length == (nuint)Vector128<T>.Count * 2)
-                    {
-                        T* ptr2 = ptr + Vector128<T>.Count;
-                        Vector128<T> sourceVector = Vector128.Load(ptr);
-                        Vector128<T> sourceVector2 = Vector128.Load(ptr2);
-                        Vector128.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
-                        Vector128.ConditionalSelect(condition: VectorizedCompareCore(sourceVector2, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector2).Store(ptr2);
-                        return;
-                    }
                     else
                     {
-                        Vector128<T> sourceVector = Vector128.Load(ptr);
-                        Vector128.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
                         ptr += (nuint)Vector128<T>.Count;
                         length -= (nuint)Vector128<T>.Count;
                         goto TailProcess;
@@ -446,56 +423,52 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector128<T> sourceVector = Vector128.LoadAligned(ptr);
-                    Vector128.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                    left: replacementVector,
-                                                    right: sourceVector).StoreAligned(ptr);
+                    Vector128.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).StoreAligned(ptr);
                     ptr += (nuint)Vector128<T>.Count;
                     length -= (nuint)Vector128<T>.Count;
+                    continue;
                 } while (length >= (nuint)Vector128<T>.Count);
                 goto TailProcess;
 
             TailProcess:
-                ScalarizedReplaceCore(ref ptr, ref length, filter, replacement, method);
+                if (length > 0)
+                {
+                    ptr = ptr + length - (nuint)Vector128<T>.Count;
+                    Vector128<T> sourceVector = Vector128.Load(ptr);
+                    Vector128.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
+                }
             }
 
             [Inline(InlineBehavior.Remove)]
             private static void VectorizedReplaceCore_64(ref T* ptr, ref nuint length, T filter, T replacement, [InlineParameter] CompareMethod method)
             {
-                Vector64<T> filterVector = Vector64.Create(filter);
-                Vector64<T> replacementVector = Vector64.Create(replacement);
+                Vector64<T> filterVector = Vector64.Create(filter), replacementVector = Vector64.Create(replacement);
 
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector64<T>>();
                 if (headRemainder == 0)
                     goto VectorizedLoop;
                 else
                 {
-                    headRemainder = (UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                    Vector64<T> sourceVector = Vector64.Load(ptr);
+                    Vector64.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
                     if (length > (nuint)Vector64<T>.Count * 2)
                     {
-                        ScalarizedReplaceCore(ref ptr, ref headRemainder, filter, replacement, method);
+                        headRemainder = (UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                         ptr += headRemainder;
                         length -= headRemainder;
                         goto VectorizedLoop;
                     }
-                    else if (length == (nuint)Vector64<T>.Count * 2)
-                    {
-                        T* ptr2 = ptr + Vector64<T>.Count;
-                        Vector64<T> sourceVector = Vector64.Load(ptr);
-                        Vector64<T> sourceVector2 = Vector64.Load(ptr2);
-                        Vector64.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
-                        Vector64.ConditionalSelect(condition: VectorizedCompareCore(sourceVector2, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector2).Store(ptr2);
-                        return;
-                    }
                     else
                     {
-                        Vector64<T> sourceVector = Vector64.Load(ptr);
-                        Vector64.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                        left: replacementVector,
-                                                        right: sourceVector).Store(ptr);
                         ptr += (nuint)Vector64<T>.Count;
                         length -= (nuint)Vector64<T>.Count;
                         goto TailProcess;
@@ -506,20 +479,30 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector64<T> sourceVector = Vector64.LoadAligned(ptr);
-                    Vector64.ConditionalSelect(condition: VectorizedCompareCore(sourceVector, filterVector, method),
-                                                    left: replacementVector,
-                                                    right: sourceVector).StoreAligned(ptr);
+                    Vector64.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).StoreAligned(ptr);
                     ptr += (nuint)Vector64<T>.Count;
                     length -= (nuint)Vector64<T>.Count;
+                    continue;
                 } while (length >= (nuint)Vector64<T>.Count);
                 goto TailProcess;
 
             TailProcess:
-                ScalarizedReplaceCore(ref ptr, ref length, filter, replacement, method);
+                if (length > 0)
+                {
+                    ptr = ptr + length - (nuint)Vector64<T>.Count;
+                    Vector64<T> sourceVector = Vector64.Load(ptr);
+                    Vector64.ConditionalSelect(
+                        condition: VectorizedCompare(sourceVector, filterVector, method),
+                        left: replacementVector,
+                        right: sourceVector).Store(ptr);
+                }
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector512<T> VectorizedCompareCore(in Vector512<T> sourceVector, in Vector512<T> valueVector, [InlineParameter] CompareMethod method)
+            private static Vector512<T> VectorizedCompare(in Vector512<T> sourceVector, in Vector512<T> valueVector, [InlineParameter] CompareMethod method)
             => method switch
             {
                 CompareMethod.Include => Vector512.Equals(sourceVector, valueVector),
@@ -532,7 +515,7 @@ namespace WitherTorch.Common.Helpers
             };
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector256<T> VectorizedCompareCore(in Vector256<T> sourceVector, in Vector256<T> valueVector, [InlineParameter] CompareMethod method)
+            private static Vector256<T> VectorizedCompare(in Vector256<T> sourceVector, in Vector256<T> valueVector, [InlineParameter] CompareMethod method)
                 => method switch
                 {
                     CompareMethod.Include => Vector256.Equals(sourceVector, valueVector),
@@ -545,7 +528,7 @@ namespace WitherTorch.Common.Helpers
                 };
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector128<T> VectorizedCompareCore(in Vector128<T> sourceVector, in Vector128<T> valueVector, [InlineParameter] CompareMethod method)
+            private static Vector128<T> VectorizedCompare(in Vector128<T> sourceVector, in Vector128<T> valueVector, [InlineParameter] CompareMethod method)
                 => method switch
                 {
                     CompareMethod.Include => Vector128.Equals(sourceVector, valueVector),
@@ -558,7 +541,7 @@ namespace WitherTorch.Common.Helpers
                 };
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector64<T> VectorizedCompareCore(in Vector64<T> sourceVector, in Vector64<T> valueVector, [InlineParameter] CompareMethod method)
+            private static Vector64<T> VectorizedCompare(in Vector64<T> sourceVector, in Vector64<T> valueVector, [InlineParameter] CompareMethod method)
                 => method switch
                 {
                     CompareMethod.Include => Vector64.Equals(sourceVector, valueVector),

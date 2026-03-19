@@ -128,7 +128,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf16String(string str)
+        public static StringBase CreateUtf16String(string str)
         {
             int length = str.Length;
             if (length <= 0)

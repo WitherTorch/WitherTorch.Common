@@ -21,10 +21,10 @@ namespace WitherTorch.Common.Extensions
 
 #if !NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool ContainsAny(this string obj, params char[] values) => StringHelper.ContainsAny(obj, values);
+        public static bool ContainsAny(this string obj, params char[] values) => StringHelper.ContainsAny(obj, values);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool ContainsAny(this string obj, string values) => StringHelper.ContainsAny(obj, values);
+        public static bool ContainsAny(this string obj, string values) => StringHelper.ContainsAny(obj, values);
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,7 +90,7 @@ namespace WitherTorch.Common.Extensions
             => StringBase.Create(_this);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe StringBase ToStringBase(this string _this, StringCreateOptions options)
+        public static StringBase ToStringBase(this string _this, StringCreateOptions options)
             => StringBase.Create(_this, options);
 
         public static string[] ToUpperAscii(this string[] array)

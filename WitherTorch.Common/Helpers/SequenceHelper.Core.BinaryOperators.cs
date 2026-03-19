@@ -1,10 +1,12 @@
-﻿using InlineMethod;
+using InlineMethod;
 
 using System;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 
 using WitherTorch.Common.Threading;
+
+using LocalsInit;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -436,52 +438,135 @@ namespace WitherTorch.Common.Helpers
 
         unsafe partial class FastCore<T>
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Or(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Or);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Or);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void And(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.And);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.And);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Xor(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Xor);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Xor);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Add(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Add);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Add);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Substract(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Substract);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Substract);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Multiply(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Multiply);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Multiply);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Divide(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Divide);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Divide);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedOr(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Or);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedAnd(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.And);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedXor(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Xor);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedAdd(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Add);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedSubstract(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Substract);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedMultiply(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Multiply);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedDivide(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Divide);
 
             [Inline(InlineBehavior.Remove)]
-            private static void BinaryOperationCore(ref T* ptr, nuint length, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void BinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method)
             {
-                T* ptrEnd = ptr + length;
-                if (CheckTypeCanBeVectorized())
+                if (CheckTypeCanBeVectorized() && length >= GetMinimumVectorCount())
                 {
-                    VectorizedBinaryOperationCore(ref ptr, ptrEnd, value, method);
+                    switch (method)
+                    {
+                        case BinaryOperationMethod.Or:
+                            VectorizedOr(ptr, length, value);
+                            break;
+                        case BinaryOperationMethod.And:
+                            VectorizedAnd(ptr, length, value);
+                            break;
+                        case BinaryOperationMethod.Xor:
+                            VectorizedXor(ptr, length, value);
+                            break;
+                        case BinaryOperationMethod.Add:
+                            VectorizedAdd(ptr, length, value);
+                            break;
+                        case BinaryOperationMethod.Substract:
+                            VectorizedSubstract(ptr, length, value);
+                            break;
+                        case BinaryOperationMethod.Multiply:
+                            VectorizedMultiply(ptr, length, value);
+                            break;
+                        case BinaryOperationMethod.Divide:
+                            VectorizedDivide(ptr, length, value);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(method));
+                    }
                     return;
                 }
-                LegacyBinaryOperationCore(ref ptr, ptrEnd, value, method);
+                ScalarizedBinaryOperationCore(ref ptr, ref length, value, method);
                 return;
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static partial void VectorizedBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method);
+            private static partial void VectorizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method);
 
             [Inline(InlineBehavior.Remove)]
-            private static void LegacyBinaryOperationCore(ref T* ptr, T* ptrEnd, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void ScalarizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method)
             {
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyBinaryOperationCore(*ptr, value, method);
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+                {
+                    ptr[0] = ScalarizedBinaryOperation(ptr[0], value, method);
+                    ptr[1] = ScalarizedBinaryOperation(ptr[1], value, method);
+                    ptr[2] = ScalarizedBinaryOperation(ptr[2], value, method);
+                    ptr[3] = ScalarizedBinaryOperation(ptr[3], value, method);
+                }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = ScalarizedBinaryOperation(*ptr, value, method);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = ScalarizedBinaryOperation(*ptr, value, method);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = ScalarizedBinaryOperation(*ptr, value, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T LegacyBinaryOperationCore(T item, T value, [InlineParameter] BinaryOperationMethod method)
+            private static T ScalarizedBinaryOperation(T item, T value, [InlineParameter] BinaryOperationMethod method)
                 => method switch
                 {
                     BinaryOperationMethod.Or => UnsafeHelper.Or(item, value),
@@ -491,10 +576,11 @@ namespace WitherTorch.Common.Helpers
                     BinaryOperationMethod.Substract => UnsafeHelper.Substract(item, value),
                     BinaryOperationMethod.Multiply => UnsafeHelper.Multiply(item, value),
                     BinaryOperationMethod.Divide => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.DivideUnsigned(item, value) : UnsafeHelper.Divide(item, value),
-                    _ => throw new InvalidOperationException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
-        unsafe partial class SlowCore
+
+        partial class SlowCore
         {
             internal static readonly string[] BinaryOperatorNames = new string[(int)BinaryOperationMethod._Last]
             {
@@ -502,7 +588,7 @@ namespace WitherTorch.Common.Helpers
                 "op_BitwiseAnd",
                 "op_ExclusiveOr",
                 "op_Addition",
-                "op_Subtraction",
+                "op_Substraction",
                 "op_Multiply",
                 "op_Division"
             };

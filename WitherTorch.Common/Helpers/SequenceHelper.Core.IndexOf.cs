@@ -1199,29 +1199,29 @@ namespace WitherTorch.Common.Helpers
             {
                 for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
                 {
-                    if (ScalarizedCompareCore(ptr[0], value, method))
+                    if (ScalarizedCompare(ptr[0], value, method))
                         return accurateResult ? ptr : (T*)Booleans.TrueNative;
-                    if (ScalarizedCompareCore(ptr[1], value, method))
+                    if (ScalarizedCompare(ptr[1], value, method))
                         return accurateResult ? ptr + 1 : (T*)Booleans.TrueNative;
-                    if (ScalarizedCompareCore(ptr[2], value, method))
+                    if (ScalarizedCompare(ptr[2], value, method))
                         return accurateResult ? ptr + 2 : (T*)Booleans.TrueNative;
-                    if (ScalarizedCompareCore(ptr[3], value, method))
+                    if (ScalarizedCompare(ptr[3], value, method))
                         return accurateResult ? ptr + 3 : (T*)Booleans.TrueNative;
                 }
                 T* ptrEnd = ptr + length;
                 if (ptr >= ptrEnd)
                     goto NotFound;
-                if (ScalarizedCompareCore(*ptr, value, method))
+                if (ScalarizedCompare(*ptr, value, method))
                     return accurateResult ? ptr : (T*)Booleans.TrueNative;
                 ptr++;
                 if (ptr >= ptrEnd)
                     goto NotFound;
-                if (ScalarizedCompareCore(*ptr, value, method))
+                if (ScalarizedCompare(*ptr, value, method))
                     return accurateResult ? ptr : (T*)Booleans.TrueNative;
                 ptr++;
                 if (ptr >= ptrEnd)
                     goto NotFound;
-                if (ScalarizedCompareCore(*ptr, value, method))
+                if (ScalarizedCompare(*ptr, value, method))
                     return accurateResult ? ptr : (T*)Booleans.TrueNative;
 
             NotFound:
@@ -1237,34 +1237,34 @@ namespace WitherTorch.Common.Helpers
             {
                 for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
                 {
-                    if (ScalarizedCompareCore(ptr[0], filter, method))
+                    if (ScalarizedCompare(ptr[0], filter, method))
                         ptr[0] = replacement;
-                    if (ScalarizedCompareCore(ptr[1], filter, method))
+                    if (ScalarizedCompare(ptr[1], filter, method))
                         ptr[1] = replacement;
-                    if (ScalarizedCompareCore(ptr[2], filter, method))
+                    if (ScalarizedCompare(ptr[2], filter, method))
                         ptr[2] = replacement;
-                    if (ScalarizedCompareCore(ptr[3], filter, method))
+                    if (ScalarizedCompare(ptr[3], filter, method))
                         ptr[3] = replacement;
                 }
                 T* ptrEnd = ptr + length;
                 if (ptr >= ptrEnd)
                     return;
-                if (ScalarizedCompareCore(*ptr, filter, method))
+                if (ScalarizedCompare(*ptr, filter, method))
                     *ptr = replacement;
                 ptr++;
                 if (ptr >= ptrEnd)
                     return;
-                if (ScalarizedCompareCore(*ptr, filter, method))
+                if (ScalarizedCompare(*ptr, filter, method))
                     *ptr = replacement;
                 ptr++;
                 if (ptr >= ptrEnd)
                     return;
-                if (ScalarizedCompareCore(*ptr, filter, method))
+                if (ScalarizedCompare(*ptr, filter, method))
                     *ptr = replacement;
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static bool ScalarizedCompareCore(T item, T value, [InlineParameter] CompareMethod method)
+            private static bool ScalarizedCompare(T item, T value, [InlineParameter] CompareMethod method)
                 => method switch
                 {
                     CompareMethod.Include => UnsafeHelper.Equals(item, value),

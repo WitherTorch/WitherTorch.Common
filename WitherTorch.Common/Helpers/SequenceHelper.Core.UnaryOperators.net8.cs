@@ -1,4 +1,4 @@
-﻿#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using System;
 using System.Numerics;
 using System.Runtime.Intrinsics;
@@ -11,105 +11,235 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial void VectorizedUnaryOperationCore(ref T* ptr, T* ptrEnd, UnaryOperationMethod method)
+            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperationMethod method)
             {
-                if (Limits.UseVector512())
-                {
-                    Vector512<T>* ptrLimit = ((Vector512<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
-                    {
-                        do
-                        {
-                            Vector512<T> valueVector = Vector512.Load(ptr);
-                            VectorizedUnaryOperationCore_512(valueVector, method).Store(ptr);
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
-                    }
-                }
-                if (Limits.UseVector256())
-                {
-                    Vector256<T>* ptrLimit = ((Vector256<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
-                    {
-                        do
-                        {
-                            Vector256<T> valueVector = Vector256.Load(ptr);
-                            VectorizedUnaryOperationCore_256(valueVector, method).Store(ptr);
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
-                    }
-                }
-                if (Limits.UseVector128())
-                {
-                    Vector128<T>* ptrLimit = ((Vector128<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
-                    {
-                        do
-                        {
-                            Vector128<T> valueVector = Vector128.Load(ptr);
-                            VectorizedUnaryOperationCore_128(valueVector, method).Store(ptr);
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
-                    }
-                }
-                if (Limits.UseVector64())
-                {
-                    Vector64<T>* ptrLimit = ((Vector64<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
-                    {
-                        do
-                        {
-                            Vector64<T> valueVector = Vector64.Load(ptr);
-                            VectorizedUnaryOperationCore_64(valueVector, method).Store(ptr);
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
-                    }
-                }
-                LegacyUnaryOperationCore(ref ptr, ptrEnd, method);
+                if (Limits.UseVector512() && length >= (nuint)Vector512<T>.Count)
+                    VectorizedUnaryOperationCore_512(ref ptr, ref length, method);
+                else if (Limits.UseVector256() && length >= (nuint)Vector256<T>.Count)
+                    VectorizedUnaryOperationCore_256(ref ptr, ref length, method);
+                else if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
+                    VectorizedUnaryOperationCore_128(ref ptr, ref length, method);
+                else if (Limits.UseVector64() && length >= (nuint)Vector64<T>.Count)
+                    VectorizedUnaryOperationCore_64(ref ptr, ref length, method);
+                else
+                    throw new InvalidOperationException("Unreachable branch!");
+                ScalarizedUnaryOperationCore(ref ptr, ref length, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector512<T> VectorizedUnaryOperationCore_512(in Vector512<T> valueVector,
+            private static void VectorizedUnaryOperationCore_512(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            {
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector512<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
+                {
+                    if (length > (nuint)Vector512<T>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, method);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector512<T>.Count * 2)
+                    {
+                        T* ptr2 = ptr + Vector512<T>.Count;
+                        Vector512<T> sourceVector = Vector512.Load(ptr);
+                        Vector512<T> sourceVector2 = Vector512.Load(ptr2);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        VectorizedUnaryOperation(sourceVector2, method).Store(ptr2);
+                        return;
+                    }
+                    else
+                    {
+                        Vector512<T> sourceVector = Vector512.Load(ptr);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        ptr += (nuint)Vector512<T>.Count;
+                        length -= (nuint)Vector512<T>.Count;
+                        return;
+                    }
+                }
+
+            VectorizedLoop:
+                do
+                {
+                    Vector512<T> sourceVector = Vector512.LoadAligned(ptr);
+                    VectorizedUnaryOperation(sourceVector, method).StoreAligned(ptr);
+                    ptr += (nuint)Vector512<T>.Count;
+                    length -= (nuint)Vector512<T>.Count;
+                } while (length >= (nuint)Vector512<T>.Count);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void VectorizedUnaryOperationCore_256(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            {
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector256<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
+                {
+                    if (length > (nuint)Vector256<T>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, method);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector256<T>.Count * 2)
+                    {
+                        T* ptr2 = ptr + Vector256<T>.Count;
+                        Vector256<T> sourceVector = Vector256.Load(ptr);
+                        Vector256<T> sourceVector2 = Vector256.Load(ptr2);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        VectorizedUnaryOperation(sourceVector2, method).Store(ptr2);
+                        return;
+                    }
+                    else
+                    {
+                        Vector256<T> sourceVector = Vector256.Load(ptr);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        ptr += (nuint)Vector256<T>.Count;
+                        length -= (nuint)Vector256<T>.Count;
+                        return;
+                    }
+                }
+
+            VectorizedLoop:
+                do
+                {
+                    Vector256<T> sourceVector = Vector256.LoadAligned(ptr);
+                    VectorizedUnaryOperation(sourceVector, method).StoreAligned(ptr);
+                    ptr += (nuint)Vector256<T>.Count;
+                    length -= (nuint)Vector256<T>.Count;
+                } while (length >= (nuint)Vector256<T>.Count);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void VectorizedUnaryOperationCore_128(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            {
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector128<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
+                {
+                    if (length > (nuint)Vector128<T>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, method);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector128<T>.Count * 2)
+                    {
+                        T* ptr2 = ptr + Vector128<T>.Count;
+                        Vector128<T> sourceVector = Vector128.Load(ptr);
+                        Vector128<T> sourceVector2 = Vector128.Load(ptr2);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        VectorizedUnaryOperation(sourceVector2, method).Store(ptr2);
+                        return;
+                    }
+                    else
+                    {
+                        Vector128<T> sourceVector = Vector128.Load(ptr);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        ptr += (nuint)Vector128<T>.Count;
+                        length -= (nuint)Vector128<T>.Count;
+                        return;
+                    }
+                }
+
+            VectorizedLoop:
+                do
+                {
+                    Vector128<T> sourceVector = Vector128.LoadAligned(ptr);
+                    VectorizedUnaryOperation(sourceVector, method).StoreAligned(ptr);
+                    ptr += (nuint)Vector128<T>.Count;
+                    length -= (nuint)Vector128<T>.Count;
+                } while (length >= (nuint)Vector128<T>.Count);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void VectorizedUnaryOperationCore_64(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            {
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector64<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
+                {
+                    if (length > (nuint)Vector64<T>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, method);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector64<T>.Count * 2)
+                    {
+                        T* ptr2 = ptr + Vector64<T>.Count;
+                        Vector64<T> sourceVector = Vector64.Load(ptr);
+                        Vector64<T> sourceVector2 = Vector64.Load(ptr2);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        VectorizedUnaryOperation(sourceVector2, method).Store(ptr2);
+                        return;
+                    }
+                    else
+                    {
+                        Vector64<T> sourceVector = Vector64.Load(ptr);
+                        VectorizedUnaryOperation(sourceVector, method).Store(ptr);
+                        ptr += (nuint)Vector64<T>.Count;
+                        length -= (nuint)Vector64<T>.Count;
+                        return;
+                    }
+                }
+
+            VectorizedLoop:
+                do
+                {
+                    Vector64<T> sourceVector = Vector64.LoadAligned(ptr);
+                    VectorizedUnaryOperation(sourceVector, method).StoreAligned(ptr);
+                    ptr += (nuint)Vector64<T>.Count;
+                    length -= (nuint)Vector64<T>.Count;
+                } while (length >= (nuint)Vector64<T>.Count);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static Vector512<T> VectorizedUnaryOperation(in Vector512<T> sourceVector,
             [InlineParameter] UnaryOperationMethod method)
             => method switch
             {
-                UnaryOperationMethod.Not => ~valueVector,
-                _ => throw new InvalidOperationException(),
+                UnaryOperationMethod.Not => ~sourceVector,
+                _ => throw new ArgumentOutOfRangeException(nameof(method)),
             };
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector256<T> VectorizedUnaryOperationCore_256(in Vector256<T> valueVector,
+            private static Vector256<T> VectorizedUnaryOperation(in Vector256<T> sourceVector,
                 [InlineParameter] UnaryOperationMethod method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~valueVector,
-                    _ => throw new InvalidOperationException(),
+                    UnaryOperationMethod.Not => ~sourceVector,
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector128<T> VectorizedUnaryOperationCore_128(in Vector128<T> valueVector,
+            private static Vector128<T> VectorizedUnaryOperation(in Vector128<T> sourceVector,
                 [InlineParameter] UnaryOperationMethod method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~valueVector,
-                    _ => throw new InvalidOperationException(),
+                    UnaryOperationMethod.Not => ~sourceVector,
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector64<T> VectorizedUnaryOperationCore_64(in Vector64<T> valueVector,
+            private static Vector64<T> VectorizedUnaryOperation(in Vector64<T> sourceVector,
                 [InlineParameter] UnaryOperationMethod method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~valueVector,
-                    _ => throw new InvalidOperationException(),
+                    UnaryOperationMethod.Not => ~sourceVector,
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
     }

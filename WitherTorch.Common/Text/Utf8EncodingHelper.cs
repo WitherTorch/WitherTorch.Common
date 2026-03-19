@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -47,22 +47,22 @@ namespace WitherTorch.Common.Text
         public const uint Utf8DecodeErrorCodePoint = 0xFFFD;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe int GetWorstCaseForEncodeLength(int length) => length * 3;
+        public static int GetWorstCaseForEncodeLength(int length) => length * 3;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe uint GetWorstCaseForEncodeLength(uint length) => length * 3;
+        public static uint GetWorstCaseForEncodeLength(uint length) => length * 3;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe nuint GetWorstCaseForEncodeLength(nuint length) => length * 3;
+        public static nuint GetWorstCaseForEncodeLength(nuint length) => length * 3;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe int GetWorstCaseForDecodeLength(int length) => length;
+        public static int GetWorstCaseForDecodeLength(int length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe uint GetWorstCaseForDecodeLength(uint length) => length;
+        public static uint GetWorstCaseForDecodeLength(uint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe nuint GetWorstCaseForDecodeLength(nuint length) => length;
+        public static nuint GetWorstCaseForDecodeLength(nuint length) => length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe char* TryReadUtf16Character(char* ptr, char* ptrEnd, out uint unicodeValue)
@@ -90,13 +90,13 @@ namespace WitherTorch.Common.Text
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe bool IsLeadSurrogate(char c) => c >= Utf16LeadSurrogateStart && c <= Utf16LeadSurrogateEnd;
+        public static bool IsLeadSurrogate(char c) => c >= Utf16LeadSurrogateStart && c <= Utf16LeadSurrogateEnd;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe bool IsTrailSurrogate(char c) => c >= Utf16TrailSurrogateStart && c <= Utf16TrailSurrogateEnd;
+        public static bool IsTrailSurrogate(char c) => c >= Utf16TrailSurrogateStart && c <= Utf16TrailSurrogateEnd;
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe uint ComposeSurrogatePair(char leadSurrogate, char trailSurrogate)
+        private static uint ComposeSurrogatePair(char leadSurrogate, char trailSurrogate)
             => Utf16SurrogateBase + unchecked(((uint)(leadSurrogate - Utf16LeadSurrogateStart) << 10) + (uint)(trailSurrogate - Utf16TrailSurrogateStart));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -128,7 +128,7 @@ namespace WitherTorch.Common.Text
         /// <param name="trailSurrogate">如果回傳值為 <see langword="true"/>，則為 UTF-16 代理對中的後尾字元；反之則為 0</param>
         /// <returns>轉換結果是否有代理對 (Surrogate Pair)</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool ToUtf16Characters(uint unicodeValue, out char leadSurrogate, out char trailSurrogate)
+        public static bool ToUtf16Characters(uint unicodeValue, out char leadSurrogate, out char trailSurrogate)
         {
             if (unicodeValue <= 0xFFFF)
             {
@@ -247,7 +247,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe nuint GetNextUtf8CharacterOffset(byte b)
+        public static nuint GetNextUtf8CharacterOffset(byte b)
         {
             if (b <= Utf8Section1Limit) // Section 1
                 return 1;

@@ -6,7 +6,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Intrinsics.X86
 {
-    unsafe partial class Lzcnt
+    partial class Lzcnt
     {
         private static readonly bool _isSupported;
 

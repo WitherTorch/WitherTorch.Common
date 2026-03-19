@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -14,7 +14,7 @@ namespace WitherTorch.Common.Extensions
         {
             /// <inheritdoc cref="Array.Clear(Array, int, int)"/>
             [Inline(InlineBehavior.Keep, export: true)]
-            public static unsafe void Clear(Array array)
+            public static void Clear(Array array)
                 => Array.Clear(array, 0, array.Length);
 
             /// <inheritdoc cref="Array.Clear(Array, int, int)"/>

@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -96,7 +96,7 @@ namespace WitherTorch.Common.Text
                 return upper << 16 | lower;
             }
 
-            private static unsafe int NormalHashingFunctionCore_64bit(byte* ptr, int length)
+            private static int NormalHashingFunctionCore_64bit(byte* ptr, int length)
             {
                 const int HashSeed = 5381;
                 int hash1 = HashSeed, hash2 = HashSeed;

@@ -1,4 +1,4 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
@@ -68,7 +68,7 @@ namespace WitherTorch.Common.Text
                 return SequenceHelper.Equals(source + startIndex, sourceB, count);
         }
 
-        private unsafe bool PartiallyEqualsCore(Utf16String compare, nuint startIndex, nuint count)
+        private bool PartiallyEqualsCore(Utf16String compare, nuint startIndex, nuint count)
             => PartiallyEqualsCore(compare.GetInternalRepresentation(), startIndex, count);
 
         private unsafe bool PartiallyEqualsCore_Other(StringBase compare, nuint startIndex, nuint count)

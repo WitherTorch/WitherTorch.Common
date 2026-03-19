@@ -1,9 +1,7 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System.Numerics;
 
 using InlineMethod;
-
-#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
@@ -11,110 +9,197 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore
         {
-            public static partial bool Equals(byte* ptr, byte* ptr2, nuint length)
+            private static partial bool VectorizedEquals(byte* ptr, byte* ptr2, nuint length)
             {
-                byte* ptrEnd = ptr + length;
-                if (Limits.UseVector())
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector<byte>>();
+                nuint headRemainder2 = (nuint)ptr2 % UnsafeHelper.SizeOf<Vector<byte>>();
+                if (headRemainder == 0)
                 {
-                    Vector<byte>* ptrLimit = ((Vector<byte>*)ptr) + 1;
-                    Vector<byte>* ptrLimit2 = ((Vector<byte>*)ptr2) + 1;
-                    if (ptrLimit < ptrEnd)
-                    {
-                        do
-                        {
-                            if (UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr) != UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr2))
-                                return false;
-                            ptr = (byte*)ptrLimit;
-                            ptr2 = (byte*)ptrLimit2++;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return true;
-                    }
+                    if (headRemainder2 == 0)
+                        goto VectorizedLoop_FullAligned;
+                    else
+                        goto VectorizedLoop_PartialAligned;
                 }
-                length = unchecked((nuint)(ptrEnd - ptr));
+                else
+                {
+                    Vector<byte> sourceVector = UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr);
+                    Vector<byte> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr2);
+                    if (Vector.EqualsAll(sourceVector, sourceVector2))
+                    {
+                        if (length > (nuint)Vector<byte>.Count * 2)
+                        {
+                            bool isSameRemainder = headRemainder == headRemainder2;
+                            headRemainder = UnsafeHelper.SizeOf<Vector<byte>>() - headRemainder; // 取得數量
+                            ptr += headRemainder;
+                            ptr2 += headRemainder;
+                            length -= headRemainder;
+                            if (isSameRemainder)
+                                goto VectorizedLoop_FullAligned;
+                            else
+                                goto VectorizedLoop_PartialAligned;
+                        }
+                        else
+                        {
+                            ptr += (nuint)Vector<byte>.Count;
+                            ptr2 += (nuint)Vector<byte>.Count;
+                            length -= (nuint)Vector<byte>.Count;
+                            goto TailProcess;
+                        }
+                    }
+                    return false;
+                }
+
+            VectorizedLoop_PartialAligned:
                 do
                 {
-                    switch (length)
+                    Vector<byte> sourceVector = UnsafeHelper.Read<Vector<byte>>(ptr);
+                    Vector<byte> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr2);
+                    if (Vector.EqualsAll(sourceVector, sourceVector2))
                     {
-                        case 7:
-                            if (*ptr != *ptr2)
-                                return false;
-                            ptr++;
-                            ptr2++;
-                            goto case 6;
-                        case 6:
-                            if (UnsafeHelper.ReadUnaligned<ushort>(ptr) != UnsafeHelper.ReadUnaligned<ushort>(ptr2))
-                                return false;
-                            ptr += 2;
-                            ptr2 += 2;
-                            goto case 4;
-                        case 5:
-                            if (*ptr != *ptr2)
-                                return false;
-                            ptr++;
-                            ptr2++;
-                            goto case 4;
-                        case 4:
-                            if (UnsafeHelper.ReadUnaligned<uint>(ptr) != UnsafeHelper.ReadUnaligned<uint>(ptr2))
-                                return false;
-                            goto case 0;
-                        case 3:
-                            if (*ptr != *ptr2)
-                                return false;
-                            ptr++;
-                            ptr2++;
-                            goto case 2;
-                        case 2:
-                            if (UnsafeHelper.ReadUnaligned<ushort>(ptr) != UnsafeHelper.ReadUnaligned<ushort>(ptr2))
-                                return false;
-                            goto case 0;
-                        case 1:
-                            if (*ptr != *ptr2)
-                                return false;
-                            goto case 0;
-                        case 0:
-                            return true;
-                        default:
-                            if (UnsafeHelper.ReadUnaligned<ulong>(ptr) != UnsafeHelper.ReadUnaligned<ulong>(ptr2))
-                                return false;
-                            length -= 8;
-                            ptr += 8;
-                            ptr2 += 8;
-                            continue;
+                        ptr += (nuint)Vector<byte>.Count;
+                        ptr2 += (nuint)Vector<byte>.Count;
+                        length -= (nuint)Vector<byte>.Count;
+                        continue;
                     }
-                } while (true);
+                    return false;
+                } while (length >= (nuint)Vector<byte>.Count);
+                goto TailProcess;
+
+            VectorizedLoop_FullAligned:
+                do
+                {
+                    Vector<byte> sourceVector = UnsafeHelper.Read<Vector<byte>>(ptr);
+                    Vector<byte> sourceVector2 = UnsafeHelper.Read<Vector<byte>>(ptr2);
+                    if (Vector.EqualsAll(sourceVector, sourceVector2))
+                    {
+                        ptr += (nuint)Vector<byte>.Count;
+                        ptr2 += (nuint)Vector<byte>.Count;
+                        length -= (nuint)Vector<byte>.Count;
+                        continue;
+                    }
+                    return false;
+                } while (length >= (nuint)Vector<byte>.Count);
+                goto TailProcess;
+
+            TailProcess:
+                if (length > 0)
+                {
+                    ptr = ptr + length - (nuint)Vector<byte>.Count;
+                    ptr2 = ptr2 + length - (nuint)Vector<byte>.Count;
+                    Vector<byte> sourceVector = UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr);
+                    Vector<byte> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr2);
+                    return Vector.EqualsAll(sourceVector, sourceVector2);
+                }
+                else
+                    return true;
             }
         }
 
         unsafe partial class FastCore<T>
         {
-            private static partial bool VectorizedRangedAddAndEquals(ref T* ptr, ref T* ptr2, T* ptrEnd, T lowerBound, T higherBound, T valueToAddInRange)
+            private static partial bool VectorizedRangedAddAndEquals(T* ptr, T* ptr2, nuint length, T lowerBound, T higherBound, T valueToAddInRange)
             {
-                if (Limits.UseVector())
+                Vector<T> valueToAddInRangeVector = new Vector<T>(valueToAddInRange);
+                Vector<T> lowerBoundVector = new Vector<T>(lowerBound);
+                Vector<T> higherBoundVector = new Vector<T>(higherBound);
+
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector<T>>();
+                nuint headRemainder2 = (nuint)ptr2 % UnsafeHelper.SizeOf<Vector<T>>();
+                if (headRemainder == 0)
                 {
-                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
-                    Vector<T>* ptrLimit2 = ((Vector<T>*)ptr2) + 1;
-                    if (ptrLimit < ptrEnd)
-                    {
-                        Vector<T> vectorToAddInRange = new Vector<T>(valueToAddInRange);
-                        Vector<T> lowerBoundVector = new Vector<T>(lowerBound);
-                        Vector<T> higherBoundVector = new Vector<T>(higherBound);
-                        do
-                        {
-                            Vector<T> valueVector = VectorizedRangedAdd(UnsafeHelper.ReadUnaligned<Vector<T>>(ptr), vectorToAddInRange,
-                                lowerBoundVector, higherBoundVector);
-                            Vector<T> valueVector2 = VectorizedRangedAdd(UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2), vectorToAddInRange,
-                                lowerBoundVector, higherBoundVector);
-                            if (!valueVector.Equals(valueVector2))
-                                return false;
-                            ptr = (T*)ptrLimit;
-                            ptr2 = (T*)ptrLimit2++;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return false;
-                    }
+                    if (headRemainder2 == 0)
+                        goto VectorizedLoop_FullAligned;
+                    else
+                        goto VectorizedLoop_PartialAligned;
                 }
-                return LegacyRangedAddAndEquals(ref ptr, ref ptr2, ptrEnd, lowerBound, higherBound, valueToAddInRange);
+                else
+                {
+                    Vector<T> sourceVector = VectorizedRangedAdd(
+                        UnsafeHelper.ReadUnaligned<Vector<T>>(ptr), 
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    Vector<T> sourceVector2 = VectorizedRangedAdd(
+                        UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    if (Vector.EqualsAll(sourceVector, sourceVector2))
+                    {
+                        if (length > (nuint)Vector<T>.Count * 2)
+                        {
+                            bool isSameRemainder = headRemainder == headRemainder2;
+                            headRemainder = UnsafeHelper.SizeOf<Vector<T>>() - headRemainder; // 取得數量
+                            ptr += headRemainder;
+                            ptr2 += headRemainder;
+                            length -= headRemainder;
+                            if (isSameRemainder)
+                                goto VectorizedLoop_FullAligned;
+                            else
+                                goto VectorizedLoop_PartialAligned;
+                        }
+                        else
+                        {
+                            ptr += (nuint)Vector<T>.Count;
+                            ptr2 += (nuint)Vector<T>.Count;
+                            length -= (nuint)Vector<T>.Count;
+                            goto TailProcess;
+                        }
+                    }
+                    return false;
+                }
+
+            VectorizedLoop_PartialAligned:
+                do
+                {
+                    Vector<T> sourceVector = VectorizedRangedAdd(
+                        UnsafeHelper.Read<Vector<T>>(ptr),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    Vector<T> sourceVector2 = VectorizedRangedAdd(
+                        UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    if (Vector.EqualsAll(sourceVector, sourceVector2))
+                    {
+                        ptr += (nuint)Vector<T>.Count;
+                        ptr2 += (nuint)Vector<T>.Count;
+                        length -= (nuint)Vector<T>.Count;
+                        continue;
+                    }
+                    return false;
+                } while (length >= (nuint)Vector<T>.Count);
+                goto TailProcess;
+
+            VectorizedLoop_FullAligned:
+                do
+                {
+                    Vector<T> sourceVector = VectorizedRangedAdd(
+                        UnsafeHelper.Read<Vector<T>>(ptr),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    Vector<T> sourceVector2 = VectorizedRangedAdd(
+                        UnsafeHelper.Read<Vector<T>>(ptr2),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    if (Vector.EqualsAll(sourceVector, sourceVector2))
+                    {
+                        ptr += (nuint)Vector<T>.Count;
+                        ptr2 += (nuint)Vector<T>.Count;
+                        length -= (nuint)Vector<T>.Count;
+                        continue;
+                    }
+                    return false;
+                } while (length >= (nuint)Vector<T>.Count);
+                goto TailProcess;
+
+            TailProcess:
+                if (length > 0)
+                {
+                    ptr = ptr + length - (nuint)Vector<T>.Count;
+                    ptr2 = ptr2 + length - (nuint)Vector<T>.Count;
+                    Vector<T> sourceVector = VectorizedRangedAdd(
+                        UnsafeHelper.ReadUnaligned<Vector<T>>(ptr),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    Vector<T> sourceVector2 = VectorizedRangedAdd(
+                        UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2),
+                        valueToAddInRangeVector, lowerBoundVector, higherBoundVector);
+                    return Vector.EqualsAll(sourceVector, sourceVector2);
+                }
+                else
+                    return true;
             }
 
             [Inline(InlineBehavior.Remove)]

@@ -6,7 +6,7 @@ using InlineIL;
 
 namespace WitherTorch.Common.Intrinsics.X86
 {
-    unsafe partial class X86Base
+    partial class X86Base
     {
 #if (X86_ARCH || ANYCPU)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

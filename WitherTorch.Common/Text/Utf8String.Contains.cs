@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 
 using LocalsInit;
 
@@ -10,7 +10,7 @@ namespace WitherTorch.Common.Text
 {
     partial class Utf8String
     {
-        protected override unsafe bool ContainsCore(char value, nuint startIndex, nuint count)
+        protected override bool ContainsCore(char value, nuint startIndex, nuint count)
         {
             if (startIndex > 0 || count < unchecked((nuint)_length))
                 return base.ContainsCore(value, startIndex, count);
@@ -131,7 +131,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private unsafe bool ContainsCoreFallback(char value)
+        private bool ContainsCoreFallback(char value)
         {
             if (Utf16StringHelper.IsSurrogateCharacter(value))
                 return ContainsCoreFallbackSlow(value);
@@ -174,7 +174,7 @@ namespace WitherTorch.Common.Text
             return ContainsCore(buffer, unchecked((nuint)(bufferEnd - buffer)));
         }
 
-        private unsafe bool ContainsCoreFallbackSlow(char value)
+        private bool ContainsCoreFallbackSlow(char value)
             => this.WhereEqualsTo(value).Any();
 
         private unsafe bool ContainsCoreFallbackFast(char* value, nuint valueLength)

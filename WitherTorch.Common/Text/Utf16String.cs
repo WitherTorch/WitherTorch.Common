@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -29,7 +29,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe new Utf16String Create(string source) => new Utf16String(source);
+        public new static Utf16String Create(string source) => new Utf16String(source);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe Utf16String Create(char* source, nuint length)

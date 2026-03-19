@@ -185,7 +185,7 @@ namespace WitherTorch.Common.Structures
         public readonly unsafe bool Equals(RectU other)
             => SequenceHelper.Equals(UnsafeHelper.AsPointerIn(this), UnsafeHelper.AsPointerIn(other), sizeof(RectU));
 
-        public override readonly unsafe int GetHashCode() => unchecked((int)(Left ^ Top ^ Right ^ Bottom));
+        public override readonly int GetHashCode() => unchecked((int)(Left ^ Top ^ Right ^ Bottom));
 
         public override readonly string ToString()
             => $"{{ {nameof(Left)} = {Left}, {nameof(Top)} = {Top}, {nameof(Right)} = {Right}, {nameof(Bottom)} = {Bottom}) }}";

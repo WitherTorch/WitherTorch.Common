@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using InlineMethod;
@@ -284,7 +284,7 @@ namespace WitherTorch.Common.Text
             => this.SkipAndTake(startIndex, count).SequenceEqual(other, count);
 
         [Inline(InlineBehavior.Remove)]
-        private unsafe bool PartiallyEqualsCoreFallback(StringBase other, nuint startIndex, nuint count)
+        private bool PartiallyEqualsCoreFallback(StringBase other, nuint startIndex, nuint count)
             => this.SkipAndTake(startIndex, count).SequenceEqual(other);
 
         [Inline(InlineBehavior.Remove)]
@@ -292,7 +292,7 @@ namespace WitherTorch.Common.Text
             => this.SequenceCompare(other, length);
 
         [Inline(InlineBehavior.Remove)]
-        private unsafe int CompareToCoreFallback(StringBase other)
+        private int CompareToCoreFallback(StringBase other)
             => this.SequenceCompare(other);
 
         [Inline(InlineBehavior.Remove)]
@@ -300,7 +300,7 @@ namespace WitherTorch.Common.Text
             => this.SequenceEqual(other, length);
 
         [Inline(InlineBehavior.Remove)]
-        private unsafe bool EqualsCoreFallback(StringBase other)
+        private bool EqualsCoreFallback(StringBase other)
             => this.SequenceEqual(other);
     }
 }

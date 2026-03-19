@@ -1,4 +1,4 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
@@ -39,7 +39,7 @@ namespace WitherTorch.Common.Text
                 return GetSplitCount(ptr, separatorLength, pool, out rangeBuffer);
         }
 
-        protected override unsafe nuint GetSplitCount(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+        protected override nuint GetSplitCount(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
             => separator switch
             {
                 Utf16String utf16 => GetSplitCount(utf16, separatorLength, pool, out rangeBuffer),

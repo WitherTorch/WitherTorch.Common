@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
 {
-    public static unsafe class StringHelperExtensions
+    public static class StringHelperExtensions
     {
 #if !NET8_0_OR_GREATER
         extension(StringHelper)

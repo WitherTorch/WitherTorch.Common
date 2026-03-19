@@ -71,14 +71,14 @@ namespace WitherTorch.Common.Collections
                 }
             }
 
-            public unsafe void Append(T item)
+            public void Append(T item)
             {
                 int count = _count;
                 AppendCore(item, count);
                 _count = count + 1;
             }
 
-            public unsafe void Append(IEnumerable<T> items)
+            public void Append(IEnumerable<T> items)
             {
                 int index = _count;
                 switch (items)
@@ -265,7 +265,7 @@ namespace WitherTorch.Common.Collections
                 return index;
             }
 
-            private unsafe void AppendCore(T item, int index)
+            private void AppendCore(T item, int index)
             {
                 int depth = _depth;
                 object headNode = _treeHeadNode;

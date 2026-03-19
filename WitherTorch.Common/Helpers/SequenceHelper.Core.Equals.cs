@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -14,44 +14,124 @@ namespace WitherTorch.Common.Helpers
         {
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static partial bool Equals(byte* ptr, byte* ptr2, nuint length);
+            public static bool Equals(byte* ptr, byte* ptr2, nuint length)
+            {
+                if (length >= FastCore<byte>.GetMinimumVectorCount())
+                    return VectorizedEquals(ptr, ptr2, length);
+                return ScalarizedEquals(ref ptr, ref ptr2, ref length);
+            }
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static partial bool VectorizedEquals(byte* ptr, byte* ptr2, nuint length);
+
+            [Inline(InlineBehavior.Remove)]
+            private static bool ScalarizedEquals(ref byte* ptr, ref byte* ptr2, ref nuint length)
+            {
+                if (length >= (nuint)sizeof(nuint))
+                    return ScalarizedBulkEquals<nuint>(ref ptr, ref ptr2, ref length);
+                if (sizeof(nuint) > sizeof(uint) && length >= sizeof(uint))
+                    return ScalarizedBulkEquals<uint>(ref ptr, ref ptr2, ref length);
+                byte* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return true;
+                if (*ptr++ != *ptr2++)
+                    return false;
+                if (ptr >= ptrEnd)
+                    return true;
+                if (*ptr++ != *ptr2++)
+                    return false;
+                if (ptr >= ptrEnd)
+                    return true;
+                return *ptr == *ptr2;
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static bool ScalarizedBulkEquals<T>(ref byte* ptr, ref byte* ptr2, ref nuint length) where T : unmanaged
+            {
+                for (; length >= UnsafeHelper.SizeOf<T>(); length -= UnsafeHelper.SizeOf<T>(),
+                    ptr += UnsafeHelper.SizeOf<T>(), ptr2 += UnsafeHelper.SizeOf<T>()) // SWAR-Native 展開
+                {
+                    if (UnsafeHelper.NotEquals(*(T*)ptr, *(T*)ptr2))
+                        return false;
+                }
+                if (length == 0)
+                    return true;
+                ptr -= UnsafeHelper.SizeOf<T>() - length;
+                ptr2 -= UnsafeHelper.SizeOf<T>() - length;
+                return UnsafeHelper.Equals(*(T*)ptr, *(T*)ptr2);
+            }
         }
 
         unsafe partial class FastCore<T>
         {
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool RangedAddAndEquals(T* ptr, T* ptr2, nuint length, T lowerBound, T higherBound, T valueToAddInRange)
             {
-                T* ptrEnd = ptr + length;
-                if (CheckTypeCanBeVectorized())
-                    return VectorizedRangedAddAndEquals(ref ptr, ref ptr2, ptrEnd, lowerBound, higherBound, valueToAddInRange);
-                return LegacyRangedAddAndEquals(ref ptr, ref ptr2, ptrEnd, lowerBound, higherBound, valueToAddInRange);
+                if (CheckTypeCanBeVectorized() && length >= GetMinimumVectorCount())
+                    return VectorizedRangedAddAndEquals(ptr, ptr2, length, lowerBound, higherBound, valueToAddInRange);
+                return ScalarizedRangedAddAndEquals(ref ptr, ref ptr2, ref length, lowerBound, higherBound, valueToAddInRange);
             }
 
-            [Inline(InlineBehavior.Remove)]
-            private static partial bool VectorizedRangedAddAndEquals(ref T* ptr, ref T* ptr2, T* ptrEnd, T lowerBound, T higherBound, T valueToAddInRange);
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static partial bool VectorizedRangedAddAndEquals(T* ptr, T* ptr2, nuint length, T lowerBound, T higherBound, T valueToAddInRange);
 
             [Inline(InlineBehavior.Remove)]
-            private static bool LegacyRangedAddAndEquals(ref T* ptr, ref T* ptr2, T* ptrEnd, T lowerBound, T higherBound, T valueToAddInRange)
+            private static bool ScalarizedRangedAddAndEquals(ref T* ptr, ref T* ptr2, ref nuint length, T lowerBound, T higherBound, T valueToAddInRange)
             {
-                for (; ptr < ptrEnd; ptr++, ptr2++)
+                for (; length >= 4; length -= 4, ptr += 4, ptr2 += 4) // 4x 展開
                 {
-                    if (UnsafeHelper.NotEquals(RangedAddFast(*ptr, valueToAddInRange, lowerBound, higherBound),
-                        RangedAddFast(*ptr2, valueToAddInRange, lowerBound, higherBound)))
+                    if (UnsafeHelper.NotEquals(
+                        a: ScalarRangedAdd(ptr[0], valueToAddInRange, lowerBound, higherBound),
+                        b: ScalarRangedAdd(ptr2[0], valueToAddInRange, lowerBound, higherBound)))
+                        return false;
+                    if (UnsafeHelper.NotEquals(
+                        a: ScalarRangedAdd(ptr[1], valueToAddInRange, lowerBound, higherBound),
+                        b: ScalarRangedAdd(ptr2[1], valueToAddInRange, lowerBound, higherBound)))
+                        return false;
+                    if (UnsafeHelper.NotEquals(
+                        a: ScalarRangedAdd(ptr[2], valueToAddInRange, lowerBound, higherBound),
+                        b: ScalarRangedAdd(ptr2[2], valueToAddInRange, lowerBound, higherBound)))
+                        return false;
+                    if (UnsafeHelper.NotEquals(
+                        a: ScalarRangedAdd(ptr[3], valueToAddInRange, lowerBound, higherBound),
+                        b: ScalarRangedAdd(ptr2[3], valueToAddInRange, lowerBound, higherBound)))
                         return false;
                 }
-                return true;
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return true;
+                if (UnsafeHelper.NotEquals(
+                    a: ScalarRangedAdd(*ptr, valueToAddInRange, lowerBound, higherBound),
+                    b: ScalarRangedAdd(*ptr2, valueToAddInRange, lowerBound, higherBound)))
+                    return false;
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return true;
+                if (UnsafeHelper.NotEquals(
+                    a: ScalarRangedAdd(*ptr, valueToAddInRange, lowerBound, higherBound),
+                    b: ScalarRangedAdd(*ptr2, valueToAddInRange, lowerBound, higherBound)))
+                    return false;
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return true;
+                return UnsafeHelper.Equals(
+                    a: ScalarRangedAdd(*ptr, valueToAddInRange, lowerBound, higherBound),
+                    b: ScalarRangedAdd(*ptr2, valueToAddInRange, lowerBound, higherBound));
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T RangedAddFast(T source, T valueToAdd, T lowerBound, T higherBound)
+            private static T ScalarRangedAdd(T source, T valueToAdd, T lowerBound, T higherBound)
             {
-                if (IsGreaterOrEqualsFast(source, lowerBound) && IsLessOrEqualsFast(source, higherBound))
+                if (IsGreaterOrEquals(source, lowerBound) && IsLessOrEquals(source, higherBound))
                     return UnsafeHelper.Add(source, valueToAdd);
                 return source;
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static bool IsGreaterOrEqualsFast(T a, T b)
+            private static bool IsGreaterOrEquals(T a, T b)
             {
                 if (UnsafeHelper.IsUnsigned<T>())
                     return UnsafeHelper.IsGreaterThanOrEqualsUnsigned(a, b);
@@ -59,20 +139,12 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static bool IsGreaterOrEqualsSlow(T a, T b, IComparer<T> comparer)
-                => comparer.Compare(a, b) >= 0;
-
-            [Inline(InlineBehavior.Remove)]
-            private static bool IsLessOrEqualsFast(T a, T b)
+            private static bool IsLessOrEquals(T a, T b)
             {
                 if (UnsafeHelper.IsUnsigned<T>())
                     return UnsafeHelper.IsLessThanOrEqualsUnsigned(a, b);
                 return UnsafeHelper.IsLessThanOrEquals(a, b);
             }
-
-            [Inline(InlineBehavior.Remove)]
-            private static bool IsLessOrEqualsSlow(T a, T b, IComparer<T> comparer)
-                => comparer.Compare(a, b) <= 0;
         }
     }
 

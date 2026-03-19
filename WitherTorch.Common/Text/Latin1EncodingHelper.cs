@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
@@ -13,22 +13,22 @@ namespace WitherTorch.Common.Text
         public const byte Latin1EncodingLimit_InByte = 0x00FF;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe int GetWorstCaseForEncodeLength(int length) => length;
+        public static int GetWorstCaseForEncodeLength(int length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe uint GetWorstCaseForEncodeLength(uint length) => length;
+        public static uint GetWorstCaseForEncodeLength(uint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe nuint GetWorstCaseForEncodeLength(nuint length) => length;
+        public static nuint GetWorstCaseForEncodeLength(nuint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe int GetWorstCaseForDecodeLength(int length) => length;
+        public static int GetWorstCaseForDecodeLength(int length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe uint GetWorstCaseForDecodeLength(uint length) => length;
+        public static uint GetWorstCaseForDecodeLength(uint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe nuint GetWorstCaseForDecodeLength(nuint length) => length;
+        public static nuint GetWorstCaseForDecodeLength(nuint length) => length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe byte* ReadFromUtf16Buffer(char* source, nuint sourceLength, byte* destination, nuint destinationLength)

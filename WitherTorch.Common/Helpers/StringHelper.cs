@@ -458,7 +458,7 @@ namespace WitherTorch.Common.Helpers
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe string GetStringForFirstNonEmptyLine(string original)
+        public static string GetStringForFirstNonEmptyLine(string original)
         {
             int length = original.Length;
             if (length <= 0)
@@ -468,7 +468,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe string GetStringForFirstNonEmptyLineCore(char* original, int length, string originalInManaged)
+        public static string GetStringForFirstNonEmptyLineCore(char* original, int length, string originalInManaged)
         {
             char* start = original, end = original + length;
             do

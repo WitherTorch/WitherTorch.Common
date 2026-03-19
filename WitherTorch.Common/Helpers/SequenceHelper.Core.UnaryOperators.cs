@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -82,41 +82,69 @@ namespace WitherTorch.Common.Helpers
 
         unsafe partial class FastCore<T>
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Not(T* ptr, nuint length)
-                => UnaryOperationCore(ref ptr, length, UnaryOperationMethod.Not);
+                => UnaryOperationCore(ref ptr, ref length, UnaryOperationMethod.Not);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedNot(T* ptr, nuint length)
+                => VectorizedUnaryOperationCore(ref ptr, ref length, UnaryOperationMethod.Not);
 
             [Inline(InlineBehavior.Remove)]
-            private static void UnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void UnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
             {
-                T* ptrEnd = ptr + length;
-                if (CheckTypeCanBeVectorized())
+                if (CheckTypeCanBeVectorized() && length >= GetMinimumVectorCount())
                 {
-                    VectorizedUnaryOperationCore(ref ptr, ptrEnd, method);
+                    switch (method)
+                    {
+                        case UnaryOperationMethod.Not:
+                            VectorizedNot(ptr, length);
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(method));  
+                    }
                     return;
                 }
-                LegacyUnaryOperationCore(ref ptr, ptrEnd, method);
+                ScalarizedUnaryOperationCore(ref ptr, ref length, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static partial void VectorizedUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method);
+            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method);
 
             [Inline(InlineBehavior.Remove)]
-            private static void LegacyUnaryOperationCore(ref T* ptr, T* ptrEnd, [InlineParameter] UnaryOperationMethod method)
+            private static void ScalarizedUnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
             {
-                for (; ptr < ptrEnd; ptr++)
-                    *ptr = LegacyUnaryOperationCore(*ptr, method);
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+                {
+                    ptr[0] = ScalarizedUnaryOperation(ptr[0], method);
+                    ptr[1] = ScalarizedUnaryOperation(ptr[1], method);
+                    ptr[2] = ScalarizedUnaryOperation(ptr[2], method);
+                    ptr[3] = ScalarizedUnaryOperation(ptr[3], method);
+                }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = ScalarizedUnaryOperation(*ptr, method);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = ScalarizedUnaryOperation(*ptr, method);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = ScalarizedUnaryOperation(*ptr, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T LegacyUnaryOperationCore(T item, [InlineParameter] UnaryOperationMethod method)
+            private static T ScalarizedUnaryOperation(T item, [InlineParameter] UnaryOperationMethod method)
                 => method switch
                 {
                     UnaryOperationMethod.Not => UnsafeHelper.Not(item),
-                    _ => throw new InvalidOperationException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
 
-        unsafe partial class SlowCore
+        partial class SlowCore
         {
             internal static readonly string[] UnaryOperatorNames = new string[(int)UnaryOperationMethod._Last]
             {

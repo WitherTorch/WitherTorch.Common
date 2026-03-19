@@ -87,11 +87,11 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe bool Contains<T>(this T[] array, T value) where T : unmanaged
+        public static bool Contains<T>(this T[] array, T value) where T : unmanaged
             => SequenceHelper.Contains(array, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe bool Contains<T>(this T[] array, T value, int startIndex, int length)
+        public static bool Contains<T>(this T[] array, T value, int startIndex, int length)
             => SequenceHelper.Contains(array, value, startIndex, length);
 
         [Inline(InlineBehavior.Keep, export: true)]

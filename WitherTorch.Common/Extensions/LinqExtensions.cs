@@ -467,7 +467,7 @@ namespace WitherTorch.Common.Extensions
             return true;
         }
 
-        public static unsafe int SequenceCompare<TSource>(this IEnumerable<TSource> _this, IEnumerable<TSource> other)
+        public static int SequenceCompare<TSource>(this IEnumerable<TSource> _this, IEnumerable<TSource> other)
         {
             Comparer<TSource> comparer = Comparer<TSource>.Default;
             using IEnumerator<TSource> enumeratorThis = _this.GetEnumerator();

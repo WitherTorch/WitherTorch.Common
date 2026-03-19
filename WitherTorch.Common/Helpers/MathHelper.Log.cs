@@ -34,7 +34,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe int Log10(uint value)
+        public static int Log10(uint value)
         {
             int digits = _guessLog10[Log2(value)];
             return digits + BooleanToInt32(value >= _powerOf10Sequence[digits]);
@@ -52,7 +52,7 @@ namespace WitherTorch.Common.Helpers
         };
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe int Log2Core(uint value)
+        private static int Log2Core(uint value)
         {
             // The 0->0 contract is fulfilled by setting the LSB to 1.
             // Log(1) is 0, and setting the LSB for values > 1 does not change the log2 result.
@@ -74,7 +74,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe int Log2Core(ulong value)
+        private static int Log2Core(ulong value)
         {
             // The 0->0 contract is fulfilled by setting the LSB to 1.
             // Log(1) is 0, and setting the LSB for values > 1 does not change the log2 result.
@@ -101,7 +101,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Remove)]
-        private static unsafe int Log2Core(nuint value)
+        private static int Log2Core(nuint value)
             => UnsafeHelper.PointerSizeConstant switch
             {
                 sizeof(uint) => Log2((uint)value),

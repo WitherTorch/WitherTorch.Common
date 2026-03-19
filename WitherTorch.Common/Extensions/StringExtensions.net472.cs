@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Runtime.CompilerServices;
 
@@ -15,7 +15,7 @@ namespace WitherTorch.Common.Extensions
     public static partial class StringExtensions
     {
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe bool Contains(this string obj, char value) => StringHelper.Contains(obj, value);
+        public static bool Contains(this string obj, char value) => StringHelper.Contains(obj, value);
 
         private const int SplitPathLength = 256;
 
