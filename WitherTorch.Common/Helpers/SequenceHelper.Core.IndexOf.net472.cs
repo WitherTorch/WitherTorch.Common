@@ -6,9 +6,6 @@ using System.Runtime.CompilerServices;
 using InlineMethod;
 
 using WitherTorch.Common.Extensions;
-using WitherTorch.Common.Intrinsics;
-
-#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
@@ -16,7 +13,7 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, ref nuint length, T value, IndexOfMethod method, bool accurateResult)
+            private static partial T* VectorizedPointerIndexOfCore(ref T* ptr, ref nuint length, T value, CompareMethod method, bool accurateResult)
             {
                 Vector<T> valueVector = new Vector<T>(value);
 
@@ -27,7 +24,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     headRemainder = (UnsafeHelper.SizeOf<Vector<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                     Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                    Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
+                    Vector<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
                     if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
                     {
                         if (length > (nuint)Vector<T>.Count * 2)
@@ -50,7 +47,7 @@ namespace WitherTorch.Common.Helpers
                 do
                 {
                     Vector<T> sourceVector = UnsafeHelper.Read<Vector<T>>(ptr);
-                    Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
+                    Vector<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
                     if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
                     {
                         ptr += (nuint)Vector<T>.Count;
@@ -62,56 +59,93 @@ namespace WitherTorch.Common.Helpers
                 goto TailProcess;
 
             TailProcess:
-                if (length >= (nuint)Vector<T>.Count / 2)
+                if (length > 0)
                 {
                     ptr = ptr + length - (nuint)Vector<T>.Count;
                     Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                    Vector<T> resultVector = VectorizedIndexOfCore(sourceVector, valueVector, method);
+                    Vector<T> resultVector = VectorizedCompareCore(sourceVector, valueVector, method);
                     if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                 }
                 else
-                    return LegacyPointerIndexOfCore(ref ptr, length, value, method, accurateResult);
+                    return null;
             }
 
-            private static partial void VectorizedReplaceCore(ref T* ptr, T* ptrEnd, T filter, T replacement, IndexOfMethod method)
+            private static partial void VectorizedReplaceCore(ref T* ptr, ref nuint length, T filter, T replacement, CompareMethod method)
             {
-                if (Limits.UseVector())
+                Vector<T> filterVector = new Vector<T>(filter);
+                Vector<T> replacementVector = new Vector<T>(replacement);
+
+                nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector<T>>();
+                if (headRemainder == 0)
+                    goto VectorizedLoop;
+                else
                 {
-                    Vector<T>* ptrLimit = ((Vector<T>*)ptr) + 1;
-                    if (ptrLimit < ptrEnd)
+                    headRemainder = (UnsafeHelper.SizeOf<Vector<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
+                    if (length > (nuint)Vector<T>.Count * 2)
                     {
-                        Vector<T> filterVector = new Vector<T>(filter); // 將要比對的項目擴充成向量
-                        Vector<T> replaceVector = new Vector<T>(replacement);
-                        do
-                        {
-                            Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                            sourceVector = Vector.ConditionalSelect(
-                                condition: VectorizedIndexOfCore(sourceVector, filterVector, method),
-                                left: replaceVector,
-                                right: sourceVector);
-                            UnsafeHelper.WriteUnaligned(ptr, sourceVector);
-                            ptr = (T*)ptrLimit;
-                        } while (++ptrLimit < ptrEnd);
-                        if (ptr >= ptrEnd)
-                            return;
+                        ScalarizedReplaceCore(ref ptr, ref headRemainder, filter, replacement, method);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector<T>.Count * 2)
+                    {
+                        T* ptr2 = ptr + Vector<T>.Count;
+                        Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                        Vector<T> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2);
+                        UnsafeHelper.WriteUnaligned(ptr, Vector.ConditionalSelect(
+                                                        condition: VectorizedCompareCore(sourceVector, filterVector, method),
+                                                        left: replacementVector,
+                                                        right: sourceVector));
+                        UnsafeHelper.WriteUnaligned(ptr2, Vector.ConditionalSelect(
+                                                        condition: VectorizedCompareCore(sourceVector2, filterVector, method),
+                                                        left: replacementVector,
+                                                        right: sourceVector2));
+                        return;
+                    }
+                    else
+                    {
+                        Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                        UnsafeHelper.WriteUnaligned(ptr, Vector.ConditionalSelect(
+                                                        condition: VectorizedCompareCore(sourceVector, filterVector, method),
+                                                        left: replacementVector,
+                                                        right: sourceVector));
+                        ptr += (nuint)Vector<T>.Count;
+                        length -= (nuint)Vector<T>.Count;
+                        goto TailProcess;
                     }
                 }
-                LegacyReplaceCore(ref ptr, ptrEnd, filter, replacement, method);
+
+            VectorizedLoop:
+                do
+                {
+                    Vector<T> sourceVector = UnsafeHelper.Read<Vector<T>>(ptr);
+                    UnsafeHelper.WriteUnaligned(ptr, Vector.ConditionalSelect(
+                                                    condition: VectorizedCompareCore(sourceVector, filterVector, method),
+                                                    left: replacementVector,
+                                                    right: sourceVector));
+                    ptr += (nuint)Vector<T>.Count;
+                    length -= (nuint)Vector<T>.Count;
+                } while (length >= (nuint)Vector<T>.Count);
+                goto TailProcess;
+
+            TailProcess:
+                ScalarizedReplaceCore(ref ptr, ref length, filter, replacement, method);
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static Vector<T> VectorizedIndexOfCore(in Vector<T> sourceVector, in Vector<T> valueVector, [InlineParameter] IndexOfMethod method)
+            private static Vector<T> VectorizedCompareCore(in Vector<T> sourceVector, in Vector<T> valueVector, [InlineParameter] CompareMethod method)
                 => method switch
                 {
-                    IndexOfMethod.Include => Vector.Equals(sourceVector, valueVector),
-                    IndexOfMethod.Exclude => ~Vector.Equals(sourceVector, valueVector),
-                    IndexOfMethod.GreaterThan => Vector.GreaterThan(sourceVector, valueVector),
-                    IndexOfMethod.GreaterThanOrEquals => Vector.GreaterThanOrEqual(sourceVector, valueVector),
-                    IndexOfMethod.LessThan => Vector.LessThan(sourceVector, valueVector),
-                    IndexOfMethod.LessThanOrEquals => Vector.LessThanOrEqual(sourceVector, valueVector),
-                    _ => throw new InvalidOperationException(),
+                    CompareMethod.Include => Vector.Equals(sourceVector, valueVector),
+                    CompareMethod.Exclude => ~Vector.Equals(sourceVector, valueVector),
+                    CompareMethod.GreaterThan => Vector.GreaterThan(sourceVector, valueVector),
+                    CompareMethod.GreaterThanOrEquals => Vector.GreaterThanOrEqual(sourceVector, valueVector),
+                    CompareMethod.LessThan => Vector.LessThan(sourceVector, valueVector),
+                    CompareMethod.LessThanOrEquals => Vector.LessThanOrEqual(sourceVector, valueVector),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
     }
