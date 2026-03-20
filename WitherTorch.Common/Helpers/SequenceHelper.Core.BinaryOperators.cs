@@ -504,7 +504,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void BinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method)
             {
-                if (CheckTypeCanBeVectorized() && length >= GetMinimumVectorCount())
+                if (CheckTypeCanBeVectorized() && length > GetLimitForVectorizing())
                 {
                     switch (method)
                     {

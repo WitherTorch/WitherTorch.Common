@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Helpers
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(byte* ptr, byte* ptr2, nuint length)
             {
-                if (length >= FastCore<byte>.GetMinimumVectorCount())
+                if (length > FastCore<byte>.GetLimitForVectorizing())
                     return VectorizedEquals(ptr, ptr2, length);
                 return ScalarizedEquals(ref ptr, ref ptr2, ref length);
             }
@@ -69,7 +69,7 @@ namespace WitherTorch.Common.Helpers
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool RangedAddAndEquals(T* ptr, T* ptr2, nuint length, T lowerBound, T higherBound, T valueToAddInRange)
             {
-                if (CheckTypeCanBeVectorized() && length >= GetMinimumVectorCount())
+                if (CheckTypeCanBeVectorized() && length > GetLimitForVectorizing())
                     return VectorizedRangedAddAndEquals(ptr, ptr2, length, lowerBound, higherBound, valueToAddInRange);
                 return ScalarizedRangedAddAndEquals(ref ptr, ref ptr2, ref length, lowerBound, higherBound, valueToAddInRange);
             }

@@ -1,4 +1,4 @@
-﻿using InlineMethod;
+using InlineMethod;
 
 using LocalsInit;
 
@@ -28,41 +28,21 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
 #endif
-
             [Inline(InlineBehavior.Remove)]
-            public static nuint GetMaximumVectorCount()
-            {
-#if NET8_0_OR_GREATER
-                if (Limits.UseVector512())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector512<T>.Count);
-                if (Limits.UseVector256())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector256<T>.Count);
-                if (Limits.UseVector128())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector128<T>.Count);
-                if (Limits.UseVector64())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector64<T>.Count);
-#else
-                if (Limits.UseVector())
-                    return unchecked((nuint)System.Numerics.Vector<T>.Count);
-#endif
-                return UnsafeHelper.GetMaxValue<nuint>(); // Don't let program go vectorize!
-            }
-
-            [Inline(InlineBehavior.Remove)]
-            public static nuint GetMinimumVectorCount()
+            public static nuint GetLimitForVectorizing()
             {
 #if NET8_0_OR_GREATER
                 if (Limits.UseVector64())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector64<T>.Count);
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector64<T>.Count) - 1;
                 if (Limits.UseVector128())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector128<T>.Count);
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector128<T>.Count) - 1;
                 if (Limits.UseVector256())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector256<T>.Count);
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector256<T>.Count) - 1;
                 if (Limits.UseVector512())
-                    return unchecked((nuint)System.Runtime.Intrinsics.Vector512<T>.Count);
+                    return unchecked((nuint)System.Runtime.Intrinsics.Vector512<T>.Count) - 1;
 #else
                 if (Limits.UseVector())
-                    return unchecked((nuint)System.Numerics.Vector<T>.Count);
+                    return unchecked((nuint)System.Numerics.Vector<T>.Count) - 1;
 #endif
                 return UnsafeHelper.GetMaxValue<nuint>(); // Don't let program go vectorize!
             }
