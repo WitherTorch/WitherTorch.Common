@@ -322,7 +322,7 @@ namespace WitherTorch.Common.Helpers
         {
             IL.Push(a);
             IL.Push(b);
-            IL.Emit.Clt_Un();
+            IL.Emit.Cgt_Un();
             IL.Emit.Ldc_I4_0();
             IL.Emit.Ceq();
             return IL.Return<bool>();
