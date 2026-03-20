@@ -436,6 +436,33 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<T>();
         }
 
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T LeftShift<T>(T a, T b)
+        {
+            IL.Push(a);
+            IL.Push(b);
+            IL.Emit.Shl();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T RightShift<T>(T a, T b)
+        {
+            IL.Push(a);
+            IL.Push(b);
+            IL.Emit.Shr();
+            return IL.Return<T>();
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T RightShiftUnsigned<T>(T a, T b)
+        {
+            IL.Push(a);
+            IL.Push(b);
+            IL.Emit.Shr();
+            return IL.Return<T>();
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Read<T>(void* source)
         {
@@ -548,17 +575,6 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref TTo As<TFrom, TTo>(ref TFrom source)
-        {
-#if NET8_0_OR_GREATER
-            return ref Unsafe.As<TFrom, TTo>(ref source);
-#else
-            IL.PushInRef(ref source);
-            return ref IL.ReturnRef<TTo>();
-#endif
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
         public static TTo As<TFrom, TTo>(TFrom source)
         {
 #if NET8_0_OR_GREATER
@@ -566,6 +582,17 @@ namespace WitherTorch.Common.Helpers
 #else
             IL.Push(source);
             return IL.Return<TTo>();
+#endif
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ref TTo As<TFrom, TTo>(ref TFrom source)
+        {
+#if NET8_0_OR_GREATER
+            return ref Unsafe.As<TFrom, TTo>(ref source);
+#else
+            IL.PushInRef(ref source);
+            return ref IL.ReturnRef<TTo>();
 #endif
         }
 

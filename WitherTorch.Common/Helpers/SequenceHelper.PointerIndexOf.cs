@@ -42,6 +42,9 @@ namespace WitherTorch.Common.Helpers
             return PointerIndexOfSlow(ptr, value, length);
         }
 
+#if NET472_OR_GREATER
+        [MethodImpl(MethodImplOptions.NoInlining)]
+#endif
         private static T* PointerIndexOfSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
@@ -99,6 +102,9 @@ namespace WitherTorch.Common.Helpers
             return PointerIndexOfExcludeSlow(ptr, value, length);
         }
 
+#if NET472_OR_GREATER
+        [MethodImpl(MethodImplOptions.NoInlining)]
+#endif
         private static T* PointerIndexOfExcludeSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
@@ -156,6 +162,9 @@ namespace WitherTorch.Common.Helpers
             return PointerIndexOfGreaterThanSlow(ptr, value, length);
         }
 
+#if NET472_OR_GREATER
+        [MethodImpl(MethodImplOptions.NoInlining)]
+#endif
         private static T* PointerIndexOfGreaterThanSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
@@ -213,6 +222,9 @@ namespace WitherTorch.Common.Helpers
             return PointerIndexOfGreaterThanOrEqualsSlow(ptr, value, length);
         }
 
+#if NET472_OR_GREATER
+        [MethodImpl(MethodImplOptions.NoInlining)]
+#endif
         private static T* PointerIndexOfGreaterThanOrEqualsSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
@@ -270,6 +282,9 @@ namespace WitherTorch.Common.Helpers
             return PointerIndexOfLessThanSlow(ptr, value, length);
         }
 
+#if NET472_OR_GREATER
+        [MethodImpl(MethodImplOptions.NoInlining)]
+#endif
         private static T* PointerIndexOfLessThanSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
@@ -327,6 +342,9 @@ namespace WitherTorch.Common.Helpers
             return PointerIndexOfLessThanOrEqualsSlow(ptr, value, length);
         }
 
+#if NET472_OR_GREATER
+        [MethodImpl(MethodImplOptions.NoInlining)]
+#endif
         private static T* PointerIndexOfLessThanOrEqualsSlow<T>(T* ptr, T value, nuint length)
         {
             Type type = typeof(T);
