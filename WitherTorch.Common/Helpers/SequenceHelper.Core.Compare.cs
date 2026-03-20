@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 using InlineMethod;
-
-using LocalsInit;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -45,7 +42,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     CompareMethod.Include => comparer.Equals(item, value),
                     CompareMethod.Exclude => !comparer.Equals(item, value),
-                    _ => throw new InvalidOperationException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
 
             [Inline(InlineBehavior.Remove)]
@@ -58,7 +55,7 @@ namespace WitherTorch.Common.Helpers
                     CompareMethod.GreaterThanOrEquals => result >= 0,
                     CompareMethod.LessThan => result < 0,
                     CompareMethod.LessThanOrEquals => result <= 0,
-                    _ => throw new InvalidOperationException(),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
             }
         }

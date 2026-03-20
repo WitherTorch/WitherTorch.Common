@@ -4,13 +4,11 @@ using System.Numerics;
 
 using InlineMethod;
 
-using WitherTorch.Common.Extensions;
-
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
     {
-        unsafe partial class FastCore<T>
+        partial class FastCore<T>
         {
             [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedCompare(in Vector<T> sourceVector, in Vector<T> valueVector, [InlineParameter] CompareMethod method)
