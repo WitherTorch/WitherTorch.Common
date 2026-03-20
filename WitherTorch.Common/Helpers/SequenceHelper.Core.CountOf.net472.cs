@@ -1,6 +1,8 @@
 #if NET472_OR_GREATER
 using System.Numerics;
 
+using InlineMethod;
+
 using WitherTorch.Common.Extensions;
 
 namespace WitherTorch.Common.Helpers
@@ -25,14 +27,14 @@ namespace WitherTorch.Common.Helpers
                     if (length > (nuint)Vector<T>.Count * 2)
                     {
                         headRemainder = (UnsafeHelper.SizeOf<Vector<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
-                        counter += (nuint)MathHelper.PopCount(resultVector.ExtractMostSignificantBits() & ((1UL << (int)headRemainder) - 1));
+                        CountOf_CollectResult(in resultVector, ref counter, headRemainder, isFullyCheck: false, fromMostIndex: true);
                         ptr += headRemainder;
                         length -= headRemainder;
                         goto VectorizedLoop;
                     }
                     else
                     {
-                        counter += (nuint)MathHelper.PopCount(resultVector.ExtractMostSignificantBits());
+                        CountOf_CollectResult(in resultVector, ref counter, length, isFullyCheck: true, fromMostIndex: false);
                         ptr += (nuint)Vector<T>.Count;
                         length -= (nuint)Vector<T>.Count;
                         goto TailProcess;
@@ -44,7 +46,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector<T> sourceVector = UnsafeHelper.Read<Vector<T>>(ptr);
                     Vector<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    counter += (nuint)MathHelper.PopCount(resultVector.ExtractMostSignificantBits());
+                    CountOf_CollectResult(in resultVector, ref counter, 0, isFullyCheck: true, fromMostIndex: false);
                     ptr += (nuint)Vector<T>.Count;
                     length -= (nuint)Vector<T>.Count;
                 } while (length >= (nuint)Vector<T>.Count);
@@ -53,12 +55,75 @@ namespace WitherTorch.Common.Helpers
             TailProcess:
                 if (length > 0)
                 {
-                    nuint tailOverlapOffset = (nuint)Vector<T>.Count - length;
-                    Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr - tailOverlapOffset);
+                    ptr = ptr + length - (nuint)Vector<T>.Count;
+                    Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
                     Vector<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    counter += (nuint)MathHelper.PopCount(resultVector.ExtractMostSignificantBits() & ~((1UL << (int)tailOverlapOffset) - 1));
+                    CountOf_CollectResult(in resultVector, ref counter, length, isFullyCheck: false, fromMostIndex: true);
                 }
                 return counter;
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static void CountOf_CollectResult(in Vector<T> sourceVector, ref nuint counter, nuint offset, [InlineParameter] bool isFullyCheck, [InlineParameter] bool fromMostIndex)
+            {
+                T* ptr = (T*)UnsafeHelper.AsPointerIn(in sourceVector);
+                T allBitSet = UnsafeHelper.GetAllBitSetValue<T>();
+                if (isFullyCheck)
+                {
+                    switch (Vector<T>.Count)
+                    {
+                        case 4:
+                            counter +=
+                                MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[0], allBitSet)) +
+                                MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[1], allBitSet)) +
+                                MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[2], allBitSet)) +
+                                MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[3], allBitSet));
+                            break;
+                        case 2:
+                            counter +=
+                                MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[0], allBitSet)) +
+                                MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[1], allBitSet));
+                            break;
+                        case 1:
+                            counter += MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[0], allBitSet));
+                            break;
+                        default:
+                            for (nuint i = 0; i < (nuint)Vector<T>.Count; i += 4, ptr += 4)
+                            {
+                                counter +=
+                                    MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[0], allBitSet)) +
+                                    MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[1], allBitSet)) +
+                                    MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[2], allBitSet)) +
+                                    MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[3], allBitSet));
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    if (fromMostIndex)
+                        ptr += (nuint)Vector<T>.Count - offset;
+                    for (; offset >= 4; offset -= 4, ptr += 4) // 4x 展開
+                    {
+                        counter +=
+                            MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[0], allBitSet)) +
+                            MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[1], allBitSet)) +
+                            MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[2], allBitSet)) +
+                            MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(ptr[3], allBitSet));
+                    }
+                    T* ptrEnd = ptr + offset;
+                    if (ptr >= ptrEnd)
+                        return;
+                    counter += MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(*ptr, allBitSet));
+                    ptr++;
+                    if (ptr >= ptrEnd)
+                        return;
+                    counter += MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(*ptr, allBitSet));
+                    ptr++;
+                    if (ptr >= ptrEnd)
+                        return;
+                    counter += MathHelper.BooleanToNativeUnsigned(UnsafeHelper.Equals(*ptr, allBitSet));
+                }
             }
         }
     }

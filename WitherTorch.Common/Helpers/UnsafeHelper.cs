@@ -66,6 +66,29 @@ namespace WitherTorch.Common.Helpers
             get => (void*)GetMaxValue<nuint>();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T GetAllBitSetValue<T>() where T : unmanaged
+        {
+            switch (sizeof(T))
+            {
+                case sizeof(byte):
+                    return As<byte, T>(byte.MaxValue);
+                case sizeof(ushort):
+                    return As<ushort, T>(ushort.MaxValue);
+                case sizeof(uint):
+                    return As<uint, T>(uint.MaxValue);
+                case sizeof(ulong):
+                    return As<ulong, T>(ulong.MaxValue);
+                default:
+                    T val;
+                    byte* ptr = (byte*)&val;
+                    for (nuint i = 0; i < SizeOf<T>(); i++)
+                        ptr[i] = byte.MaxValue;
+                    return val;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetMinValue<T>() where T : unmanaged
         {
             if (IsUnsigned<T>())
@@ -101,6 +124,7 @@ namespace WitherTorch.Common.Helpers
             throw new PlatformNotSupportedException();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetMaxValue<T>() where T : unmanaged
         {
             if (IsUnsigned<T>())

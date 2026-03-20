@@ -400,30 +400,24 @@ namespace WitherTorch.Common.Helpers
                 nuint counter = 0;
                 for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
                 {
-                    if (ScalarizedCompare(ptr[0], value, method))
-                        counter++;
-                    if (ScalarizedCompare(ptr[1], value, method))
-                        counter++;
-                    if (ScalarizedCompare(ptr[2], value, method))
-                        counter++;
-                    if (ScalarizedCompare(ptr[3], value, method))
-                        counter++;
+                    counter +=
+                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[0], value, method)) +
+                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[1], value, method)) +
+                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[2], value, method)) +
+                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[3], value, method));
                 }
                 T* ptrEnd = ptr + length;
                 if (ptr >= ptrEnd)
                     goto Result;
-                if (ScalarizedCompare(*ptr, value, method))
-                    counter++;
+                counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
                 ptr++;
                 if (ptr >= ptrEnd)
                     goto Result;
-                if (ScalarizedCompare(*ptr, value, method))
-                    counter++;
+                counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
                 ptr++;
                 if (ptr >= ptrEnd)
                     goto Result;
-                if (ScalarizedCompare(*ptr, value, method))
-                    counter++;
+                counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
 
             Result:
                 return counter;

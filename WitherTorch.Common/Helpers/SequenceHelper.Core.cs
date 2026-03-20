@@ -28,6 +28,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
 #endif
+
             [Inline(InlineBehavior.Remove)]
             public static nuint GetLimitForVectorizing()
             {

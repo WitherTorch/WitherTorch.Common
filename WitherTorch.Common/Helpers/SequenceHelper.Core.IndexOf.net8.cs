@@ -36,7 +36,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector512<T> sourceVector = Vector512.Load(ptr);
                     Vector512<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector512.EqualsAll(resultVector, Vector512<T>.Zero))
+                    if (resultVector == Vector512<T>.Zero)
                     {
                         if (length > (nuint)Vector512<T>.Count * 2)
                         {
@@ -60,7 +60,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector512<T> sourceVector = Vector512.LoadAligned(ptr);
                     Vector512<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector512.EqualsAll(resultVector, Vector512<T>.Zero))
+                    if (resultVector == Vector512<T>.Zero)
                     {
                         ptr += (nuint)Vector512<T>.Count;
                         length -= (nuint)Vector512<T>.Count;
@@ -76,7 +76,7 @@ namespace WitherTorch.Common.Helpers
                     ptr = ptr + length - (nuint)Vector512<T>.Count;
                     Vector512<T> sourceVector = Vector512.Load(ptr);
                     Vector512<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector512.EqualsAll(resultVector, Vector512<T>.Zero))
+                    if (resultVector == Vector512<T>.Zero)
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                 }
@@ -96,7 +96,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector256<T> sourceVector = Vector256.Load(ptr);
                     Vector256<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector256.EqualsAll(resultVector, Vector256<T>.Zero))
+                    if (resultVector == Vector256<T>.Zero)
                     {
                         if (length > (nuint)Vector256<T>.Count * 2)
                         {
@@ -120,7 +120,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector256<T> sourceVector = Vector256.LoadAligned(ptr);
                     Vector256<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector256.EqualsAll(resultVector, Vector256<T>.Zero))
+                    if (resultVector == Vector256<T>.Zero)
                     {
                         ptr += (nuint)Vector256<T>.Count;
                         length -= (nuint)Vector256<T>.Count;
@@ -136,7 +136,7 @@ namespace WitherTorch.Common.Helpers
                     ptr = ptr + length - (nuint)Vector256<T>.Count;
                     Vector256<T> sourceVector = Vector256.Load(ptr);
                     Vector256<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector256.EqualsAll(resultVector, Vector256<T>.Zero))
+                    if (resultVector == Vector256<T>.Zero)
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                 }
@@ -156,7 +156,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector128<T> sourceVector = Vector128.Load(ptr);
                     Vector128<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector128.EqualsAll(resultVector, Vector128<T>.Zero))
+                    if (resultVector == Vector128<T>.Zero)
                     {
                         if (length > (nuint)Vector128<T>.Count * 2)
                         {
@@ -180,7 +180,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector128<T> sourceVector = Vector128.LoadAligned(ptr);
                     Vector128<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector128.EqualsAll(resultVector, Vector128<T>.Zero))
+                    if (resultVector == Vector128<T>.Zero)
                     {
                         ptr += (nuint)Vector128<T>.Count;
                         length -= (nuint)Vector128<T>.Count;
@@ -196,7 +196,7 @@ namespace WitherTorch.Common.Helpers
                     ptr = ptr + length - (nuint)Vector128<T>.Count;
                     Vector128<T> sourceVector = Vector128.Load(ptr);
                     Vector128<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector128.EqualsAll(resultVector, Vector128<T>.Zero))
+                    if (resultVector == Vector128<T>.Zero)
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                 }
@@ -216,7 +216,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector64<T> sourceVector = Vector64.Load(ptr);
                     Vector64<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector64.EqualsAll(resultVector, Vector64<T>.Zero))
+                    if (resultVector == Vector64<T>.Zero)
                     {
                         if (length > (nuint)Vector64<T>.Count * 2)
                         {
@@ -240,7 +240,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector64<T> sourceVector = Vector64.LoadAligned(ptr);
                     Vector64<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector64.EqualsAll(resultVector, Vector64<T>.Zero))
+                    if (resultVector == Vector64<T>.Zero)
                     {
                         ptr += (nuint)Vector64<T>.Count;
                         length -= (nuint)Vector64<T>.Count;
@@ -256,7 +256,7 @@ namespace WitherTorch.Common.Helpers
                     ptr = ptr + length - (nuint)Vector64<T>.Count;
                     Vector64<T> sourceVector = Vector64.Load(ptr);
                     Vector64<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector64.EqualsAll(resultVector, Vector64<T>.Zero))
+                    if (resultVector == Vector64<T>.Zero)
                         return null;
                     return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
                 }

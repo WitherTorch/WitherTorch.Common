@@ -1,10 +1,7 @@
 #if NET472_OR_GREATER
-using System;
 using System.Numerics;
 
 using InlineMethod;
-
-using WitherTorch.Common.Extensions;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -23,7 +20,7 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
                     Vector<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
+                    if (resultVector == Vector<T>.Zero)
                     {
                         if (length > (nuint)Vector<T>.Count * 2)
                         {
@@ -39,7 +36,7 @@ namespace WitherTorch.Common.Helpers
                             goto TailProcess;
                         }
                     }
-                    return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
+                    return accurateResult ? IndexOf_FindResult(in resultVector, ref ptr) : (T*)Booleans.TrueNative;
                 }
 
             VectorizedLoop:
@@ -47,13 +44,13 @@ namespace WitherTorch.Common.Helpers
                 {
                     Vector<T> sourceVector = UnsafeHelper.Read<Vector<T>>(ptr);
                     Vector<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
+                    if (resultVector == Vector<T>.Zero)
                     {
                         ptr += (nuint)Vector<T>.Count;
                         length -= (nuint)Vector<T>.Count;
                         continue;
                     }
-                    return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
+                    return accurateResult ? IndexOf_FindResult(in resultVector, ref ptr) : (T*)Booleans.TrueNative;
                 } while (length >= (nuint)Vector<T>.Count);
                 goto TailProcess;
 
@@ -63,12 +60,48 @@ namespace WitherTorch.Common.Helpers
                     ptr = ptr + length - (nuint)Vector<T>.Count;
                     Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
                     Vector<T> resultVector = VectorizedCompare(sourceVector, valueVector, method);
-                    if (Vector.EqualsAll(resultVector, Vector<T>.Zero))
+                    if (resultVector == Vector<T>.Zero)
                         return null;
-                    return accurateResult ? ptr + MathHelper.TrailingZeroCount(resultVector.ExtractMostSignificantBits()) : (T*)Booleans.TrueNative;
+                    return accurateResult ? IndexOf_FindResult(in resultVector, ref ptr) : (T*)Booleans.TrueNative;
                 }
                 else
                     return null;
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            private static T* IndexOf_FindResult(in Vector<T> sourceVector, ref T* sourcePointer)
+            {
+                T* ptr = (T*)UnsafeHelper.AsPointerIn(in sourceVector);
+                T allBitSet = UnsafeHelper.GetAllBitSetValue<T>();
+                switch (Vector<T>.Count)
+                {
+                    case 4:
+                        if (UnsafeHelper.Equals(ptr[0], allBitSet))
+                            return sourcePointer + 0;
+                        if (UnsafeHelper.Equals(ptr[1], allBitSet))
+                            return sourcePointer + 1;
+                        if (UnsafeHelper.Equals(ptr[2], allBitSet))
+                            return sourcePointer + 2;
+                        return sourcePointer + 3;
+                    case 2:
+                        return sourcePointer + MathHelper.BooleanToNativeUnsigned(UnsafeHelper.NotEquals(ptr[0], allBitSet));
+                    case 1:
+                        return sourcePointer;
+                    default:
+                        for (nuint i = 0; i < (nuint)Vector<T>.Count; i += 4, ptr += 4, sourcePointer += 4)
+                        {
+                            if (UnsafeHelper.Equals(ptr[0], allBitSet))
+                                return sourcePointer + 0;
+                            if (UnsafeHelper.Equals(ptr[1], allBitSet))
+                                return sourcePointer + 1;
+                            if (UnsafeHelper.Equals(ptr[2], allBitSet))
+                                return sourcePointer + 2;
+                            if (UnsafeHelper.Equals(ptr[3], allBitSet))
+                                return sourcePointer + 3;
+                        }
+                        break;
+                }
+                return null;
             }
         }
     }
