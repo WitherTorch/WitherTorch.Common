@@ -11,38 +11,26 @@ namespace WitherTorch.Common.Helpers
     {
         // Source code from https://github.com/dotnet/runtime/blob/1d1bf92fcf43aa6981804dc53c5174445069c9e4/src/libraries/System.Private.CoreLib/src/System/Numerics/BitOperations.cs
 
-        private static readonly byte[] TrailingZeroCountDeBruijn32 = new byte[sizeof(uint) * 8]
-        {
-            00, 01, 28, 02, 29, 14, 24, 03,
-            30, 22, 20, 15, 25, 17, 04, 08,
-            31, 27, 13, 23, 21, 19, 16, 07,
-            26, 12, 18, 06, 11, 05, 10, 09
-        };
-
-        // Table from https://github.com/omgtehlion/netintrinsics/blob/master/NetIntrinsics/Intrinsic.cs
-        private static readonly byte[] DeBruijn64 = new byte[sizeof(ulong) * 8]
-        {
-            00, 47, 01, 56, 48, 27, 02, 60,
-            57, 49, 41, 37, 28, 16, 03, 61,
-            54, 58, 35, 52, 50, 42, 21, 44,
-            38, 32, 29, 23, 17, 11, 04, 62,
-            46, 55, 26, 59, 40, 36, 15, 53,
-            34, 51, 20, 43, 31, 22, 10, 45,
-            25, 39, 14, 33, 19, 30, 09, 24,
-            13, 18, 08, 12, 07, 06, 05, 63
-        };
-
         [Inline(InlineBehavior.Remove)]
         private static int LeadingZeroCountCore(uint value)
         {
             if (Lzcnt.IsSupported)
-                return unchecked((int)Lzcnt.LeadingZeroCount(value));
+            {
+                // LZCNT contract is 0->32
+                return (int)Lzcnt.LeadingZeroCount(value);
+            }
 
+            // Unguarded fallback contract is 0->31, BSR contract is 0->undefined
             if (value == 0)
                 return 32;
 
             if (X86Base.IsSupported)
-                return 31 ^ unchecked((int)X86Base.BitScanReverse(value));
+            {
+                // LZCNT returns index starting from MSB, whereas BSR gives the index from LSB.
+                // 31 ^ BSR here is equivalent to 31 - BSR since the BSR result is always between 0 and 31.
+                // This saves an instruction, as subtraction from constant requires either MOV/SUB or NEG/ADD.
+                return 31 ^ (int)X86Base.BitScanReverse(value);
+            }
 
             return 31 ^ Log2SoftwareFallback(value);
         }
@@ -51,23 +39,23 @@ namespace WitherTorch.Common.Helpers
         private static int LeadingZeroCountCore(ulong value)
         {
             if (Lzcnt.X64.IsSupported)
-                return unchecked((int)Lzcnt.X64.LeadingZeroCount(value));
-
-            if (value == 0UL)
-                return 64;
-
-            if (X86Base.X64.IsSupported)
-                return 63 ^ unchecked((int)X86Base.X64.BitScanReverse(value));
-
-            if (X86Base.IsSupported)
             {
-                uint hi = (uint)(value >> 32);
-                if (hi == 0)
-                    return 32 + (31 ^ unchecked((int)X86Base.BitScanReverse((uint)value)));
-                return 31 ^ unchecked((int)X86Base.BitScanReverse(hi));
+                // LZCNT contract is 0->64
+                return (int)Lzcnt.X64.LeadingZeroCount(value);
             }
 
-            return 63 ^ Log2SoftwareFallback(value);
+            if (X86Base.X64.IsSupported)
+            {
+                // BSR contract is 0->undefined
+                return value == 0 ? 64 : 63 ^ (int)X86Base.X64.BitScanReverse(value);
+            }
+
+            uint hi = (uint)(value >> 32);
+
+            if (hi == 0)
+                return 32 + LeadingZeroCount((uint)value);
+
+            return LeadingZeroCount(hi);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -105,24 +93,18 @@ namespace WitherTorch.Common.Helpers
             if (Bmi1.X64.IsSupported)
                 return unchecked((int)Bmi1.X64.TrailingZeroCount(value));
 
-            if (Bmi1.IsSupported)
-                return unchecked((int)(Bmi1.TrailingZeroCount((uint)(value >> 32)) + Bmi1.TrailingZeroCount((uint)value)));
-
             if (value == 0UL)
                 return 64;
 
             if (X86Base.X64.IsSupported)
                 return unchecked((int)X86Base.X64.BitScanForward(value));
 
-            if (X86Base.IsSupported)
-            {
-                uint lo = unchecked((uint)value);
-                if (lo == 0)
-                    return 32 + unchecked((int)X86Base.BitScanForward((uint)(value >> 32)));
-                return unchecked((int)X86Base.BitScanForward(lo));
-            }
+            uint lo = (uint)value;
 
-            return TrailingZeroCountSoftwareFallback(value);
+            if (lo == 0)
+                return 32 + TrailingZeroCount((uint)(value >> 32));
+
+            return TrailingZeroCount(lo);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -139,24 +121,75 @@ namespace WitherTorch.Common.Helpers
                 }
             };
 
-        internal static int TrailingZeroCountSoftwareFallback(uint value)
+        [Inline(InlineBehavior.Remove)]
+        private static int PopCountCore(uint value)
         {
-            // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
-            return UnsafeHelper.AddByteOffset(
-                // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_0111_1100_1011_0101_0011_0001u
-                ref TrailingZeroCountDeBruijn32[0],
-                // uint|long -> IntPtr cast on 32-bit platforms does expensive overflow checks not needed here
-                (nuint)(int)(((value & (uint)-(int)value) * 0x077CB531u) >> 27)); // Multi-cast mitigates redundant conv.u8
+            if (Popcnt.IsSupported)
+                return unchecked((int)Popcnt.PopCount(value));
+
+            return PopCountSoftwareFallback(value);
         }
 
-        internal static int TrailingZeroCountSoftwareFallback(ulong value)
+        [Inline(InlineBehavior.Remove)]
+        private static int PopCountCore(ulong value)
         {
-            uint lo = (uint)value;
+            if (Popcnt.X64.IsSupported)
+                return unchecked((int)Popcnt.X64.PopCount(value));
 
-            if (lo == 0)
-                return 32 + TrailingZeroCount((uint)(value >> 32));
+            if (Popcnt.IsSupported)
+                return unchecked((int)(Popcnt.PopCount((uint)value) + Popcnt.PopCount((uint)(value >> 32))));
 
-            return TrailingZeroCount(lo);
+            return PopCountSoftwareFallback(value);
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private static int PopCountCore(nuint value)
+            => UnsafeHelper.PointerSizeConstant switch
+            {
+                sizeof(uint) => PopCountCore((uint)value),
+                sizeof(ulong) => PopCountCore((ulong)value),
+                _ => UnsafeHelper.PointerSize switch
+                {
+                    sizeof(uint) => PopCountCore((uint)value),
+                    sizeof(ulong) => PopCountCore((ulong)value),
+                    _ => throw new PlatformNotSupportedException()
+                }
+            };
+
+        internal static int TrailingZeroCountSoftwareFallback(uint value)
+        {
+            if (WTCommon.SystemBuffersExists)
+                return DeBruijn_StoreAsSpan.TrailingZeroCount(value);
+            else
+                return DeBruijn_StoreAsArray.TrailingZeroCount(value);
+        }
+
+        internal static int PopCountSoftwareFallback(uint value)
+        {
+            const uint c1 = 0x_55555555u;
+            const uint c2 = 0x_33333333u;
+            const uint c3 = 0x_0F0F0F0Fu;
+            const uint c4 = 0x_01010101u;
+
+            value -= (value >> 1) & c1;
+            value = (value & c2) + ((value >> 2) & c2);
+            value = (((value + (value >> 4)) & c3) * c4) >> 24;
+
+            return (int)value;
+        }
+
+        internal static int PopCountSoftwareFallback(ulong value)
+        {
+            const ulong c1 = 0x_55555555_55555555ul;
+            const ulong c2 = 0x_33333333_33333333ul;
+            const ulong c3 = 0x_0F0F0F0F_0F0F0F0Ful;
+            const ulong c4 = 0x_01010101_01010101ul;
+
+            value -= (value >> 1) & c1;
+            value = (value & c2) + ((value >> 2) & c2);
+            value = (((value + (value >> 4)) & c3) * c4) >> 56;
+
+            return (int)value;
         }
     }
 }

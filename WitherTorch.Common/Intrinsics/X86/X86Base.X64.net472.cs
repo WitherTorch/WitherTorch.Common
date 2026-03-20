@@ -29,7 +29,12 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectBsfAsm();
 
-                return (uint)MathHelper.TrailingZeroCountSoftwareFallback(value);
+                uint lo = (uint)value;
+
+                if (lo == 0)
+                    return 32 + (uint)MathHelper.TrailingZeroCountSoftwareFallback((uint)(value >> 32));
+
+                return (uint)MathHelper.TrailingZeroCountSoftwareFallback(lo);
             }
 
             [DebuggerHidden]
@@ -39,7 +44,12 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectBsrAsm();
 
-                return (uint)MathHelper.Log2SoftwareFallback(value);
+                uint hi = (uint)(value >> 32);
+
+                if (hi == 0)
+                    return (uint)MathHelper.Log2SoftwareFallback((uint)value);
+
+                return 32 + (uint)MathHelper.Log2SoftwareFallback(hi);
             }
 
             [DebuggerHidden]

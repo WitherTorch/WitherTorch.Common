@@ -6,7 +6,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Intrinsics.X86
 {
-    partial class Bmi1
+    partial class Popcnt
     {
         partial class X64
         {
@@ -24,8 +24,8 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 if (!X86Base.X64.IsSupported)
                     return false;
-                const int Bmi1Mask = 1 << 3;
-                return (X86Base.CpuId(7, 0).Ebx & Bmi1Mask) == Bmi1Mask;
+                const int PopcntMask = 1 << 5;
+                return (X86Base.CpuId(unchecked((int)0x80000001), 0).Ecx & PopcntMask) == PopcntMask;
             }
 
             public static partial bool IsSupported
@@ -37,16 +37,11 @@ namespace WitherTorch.Common.Intrinsics.X86
             [DebuggerHidden]
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-            public static partial ulong TrailingZeroCount(ulong value)
+            public static partial ulong PopCount(ulong value)
             {
-                InjectTzcntAsm();
+                InjectPopcntAsm();
 
-                uint lo = (uint)value;
-
-                if (lo == 0)
-                    return 32 + (uint)MathHelper.TrailingZeroCountSoftwareFallback((uint)(value >> 32));
-
-                return (uint)MathHelper.TrailingZeroCountSoftwareFallback(lo);
+                return (ulong)MathHelper.PopCountSoftwareFallback(value);
             }
 
             private static partial class StoreAsArray { }

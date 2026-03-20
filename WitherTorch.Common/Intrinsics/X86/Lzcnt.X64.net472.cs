@@ -41,7 +41,12 @@ namespace WitherTorch.Common.Intrinsics.X86
             {
                 InjectLzcntAsm();
 
-                return 31UL ^ (ulong)MathHelper.Log2SoftwareFallback(value);
+                uint hi = (uint)(value >> 32);
+
+                if (hi == 0)
+                    return 32 + (31 ^ (uint)MathHelper.Log2SoftwareFallback((uint)value));
+
+                return (31 ^ (uint)MathHelper.Log2SoftwareFallback(hi));
             }
 
             private static partial class StoreAsArray { }

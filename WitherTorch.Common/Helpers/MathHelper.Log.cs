@@ -41,16 +41,6 @@ namespace WitherTorch.Common.Helpers
         }
 
 #if NET472_OR_GREATER
-        // Source code from https://github.com/dotnet/runtime/blob/1d1bf92fcf43aa6981804dc53c5174445069c9e4/src/libraries/System.Private.CoreLib/src/System/Numerics/BitOperations.cs
-
-        private static readonly byte[] Log2DeBruijn32 = new byte[sizeof(uint) * 8]
-        {
-            00, 09, 01, 10, 13, 21, 02, 29,
-            11, 14, 16, 18, 22, 25, 03, 30,
-            08, 12, 20, 28, 15, 17, 24, 07,
-            19, 27, 23, 06, 26, 05, 04, 31
-        };
-
         [Inline(InlineBehavior.Remove)]
         private static int Log2Core(uint value)
         {
@@ -83,21 +73,15 @@ namespace WitherTorch.Common.Helpers
             if (Lzcnt.X64.IsSupported)
                 return 63 ^ unchecked((int)Lzcnt.X64.LeadingZeroCount(value));
 
-            if (Lzcnt.IsSupported)
-                return unchecked((int)((31 ^ Lzcnt.LeadingZeroCount((uint)(value >> 32))) + (31 ^ Lzcnt.LeadingZeroCount((uint)value))));
-
             if (X86Base.X64.IsSupported)
                 return unchecked((int)X86Base.X64.BitScanReverse(value));
 
-            if (X86Base.IsSupported)
-            {
-                uint hi = unchecked((uint)(value >> 32));
-                if (hi == 0)
-                    return unchecked((int)X86Base.BitScanReverse((uint)value));
-                return 32 + unchecked((int)X86Base.BitScanReverse(hi));
-            }
+            uint hi = (uint)(value >> 32);
 
-            return Log2SoftwareFallback(value);
+            if (hi == 0)
+                return Log2((uint)value);
+
+            return 32 + Log2(hi);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -116,39 +100,10 @@ namespace WitherTorch.Common.Helpers
 
         internal static int Log2SoftwareFallback(uint value)
         {
-            // The 0->0 contract is fulfilled by setting the LSB to 1.
-            // Log(1) is 0, and setting the LSB for values > 1 does not change the log2 result.
-            value |= 1;
-
-            // Fill trailing zeros with ones, eg 00010010 becomes 00011111
-            value |= value >> 01;
-            value |= value >> 02;
-            value |= value >> 04;
-            value |= value >> 08;
-            value |= value >> 16;
-
-            // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
-            return UnsafeHelper.AddByteOffset(
-                // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_1100_0100_1010_1100_1101_1101u
-                ref Log2DeBruijn32[0],
-                // uint|long -> IntPtr cast on 32-bit platforms does expensive overflow checks not needed here
-                (uint)(int)((value * 0x07C4ACDDu) >> 27));
-        }
-
-        internal static int Log2SoftwareFallback(ulong value)
-        {
-            value |= 1;
-
-            value |= value >> 01;
-            value |= value >> 02;
-            value |= value >> 04;
-            value |= value >> 08;
-            value |= value >> 16;
-            value |= value >> 32;
-
-            return UnsafeHelper.AddByteOffset(
-                ref DeBruijn64[0],
-                (uint)(int)((value * 0x03F79D71B4CB0A89uL) >> 58));
+            if (WTCommon.SystemBuffersExists)
+                return DeBruijn_StoreAsSpan.Log2(value);
+            else
+                return DeBruijn_StoreAsArray.Log2(value);
         }
 #endif
     }

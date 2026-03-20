@@ -388,6 +388,42 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        public static int PopCount(nuint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.PopCount(value);
+#else
+            return PopCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
+        public static int PopCount(ulong value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.PopCount(value);
+#else
+            return PopCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
+        public static int PopCount(uint value)
+        {
+#if NETCOREAPP3_0_OR_GREATER
+            return System.Numerics.BitOperations.PopCount(value);
+#else
+            return PopCountCore(value);
+#endif
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        [Inline(InlineBehavior.Keep, export: true)]
+#endif
         public static int Log2(nuint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
