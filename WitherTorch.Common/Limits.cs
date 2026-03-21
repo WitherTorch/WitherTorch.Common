@@ -1,4 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
+
+using InlineMethod;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common
 {
@@ -75,5 +79,41 @@ namespace WitherTorch.Common
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool UseVector() => UseVectorAcceleration && System.Numerics.Vector.IsHardwareAccelerated;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool CheckTypeCanBeVectorized<T>() where T : struct
+#if NET8_0_OR_GREATER
+                => System.Numerics.Vector<T>.IsSupported;
+#else
+            => (typeof(T) == typeof(byte)) ||
+                   (typeof(T) == typeof(short)) ||
+                   (typeof(T) == typeof(int)) ||
+                   (typeof(T) == typeof(long)) ||
+                   (typeof(T) == typeof(sbyte)) ||
+                   (typeof(T) == typeof(ushort)) ||
+                   (typeof(T) == typeof(uint)) ||
+                   (typeof(T) == typeof(ulong)) ||
+                   (typeof(T) == typeof(float)) ||
+                   (typeof(T) == typeof(double));
+#endif
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint GetLimitForVectorizing<T>() where T : struct
+        {
+#if NET8_0_OR_GREATER
+            if (UseVector64())
+                return unchecked((nuint)System.Runtime.Intrinsics.Vector64<T>.Count) - 1;
+            if (UseVector128())
+                return unchecked((nuint)System.Runtime.Intrinsics.Vector128<T>.Count) - 1;
+            if (UseVector256())
+                return unchecked((nuint)System.Runtime.Intrinsics.Vector256<T>.Count) - 1;
+            if (UseVector512())
+                return unchecked((nuint)System.Runtime.Intrinsics.Vector512<T>.Count) - 1;
+#else
+            if (UseVector())
+                return unchecked((nuint)System.Numerics.Vector<T>.Count) - 1;
+#endif
+            return UnsafeHelper.GetMaxValue<nuint>(); // Don't let program go vectorize!
+        }
     }
 }

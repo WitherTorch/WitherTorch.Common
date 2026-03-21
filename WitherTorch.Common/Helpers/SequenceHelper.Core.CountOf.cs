@@ -375,7 +375,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static nuint CountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method)
             {
-                if (CheckTypeCanBeVectorized() && length > GetLimitForVectorizing())
+                if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
                     return method switch
                     {
                         CompareMethod.Include => VectorizedCountOf(ptr, length, value),

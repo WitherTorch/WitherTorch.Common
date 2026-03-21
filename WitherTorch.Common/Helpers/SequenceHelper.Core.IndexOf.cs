@@ -729,7 +729,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static T* PointerIndexOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method, [InlineParameter] bool accurateResult)
             {
-                if (CheckTypeCanBeVectorized() && length > GetLimitForVectorizing())
+                if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
                     return method switch
                     {
                         CompareMethod.Include => accurateResult ? VectorizedPointerIndexOf(ptr, length, value) : VectorizedContains(ptr, length, value),

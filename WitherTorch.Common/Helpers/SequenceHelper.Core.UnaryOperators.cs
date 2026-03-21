@@ -93,7 +93,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static void UnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
             {
-                if (CheckTypeCanBeVectorized() && length > GetLimitForVectorizing())
+                if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
                 {
                     switch (method)
                     {

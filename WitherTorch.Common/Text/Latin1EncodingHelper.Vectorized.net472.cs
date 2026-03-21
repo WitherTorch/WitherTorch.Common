@@ -1,114 +1,254 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System.Numerics;
 
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    partial class Latin1EncodingHelper
+    unsafe partial class Latin1EncodingHelper
     {
-        internal static unsafe partial byte* ReadFromUtf16BufferCore_OutOfLatin1Range(char* source, byte* destination, nuint length)
+        private static partial byte* VectorizedReadFromUtf16BufferCore_OutOfLatin1Range(char* source, byte* destination, nuint length)
         {
             const byte ReplaceCharacter = 0x003F;
 
-            char* sourceEnd = source + length;
-            if (Limits.UseVector())
+            byte* result = destination + length;
+
+            Vector<ushort> filterVector = new Vector<ushort>(Latin1EncodingLimit);
+            Vector<byte> replaceVector = new Vector<byte>(ReplaceCharacter);
+
+            // 取得非對齊的位元組偏移
+            nuint headRemainder = (nuint)source % (UnsafeHelper.SizeOf<Vector<ushort>>() * 2);
+            nuint headRemainder2 = (nuint)destination % UnsafeHelper.SizeOf<Vector<byte>>();
+            if (headRemainder == 0 && headRemainder2 == 0)
+                goto VectorizedLoop_FullAligned;
+            else
             {
-                Vector<ushort>* sourceLimit = ((Vector<ushort>*)source) + 2;
-                if (sourceLimit < sourceEnd)
+                Vector<ushort> sourceVector = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source + Vector<ushort>.Count);
+                Vector<byte> maskVector = Vector.Narrow(Vector.GreaterThan(sourceVector, filterVector), Vector.GreaterThan(sourceVector2, filterVector));
+                UnsafeHelper.WriteUnaligned(destination, Vector.ConditionalSelect(
+                    condition: maskVector,
+                    left: replaceVector,
+                    right: Vector.Narrow(sourceVector, sourceVector2)));
+                if (length > (nuint)Vector<ushort>.Count * 4)
                 {
-                    Vector<byte>* destinationLimit = ((Vector<byte>*)destination) + 1;
-                    Vector<ushort> filterVector = new Vector<ushort>(Latin1EncodingLimit);
-                    Vector<ushort> replaceVector = new Vector<ushort>(ReplaceCharacter);
-                    do
-                    {
-                        Vector<ushort> sourceVectorLow = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source);
-                        Vector<ushort> sourceVectorHigh = UnsafeHelper.ReadUnaligned<Vector<ushort>>(((Vector<ushort>*)source) + 1);
-                        sourceVectorLow = Vector.ConditionalSelect(
-                            condition: Vector.LessThanOrEqual(sourceVectorLow, filterVector),
-                            left: sourceVectorLow,
-                            right: replaceVector);
-                        sourceVectorHigh = Vector.ConditionalSelect(
-                            condition: Vector.LessThanOrEqual(sourceVectorHigh, filterVector),
-                            left: sourceVectorLow,
-                            right: replaceVector);
-                        UnsafeHelper.WriteUnaligned(destination, Vector.Narrow(sourceVectorLow, sourceVectorHigh));
-                        source = (char*)sourceLimit;
-                        destination = (byte*)destinationLimit++;
-                    } while ((sourceLimit += 2) < sourceEnd);
-                    if (source >= sourceEnd)
-                        goto Result;
+                    bool canFullyAligned = headRemainder == headRemainder2 * 2;
+                    // 此處之後，headRemainder 變成殘留元素數量，而不是非對齊的位元組偏移!
+                    headRemainder = ((UnsafeHelper.SizeOf<Vector<ushort>>() * 2) - headRemainder) / UnsafeHelper.SizeOf<char>();
+                    source += headRemainder;
+                    destination += headRemainder;
+                    length -= headRemainder;
+                    if (canFullyAligned)
+                        goto VectorizedLoop_FullAligned;
+                    else
+                        goto VectorizedLoop_PartialAligned;
                 }
-            }
-            for (; source < sourceEnd; source++, destination++)
-            {
-                char c = *source;
-                if (c > Latin1EncodingLimit)
-                    *destination = ReplaceCharacter;
                 else
-                    *destination = unchecked((byte)c);
-            }
-
-        Result:
-            return destination;
-        }
-
-        internal static unsafe partial byte* ReadFromUtf16BufferCore(char* source, byte* destination, nuint length)
-        {
-            char* sourceEnd = source + length;
-            if (Limits.UseVector())
-            {
-                Vector<ushort>* sourceLimit = ((Vector<ushort>*)source) + 2;
-                if (sourceLimit < sourceEnd)
                 {
-                    Vector<byte>* destinationLimit = ((Vector<byte>*)destination) + 1;
-                    do
-                    {
-                        Vector<ushort> sourceVectorLow = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source);
-                        Vector<ushort> sourceVectorHigh = UnsafeHelper.ReadUnaligned<Vector<ushort>>(((Vector<ushort>*)source) + 1);
-                        UnsafeHelper.WriteUnaligned(destination, Vector.Narrow(sourceVectorLow, sourceVectorHigh));
-                        source = (char*)sourceLimit;
-                        destination = (byte*)destinationLimit++;
-                    } while ((sourceLimit += 2) < sourceEnd);
-                    if (source >= sourceEnd)
-                        goto Result;
+                    source += Vector<ushort>.Count * 2;
+                    destination += Vector<byte>.Count;
+                    length -= (nuint)Vector<ushort>.Count * 2;
+                    goto TailProcess;
                 }
             }
-            for (; source < sourceEnd; source++, destination++)
-                *destination = unchecked((byte)*source);
 
-            Result:
-            return destination;
+        VectorizedLoop_PartialAligned:
+            do
+            {
+                Vector<ushort> sourceVector = UnsafeHelper.Read<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.Read<Vector<ushort>>(source + Vector<ushort>.Count);
+                Vector<byte> maskVector = Vector.Narrow(Vector.GreaterThan(sourceVector, filterVector), Vector.GreaterThan(sourceVector2, filterVector));
+                UnsafeHelper.WriteUnaligned(destination, Vector.ConditionalSelect(
+                    condition: maskVector,
+                    left: replaceVector,
+                    right: Vector.Narrow(sourceVector, sourceVector2)));
+                source += (nuint)Vector<ushort>.Count * 2;
+                destination += (nuint)Vector<byte>.Count;
+                length -= (nuint)Vector<ushort>.Count * 2;
+            } while (length >= (nuint)Vector<ushort>.Count * 2);
+            goto TailProcess;
+
+        VectorizedLoop_FullAligned:
+            do
+            {
+                Vector<ushort> sourceVector = UnsafeHelper.Read<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.Read<Vector<ushort>>(source + Vector<ushort>.Count);
+                Vector<byte> maskVector = Vector.Narrow(Vector.GreaterThan(sourceVector, filterVector), Vector.GreaterThan(sourceVector2, filterVector));
+                UnsafeHelper.Write(destination, Vector.ConditionalSelect(
+                    condition: maskVector,
+                    left: replaceVector,
+                    right: Vector.Narrow(sourceVector, sourceVector2)));
+                source += (nuint)Vector<ushort>.Count * 2;
+                destination += (nuint)Vector<byte>.Count;
+                length -= (nuint)Vector<ushort>.Count * 2;
+            } while (length >= (nuint)Vector<ushort>.Count * 2);
+            goto TailProcess;
+
+        TailProcess:
+            if (length > 0)
+            {
+                source = source + length - (nuint)Vector<ushort>.Count * 2;
+                destination = destination + length - (nuint)Vector<byte>.Count;
+                Vector<ushort> sourceVector = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source + Vector<ushort>.Count);
+                Vector<byte> maskVector = Vector.Narrow(Vector.GreaterThan(sourceVector, filterVector), Vector.GreaterThan(sourceVector2, filterVector));
+                UnsafeHelper.WriteUnaligned(destination, Vector.ConditionalSelect(
+                    condition: maskVector,
+                    left: replaceVector,
+                    right: Vector.Narrow(sourceVector, sourceVector2)));
+            }
+
+            return result;
         }
 
-        internal static unsafe partial char* WriteToUtf16BufferCore(byte* source, char* destination, nuint length)
+        private static partial byte* VectorizedReadFromUtf16BufferCore(char* source, byte* destination, nuint length)
         {
-            byte* sourceEnd = source + length;
-            if (Limits.UseVector())
+            byte* result = destination + length;
+
+            // 取得非對齊的位元組偏移
+            nuint headRemainder = (nuint)source % (UnsafeHelper.SizeOf<Vector<ushort>>() * 2);
+            nuint headRemainder2 = (nuint)destination % UnsafeHelper.SizeOf<Vector<byte>>();
+            if (headRemainder == 0 && headRemainder2 == 0)
+                goto VectorizedLoop_FullAligned;
+            else
             {
-                Vector<byte>* sourceLimit = ((Vector<byte>*)source) + 1;
-                if (sourceLimit < sourceEnd)
+                Vector<ushort> sourceVector = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source + Vector<ushort>.Count);
+                UnsafeHelper.WriteUnaligned(destination, Vector.Narrow(sourceVector, sourceVector2));
+                if (length > (nuint)Vector<ushort>.Count * 4)
                 {
-                    Vector<ushort>* destinationLimit = ((Vector<ushort>*)destination) + 2;
-                    do
-                    {
-                        Vector<byte> sourceVector = UnsafeHelper.ReadUnaligned<Vector<byte>>(source);
-                        Vector.Widen(sourceVector, out Vector<ushort> destVectorLow, out Vector<ushort> destVectorHigh);
-                        UnsafeHelper.WriteUnaligned(destination, destVectorLow);
-                        UnsafeHelper.WriteUnaligned(((Vector<ushort>*)destination) + 1, destVectorHigh);
-                        source = (byte*)sourceLimit;
-                        destination = (char*)destinationLimit;
-                        destinationLimit += 2;
-                    } while (++sourceLimit < sourceEnd);
-                    if (source >= sourceEnd)
-                        goto Result;
+                    bool canFullyAligned = headRemainder == headRemainder2 * 2;
+                    // 此處之後，headRemainder 變成殘留元素數量，而不是非對齊的位元組偏移!
+                    headRemainder = ((UnsafeHelper.SizeOf<Vector<ushort>>() * 2) - headRemainder) / UnsafeHelper.SizeOf<char>();
+                    source += headRemainder;
+                    destination += headRemainder;
+                    length -= headRemainder;
+                    if (canFullyAligned)
+                        goto VectorizedLoop_FullAligned;
+                    else
+                        goto VectorizedLoop_PartialAligned;
+                }
+                else
+                {
+                    source += Vector<ushort>.Count * 2;
+                    destination += Vector<byte>.Count;
+                    length -= (nuint)Vector<ushort>.Count * 2;
+                    goto TailProcess;
                 }
             }
-            for (; source < sourceEnd; source++, destination++)
-                *destination = unchecked((char)*source);
 
-            Result:
-            return destination;
+        VectorizedLoop_PartialAligned:
+            do
+            {
+                Vector<ushort> sourceVector = UnsafeHelper.Read<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.Read<Vector<ushort>>(source + Vector<ushort>.Count);
+                UnsafeHelper.WriteUnaligned(destination, Vector.Narrow(sourceVector, sourceVector2));
+                source += (nuint)Vector<ushort>.Count * 2;
+                destination += (nuint)Vector<byte>.Count;
+                length -= (nuint)Vector<ushort>.Count * 2;
+            } while (length >= (nuint)Vector<ushort>.Count * 2);
+            goto TailProcess;
+
+        VectorizedLoop_FullAligned:
+            do
+            {
+                Vector<ushort> sourceVector = UnsafeHelper.Read<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.Read<Vector<ushort>>(source + Vector<ushort>.Count);
+                UnsafeHelper.Write(destination, Vector.Narrow(sourceVector, sourceVector2));
+                source += (nuint)Vector<ushort>.Count * 2;
+                destination += (nuint)Vector<byte>.Count;
+                length -= (nuint)Vector<ushort>.Count * 2;
+            } while (length >= (nuint)Vector<ushort>.Count * 2);
+            goto TailProcess;
+
+        TailProcess:
+            if (length > 0)
+            {
+                source = source + length - (nuint)Vector<ushort>.Count * 2;
+                destination = destination + length - (nuint)Vector<byte>.Count;
+                Vector<ushort> sourceVector = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source);
+                Vector<ushort> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<ushort>>(source + Vector<ushort>.Count);
+                UnsafeHelper.WriteUnaligned(destination, Vector.Narrow(sourceVector, sourceVector2));
+            }
+
+            return result;
+        }
+
+        private static partial char* VectorizedWriteToUtf16BufferCore(byte* source, char* destination, nuint length)
+        {
+            char* result = destination + length;
+
+            // 取得非對齊的位元組偏移
+            nuint headRemainder = (nuint)source % UnsafeHelper.SizeOf<Vector<byte>>();
+            nuint headRemainder2 = (nuint)destination % (UnsafeHelper.SizeOf<Vector<ushort>>() * 2);
+            if (headRemainder == 0 && headRemainder2 == 0)
+                goto VectorizedLoop_FullAligned;
+            else
+            {
+                Vector<byte> sourceVector = UnsafeHelper.ReadUnaligned<Vector<byte>>(source);
+                Vector.Widen(sourceVector, out Vector<ushort> destinationVectorLow, out Vector<ushort> destinationVectorHigh);
+                UnsafeHelper.WriteUnaligned(destination, destinationVectorLow);
+                UnsafeHelper.WriteUnaligned(destination + Vector<ushort>.Count, destinationVectorHigh);
+                if (length > (nuint)Vector<ushort>.Count * 4)
+                {
+                    bool canFullyAligned = headRemainder * 2 == headRemainder2;
+                    // 此處之後，headRemainder 變成殘留元素數量，而不是非對齊的位元組偏移!
+                    headRemainder = (UnsafeHelper.SizeOf<Vector<byte>>() - headRemainder) / UnsafeHelper.SizeOf<byte>();
+                    source += headRemainder;
+                    destination += headRemainder;
+                    length -= headRemainder;
+                    if (canFullyAligned)
+                        goto VectorizedLoop_FullAligned;
+                    else
+                        goto VectorizedLoop_PartialAligned;
+                }
+                else
+                {
+                    source += Vector<byte>.Count;
+                    destination += Vector<ushort>.Count * 2;
+                    length -= (nuint)Vector<byte>.Count;
+                    goto TailProcess;
+                }
+            }
+
+        VectorizedLoop_PartialAligned:
+            do
+            {
+                Vector<byte> sourceVector = UnsafeHelper.Read<Vector<byte>>(source);
+                Vector.Widen(sourceVector, out Vector<ushort> destinationVectorLow, out Vector<ushort> destinationVectorHigh);
+                UnsafeHelper.WriteUnaligned(destination, destinationVectorLow);
+                UnsafeHelper.WriteUnaligned(destination + Vector<ushort>.Count, destinationVectorHigh);
+                source += Vector<byte>.Count;
+                destination += Vector<ushort>.Count * 2;
+                length -= (nuint)Vector<byte>.Count;
+            } while (length >= (nuint)Vector<byte>.Count);
+            goto TailProcess;
+
+        VectorizedLoop_FullAligned:
+            do
+            {
+                Vector<byte> sourceVector = UnsafeHelper.Read<Vector<byte>>(source);
+                Vector.Widen(sourceVector, out Vector<ushort> destinationVectorLow, out Vector<ushort> destinationVectorHigh);
+                UnsafeHelper.Write(destination, destinationVectorLow);
+                UnsafeHelper.Write(destination + Vector<ushort>.Count, destinationVectorHigh);
+                source += Vector<byte>.Count;
+                destination += Vector<ushort>.Count * 2;
+                length -= (nuint)Vector<byte>.Count;
+            } while (length >= (nuint)Vector<byte>.Count);
+            goto TailProcess;
+
+        TailProcess:
+            if (length > 0)
+            {
+                source = source + length - (nuint)Vector<byte>.Count;
+                destination = destination + length - (nuint)Vector<ushort>.Count * 2;
+                Vector<byte> sourceVector = UnsafeHelper.ReadUnaligned<Vector<byte>>(source);
+                Vector.Widen(sourceVector, out Vector<ushort> destinationVectorLow, out Vector<ushort> destinationVectorHigh);
+                UnsafeHelper.WriteUnaligned(destination, destinationVectorLow);
+                UnsafeHelper.WriteUnaligned(destination + Vector<ushort>.Count, destinationVectorHigh);
+            }
+
+            return result;
         }
     }
 }
