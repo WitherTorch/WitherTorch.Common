@@ -2,17 +2,75 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 using WitherTorch.Common.Text;
+using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Extensions
 {
     public static class LinqExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this IEnumerable<TSource> source, IBinaryOperator<TSource> @operator)
+        {
+            using IEnumerator<TSource> enumerator = source.GetEnumerator();
+            if (!enumerator.MoveNext())
+                throw new InvalidOperationException();
+            TSource result = enumerator.Current;
+            while (enumerator.MoveNext())
+                result = @operator.Operate(result, enumerator.Current);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this IEnumerable<TSource> source, BinaryOperation<TSource> operation)
+        {
+            using IEnumerator<TSource> enumerator = source.GetEnumerator();
+            if (!enumerator.MoveNext())
+                throw new InvalidOperationException();
+            TSource result = enumerator.Current;
+            while (enumerator.MoveNext())
+                result = operation.Invoke(result, enumerator.Current);
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this IEnumerable<TSource> source, TSource seed, IBinaryOperator<TSource> @operator)
+        {
+            foreach (TSource item in source)
+                seed = @operator.Operate(seed, item);
+            return seed;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this IEnumerable<TSource> source, TSource seed, BinaryOperation<TSource> operation)
+        {
+            foreach (TSource item in source)
+                seed = operation.Invoke(seed, item);
+            return seed;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this ParallelQuery<TSource> source, IBinaryOperator<TSource> @operator)
+            => Aggregate(source, @operator.ToOperation());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this ParallelQuery<TSource> source, BinaryOperation<TSource> operation)
+            => source.Aggregate(new Func<TSource, TSource, TSource>(operation));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this ParallelQuery<TSource> source, TSource seed, IBinaryOperator<TSource> @operator)
+            => Aggregate(source, seed, @operator.ToOperation());
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static TSource Aggregate<TSource>(this ParallelQuery<TSource> source, TSource seed, BinaryOperation<TSource> operation)
+            => source.Aggregate(seed, new Func<TSource, TSource, TSource>(operation));
+
         /// <inheritdoc cref="Enumerable.Concat{TSource}(IEnumerable{TSource}, IEnumerable{TSource})"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<TSource> ConcatOptimized<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second)
