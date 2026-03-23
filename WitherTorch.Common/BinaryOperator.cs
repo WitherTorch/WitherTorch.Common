@@ -26,7 +26,7 @@ namespace WitherTorch.Common
         BinaryOperatorType Type { get; }
     }
 
-    internal enum BinaryOperatorType
+    public enum BinaryOperatorType : uint
     {
         Left,
         Right,
@@ -38,8 +38,7 @@ namespace WitherTorch.Common
         Multiply,
         Divide,
         Min,
-        Max,
-        _Last
+        Max
     }
 
     public abstract class BinaryOperator<T> : IBinaryOperator<T>
@@ -58,6 +57,24 @@ namespace WitherTorch.Common
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static BinaryOperator<T> Create(BinaryOperation<T> operation) => new DelegateImpl(operation);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static BinaryOperator<T> GetDefault(BinaryOperatorType type)
+            => type switch
+            {
+                BinaryOperatorType.Left => Left,
+                BinaryOperatorType.Right => Right,
+                BinaryOperatorType.Or => Or,
+                BinaryOperatorType.And => And,
+                BinaryOperatorType.Xor => Xor,
+                BinaryOperatorType.Add => Add,
+                BinaryOperatorType.Subtract => Subtract,
+                BinaryOperatorType.Multiply => Multiply,
+                BinaryOperatorType.Divide => Divide,
+                BinaryOperatorType.Min => Min,
+                BinaryOperatorType.Max => Max,
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            };
 
         public abstract T Operate(T a, T b);
 
@@ -122,7 +139,18 @@ namespace WitherTorch.Common
             public override T Operate(T a, T b) => _func(a, b);
 
             public override BinaryOperation<T> ToOperation()
-                => _cachedOperation ??= Marshal.GetDelegateForFunctionPointer<BinaryOperation<T>>((IntPtr)_func);
+            {
+                BinaryOperation<T>? operation = _cachedOperation;
+                if (operation is null)
+                {
+                    IL.Emit.Ldnull();
+                    IL.Push(_func);
+                    IL.Emit.Newobj(MethodRef.Constructor(typeof(BinaryOperation<T>), typeof(object), typeof(nint)));
+                    IL.Pop(out operation);
+                    _cachedOperation = operation;
+                }
+                return operation!;
+            }
         }
 
         private sealed class OrImpl : BinaryOperator<T>, IDefaultBinaryOperator<T>

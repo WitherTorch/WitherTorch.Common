@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+using InlineIL;
+
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Threading;
 
@@ -22,11 +24,10 @@ namespace WitherTorch.Common
         UnaryOperatorType Type { get; }
     }
 
-    internal enum UnaryOperatorType
+    public enum UnaryOperatorType
     {
         Identity,
-        Not,
-        _Last
+        Not
     }
 
     public abstract class UnaryOperator<T> : IUnaryOperator<T>
@@ -36,6 +37,15 @@ namespace WitherTorch.Common
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UnaryOperator<T> Create(UnaryOperation<T> operation) => new DelegateImpl(operation);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnaryOperator<T> GetDefault(UnaryOperatorType type)
+            => type switch
+            {
+                UnaryOperatorType.Identity => Identity,
+                UnaryOperatorType.Not => Not,
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            };
 
         public abstract T Operate(T value);
 
@@ -87,7 +97,18 @@ namespace WitherTorch.Common
             public override T Operate(T value) => _func(value);
 
             public override UnaryOperation<T> ToOperation()
-                => _cachedOperation ??= Marshal.GetDelegateForFunctionPointer<UnaryOperation<T>>((IntPtr)_func);
+            {
+                UnaryOperation<T>? operation = _cachedOperation;
+                if (operation is null)
+                {
+                    IL.Emit.Ldnull();
+                    IL.Push(_func);
+                    IL.Emit.Newobj(MethodRef.Constructor(typeof(UnaryOperation<T>), typeof(object), typeof(nint)));
+                    IL.Pop(out operation);
+                    _cachedOperation = operation;
+                }
+                return operation!;
+            }
         }
 
         private sealed class NotImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
