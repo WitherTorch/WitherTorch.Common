@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -160,7 +161,7 @@ namespace WitherTorch.Common.Helpers
             throw new PlatformNotSupportedException();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPrimitiveType<T>()
                 => (typeof(T) == typeof(bool)) ||
                        (typeof(T) == typeof(byte)) ||
@@ -178,7 +179,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(nint)) ||
                        (typeof(T) == typeof(nuint));
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsIntegerType<T>()
                 => (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(short)) ||
@@ -192,8 +193,13 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(nint)) ||
                        (typeof(T) == typeof(nuint));
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static bool IsPrimitiveType([InlineParameter] Type type)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsFloatingPointType<T>()
+                => (typeof(T) == typeof(float)) ||
+                       (typeof(T) == typeof(double));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsPrimitiveType(Type type)
                 => (type == typeof(bool)) ||
                        (type == typeof(byte)) ||
                        (type == typeof(short)) ||
@@ -211,7 +217,7 @@ namespace WitherTorch.Common.Helpers
                        (type == typeof(nuint));
 
 #pragma warning disable CS0618
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUnmanagedType<T>()
 #if NET472_OR_GREATER
                 => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || IsUnmanageTypeSlow(typeof(T));
@@ -225,11 +231,11 @@ namespace WitherTorch.Common.Helpers
             => IsPrimitiveType(type) || type.IsEnum || type.IsPointer || IsUnmanageTypeSlow(type);
 #pragma warning restore CS0618
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [Obsolete("Don't call this method directly!")]
-        public static bool IsUnmanageTypeSlow(Type type)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static bool IsUnmanageTypeSlow(Type type)
             => type.IsValueType && _unmanagedTypeCheckCacheDict.GetOrAdd(type, IsUnmanageTypeSlowCore);
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private static bool IsUnmanageTypeSlowCore(Type type)
         {
             foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
@@ -240,8 +246,8 @@ namespace WitherTorch.Common.Helpers
             return true;
         }
 
-        [Inline(InlineBehavior.Remove)]
-        internal static bool IsUnsigned<T>()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUnsigned<T>()
             => (typeof(T) == typeof(byte)) ||
                    (typeof(T) == typeof(ushort)) ||
                    (typeof(T) == typeof(uint)) ||
@@ -401,7 +407,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T Substract<T>(T a, T b)
+        public static T Subtract<T>(T a, T b)
         {
             IL.Push(a);
             IL.Push(b);
@@ -461,6 +467,117 @@ namespace WitherTorch.Common.Helpers
             IL.Push(b);
             IL.Emit.Shr();
             return IL.Return<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Max<T>(T a, T b)
+        {
+            if (
+#if NET8_0_OR_GREATER
+                false
+#else
+                IsIntegerType<T>()
+#endif      
+                )
+            {
+                if (IsUnsigned<T>())
+                {
+                    // a ^ ((a ^ b) & -(a < b))
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Clt_Un();
+                    IL.Emit.Neg();
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Xor();
+                    IL.Emit.And();
+                    IL.Push(a);
+                    IL.Emit.Xor();
+                }
+                else
+                {
+                    IL.Push(a);
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Sub();
+                    IL.Emit.Dup();
+                    IL.Push(SizeOf<T>() * 8 - 1);
+                    IL.Emit.Shr();
+                    IL.Emit.And();
+                    IL.Emit.Sub();
+                }
+            }
+            else
+            {
+                const string Label = "jump";
+
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Bgt_S(Label);
+                IL.Push(b);
+                IL.Emit.Ret();
+                IL.MarkLabel(Label);
+                IL.Push(a);
+            }
+            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T Min<T>(T a, T b)
+        {
+            if (
+#if NET8_0_OR_GREATER
+                false
+#else
+                IsIntegerType<T>()
+#endif      
+                )
+            {
+                if (IsUnsigned<T>())
+                {
+                    //a ^ ((a ^ b) & -(a > b))
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Xor();
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Cgt_Un();
+                    IL.Emit.Neg();
+                    IL.Emit.And();
+                    IL.Push(a);
+                    IL.Emit.Xor();
+                }
+                else
+                {
+                    // min = b + ((a - b) & ((a - b) >> 31))
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Sub();
+                    IL.Push(a);
+                    IL.Push(b);
+                    IL.Emit.Sub();
+                    IL.Push(SizeOf<T>() * 8 - 1);
+                    IL.Emit.Shr();
+                    IL.Emit.And();
+                    IL.Push(b);
+                    IL.Emit.Add();
+                }
+            }
+            else
+            {
+                const string Label = "jump";
+
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Blt_S(Label);
+                IL.Push(b);
+                IL.Emit.Ret();
+                IL.MarkLabel(Label);
+                IL.Push(a);
+            }
+            IL.Emit.Ret();
+            throw IL.Unreachable();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

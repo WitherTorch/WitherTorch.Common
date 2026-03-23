@@ -11,7 +11,7 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperationMethod method)
+            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperatorType method)
             {
                 if (Limits.UseVector512() && length >= (nuint)Vector512<T>.Count)
                     VectorizedUnaryOperationCore_512(ref ptr, ref length, method);
@@ -27,7 +27,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore_512(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void VectorizedUnaryOperationCore_512(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method)
             {
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector512<T>>();
                 if (headRemainder == 0)
@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore_256(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void VectorizedUnaryOperationCore_256(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method)
             {
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector256<T>>();
                 if (headRemainder == 0)
@@ -117,7 +117,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore_128(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void VectorizedUnaryOperationCore_128(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method)
             {
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector128<T>>();
                 if (headRemainder == 0)
@@ -162,7 +162,7 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static void VectorizedUnaryOperationCore_64(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void VectorizedUnaryOperationCore_64(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method)
             {
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector64<T>>();
                 if (headRemainder == 0)
@@ -208,37 +208,41 @@ namespace WitherTorch.Common.Helpers
 
             [Inline(InlineBehavior.Remove)]
             private static Vector512<T> VectorizedUnaryOperation(in Vector512<T> sourceVector,
-            [InlineParameter] UnaryOperationMethod method)
+            [InlineParameter] UnaryOperatorType method)
             => method switch
             {
-                UnaryOperationMethod.Not => ~sourceVector,
+                    UnaryOperatorType.Identity => sourceVector,
+                UnaryOperatorType.Not => ~sourceVector,
                 _ => throw new ArgumentOutOfRangeException(nameof(method)),
             };
 
             [Inline(InlineBehavior.Remove)]
             private static Vector256<T> VectorizedUnaryOperation(in Vector256<T> sourceVector,
-                [InlineParameter] UnaryOperationMethod method)
+                [InlineParameter] UnaryOperatorType method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~sourceVector,
+                    UnaryOperatorType.Identity => sourceVector,
+                    UnaryOperatorType.Not => ~sourceVector,
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
 
             [Inline(InlineBehavior.Remove)]
             private static Vector128<T> VectorizedUnaryOperation(in Vector128<T> sourceVector,
-                [InlineParameter] UnaryOperationMethod method)
+                [InlineParameter] UnaryOperatorType method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~sourceVector,
+                    UnaryOperatorType.Identity => sourceVector,
+                    UnaryOperatorType.Not => ~sourceVector,
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
 
             [Inline(InlineBehavior.Remove)]
             private static Vector64<T> VectorizedUnaryOperation(in Vector64<T> sourceVector,
-                [InlineParameter] UnaryOperationMethod method)
+                [InlineParameter] UnaryOperatorType method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~sourceVector,
+                    UnaryOperatorType.Identity => sourceVector,
+                    UnaryOperatorType.Not => ~sourceVector,
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }

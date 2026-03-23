@@ -1,21 +1,12 @@
 using System;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
-
-using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
     {
-        private enum UnaryOperationMethod
-        {
-            Not,
-            _Last
-        }
-
 #pragma warning disable CS8500
 #pragma warning disable CS0162
         unsafe partial class FastCore
@@ -83,25 +74,35 @@ namespace WitherTorch.Common.Helpers
         unsafe partial class FastCore<T>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Identity(T* ptr, nuint length)
+                => UnaryOperationCore(ref ptr, ref length, UnaryOperatorType.Identity);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Not(T* ptr, nuint length)
-                => UnaryOperationCore(ref ptr, ref length, UnaryOperationMethod.Not);
+                => UnaryOperationCore(ref ptr, ref length, UnaryOperatorType.Not);
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedIdentity(T* ptr, nuint length)
+                => VectorizedUnaryOperationCore(ref ptr, ref length, UnaryOperatorType.Identity);
 
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedNot(T* ptr, nuint length)
-                => VectorizedUnaryOperationCore(ref ptr, ref length, UnaryOperationMethod.Not);
+                => VectorizedUnaryOperationCore(ref ptr, ref length, UnaryOperatorType.Not);
 
             [Inline(InlineBehavior.Remove)]
-            private static void UnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void UnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method)
             {
+                if (method == UnaryOperatorType.Identity)
+                    return;
                 if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
                 {
                     switch (method)
                     {
-                        case UnaryOperationMethod.Not:
+                        case UnaryOperatorType.Not:
                             VectorizedNot(ptr, length);
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException(nameof(method));  
+                            throw new ArgumentOutOfRangeException(nameof(method));
                     }
                     return;
                 }
@@ -109,10 +110,10 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method);
+            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method);
 
             [Inline(InlineBehavior.Remove)]
-            private static void ScalarizedUnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void ScalarizedUnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType method)
             {
                 for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
                 {
@@ -136,51 +137,75 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T ScalarizedUnaryOperation(T item, [InlineParameter] UnaryOperationMethod method)
+            private static T ScalarizedUnaryOperation(T item, [InlineParameter] UnaryOperatorType method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => UnsafeHelper.Not(item),
+                    UnaryOperatorType.Not => UnsafeHelper.Not(item),
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
 
-        partial class SlowCore
-        {
-            internal static readonly string[] UnaryOperatorNames = new string[(int)UnaryOperationMethod._Last]
-            {
-                "op_OnesComplement",
-            };
-        }
-
         unsafe partial class SlowCore<T>
         {
-            private static readonly LazyTiny<nint[]> _unaryOperatorsLazy = new LazyTiny<nint[]>(InitializeUnaryOperators);
-
-            private static nint[] InitializeUnaryOperators()
-            {
-                nint[] result = new nint[(int)UnaryOperationMethod._Last];
-                for (int i = 0; i < (int)UnaryOperationMethod._Last; i++)
-                    result[i] = ReflectionHelper.GetMethodPointer(typeof(T), SlowCore.UnaryOperatorNames[i], [typeof(T)], typeof(T),
-                        BindingFlags.Public | BindingFlags.Static);
-                return result;
-            }
-
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Not(T* ptr, nuint length)
-                => UnaryOperationCore(ref ptr, length, UnaryOperationMethod.Not);
+                => UnaryOperationCore(ref ptr, ref length, UnaryOperatorType.Not);
 
             [Inline(InlineBehavior.Remove)]
-            private static void UnaryOperationCore(ref T* ptr, nuint length, [InlineParameter] UnaryOperationMethod method)
+            private static void UnaryOperationCore(ref T* ptr, ref nuint length, [InlineParameter] UnaryOperatorType operatorType)
+                => UnaryOperationCore(ptr, length, operatorType switch
+                {
+                    UnaryOperatorType.Not => UnaryOperator<T>.Not,
+                    _ => throw new ArgumentOutOfRangeException(nameof(operatorType))
+                });
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void UnaryOperationCore(T* ptr, nuint length, IUnaryOperator<T> @operator)
             {
-                nint functionPointer = _unaryOperatorsLazy.Value[(int)method];
-                if (functionPointer == default)
-                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
-                for (nuint i = 0; i < length; i++, ptr++)
-                    *ptr = LegacyUnaryOperationCoreSlow(*ptr, functionPointer);
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+                {
+                    ptr[0] = @operator.Operate(ptr[0]);
+                    ptr[1] = @operator.Operate(ptr[1]);
+                    ptr[2] = @operator.Operate(ptr[2]);
+                    ptr[3] = @operator.Operate(ptr[3]);
+                }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = @operator.Operate(*ptr);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = @operator.Operate(*ptr);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = @operator.Operate(*ptr);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static T LegacyUnaryOperationCoreSlow(T item, nint functionPointer)
-                => ((delegate* managed<T, T>)functionPointer)(item);
+            public static void UnaryOperationCore(T* ptr, nuint length, UnaryOperation<T> operation)
+            {
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+                {
+                    ptr[0] = operation.Invoke(ptr[0]);
+                    ptr[1] = operation.Invoke(ptr[1]);
+                    ptr[2] = operation.Invoke(ptr[2]);
+                    ptr[3] = operation.Invoke(ptr[3]);
+                }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = operation.Invoke(*ptr);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = operation.Invoke(*ptr);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = operation.Invoke(*ptr);
+            }
         }
     }
 }

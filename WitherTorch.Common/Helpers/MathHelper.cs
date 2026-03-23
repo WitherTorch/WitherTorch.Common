@@ -534,7 +534,7 @@ namespace WitherTorch.Common.Helpers
         private static T DivRemSoftwareFallback<T>(T a, T b, out T rem) where T : unmanaged
         {
             T quantity = UnsafeHelper.Divide(a, b);
-            rem = UnsafeHelper.Substract(a, UnsafeHelper.Multiply(b, quantity));
+            rem = UnsafeHelper.Subtract(a, UnsafeHelper.Multiply(b, quantity));
             return quantity;
         }
 
@@ -542,7 +542,7 @@ namespace WitherTorch.Common.Helpers
         private static T DivRemUnsignedSoftwareFallback<T>(T a, T b, out T rem) where T : unmanaged
         {
             T quantity = UnsafeHelper.DivideUnsigned(a, b);
-            rem = UnsafeHelper.Substract(a, UnsafeHelper.Multiply(b, quantity));
+            rem = UnsafeHelper.Subtract(a, UnsafeHelper.Multiply(b, quantity));
             return quantity;
         }
     }

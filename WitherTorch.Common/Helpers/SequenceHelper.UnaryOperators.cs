@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -11,14 +11,14 @@ namespace WitherTorch.Common.Helpers
 
         #region Not
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T[] array) 
+        public static void Not<T>(T[] array)
         {
             fixed (T* ptr = array)
                 NotCore(ptr, MathHelper.MakeUnsigned(array.Length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T[] array, int startIndex) 
+        public static void Not<T>(T[] array, int startIndex)
         {
             int length = array.Length;
             if (startIndex < 0 || startIndex >= length)
@@ -28,7 +28,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Not<T>(T[] array, int startIndex, int count) 
+        public static void Not<T>(T[] array, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -43,6 +43,76 @@ namespace WitherTorch.Common.Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Not<T>(T* ptr, nuint length) => NotCore(ptr, length);
+        #endregion
+
+        #region Operate (Unary operation)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, IUnaryOperator<T> @operator)
+        {
+            fixed (T* ptr = array)
+                OperateCore(ptr, MathHelper.MakeUnsigned(array.Length), @operator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, UnaryOperation<T> operation)
+        {
+            fixed (T* ptr = array)
+                OperateCore(ptr, MathHelper.MakeUnsigned(array.Length), operation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, int startIndex, IUnaryOperator<T> @operator)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), @operator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, int startIndex, UnaryOperation<T> operation)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), operation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, int startIndex, int count, IUnaryOperator<T> @operator)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, unchecked((nuint)count), @operator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, int startIndex, int count, UnaryOperation<T> operation)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, unchecked((nuint)count), operation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T* ptr, nuint length, IUnaryOperator<T> @operator) => OperateCore(ptr, length, @operator);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T* ptr, nuint length, UnaryOperation<T> operation) => OperateCore(ptr, length, operation);
         #endregion
 
         #region Core Methods
@@ -156,6 +226,27 @@ namespace WitherTorch.Common.Helpers
             }
             SlowCore<T>.Not(ptr, length);
         }
+
+        private static void OperateCore<T>(T* ptr, nuint length, IUnaryOperator<T> @operator)
+        {
+            if (@operator is IDefaultUnaryOperator<T> defaultOperator)
+            {
+                switch (defaultOperator.Type)
+                {
+                    case UnaryOperatorType.Identity:
+                        return;
+                    case UnaryOperatorType.Not:
+                        NotCore(ptr, length);
+                        return;
+                    default:
+                        break;
+                }
+            }
+            SlowCore<T>.UnaryOperationCore(ptr, length, @operator);
+        }
+
+        private static void OperateCore<T>(T* ptr, nuint length, UnaryOperation<T> operation) 
+            => SlowCore<T>.UnaryOperationCore(ptr, length, operation);
         #endregion
     }
 }

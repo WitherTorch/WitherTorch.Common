@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
@@ -6,6 +6,42 @@ namespace WitherTorch.Common.Helpers
     unsafe partial class SequenceHelper
     {
 #pragma warning disable CS8500
+
+        #region Fill/Right
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Fill<T>(T[] array, T value)
+        {
+            fixed (T* ptr = array)
+                RightCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Fill<T>(T[] array, T value, int startIndex)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                RightCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Fill<T>(T[] array, T value, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                RightCore(ptr + startIndex, unchecked((nuint)count), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Fill<T>(T* ptr, nuint length, T value) => RightCore(ptr, length, value);
+        #endregion
 
         #region Or
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -151,26 +187,26 @@ namespace WitherTorch.Common.Helpers
         public static void Add<T>(T* ptr, nuint length, T value) => AddCore(ptr, length, value);
         #endregion
 
-        #region Substract
+        #region Subtract
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Substract<T>(T[] array, T value)
+        public static void Subtract<T>(T[] array, T value)
         {
             fixed (T* ptr = array)
-                SubstractCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
+                SubtractCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Substract<T>(T[] array, T value, int startIndex)
+        public static void Subtract<T>(T[] array, T value, int startIndex)
         {
             int length = array.Length;
             if (startIndex < 0 || startIndex >= length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             fixed (T* ptr = array)
-                SubstractCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+                SubtractCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Substract<T>(T[] array, T value, int startIndex, int count)
+        public static void Subtract<T>(T[] array, T value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -180,11 +216,11 @@ namespace WitherTorch.Common.Helpers
             if (length > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
             fixed (T* ptr = array)
-                SubstractCore(ptr + startIndex, unchecked((nuint)count), value);
+                SubtractCore(ptr + startIndex, unchecked((nuint)count), value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Substract<T>(T* ptr, nuint length, T value) => SubstractCore(ptr, length, value);
+        public static void Subtract<T>(T* ptr, nuint length, T value) => SubtractCore(ptr, length, value);
         #endregion
 
         #region Multiply
@@ -259,7 +295,261 @@ namespace WitherTorch.Common.Helpers
         public static void Divide<T>(T* ptr, nuint length, T value) => DivideCore(ptr, length, value);
         #endregion
 
+        #region Min
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Min<T>(T[] array, T value)
+        {
+            fixed (T* ptr = array)
+                MinCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Min<T>(T[] array, T value, int startIndex)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                MinCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Min<T>(T[] array, T value, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                MinCore(ptr + startIndex, unchecked((nuint)count), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Min<T>(T* ptr, nuint length, T value) => MinCore(ptr, length, value);
+        #endregion
+
+        #region Max
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Max<T>(T[] array, T value)
+        {
+            fixed (T* ptr = array)
+                MaxCore(ptr, MathHelper.MakeUnsigned(array.Length), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Max<T>(T[] array, T value, int startIndex)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                MaxCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Max<T>(T[] array, T value, int startIndex, int count)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                MaxCore(ptr + startIndex, unchecked((nuint)count), value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Max<T>(T* ptr, nuint length, T value) => MaxCore(ptr, length, value);
+        #endregion
+
+        #region Operate (Binary Operation)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, T value, IBinaryOperator<T> @operator)
+        {
+            fixed (T* ptr = array)
+                OperateCore(ptr, MathHelper.MakeUnsigned(array.Length), value, @operator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, T value, BinaryOperation<T> operation)
+        {
+            fixed (T* ptr = array)
+                OperateCore(ptr, MathHelper.MakeUnsigned(array.Length), value, operation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, T value, int startIndex, IBinaryOperator<T> @operator)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value, @operator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, T value, int startIndex, BinaryOperation<T> operation)
+        {
+            int length = array.Length;
+            if (startIndex < 0 || startIndex >= length)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value, operation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, T value, int startIndex, int count, IBinaryOperator<T> @operator)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, unchecked((nuint)count), value, @operator);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T[] array, T value, int startIndex, int count, BinaryOperation<T> operation)
+        {
+            if (startIndex < 0)
+                throw new ArgumentOutOfRangeException(nameof(startIndex));
+            if (count < 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+            int length = startIndex + count;
+            if (length > array.Length)
+                throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            fixed (T* ptr = array)
+                OperateCore(ptr + startIndex, unchecked((nuint)count), value, operation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T* ptr, nuint length, T value, IBinaryOperator<T> @operator) => OperateCore(ptr, length, value, @operator);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Operate<T>(T* ptr, nuint length, T value, BinaryOperation<T> operation) => OperateCore(ptr, length, value, operation);
+        #endregion
+
         #region Core Methods
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void RightCore<T>(T* ptr, nuint length, T value)
+        {
+            if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
+            {
+                FastCore<byte>.Right((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return;
+            }
+            if (typeof(T) == typeof(sbyte))
+            {
+                FastCore<sbyte>.Right((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return;
+            }
+            if (typeof(T) == typeof(short))
+            {
+                FastCore<short>.Right((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return;
+            }
+            if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
+            {
+                FastCore<ushort>.Right((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return;
+            }
+            if (typeof(T) == typeof(int))
+            {
+                FastCore<int>.Right((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return;
+            }
+            if (typeof(T) == typeof(uint))
+            {
+                FastCore<uint>.Right((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return;
+            }
+            if (typeof(T) == typeof(long))
+            {
+                FastCore<long>.Right((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return;
+            }
+            if (typeof(T) == typeof(ulong))
+            {
+                FastCore<ulong>.Right((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return;
+            }
+            if (typeof(T) == typeof(float))
+            {
+                FastCore<float>.Right((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return;
+            }
+            if (typeof(T) == typeof(double))
+            {
+                FastCore<double>.Right((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return;
+            }
+            if (typeof(T) == typeof(nint))
+            {
+                FastCore.Right((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return;
+            }
+            if (typeof(T) == typeof(nuint))
+            {
+                FastCore.Right((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+                return;
+            }
+            RightCoreSlow(ptr, length, value);
+        }
+
+        private static void RightCoreSlow<T>(T* ptr, nuint length, T value)
+        {
+            Type type = typeof(T);
+            if (type.IsEnum)
+            {
+                switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
+                {
+                    case TypeCode.Boolean or TypeCode.Byte:
+                        FastCore<byte>.Right((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                        return;
+                    case TypeCode.SByte:
+                        FastCore<sbyte>.Right((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                        return;
+                    case TypeCode.Int16:
+                        FastCore<short>.Right((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                        return;
+                    case TypeCode.Char or TypeCode.UInt16:
+                        FastCore<ushort>.Right((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                        return;
+                    case TypeCode.Int32:
+                        FastCore<int>.Right((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                        return;
+                    case TypeCode.UInt32:
+                        FastCore<uint>.Right((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                        return;
+                    case TypeCode.Int64:
+                        FastCore<long>.Right((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                        return;
+                    case TypeCode.UInt64:
+                        FastCore<ulong>.Right((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                        return;
+                    case TypeCode.Single:
+                        FastCore<float>.Right((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                        return;
+                    case TypeCode.Double:
+                        FastCore<double>.Right((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                        return;
+                    default:
+                        SlowCore<T>.Right(ptr, length, value);
+                        return;
+                }
+            }
+            SlowCore<T>.Right(ptr, length, value);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void OrCore<T>(T* ptr, nuint length, T value)
         {
@@ -323,10 +613,10 @@ namespace WitherTorch.Common.Helpers
                 FastCore.Or((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            OrCoreSlow(ptr, value, length);
+            OrCoreSlow(ptr, length, value);
         }
 
-        private static void OrCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void OrCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -434,10 +724,10 @@ namespace WitherTorch.Common.Helpers
                 FastCore.And((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            AndCoreSlow(ptr, value, length);
+            AndCoreSlow(ptr, length, value);
         }
 
-        private static void AndCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void AndCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -545,10 +835,10 @@ namespace WitherTorch.Common.Helpers
                 FastCore.Xor((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            XorCoreSlow(ptr, value, length);
+            XorCoreSlow(ptr, length, value);
         }
 
-        private static void XorCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void XorCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -656,10 +946,10 @@ namespace WitherTorch.Common.Helpers
                 FastCore.Add((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            AddCoreSlow(ptr, value, length);
+            AddCoreSlow(ptr, length, value);
         }
 
-        private static void AddCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void AddCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -705,72 +995,72 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void SubstractCore<T>(T* ptr, nuint length, T value)
+        private static void SubtractCore<T>(T* ptr, nuint length, T value)
         {
             if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
             {
-                FastCore<byte>.Substract((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                FastCore<byte>.Subtract((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
                 return;
             }
             if (typeof(T) == typeof(sbyte))
             {
-                FastCore<sbyte>.Substract((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                FastCore<sbyte>.Subtract((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
                 return;
             }
             if (typeof(T) == typeof(short))
             {
-                FastCore<short>.Substract((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                FastCore<short>.Subtract((short*)ptr, length, UnsafeHelper.As<T, short>(value));
                 return;
             }
             if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
             {
-                FastCore<ushort>.Substract((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                FastCore<ushort>.Subtract((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
                 return;
             }
             if (typeof(T) == typeof(int))
             {
-                FastCore<int>.Substract((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                FastCore<int>.Subtract((int*)ptr, length, UnsafeHelper.As<T, int>(value));
                 return;
             }
             if (typeof(T) == typeof(uint))
             {
-                FastCore<uint>.Substract((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                FastCore<uint>.Subtract((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
                 return;
             }
             if (typeof(T) == typeof(long))
             {
-                FastCore<long>.Substract((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                FastCore<long>.Subtract((long*)ptr, length, UnsafeHelper.As<T, long>(value));
                 return;
             }
             if (typeof(T) == typeof(ulong))
             {
-                FastCore<ulong>.Substract((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                FastCore<ulong>.Subtract((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
                 return;
             }
             if (typeof(T) == typeof(float))
             {
-                FastCore<float>.Substract((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                FastCore<float>.Subtract((float*)ptr, length, UnsafeHelper.As<T, float>(value));
                 return;
             }
             if (typeof(T) == typeof(double))
             {
-                FastCore<double>.Substract((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                FastCore<double>.Subtract((double*)ptr, length, UnsafeHelper.As<T, double>(value));
                 return;
             }
             if (typeof(T) == typeof(nint))
             {
-                FastCore.Substract((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                FastCore.Subtract((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
                 return;
             }
             if (typeof(T) == typeof(nuint))
             {
-                FastCore.Substract((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+                FastCore.Subtract((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            SubstractCoreSlow(ptr, value, length);
+            SubtractCoreSlow(ptr, length, value);
         }
 
-        private static void SubstractCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void SubtractCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -778,41 +1068,41 @@ namespace WitherTorch.Common.Helpers
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
                     case TypeCode.Boolean or TypeCode.Byte:
-                        FastCore<byte>.Substract((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                        FastCore<byte>.Subtract((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
                         return;
                     case TypeCode.SByte:
-                        FastCore<sbyte>.Substract((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                        FastCore<sbyte>.Subtract((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
                         return;
                     case TypeCode.Int16:
-                        FastCore<short>.Substract((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                        FastCore<short>.Subtract((short*)ptr, length, UnsafeHelper.As<T, short>(value));
                         return;
                     case TypeCode.Char or TypeCode.UInt16:
-                        FastCore<ushort>.Substract((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                        FastCore<ushort>.Subtract((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
                         return;
                     case TypeCode.Int32:
-                        FastCore<int>.Substract((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                        FastCore<int>.Subtract((int*)ptr, length, UnsafeHelper.As<T, int>(value));
                         return;
                     case TypeCode.UInt32:
-                        FastCore<uint>.Substract((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                        FastCore<uint>.Subtract((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
                         return;
                     case TypeCode.Int64:
-                        FastCore<long>.Substract((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                        FastCore<long>.Subtract((long*)ptr, length, UnsafeHelper.As<T, long>(value));
                         return;
                     case TypeCode.UInt64:
-                        FastCore<ulong>.Substract((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                        FastCore<ulong>.Subtract((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
                         return;
                     case TypeCode.Single:
-                        FastCore<float>.Substract((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                        FastCore<float>.Subtract((float*)ptr, length, UnsafeHelper.As<T, float>(value));
                         return;
                     case TypeCode.Double:
-                        FastCore<double>.Substract((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                        FastCore<double>.Subtract((double*)ptr, length, UnsafeHelper.As<T, double>(value));
                         return;
                     default:
-                        SlowCore<T>.Substract(ptr, length, value);
+                        SlowCore<T>.Subtract(ptr, length, value);
                         return;
                 }
             }
-            SlowCore<T>.Substract(ptr, length, value);
+            SlowCore<T>.Subtract(ptr, length, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -878,10 +1168,10 @@ namespace WitherTorch.Common.Helpers
                 FastCore.Multiply((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            MultiplyCoreSlow(ptr, value, length);
+            MultiplyCoreSlow(ptr, length, value);
         }
 
-        private static void MultiplyCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void MultiplyCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -989,10 +1279,10 @@ namespace WitherTorch.Common.Helpers
                 FastCore.Divide((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
                 return;
             }
-            DivideCoreSlow(ptr, value, length);
+            DivideCoreSlow(ptr, length, value);
         }
 
-        private static void DivideCoreSlow<T>(T* ptr, T value, nuint length)
+        private static void DivideCoreSlow<T>(T* ptr, nuint length, T value)
         {
             Type type = typeof(T);
             if (type.IsEnum)
@@ -1035,6 +1325,278 @@ namespace WitherTorch.Common.Helpers
                 }
             }
             SlowCore<T>.Divide(ptr, length, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MinCore<T>(T* ptr, nuint length, T value)
+        {
+            if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
+            {
+                FastCore<byte>.Min((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return;
+            }
+            if (typeof(T) == typeof(sbyte))
+            {
+                FastCore<sbyte>.Min((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return;
+            }
+            if (typeof(T) == typeof(short))
+            {
+                FastCore<short>.Min((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return;
+            }
+            if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
+            {
+                FastCore<ushort>.Min((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return;
+            }
+            if (typeof(T) == typeof(int))
+            {
+                FastCore<int>.Min((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return;
+            }
+            if (typeof(T) == typeof(uint))
+            {
+                FastCore<uint>.Min((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return;
+            }
+            if (typeof(T) == typeof(long))
+            {
+                FastCore<long>.Min((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return;
+            }
+            if (typeof(T) == typeof(ulong))
+            {
+                FastCore<ulong>.Min((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return;
+            }
+            if (typeof(T) == typeof(float))
+            {
+                FastCore<float>.Min((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return;
+            }
+            if (typeof(T) == typeof(double))
+            {
+                FastCore<double>.Min((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return;
+            }
+            if (typeof(T) == typeof(nint))
+            {
+                FastCore.Min((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return;
+            }
+            if (typeof(T) == typeof(nuint))
+            {
+                FastCore.Min((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+                return;
+            }
+            MinCoreSlow(ptr, length, value);
+        }
+
+        private static void MinCoreSlow<T>(T* ptr, nuint length, T value)
+        {
+            Type type = typeof(T);
+            if (type.IsEnum)
+            {
+                switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
+                {
+                    case TypeCode.Boolean or TypeCode.Byte:
+                        FastCore<byte>.Min((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                        return;
+                    case TypeCode.SByte:
+                        FastCore<sbyte>.Min((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                        return;
+                    case TypeCode.Int16:
+                        FastCore<short>.Min((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                        return;
+                    case TypeCode.Char or TypeCode.UInt16:
+                        FastCore<ushort>.Min((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                        return;
+                    case TypeCode.Int32:
+                        FastCore<int>.Min((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                        return;
+                    case TypeCode.UInt32:
+                        FastCore<uint>.Min((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                        return;
+                    case TypeCode.Int64:
+                        FastCore<long>.Min((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                        return;
+                    case TypeCode.UInt64:
+                        FastCore<ulong>.Min((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                        return;
+                    case TypeCode.Single:
+                        FastCore<float>.Min((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                        return;
+                    case TypeCode.Double:
+                        FastCore<double>.Min((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                        return;
+                    default:
+                        SlowCore<T>.Min(ptr, length, value);
+                        return;
+                }
+            }
+            SlowCore<T>.Min(ptr, length, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void MaxCore<T>(T* ptr, nuint length, T value)
+        {
+            if (typeof(T) == typeof(bool) || typeof(T) == typeof(byte))
+            {
+                FastCore<byte>.Max((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                return;
+            }
+            if (typeof(T) == typeof(sbyte))
+            {
+                FastCore<sbyte>.Max((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                return;
+            }
+            if (typeof(T) == typeof(short))
+            {
+                FastCore<short>.Max((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                return;
+            }
+            if (typeof(T) == typeof(char) || typeof(T) == typeof(ushort))
+            {
+                FastCore<ushort>.Max((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                return;
+            }
+            if (typeof(T) == typeof(int))
+            {
+                FastCore<int>.Max((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                return;
+            }
+            if (typeof(T) == typeof(uint))
+            {
+                FastCore<uint>.Max((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                return;
+            }
+            if (typeof(T) == typeof(long))
+            {
+                FastCore<long>.Max((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                return;
+            }
+            if (typeof(T) == typeof(ulong))
+            {
+                FastCore<ulong>.Max((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                return;
+            }
+            if (typeof(T) == typeof(float))
+            {
+                FastCore<float>.Max((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                return;
+            }
+            if (typeof(T) == typeof(double))
+            {
+                FastCore<double>.Max((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                return;
+            }
+            if (typeof(T) == typeof(nint))
+            {
+                FastCore.Max((nint*)ptr, length, UnsafeHelper.As<T, nint>(value));
+                return;
+            }
+            if (typeof(T) == typeof(nuint))
+            {
+                FastCore.Max((nuint*)ptr, length, UnsafeHelper.As<T, nuint>(value));
+                return;
+            }
+            MaxCoreSlow(ptr, length, value);
+        }
+
+        private static void MaxCoreSlow<T>(T* ptr, nuint length, T value)
+        {
+            Type type = typeof(T);
+            if (type.IsEnum)
+            {
+                switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
+                {
+                    case TypeCode.Boolean or TypeCode.Byte:
+                        FastCore<byte>.Max((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+                        return;
+                    case TypeCode.SByte:
+                        FastCore<sbyte>.Max((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
+                        return;
+                    case TypeCode.Int16:
+                        FastCore<short>.Max((short*)ptr, length, UnsafeHelper.As<T, short>(value));
+                        return;
+                    case TypeCode.Char or TypeCode.UInt16:
+                        FastCore<ushort>.Max((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value));
+                        return;
+                    case TypeCode.Int32:
+                        FastCore<int>.Max((int*)ptr, length, UnsafeHelper.As<T, int>(value));
+                        return;
+                    case TypeCode.UInt32:
+                        FastCore<uint>.Max((uint*)ptr, length, UnsafeHelper.As<T, uint>(value));
+                        return;
+                    case TypeCode.Int64:
+                        FastCore<long>.Max((long*)ptr, length, UnsafeHelper.As<T, long>(value));
+                        return;
+                    case TypeCode.UInt64:
+                        FastCore<ulong>.Max((ulong*)ptr, length, UnsafeHelper.As<T, ulong>(value));
+                        return;
+                    case TypeCode.Single:
+                        FastCore<float>.Max((float*)ptr, length, UnsafeHelper.As<T, float>(value));
+                        return;
+                    case TypeCode.Double:
+                        FastCore<double>.Max((double*)ptr, length, UnsafeHelper.As<T, double>(value));
+                        return;
+                    default:
+                        SlowCore<T>.Max(ptr, length, value);
+                        return;
+                }
+            }
+            SlowCore<T>.Max(ptr, length, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void OperateCore<T>(T* ptr, nuint length, T value, BinaryOperation<T> operation) 
+            => SlowCore<T>.BinaryOperationCore(ptr, length, value, operation);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void OperateCore<T>(T* ptr, nuint length, T value, IBinaryOperator<T> @operator)
+        {
+            if (@operator is IDefaultBinaryOperator<T> defaultOperator)
+            {
+                switch (defaultOperator.Type)
+                {
+                    case BinaryOperatorType.Left:
+                        return;
+                    case BinaryOperatorType.Right:
+                        RightCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Or:
+                        OrCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.And:
+                        AndCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Xor:
+                        XorCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Add:
+                        AddCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Subtract:
+                        SubtractCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Multiply:
+                        MultiplyCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Divide:
+                        DivideCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Min:
+                        MinCore(ptr, length, value);
+                        return;
+                    case BinaryOperatorType.Max:
+                        MaxCore(ptr, length, value);
+                        return;
+                    default:
+                        break;
+                }
+            }
+            SlowCore<T>.BinaryOperationCore(ptr, length, value, @operator);
         }
         #endregion
     }

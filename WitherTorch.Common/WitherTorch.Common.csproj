@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateAssemblyInfo>False</GenerateAssemblyInfo>
-		<Deterministic>True</Deterministic>
+		<Deterministic>False</Deterministic>
 		<Platforms>AnyCPU;x64;ARM64;x86</Platforms>
 		<SignAssembly>True</SignAssembly>
 		<AssemblyOriginatorKeyFile>keypair.snk</AssemblyOriginatorKeyFile>

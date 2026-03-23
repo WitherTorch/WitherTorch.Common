@@ -10,7 +10,7 @@ namespace WitherTorch.Common.Helpers
     {
         unsafe partial class FastCore<T>
         {
-            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperationMethod method)
+            private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperatorType method)
             {
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector<T>>();
                 if (headRemainder == 0)
@@ -60,10 +60,11 @@ namespace WitherTorch.Common.Helpers
 
             [Inline(InlineBehavior.Remove)]
             private static Vector<T> VectorizedUnaryOperation(in Vector<T> sourceVector,
-                [InlineParameter] UnaryOperationMethod method)
+                [InlineParameter] UnaryOperatorType method)
                 => method switch
                 {
-                    UnaryOperationMethod.Not => ~sourceVector,
+                    UnaryOperatorType.Identity => sourceVector,
+                    UnaryOperatorType.Not => ~sourceVector,
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }

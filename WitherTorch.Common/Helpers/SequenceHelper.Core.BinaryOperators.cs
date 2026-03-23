@@ -8,26 +8,45 @@ using WitherTorch.Common.Threading;
 
 using LocalsInit;
 
+using InlineIL;
+
 namespace WitherTorch.Common.Helpers
 {
     partial class SequenceHelper
     {
-        private enum BinaryOperationMethod
-        {
-            Or,
-            And,
-            Xor,
-            Add,
-            Substract,
-            Multiply,
-            Divide,
-            _Last
-        }
-
 #pragma warning disable CS8500
 #pragma warning disable CS0162
         unsafe partial class FastCore
         {
+            [Inline(InlineBehavior.Remove)]
+            public static void Right(nint* ptr, nuint length, nint value)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.Right((int*)ptr, length, *(int*)&value);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.Right((long*)ptr, length, *(long*)&value);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.Right((int*)ptr, length, *(int*)&value);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.Right((long*)ptr, length, *(long*)&value);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
             [Inline(InlineBehavior.Remove)]
             public static void Or(nint* ptr, nuint length, nint value)
             {
@@ -145,24 +164,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void Substract(nint* ptr, nuint length, nint value)
+            public static void Subtract(nint* ptr, nuint length, nint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(int):
-                        FastCore<int>.Substract((int*)ptr, length, *(int*)&value);
+                        FastCore<int>.Subtract((int*)ptr, length, *(int*)&value);
                         return;
                     case sizeof(long):
-                        FastCore<long>.Substract((long*)ptr, length, *(long*)&value);
+                        FastCore<long>.Subtract((long*)ptr, length, *(long*)&value);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(int):
-                                FastCore<int>.Substract((int*)ptr, length, *(int*)&value);
+                                FastCore<int>.Subtract((int*)ptr, length, *(int*)&value);
                                 return;
                             case sizeof(long):
-                                FastCore<long>.Substract((long*)ptr, length, *(long*)&value);
+                                FastCore<long>.Subtract((long*)ptr, length, *(long*)&value);
                                 return;
                             default:
                                 break;
@@ -221,6 +240,93 @@ namespace WitherTorch.Common.Helpers
                                 return;
                             case sizeof(long):
                                 FastCore<long>.Divide((long*)ptr, length, *(long*)&value);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Min(nint* ptr, nuint length, nint value)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.Min((int*)ptr, length, *(int*)&value);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.Min((long*)ptr, length, *(long*)&value);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.Min((int*)ptr, length, *(int*)&value);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.Min((long*)ptr, length, *(long*)&value);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Max(nint* ptr, nuint length, nint value)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(int):
+                        FastCore<int>.Max((int*)ptr, length, *(int*)&value);
+                        return;
+                    case sizeof(long):
+                        FastCore<long>.Max((long*)ptr, length, *(long*)&value);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(int):
+                                FastCore<int>.Max((int*)ptr, length, *(int*)&value);
+                                return;
+                            case sizeof(long):
+                                FastCore<long>.Max((long*)ptr, length, *(long*)&value);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Right(nuint* ptr, nuint length, nuint value)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.Right((uint*)ptr, length, *(uint*)&value);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.Right((ulong*)ptr, length, *(ulong*)&value);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.Right((uint*)ptr, length, *(uint*)&value);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.Right((ulong*)ptr, length, *(ulong*)&value);
                                 return;
                             default:
                                 break;
@@ -348,24 +454,24 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            public static void Substract(nuint* ptr, nuint length, nuint value)
+            public static void Subtract(nuint* ptr, nuint length, nuint value)
             {
                 switch (UnsafeHelper.PointerSizeConstant)
                 {
                     case sizeof(uint):
-                        FastCore<uint>.Substract((uint*)ptr, length, *(uint*)&value);
+                        FastCore<uint>.Subtract((uint*)ptr, length, *(uint*)&value);
                         return;
                     case sizeof(ulong):
-                        FastCore<ulong>.Substract((ulong*)ptr, length, *(ulong*)&value);
+                        FastCore<ulong>.Subtract((ulong*)ptr, length, *(ulong*)&value);
                         return;
                     case UnsafeHelper.PointerSizeConstant_Indeterminate:
                         switch (UnsafeHelper.PointerSize)
                         {
                             case sizeof(uint):
-                                FastCore<uint>.Substract((uint*)ptr, length, *(uint*)&value);
+                                FastCore<uint>.Subtract((uint*)ptr, length, *(uint*)&value);
                                 return;
                             case sizeof(ulong):
-                                FastCore<ulong>.Substract((ulong*)ptr, length, *(ulong*)&value);
+                                FastCore<ulong>.Subtract((ulong*)ptr, length, *(ulong*)&value);
                                 return;
                             default:
                                 break;
@@ -433,101 +539,195 @@ namespace WitherTorch.Common.Helpers
                         throw new NotImplementedException();
                 }
             }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Min(nuint* ptr, nuint length, nuint value)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.Min((uint*)ptr, length, *(uint*)&value);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.Min((ulong*)ptr, length, *(ulong*)&value);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.Min((uint*)ptr, length, *(uint*)&value);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.Min((ulong*)ptr, length, *(ulong*)&value);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            public static void Max(nuint* ptr, nuint length, nuint value)
+            {
+                switch (UnsafeHelper.PointerSizeConstant)
+                {
+                    case sizeof(uint):
+                        FastCore<uint>.Max((uint*)ptr, length, *(uint*)&value);
+                        return;
+                    case sizeof(ulong):
+                        FastCore<ulong>.Max((ulong*)ptr, length, *(ulong*)&value);
+                        return;
+                    case UnsafeHelper.PointerSizeConstant_Indeterminate:
+                        switch (UnsafeHelper.PointerSize)
+                        {
+                            case sizeof(uint):
+                                FastCore<uint>.Max((uint*)ptr, length, *(uint*)&value);
+                                return;
+                            case sizeof(ulong):
+                                FastCore<ulong>.Max((ulong*)ptr, length, *(ulong*)&value);
+                                return;
+                            default:
+                                break;
+                        }
+                        goto default;
+                    default:
+                        throw new NotImplementedException();
+                }
+            }
         }
 #pragma warning restore CS0162
 
         unsafe partial class FastCore<T>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Right(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Right);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Or(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Or);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Or);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void And(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.And);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.And);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Xor(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Xor);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Xor);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Add(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Add);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Add);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Substract(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Substract);
+            public static void Subtract(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Subtract);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Multiply(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Multiply);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Multiply);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Divide(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Divide);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Divide);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Min(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Min);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Max(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Max);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedRight(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Right);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedOr(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Or);
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Or);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedAnd(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.And);
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.And);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedXor(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Xor);
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Xor);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedAdd(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Add);
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Add);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
-            private static void VectorizedSubstract(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Substract);
+            private static void VectorizedSubtract(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Subtract);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedMultiply(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Multiply);
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Multiply);
 
             [LocalsInit(false)]
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static void VectorizedDivide(T* ptr, nuint length, T value)
-                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperationMethod.Divide);
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Divide);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedMin(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Min);
+
+            [LocalsInit(false)]
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static void VectorizedMax(T* ptr, nuint length, T value)
+                => VectorizedBinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Max);
 
             [Inline(InlineBehavior.Remove)]
-            private static void BinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void BinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperatorType method)
             {
                 if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
                 {
                     switch (method)
                     {
-                        case BinaryOperationMethod.Or:
+                        case BinaryOperatorType.Right:
+                            VectorizedRight(ptr, length, value);
+                            break;
+                        case BinaryOperatorType.Or:
                             VectorizedOr(ptr, length, value);
                             break;
-                        case BinaryOperationMethod.And:
+                        case BinaryOperatorType.And:
                             VectorizedAnd(ptr, length, value);
                             break;
-                        case BinaryOperationMethod.Xor:
+                        case BinaryOperatorType.Xor:
                             VectorizedXor(ptr, length, value);
                             break;
-                        case BinaryOperationMethod.Add:
+                        case BinaryOperatorType.Add:
                             VectorizedAdd(ptr, length, value);
                             break;
-                        case BinaryOperationMethod.Substract:
-                            VectorizedSubstract(ptr, length, value);
+                        case BinaryOperatorType.Subtract:
+                            VectorizedSubtract(ptr, length, value);
                             break;
-                        case BinaryOperationMethod.Multiply:
+                        case BinaryOperatorType.Multiply:
                             VectorizedMultiply(ptr, length, value);
                             break;
-                        case BinaryOperationMethod.Divide:
+                        case BinaryOperatorType.Divide:
                             VectorizedDivide(ptr, length, value);
+                            break;
+                        case BinaryOperatorType.Min:
+                            VectorizedMin(ptr, length, value);
+                            break;
+                        case BinaryOperatorType.Max:
+                            VectorizedMax(ptr, length, value);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException(nameof(method));
@@ -539,10 +739,10 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static partial void VectorizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method);
+            private static partial void VectorizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperatorType type);
 
             [Inline(InlineBehavior.Remove)]
-            private static void ScalarizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void ScalarizedBinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperatorType method)
             {
                 for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
                 {
@@ -566,81 +766,135 @@ namespace WitherTorch.Common.Helpers
             }
 
             [Inline(InlineBehavior.Remove)]
-            private static T ScalarizedBinaryOperation(T item, T value, [InlineParameter] BinaryOperationMethod method)
+            private static T ScalarizedBinaryOperation(T item, T value, [InlineParameter] BinaryOperatorType method)
                 => method switch
                 {
-                    BinaryOperationMethod.Or => UnsafeHelper.Or(item, value),
-                    BinaryOperationMethod.And => UnsafeHelper.And(item, value),
-                    BinaryOperationMethod.Xor => UnsafeHelper.Xor(item, value),
-                    BinaryOperationMethod.Add => UnsafeHelper.Add(item, value),
-                    BinaryOperationMethod.Substract => UnsafeHelper.Substract(item, value),
-                    BinaryOperationMethod.Multiply => UnsafeHelper.Multiply(item, value),
-                    BinaryOperationMethod.Divide => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.DivideUnsigned(item, value) : UnsafeHelper.Divide(item, value),
+                    BinaryOperatorType.Left => item,
+                    BinaryOperatorType.Right => value,
+                    BinaryOperatorType.Or => UnsafeHelper.Or(item, value),
+                    BinaryOperatorType.And => UnsafeHelper.And(item, value),
+                    BinaryOperatorType.Xor => UnsafeHelper.Xor(item, value),
+                    BinaryOperatorType.Add => UnsafeHelper.Add(item, value),
+                    BinaryOperatorType.Subtract => UnsafeHelper.Subtract(item, value),
+                    BinaryOperatorType.Multiply => UnsafeHelper.Multiply(item, value),
+                    BinaryOperatorType.Divide => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.DivideUnsigned(item, value) : UnsafeHelper.Divide(item, value),
+                    BinaryOperatorType.Min => UnsafeHelper.Min(item, value),
+                    BinaryOperatorType.Max => UnsafeHelper.Max(item, value),
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }
 
-        partial class SlowCore
-        {
-            internal static readonly string[] BinaryOperatorNames = new string[(int)BinaryOperationMethod._Last]
-            {
-                "op_BitwiseOr",
-                "op_BitwiseAnd",
-                "op_ExclusiveOr",
-                "op_Addition",
-                "op_Substraction",
-                "op_Multiply",
-                "op_Division"
-            };
-        }
-
         unsafe partial class SlowCore<T>
         {
-            private static readonly LazyTiny<nint[]> _binaryOperatorsLazy = new LazyTiny<nint[]>(InitializeBinaryOperators);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Right(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Right);
 
-            private static nint[] InitializeBinaryOperators()
-            {
-                nint[] result = new nint[(int)BinaryOperationMethod._Last];
-                for (int i = 0; i < (int)BinaryOperationMethod._Last; i++)
-                    result[i] = ReflectionHelper.GetMethodPointer(typeof(T), SlowCore.BinaryOperatorNames[i], [typeof(T), typeof(T)], typeof(T),
-                        BindingFlags.Public | BindingFlags.Static);
-                return result;
-            }
-
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Or(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Or);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Or);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void And(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.And);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.And);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Xor(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Xor);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Xor);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Add(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Add);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Add);
 
-            public static void Substract(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Substract);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Subtract(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Subtract);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Multiply(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Multiply);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Multiply);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Divide(T* ptr, nuint length, T value)
-                => BinaryOperationCore(ref ptr, length, value, BinaryOperationMethod.Divide);
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Divide);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Min(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Min);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Max(T* ptr, nuint length, T value)
+                => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Max);
 
             [Inline(InlineBehavior.Remove)]
-            private static void BinaryOperationCore(ref T* ptr, nuint length, T value, [InlineParameter] BinaryOperationMethod method)
+            private static void BinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperatorType operatorType)
             {
-                nint functionPointer = _binaryOperatorsLazy.Value[(int)method];
-                if (functionPointer == default)
-                    throw new InvalidOperationException($"Cannot find the {method} operator for {typeof(T).Name}!");
-                for (nuint i = 0; i < length; i++, ptr++)
-                    *ptr = BinaryOperationCore(*ptr, value, functionPointer);
+                if (operatorType == BinaryOperatorType.Left)
+                    return;
+                BinaryOperationCore(ptr, length, value, operatorType switch
+                {
+                    BinaryOperatorType.Left => BinaryOperator<T>.Left,
+                    BinaryOperatorType.Right => BinaryOperator<T>.Right,
+                    BinaryOperatorType.Or => BinaryOperator<T>.Or,
+                    BinaryOperatorType.And => BinaryOperator<T>.And,
+                    BinaryOperatorType.Xor => BinaryOperator<T>.Xor,
+                    BinaryOperatorType.Add => BinaryOperator<T>.Add,
+                    BinaryOperatorType.Subtract => BinaryOperator<T>.Subtract,
+                    BinaryOperatorType.Multiply => BinaryOperator<T>.Multiply,
+                    BinaryOperatorType.Divide => BinaryOperator<T>.Divide,
+                    BinaryOperatorType.Min => BinaryOperator<T>.Min,
+                    BinaryOperatorType.Max => BinaryOperator<T>.Max,
+                    _ => throw new ArgumentOutOfRangeException(nameof(operatorType))
+                });
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static T BinaryOperationCore(T item, T value, nint functionPointer)
-                => ((delegate* managed<T, T, T>)functionPointer)(item, value);
+            public static void BinaryOperationCore(T* ptr, nuint length, T value, IBinaryOperator<T> @operator)
+            {
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+                {
+                    ptr[0] = @operator.Operate(ptr[0], value);
+                    ptr[1] = @operator.Operate(ptr[1], value);
+                    ptr[2] = @operator.Operate(ptr[2], value);
+                    ptr[3] = @operator.Operate(ptr[3], value);
+                }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = @operator.Operate(*ptr, value);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = @operator.Operate(*ptr, value);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = @operator.Operate(*ptr, value);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void BinaryOperationCore(T* ptr, nuint length, T value, BinaryOperation<T> operation)
+            {
+                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+                {
+                    ptr[0] = operation.Invoke(ptr[0], value);
+                    ptr[1] = operation.Invoke(ptr[1], value);
+                    ptr[2] = operation.Invoke(ptr[2], value);
+                    ptr[3] = operation.Invoke(ptr[3], value);
+                }
+                T* ptrEnd = ptr + length;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = operation.Invoke(*ptr, value);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = operation.Invoke(*ptr, value);
+                ptr++;
+                if (ptr >= ptrEnd)
+                    return;
+                *ptr = operation.Invoke(*ptr, value);
+            }
         }
     }
 }

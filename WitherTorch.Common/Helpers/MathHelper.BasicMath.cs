@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using InlineMethod;
 
@@ -40,7 +40,7 @@ namespace WitherTorch.Common.Helpers
             };
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static byte CheckedSubstract(byte a, byte b)
+        public static byte CheckedSubtract(byte a, byte b)
         {
 #if NET8_0_OR_GREATER
             return a > b ? unchecked((byte)(a - b)) : byte.MinValue;
@@ -50,7 +50,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ushort CheckedSubstract(ushort a, ushort b)
+        public static ushort CheckedSubtract(ushort a, ushort b)
         {
 #if NET8_0_OR_GREATER
             return a > b ? unchecked((ushort)(a - b)) : ushort.MinValue;
@@ -60,7 +60,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static uint CheckedSubstract(uint a, uint b)
+        public static uint CheckedSubtract(uint a, uint b)
         {
 #if NET8_0_OR_GREATER
             return a > b ? a - b : uint.MinValue;
@@ -70,7 +70,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ulong CheckedSubstract(ulong a, ulong b)
+        public static ulong CheckedSubtract(ulong a, ulong b)
         {
 #if NET8_0_OR_GREATER
             return a > b ? a - b : ulong.MinValue;
@@ -80,7 +80,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nuint CheckedSubstract(nuint a, nuint b)
+        public static nuint CheckedSubtract(nuint a, nuint b)
         {
 #if NET8_0_OR_GREATER
             return a > b ? a - b : nuint.MinValue;
