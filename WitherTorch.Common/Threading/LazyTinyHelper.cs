@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -10,13 +10,13 @@ namespace WitherTorch.Common.Threading
         public static T InitializeAndReturn<T>(ref T? location, Func<T>? factory, bool threadSafe, object? syncRoot) where T : class
         {
             T? result;
-            if (!threadSafe)
+            if (!threadSafe) // 對應 LazyThreadSafetyMode.None
             {
                 result = InitializeOrThrow(factory);
                 location = result;
                 return result;
             }
-            if (syncRoot is null)
+            if (syncRoot is null) // 對應 LazyThreadSafetyMode.PublicationOnly
             {
                 result = InitializeOrThrow(factory);
                 T? oldValue = Interlocked.CompareExchange(ref location, result, null);
@@ -25,6 +25,7 @@ namespace WitherTorch.Common.Threading
                 (result as IDisposable)?.Dispose();
                 return oldValue;
             }
+            // 對應 LazyThreadSafetyMode.ExecutionAndPublication
             Monitor.Enter(syncRoot);
             result = location;
             if (result is null)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,9 +9,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>, 
-        IHolder<byte[]>, IHolder<char[]>,
-        IHolder<ArraySegment<byte>>, IHolder<ArraySegment<char>>
+    internal sealed partial class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>, IReadOnlyViewProvider<char>, IReadOnlyViewProvider<byte>
     {
         private static readonly EmptyString _instance = new EmptyString();
 
@@ -92,22 +90,8 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<byte>.GetPinnedLength() => 0;
 
-        byte[] IHolder<byte[]>.Value => Array.Empty<byte>();
+        ReadOnlyView<char> IReadOnlyViewProvider<char>.CreateView() => ReadOnlyView<char>.Empty;
 
-        char[] IHolder<char[]>.Value => Array.Empty<char>();
-
-        ArraySegment<byte> IHolder<ArraySegment<byte>>.Value => GetEmptySegment<byte>();
-
-        ArraySegment<char> IHolder<ArraySegment<char>>.Value => GetEmptySegment<char>();
-
-        [Inline(InlineBehavior.Remove)]
-        private static ArraySegment<T> GetEmptySegment<T>()
-        {
-#if NET8_0_OR_GREATER
-            return ArraySegment<T>.Empty;
-#else
-            return new ArraySegment<T>(Array.Empty<T>(), 0, 0);
-#endif
-        }
+        ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView() => ReadOnlyView<byte>.Empty;
     }
 }

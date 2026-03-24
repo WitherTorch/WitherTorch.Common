@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -6,8 +6,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Latin1String : AsciiLikeString, IPinnableReference<byte>,
-        IHolder<ArraySegment<byte>>
+    internal sealed partial class Latin1String : AsciiLikeString, IPinnableReference<byte>
     {
         public override StringType StringType => StringType.Latin1;
 

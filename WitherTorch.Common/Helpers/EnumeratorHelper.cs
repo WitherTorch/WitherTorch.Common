@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
@@ -10,5 +10,8 @@ namespace WitherTorch.Common.Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerator<T> CreateOneItemEnumerator<T>(T item) => new OneItemEnumerator<T>(item);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerator<T> CreateArrayEnumerator<T>(T[] array) => new ArrayEnumerator<T>(array);
     }
 }

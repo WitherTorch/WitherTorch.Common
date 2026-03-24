@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf16String : StringBase, IPinnableReference<char>,
-        IHolder<string>
+    internal sealed partial class Utf16String : StringBase, IPinnableReference<char>, IReadOnlyViewProvider<char>
     {
         private readonly string _value;
 
@@ -86,6 +86,6 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<char>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length);
 
-        string IHolder<string>.Value => _value;
+        ReadOnlyView<char> IReadOnlyViewProvider<char>.CreateView() => ReadOnlyView.FromString(_value);
     }
 }

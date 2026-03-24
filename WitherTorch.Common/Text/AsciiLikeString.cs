@@ -1,15 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal abstract partial class AsciiLikeString : StringBase, IPinnableReference<byte>,
-        IHolder<ArraySegment<byte>>
+    internal abstract partial class AsciiLikeString : StringBase, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
     {
         protected static readonly nuint MaxStringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
 
@@ -65,7 +65,7 @@ namespace WitherTorch.Common.Text
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte[] GetInternalRepresentation() => _value;
 
-        ArraySegment<byte> IHolder<ArraySegment<byte>>.Value => new ArraySegment<byte>(_value, 0, _length);
+        ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView() => ReadOnlyView.FromArray(_value).Slice(0, _length);
 
         ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -8,8 +8,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>,
-        IHolder<ArraySegment<byte>>
+    internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
     {
         private static readonly nuint MaxUtf8StringBufferSize = unchecked((nuint)Limits.MaxArrayLength - 1);
         private static readonly nuint Utf16CompressionLengthLimit = unchecked((nuint)Limits.MaxArrayLength / 2 - 1);
@@ -131,6 +130,6 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length - 1);
 
-        ArraySegment<byte> IHolder<ArraySegment<byte>>.Value => new ArraySegment<byte>(_value, 0, _value.Length - 1);
+        ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView() => ReadOnlyView.FromArray(_value).Slice(0, _value.Length - 1);
     }
 }
