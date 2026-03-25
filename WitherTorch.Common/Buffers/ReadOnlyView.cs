@@ -121,8 +121,16 @@ namespace WitherTorch.Common.Buffers
 
         public override string? ToString()
         {
-            if (typeof(T) == typeof(char) && _source is string str)
-                return str.Substring(_startIndex, _count);
+            if (typeof(T) == typeof(char))
+            {
+                object? source = _source;
+                if (source is char[] array)
+                    return new string(array, _startIndex, _count);
+                else if (source is string str)
+                    return str.Substring(_startIndex, _count);
+                else
+                    return string.Empty;
+            }
             return base.ToString();
         }
     }
