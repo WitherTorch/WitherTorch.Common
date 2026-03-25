@@ -32,10 +32,10 @@ namespace WitherTorch.Common.Text
             return _original.Contains(value, _startIndex + startIndex, count);
         }
 
-        public bool Contains(StringBase value)
+        public bool Contains(StringWrapper value)
             => _original.Contains(value, _startIndex, _length);
 
-        public bool Contains(StringBase value, int startIndex, int count)
+        public bool Contains(StringWrapper value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -65,7 +65,7 @@ namespace WitherTorch.Common.Text
             return _original.PartiallyEquals(value, _startIndex + length - valueLength);
         }
 
-        public bool EndsWith(StringBase value)
+        public bool EndsWith(StringWrapper value)
         {
             int length = _length;
             int valueLength = value.Length;
@@ -114,14 +114,14 @@ namespace WitherTorch.Common.Text
             return result < 0 ? -1 : result - offset;
         }
 
-        public int IndexOf(StringBase value)
+        public int IndexOf(StringWrapper value)
         {
             int startIndex = _startIndex;
             int result = _original.IndexOf(value, startIndex, _length);
             return result < 0 ? -1 : result - startIndex;
         }
 
-        public int IndexOf(StringBase value, int startIndex, int count)
+        public int IndexOf(StringWrapper value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -152,14 +152,14 @@ namespace WitherTorch.Common.Text
             return _original.PartiallyEquals(other, _startIndex + startIndex, count);
         }
 
-        public bool PartiallyEquals(StringBase other, int startIndex)
+        public bool PartiallyEquals(StringWrapper other, int startIndex)
         {
             if (startIndex < 0 || startIndex >= _length)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
             return _original.PartiallyEquals(other, _startIndex + startIndex, _length);
         }
 
-        public bool PartiallyEquals(StringBase other, int startIndex, int count)
+        public bool PartiallyEquals(StringWrapper other, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -217,7 +217,7 @@ namespace WitherTorch.Common.Text
             return _original.PartiallyEquals(value, _startIndex);
         }
 
-        public bool StartsWith(StringBase value)
+        public bool StartsWith(StringWrapper value)
         {
             int length = _length;
             int valueLength = value.Length;

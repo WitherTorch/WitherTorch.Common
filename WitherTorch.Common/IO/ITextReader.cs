@@ -19,12 +19,12 @@ namespace WitherTorch.Common.IO
         Task<string?> ReadLineAsync();
         Task<string> ReadToEndAsync();
 
-        // StringBase methods
-        StringBase? ReadLineAsStringBase();
-        StringBase ReadToEndAsStringBase();
+        // StringWrapper methods
+        StringWrapper? ReadLineAsStringWrapper();
+        StringWrapper ReadToEndAsStringWrapper();
 
-        // StringBase methods (async version)
-        Task<StringBase?> ReadLineAsStringBaseAsync();
-        Task<StringBase> ReadToEndAsStringBaseAsync();
+        // StringWrapper methods (async version)
+        Task<StringWrapper?> ReadLineAsStringWrapperAsync();
+        Task<StringWrapper> ReadToEndAsStringWrapperAsync();
     }
 }

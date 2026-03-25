@@ -9,7 +9,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class EmptyString : StringBase, IPinnableReference<char>, IPinnableReference<byte>, IReadOnlyViewProvider<char>, IReadOnlyViewProvider<byte>
+    internal sealed partial class EmptyString : StringWrapper, IPinnableReference<char>, IPinnableReference<byte>, IReadOnlyViewProvider<char>, IReadOnlyViewProvider<byte>
     {
         private static readonly EmptyString _instance = new EmptyString();
 
@@ -30,23 +30,23 @@ namespace WitherTorch.Common.Text
 
         protected override bool PartiallyEqualsCore(string other, nuint startIndex, nuint count) => false;
 
-        protected override bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count) => false;
+        protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count) => false;
 
         protected override int IndexOfCore(char value, nuint startIndex, nuint count) => -1;
 
         protected override int IndexOfCore(string value, nuint valueLength, nuint startIndex, nuint count) => -1;
 
-        protected override int IndexOfCore(StringBase value, nuint valueLength, nuint startIndex, nuint count) => -1;
+        protected override int IndexOfCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count) => -1;
 
         protected override bool ContainsCore(char value, nuint startIndex, nuint count) => false;
 
         protected override bool ContainsCore(string value, nuint valueLength, nuint startIndex, nuint count) => false;
 
-        protected override bool ContainsCore(StringBase value, nuint valueLength, nuint startIndex, nuint count) => false;
+        protected override bool ContainsCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count) => false;
 
-        protected internal override StringBase SubstringCore(nuint startIndex, nuint count) => this;
+        protected internal override StringWrapper SubstringCore(nuint startIndex, nuint count) => this;
 
-        protected override StringBase RemoveCore(nuint startIndex, nuint count) => this;
+        protected override StringWrapper RemoveCore(nuint startIndex, nuint count) => this;
 
         protected override nuint GetSplitCount(char separator, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
@@ -60,7 +60,7 @@ namespace WitherTorch.Common.Text
             return 1;
         }
 
-        protected override nuint GetSplitCount(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+        protected override nuint GetSplitCount(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
             rangeBuffer = null;
             return 1;
@@ -72,11 +72,11 @@ namespace WitherTorch.Common.Text
 
         protected override int CompareToCore(string other, nuint length) => 0;
 
-        protected override int CompareToCore(StringBase other, nuint length) => 0;
+        protected override int CompareToCore(StringWrapper other, nuint length) => 0;
 
         protected override bool EqualsCore(string other, nuint length) => true;
 
-        protected override bool EqualsCore(StringBase other, nuint length) => true;
+        protected override bool EqualsCore(StringWrapper other, nuint length) => true;
 
         public override char[] ToCharArray() => Array.Empty<char>();
 

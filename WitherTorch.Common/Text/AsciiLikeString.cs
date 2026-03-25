@@ -9,7 +9,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal abstract partial class AsciiLikeString : StringBase, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
+    internal abstract partial class AsciiLikeString : StringWrapper, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
     {
         protected static readonly nuint MaxStringLength = unchecked((nuint)Limits.MaxArrayLength - 1);
 

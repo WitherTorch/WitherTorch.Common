@@ -17,7 +17,7 @@ namespace WitherTorch.Common.Text
                 return ContainsCore(ptr, valueLength, startIndex, count);
         }
 
-        protected override bool ContainsCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected override bool ContainsCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
             => value switch
             {
                 Utf16String utf16 => ContainsCore(utf16, valueLength, startIndex, count),
@@ -37,7 +37,7 @@ namespace WitherTorch.Common.Text
                 return IndexOfCore(ptr, valueLength, startIndex, count);
         }
 
-        protected override int IndexOfCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected override int IndexOfCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
             => value switch
             {
                 Utf16String utf16 => IndexOfCore(utf16, valueLength, startIndex, count),
@@ -56,7 +56,7 @@ namespace WitherTorch.Common.Text
                 return InternalSequenceHelper.Contains(source + startIndex, count, value, valueLength);
         }
 
-        private bool ContainsCore_Other(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        private bool ContainsCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(valueLength);
@@ -87,7 +87,7 @@ namespace WitherTorch.Common.Text
                     InternalSequenceHelper.PointerIndexOf(source + startIndex, count, value, valueLength), source);
         }
 
-        private int IndexOfCore_Other(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        private int IndexOfCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(valueLength);

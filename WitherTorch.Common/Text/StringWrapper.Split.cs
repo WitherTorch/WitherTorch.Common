@@ -10,11 +10,11 @@ using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Text
 {
-    partial class StringBase
+    partial class StringWrapper
     {
-        public StringBase[] Split(char separator) => Split(separator, StringSplitOptions.None);
+        public StringWrapper[] Split(char separator) => Split(separator, StringSplitOptions.None);
 
-        public StringBase[] Split(char separator, StringSplitOptions options)
+        public StringWrapper[] Split(char separator, StringSplitOptions options)
         {
             ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
             SplitRange[]? rangeBuffer = null;
@@ -32,13 +32,13 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        public StringBase[] Split(string separator) => Split(separator, StringSplitOptions.None);
+        public StringWrapper[] Split(string separator) => Split(separator, StringSplitOptions.None);
 
-        public StringBase[] Split(string separator, StringSplitOptions options)
+        public StringWrapper[] Split(string separator, StringSplitOptions options)
         {
             int separatorLength = separator.Length;
             if (separatorLength <= 0)
-                return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringBase>() : [this];
+                return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringWrapper>() : [this];
 
             ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
             SplitRange[]? rangeBuffer = null;
@@ -56,13 +56,13 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        public StringBase[] Split(StringBase separator) => Split(separator, StringSplitOptions.None);
+        public StringWrapper[] Split(StringWrapper separator) => Split(separator, StringSplitOptions.None);
 
-        public StringBase[] Split(StringBase separator, StringSplitOptions options)
+        public StringWrapper[] Split(StringWrapper separator, StringSplitOptions options)
         {
             int separatorLength = separator.Length;
             if (separatorLength <= 0)
-                return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringBase>() : [this];
+                return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringWrapper>() : [this];
 
             ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
             SplitRange[]? rangeBuffer = null;
@@ -80,12 +80,12 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private StringBase[] SplitCore(SplitRange[]? rangeBuffer, nuint count)
+        private StringWrapper[] SplitCore(SplitRange[]? rangeBuffer, nuint count)
         {
             if (count < 2 || rangeBuffer is null)
                 return [this];
 
-            StringBase[] result = new StringBase[count];
+            StringWrapper[] result = new StringWrapper[count];
             for (nuint i = 0; i < count; i++)
             {
                 SplitRange range = rangeBuffer[i];
@@ -94,23 +94,23 @@ namespace WitherTorch.Common.Text
             return result;
         }
 
-        private StringBase[] SplitCore_RemoveEmptyEntries(SplitRange[]? rangeBuffer, nuint count)
+        private StringWrapper[] SplitCore_RemoveEmptyEntries(SplitRange[]? rangeBuffer, nuint count)
         {
             if (count < 2 || rangeBuffer is null)
             {
                 if (Length <= 0)
-                    return Array.Empty<StringBase>();
+                    return Array.Empty<StringWrapper>();
                 return [this];
             }
-            ArrayPool<StringBase?> pool = ArrayPool<StringBase?>.Shared;
-            StringBase?[] buffer = pool.Rent(count);
+            ArrayPool<StringWrapper?> pool = ArrayPool<StringWrapper?>.Shared;
+            StringWrapper?[] buffer = pool.Rent(count);
             nuint resultLength = 0;
             try
             {
                 for (nuint i = 0; i < count; i++)
                 {
                     SplitRange range = rangeBuffer[i];
-                    StringBase slicedString = SubstringCore(range.StartIndex, range.Count);
+                    StringWrapper slicedString = SubstringCore(range.StartIndex, range.Count);
                     if (IsNullOrEmpty(slicedString))
                     {
                         buffer[i] = null;
@@ -120,11 +120,11 @@ namespace WitherTorch.Common.Text
                     resultLength++;
                 }
                 if (count == 0)
-                    return Array.Empty<StringBase>();
-                StringBase[] result = new StringBase[resultLength];
+                    return Array.Empty<StringWrapper>();
+                StringWrapper[] result = new StringWrapper[resultLength];
                 for (nuint i = 0, j = 0; i < count && j < resultLength; i++)
                 {
-                    StringBase? item = buffer[i];
+                    StringWrapper? item = buffer[i];
                     if (item is null)
                         continue;
                     result[j++] = item;
@@ -168,7 +168,7 @@ namespace WitherTorch.Common.Text
                 return GetSplitCount_Fallback(ptr, separatorLength, pool, out rangeBuffer);
         }
 
-        protected virtual unsafe nuint GetSplitCount(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+        protected virtual unsafe nuint GetSplitCount(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
             if (separatorLength == 1)
                 return GetSplitCount(separator.GetCharAt(0), pool, out rangeBuffer);
@@ -205,7 +205,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private unsafe nuint GetSplitCount_Fallback(StringBase separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+        private unsafe nuint GetSplitCount_Fallback(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
             ArrayPool<char> bufferPool = ArrayPool<char>.Shared;
             char[] buffer = bufferPool.Rent(separatorLength);

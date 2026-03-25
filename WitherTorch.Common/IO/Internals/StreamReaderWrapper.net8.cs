@@ -27,17 +27,17 @@ namespace WitherTorch.Common.IO.Internals
         public ValueTask<string?> ReadLineAsync(CancellationToken token)
             => _reader.ReadLineAsync(token);
 
-        public async ValueTask<StringBase?> ReadLineAsStringBaseAsync(CancellationToken token)
+        public async ValueTask<StringWrapper?> ReadLineAsStringWrapperAsync(CancellationToken token)
         {
             string? result = await _reader.ReadLineAsync(token);
-            return (result is null || token.IsCancellationRequested) ? null : StringBase.Create(result, StringCreateOptions.None);
+            return (result is null || token.IsCancellationRequested) ? null : StringWrapper.Create(result, StringCreateOptions.None);
         }
 
         public async ValueTask<string> ReadToEndAsync(CancellationToken token)
             => await _reader.ReadToEndAsync(token);
 
-        public async ValueTask<StringBase> ReadToEndAsStringBaseAsync(CancellationToken token)
-            => StringBase.Create(await _reader.ReadToEndAsync(token), StringCreateOptions.None);
+        public async ValueTask<StringWrapper> ReadToEndAsStringWrapperAsync(CancellationToken token)
+            => StringWrapper.Create(await _reader.ReadToEndAsync(token), StringCreateOptions.None);
     }
 }
 #endif

@@ -32,12 +32,12 @@ namespace WitherTorch.Common.IO.Internals
             return ReadLine();
         }
 
-        public async ValueTask<StringBase?> ReadLineAsStringBaseAsync(CancellationToken token)
+        public async ValueTask<StringWrapper?> ReadLineAsStringWrapperAsync(CancellationToken token)
         {
             await Task.Yield();
             if (token.IsCancellationRequested)
                 return null;
-            return ReadLineAsStringBase();
+            return ReadLineAsStringWrapper();
         }
 
         public async ValueTask<string> ReadToEndAsync(CancellationToken token)
@@ -48,12 +48,12 @@ namespace WitherTorch.Common.IO.Internals
             return ReadToEnd();
         }
 
-        public async ValueTask<StringBase> ReadToEndAsStringBaseAsync(CancellationToken token)
+        public async ValueTask<StringWrapper> ReadToEndAsStringWrapperAsync(CancellationToken token)
         {
             await Task.Yield();
             if (token.IsCancellationRequested)
-                return StringBase.Empty;
-            return ReadToEndAsStringBase();
+                return StringWrapper.Empty;
+            return ReadToEndAsStringWrapper();
         }
     }
 }

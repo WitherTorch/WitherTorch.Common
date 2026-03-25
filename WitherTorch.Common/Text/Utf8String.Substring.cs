@@ -5,7 +5,7 @@ namespace WitherTorch.Common.Text
 {
     partial class Utf8String
     {
-        protected internal unsafe override StringBase SubstringCore(nuint startIndex, nuint count)
+        protected internal unsafe override StringWrapper SubstringCore(nuint startIndex, nuint count)
         {
             if (count > Utf16CompressionLengthLimit)
                 goto SlowRoute;
@@ -49,7 +49,7 @@ namespace WitherTorch.Common.Text
             return SubstringCoreSlow(startIndex, count);
         }
 
-        protected unsafe override StringBase RemoveCore(nuint startIndex, nuint count)
+        protected unsafe override StringWrapper RemoveCore(nuint startIndex, nuint count)
         {
             nuint length = unchecked((nuint)_length);
             nuint endIndex = startIndex + count;

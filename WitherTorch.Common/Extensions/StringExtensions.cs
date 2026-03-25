@@ -86,12 +86,12 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static StringBase ToStringBase(this string _this)
-            => StringBase.Create(_this);
+        public static StringWrapper ToStringWrapper(this string _this)
+            => StringWrapper.Create(_this);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static StringBase ToStringBase(this string _this, StringCreateOptions options)
-            => StringBase.Create(_this, options);
+        public static StringWrapper ToStringWrapper(this string _this, StringCreateOptions options)
+            => StringWrapper.Create(_this, options);
 
         public static string[] ToUpperAscii(this string[] array)
         {

@@ -10,38 +10,38 @@ namespace WitherTorch.Common.Extensions
     public static class TextReaderExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StringBase? ReadLineAsStringBase(this TextReader _this)
+        public static StringWrapper? ReadLineAsStringWrapper(this TextReader _this)
         {
             string? result = _this.ReadLine();
-            return result is null ? null : StringBase.Create(result, StringCreateOptions.None);
+            return result is null ? null : StringWrapper.Create(result, StringCreateOptions.None);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task<StringBase?> ReadLineAsStringBaseAsync(this TextReader _this)
+        public static async Task<StringWrapper?> ReadLineAsStringWrapperAsync(this TextReader _this)
         {
             string? result = await _this.ReadLineAsync();
-            return result is null ? null : StringBase.Create(result, StringCreateOptions.None);
+            return result is null ? null : StringWrapper.Create(result, StringCreateOptions.None);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StringBase ReadToEndAsStringBase(this TextReader _this)
-            => StringBase.Create(_this.ReadToEnd(), StringCreateOptions.None);
+        public static StringWrapper ReadToEndAsStringWrapper(this TextReader _this)
+            => StringWrapper.Create(_this.ReadToEnd(), StringCreateOptions.None);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task<StringBase> ReadToEndAsStringBaseAsync(this TextReader _this) 
-            => StringBase.Create(await _this.ReadToEndAsync(), StringCreateOptions.None);
+        public static async Task<StringWrapper> ReadToEndAsStringWrapperAsync(this TextReader _this) 
+            => StringWrapper.Create(await _this.ReadToEndAsync(), StringCreateOptions.None);
 
 #if NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task<StringBase?> ReadLineAsStringBaseAsync(this TextReader _this, System.Threading.CancellationToken token)
+        public static async Task<StringWrapper?> ReadLineAsStringWrapperAsync(this TextReader _this, System.Threading.CancellationToken token)
         {
             string? result = await _this.ReadLineAsync(token);
-            return (result is null || token.IsCancellationRequested) ? null : StringBase.Create(result, StringCreateOptions.None);
+            return (result is null || token.IsCancellationRequested) ? null : StringWrapper.Create(result, StringCreateOptions.None);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static async Task<StringBase> ReadToEndAsStringBaseAsync(this TextReader _this, System.Threading.CancellationToken token)
-            => StringBase.Create(await _this.ReadToEndAsync(token), StringCreateOptions.None);
+        public static async Task<StringWrapper> ReadToEndAsStringWrapperAsync(this TextReader _this, System.Threading.CancellationToken token)
+            => StringWrapper.Create(await _this.ReadToEndAsync(token), StringCreateOptions.None);
 #endif
     }
 }

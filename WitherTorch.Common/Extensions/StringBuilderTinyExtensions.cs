@@ -44,7 +44,7 @@ namespace WitherTorch.Common.Extensions
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe void AppendFormat<T>(this StringBuilderTiny _this, StringBase format, params ReadOnlySpan<T> args) where T : unmanaged
+        public static unsafe void AppendFormat<T>(this StringBuilderTiny _this, StringWrapper format, params ReadOnlySpan<T> args) where T : unmanaged
         {
             fixed (T* ptr = args)
                 _this.AppendFormatCore(format, ptr, args.Length);

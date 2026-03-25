@@ -2,9 +2,9 @@
 
 namespace WitherTorch.Common.Text
 {
-    partial class StringBase
+    partial class StringWrapper
     {
-        public StringBase Substring(int startIndex)
+        public StringWrapper Substring(int startIndex)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Text
             return unchecked(SubstringCore((nuint)startIndex, (nuint)(length - startIndex)));
         }
 
-        public StringBase Substring(int startIndex, int count)
+        public StringWrapper Substring(int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -38,9 +38,9 @@ namespace WitherTorch.Common.Text
             return unchecked(SubstringCore((nuint)startIndex, (nuint)count));
         }
 
-        protected internal abstract StringBase SubstringCore(nuint startIndex, nuint count);
+        protected internal abstract StringWrapper SubstringCore(nuint startIndex, nuint count);
 
-        public StringBase Remove(int startIndex)
+        public StringWrapper Remove(int startIndex)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -54,7 +54,7 @@ namespace WitherTorch.Common.Text
             return RemoveCore((nuint)startIndex, (nuint)(length - startIndex));
         }
 
-        public StringBase Remove(int startIndex, int count)
+        public StringWrapper Remove(int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -72,6 +72,6 @@ namespace WitherTorch.Common.Text
             return RemoveCore((nuint)startIndex, (nuint)count);
         }
 
-        protected abstract StringBase RemoveCore(nuint startIndex, nuint count);
+        protected abstract StringWrapper RemoveCore(nuint startIndex, nuint count);
     }
 }

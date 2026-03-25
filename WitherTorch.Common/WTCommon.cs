@@ -25,7 +25,7 @@ namespace WitherTorch.Common
         }
 
         /// <summary>
-        /// 是否讓 <see cref="Text.StringBase.Create(string)"/> 和 <see cref="Text.StringBase.Create(char*)"/> 在輸入字元皆為 ASCII 字元時壓縮該字串
+        /// 是否讓 <see cref="Text.StringWrapper.Create(string)"/> 和 <see cref="Text.StringWrapper.Create(char*)"/> 在輸入字元皆為 ASCII 字元時壓縮該字串
         /// </summary>
         public static bool AllowAsciiStringCompression
         {
@@ -42,7 +42,7 @@ namespace WitherTorch.Common
         }
 
         /// <summary>
-        /// 是否讓 <see cref="Text.StringBase.Create(string)"/> 和 <see cref="Text.StringBase.Create(char*)"/> 在輸入字元皆為 Latin-1 字元時壓縮該字串
+        /// 是否讓 <see cref="Text.StringWrapper.Create(string)"/> 和 <see cref="Text.StringWrapper.Create(char*)"/> 在輸入字元皆為 Latin-1 字元時壓縮該字串
         /// </summary>
         public static bool AllowLatin1StringCompression
         {
@@ -59,7 +59,7 @@ namespace WitherTorch.Common
         }
 
         /// <summary>
-        /// 是否讓 <see cref="Text.StringBase.Create(string)"/> 和 <see cref="Text.StringBase.Create(char*)"/> UTF-8 編碼長度更優時壓縮該字串
+        /// 是否讓 <see cref="Text.StringWrapper.Create(string)"/> 和 <see cref="Text.StringWrapper.Create(char*)"/> UTF-8 編碼長度更優時壓縮該字串
         /// </summary>
         public static bool AllowUtf8StringCompression
         {

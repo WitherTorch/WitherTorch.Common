@@ -9,16 +9,16 @@ namespace WitherTorch.Common.Text
 {
     public readonly partial struct StringSlice
     {
-        public static readonly StringSlice Empty = new StringSlice(StringBase.Empty, 0, 0);
+        public static readonly StringSlice Empty = new StringSlice(StringWrapper.Empty, 0, 0);
 
-        private readonly StringBase _original;
+        private readonly StringWrapper _original;
         private readonly int _startIndex, _length;
 
-        public StringBase Original => _original ?? StringBase.Empty;
+        public StringWrapper Original => _original ?? StringWrapper.Empty;
         public int StartIndex => _startIndex;
         public int Length => _length;
 
-        internal StringSlice(StringBase original, int startIndex, int length)
+        internal StringSlice(StringWrapper original, int startIndex, int length)
         {
             _original = original;
             _startIndex = startIndex;
@@ -37,7 +37,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        public static StringSlice Create(StringBase original)
+        public static StringSlice Create(StringWrapper original)
         {
             int length = original.Length;
             if (length <= 0)
@@ -45,7 +45,7 @@ namespace WitherTorch.Common.Text
             return new StringSlice(original, 0, length);
         }
 
-        public static StringSlice Create(StringBase original, int startIndex, int length)
+        public static StringSlice Create(StringWrapper original, int startIndex, int length)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -114,14 +114,14 @@ namespace WitherTorch.Common.Text
 
         public override bool Equals(object? obj) => obj is StringSlice other && Equals(other);
 
-        public StringBase ToStringBase() => _original.SubstringCore((nuint)_startIndex, (nuint)_length);
+        public StringWrapper ToStringWrapper() => _original.SubstringCore((nuint)_startIndex, (nuint)_length);
 
         public unsafe char[] ToCharArray()
         {
             int length = _length;
             if (length <= 0)
                 return Array.Empty<char>();
-            StringBase original = _original;
+            StringWrapper original = _original;
             int startIndex = _startIndex;
             if (startIndex == 0 && length == original.Length)
                 return original.ToCharArray();
@@ -137,7 +137,7 @@ namespace WitherTorch.Common.Text
             int length = _length;
             if (length <= 0)
                 return string.Empty;
-            StringBase original = _original;
+            StringWrapper original = _original;
             int startIndex = _startIndex;
             if (startIndex == 0 && length == original.Length)
                 return original.ToString();

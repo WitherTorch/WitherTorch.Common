@@ -2,7 +2,7 @@
 
 namespace WitherTorch.Common.Text
 {
-    partial class StringBase
+    partial class StringWrapper
     {
         public StringSlice Slice(int startIndex)
         {

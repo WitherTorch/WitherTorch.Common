@@ -220,7 +220,7 @@ namespace WitherTorch.Common.IO.Internals
         }
 
         [LocalsInit(false)]
-        protected override StringBase? ReadLineAsStringBaseCore(byte[] buffer)
+        protected override StringWrapper? ReadLineAsStringWrapperCore(byte[] buffer)
         {
             bool isEndOfStream = CheckEndOfStream(fullyCheck: false) && base.CheckEndOfStreamCore();
 
@@ -230,15 +230,15 @@ namespace WitherTorch.Common.IO.Internals
                 _bufferingCharacter = null;
                 char c = bufferingCharacter.Value;
                 if (c == '\n')
-                    return StringBase.Empty;
+                    return StringWrapper.Empty;
                 if (isEndOfStream)
                 {
                     byte* tempBuffer = stackalloc byte[3];
                     byte* tempBufferEnd = tempBuffer + 3;
                     byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, bufferingCharacter.Value);
                     if (tempBufferLimit > tempBuffer)
-                        return StringBase.CreateUtf8String(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
-                    return StringBase.Empty;
+                        return StringWrapper.CreateUtf8String(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
+                    return StringWrapper.Empty;
                 }
             }
 
@@ -261,9 +261,9 @@ namespace WitherTorch.Common.IO.Internals
             {
                 (buffer, int count) = list;
                 if (count <= 0)
-                    return isEndOfStream ? null : StringBase.Empty;
+                    return isEndOfStream ? null : StringWrapper.Empty;
                 fixed (byte* ptr = buffer)
-                    return StringBase.CreateUtf8String(ptr, 0u, unchecked((nuint)count));
+                    return StringWrapper.CreateUtf8String(ptr, 0u, unchecked((nuint)count));
             }
             finally
             {
@@ -272,7 +272,7 @@ namespace WitherTorch.Common.IO.Internals
         }
 
         [LocalsInit(false)]
-        protected override StringBase ReadToEndAsStringBaseCore(byte[] buffer)
+        protected override StringWrapper ReadToEndAsStringWrapperCore(byte[] buffer)
         {
             bool isEndOfStream = CheckEndOfStream(fullyCheck: false) && base.CheckEndOfStreamCore();
             char? bufferingCharacter = _bufferingCharacter;
@@ -285,13 +285,13 @@ namespace WitherTorch.Common.IO.Internals
                     byte* tempBufferEnd = tempBuffer + 3;
                     byte* tempBufferLimit = Utf8EncodingHelper.TryWriteUtf8Character(tempBuffer, tempBufferEnd, bufferingCharacter.Value);
                     if (tempBufferLimit > tempBuffer)
-                        return StringBase.CreateUtf8String(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
-                    return StringBase.Empty;
+                        return StringWrapper.CreateUtf8String(tempBuffer, 0, unchecked((nuint)(tempBufferLimit - tempBuffer)));
+                    return StringWrapper.Empty;
                 }
             }
 
             if (isEndOfStream)
-                return StringBase.Empty;
+                return StringWrapper.Empty;
 
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
@@ -309,9 +309,9 @@ namespace WitherTorch.Common.IO.Internals
             {
                 (buffer, int count) = list;
                 if (count <= 0)
-                    return StringBase.Empty;
+                    return StringWrapper.Empty;
                 fixed (byte* ptr = buffer)
-                    return StringBase.CreateUtf8String(ptr, 0u, unchecked((nuint)count));
+                    return StringWrapper.CreateUtf8String(ptr, 0u, unchecked((nuint)count));
             }
             finally
             {

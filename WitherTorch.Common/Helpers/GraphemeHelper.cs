@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Helpers
                 return GetGraphemeIndicesCore(ptr, length);
         }
 
-        public static unsafe int[] GetGraphemeIndices(StringBase str)
+        public static unsafe int[] GetGraphemeIndices(StringWrapper str)
         {
             int length = str.Length;
             if (length <= 0)

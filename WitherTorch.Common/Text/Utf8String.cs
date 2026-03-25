@@ -8,7 +8,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf8String : StringBase, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
+    internal sealed partial class Utf8String : StringWrapper, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
     {
         private static readonly nuint MaxUtf8StringBufferSize = unchecked((nuint)Limits.MaxArrayLength - 1);
         private static readonly nuint Utf16CompressionLengthLimit = unchecked((nuint)Limits.MaxArrayLength / 2 - 1);
@@ -26,7 +26,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(byte* source, nuint length)
+        public static unsafe StringWrapper Create(byte* source, nuint length)
         {
             if (length > MaxUtf8StringBufferSize)
                 throw new OutOfMemoryException();
@@ -52,7 +52,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringBase? result)
+        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringWrapper? result)
         {
             if ((options & StringCreateOptions.UseAsciiCompression) != StringCreateOptions.UseAsciiCompression &&
                 !SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))
@@ -67,7 +67,7 @@ namespace WitherTorch.Common.Text
             return TryCreateCore(source, length, tryEncodeAsPossible, out result);
         }
 
-        private static unsafe bool TryCreateCore(char* source, nuint length, bool tryEncodeAsPossible, [NotNullWhen(true)] out StringBase? result)
+        private static unsafe bool TryCreateCore(char* source, nuint length, bool tryEncodeAsPossible, [NotNullWhen(true)] out StringWrapper? result)
         {
             nuint bufferLength;
 

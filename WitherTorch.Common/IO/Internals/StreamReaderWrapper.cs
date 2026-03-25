@@ -43,27 +43,27 @@ namespace WitherTorch.Common.IO.Internals
 
         public Task<string?> ReadLineAsync() => _reader.ReadLineAsync();
 
-        public StringBase? ReadLineAsStringBase()
+        public StringWrapper? ReadLineAsStringWrapper()
         {
             string? result = _reader.ReadLine();
-            return result is null ? null : StringBase.Create(result, StringCreateOptions.None);
+            return result is null ? null : StringWrapper.Create(result, StringCreateOptions.None);
         }
 
-        public async Task<StringBase?> ReadLineAsStringBaseAsync()
+        public async Task<StringWrapper?> ReadLineAsStringWrapperAsync()
         {
             string? result = await _reader.ReadLineAsync();
-            return result is null ? null : StringBase.Create(result, StringCreateOptions.None);
+            return result is null ? null : StringWrapper.Create(result, StringCreateOptions.None);
         }
 
         public string ReadToEnd() => _reader.ReadToEnd();
 
         public Task<string> ReadToEndAsync() => _reader.ReadToEndAsync();
 
-        public StringBase ReadToEndAsStringBase()
-            => StringBase.Create(_reader.ReadToEnd(), StringCreateOptions.None);
+        public StringWrapper ReadToEndAsStringWrapper()
+            => StringWrapper.Create(_reader.ReadToEnd(), StringCreateOptions.None);
 
-        public async Task<StringBase> ReadToEndAsStringBaseAsync()
-            => StringBase.Create(await _reader.ReadToEndAsync(), StringCreateOptions.None);
+        public async Task<StringWrapper> ReadToEndAsStringWrapperAsync()
+            => StringWrapper.Create(await _reader.ReadToEndAsync(), StringCreateOptions.None);
 
         public void Dispose() => _reader.Dispose();
     }

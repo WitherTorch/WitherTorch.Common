@@ -14,7 +14,7 @@ namespace WitherTorch.Common.Text
                 return PartiallyEqualsCore(ptr, startIndex, count);
         }
 
-        protected override bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
+        protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count)
             => other switch
             {
                 Utf8String utf8 => PartiallyEqualsCore(utf8, startIndex, count),
@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Text
                 return CompareToCore(ptr, length);
         }
 
-        protected override int CompareToCore(StringBase other, nuint length)
+        protected override int CompareToCore(StringWrapper other, nuint length)
             => other switch
             {
                 Utf8String utf8 => CompareToCore(utf8),
@@ -46,7 +46,7 @@ namespace WitherTorch.Common.Text
                 return EqualsCore(ptr, length);
         }
 
-        protected override bool EqualsCore(StringBase other, nuint length)
+        protected override bool EqualsCore(StringWrapper other, nuint length)
             => other switch
             {
                 Utf8String utf8 => EqualsCore(utf8, length),

@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Text
                 return ContainsCore(ptr, valueLength);
         }
 
-        protected override bool ContainsCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected override bool ContainsCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
             => value switch
             {
                 AsciiString ascii => ContainsCore(ascii, valueLength, startIndex, count),
@@ -77,7 +77,7 @@ namespace WitherTorch.Common.Text
                 return ContainsCore(ptr, valueLength);
         }
 
-        private unsafe bool ContainsCore_Other(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        private unsafe bool ContainsCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             if (startIndex > 0 || count < unchecked((nuint)_length))
                 return base.ContainsCore(value, valueLength, startIndex, count);

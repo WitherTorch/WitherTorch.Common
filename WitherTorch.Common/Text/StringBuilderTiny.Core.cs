@@ -36,7 +36,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AppendCore(StringBase str, nuint startIndex, nuint count)
+        private void AppendCore(StringWrapper str, nuint startIndex, nuint count)
         {
             StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
@@ -57,7 +57,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AppendCore(StringBuilder builder, StringBase str, nuint startIndex, nuint count)
+        private static void AppendCore(StringBuilder builder, StringWrapper str, nuint startIndex, nuint count)
         {
             if (str.StringType == StringType.Utf16)
                 builder.Append(str.ToString(), (int)startIndex, (int)count);
@@ -206,7 +206,7 @@ namespace WitherTorch.Common.Text
                 Append(format, lastPos, lastCount);
         }
 
-        private void AppendFormatCore<T>(StringBase format, in ParamArrayTiny<T> args)
+        private void AppendFormatCore<T>(StringWrapper format, in ParamArrayTiny<T> args)
         {
             int length = format.Length;
             int lastPos = 0, indexOfLeft, indexOfRight;
@@ -243,7 +243,7 @@ namespace WitherTorch.Common.Text
                 Append(format, lastPos, lastCount);
         }
 
-        private void AppendFormatCore<T, TList>(StringBase format, TList args) where TList : IEnumerable<T>
+        private void AppendFormatCore<T, TList>(StringWrapper format, TList args) where TList : IEnumerable<T>
         {
             int length = format.Length;
             int lastPos = 0, indexOfLeft, indexOfRight;
@@ -302,7 +302,7 @@ namespace WitherTorch.Common.Text
         }
 
         // 允許 Span<T> 參與高性能 AppendFormat 操作，並優化 unmanaged 類型在 AppendFormat 時的性能消耗
-        internal void AppendFormatCore<T>(StringBase format, T* args, int argc)
+        internal void AppendFormatCore<T>(StringWrapper format, T* args, int argc)
         {
             int length = format.Length;
             int lastPos = 0, indexOfLeft, indexOfRight;

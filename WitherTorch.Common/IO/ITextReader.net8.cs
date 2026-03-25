@@ -15,9 +15,9 @@ namespace WitherTorch.Common.IO
         ValueTask<string?> ReadLineAsync(CancellationToken token);
         ValueTask<string> ReadToEndAsync(CancellationToken token);
 
-        // StringBase methods (async version + cancellation token)
-        ValueTask<StringBase?> ReadLineAsStringBaseAsync(CancellationToken token);
-        ValueTask<StringBase> ReadToEndAsStringBaseAsync(CancellationToken token);
+        // StringWrapper methods (async version + cancellation token)
+        ValueTask<StringWrapper?> ReadLineAsStringWrapperAsync(CancellationToken token);
+        ValueTask<StringWrapper> ReadToEndAsStringWrapperAsync(CancellationToken token);
     }
 }
 #endif

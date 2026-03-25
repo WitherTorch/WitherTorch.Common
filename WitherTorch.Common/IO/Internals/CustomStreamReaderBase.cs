@@ -61,10 +61,10 @@ namespace WitherTorch.Common.IO.Internals
                 return ReadLineCore(_buffer);
         }
 
-        public StringBase? ReadLineAsStringBase()
+        public StringWrapper? ReadLineAsStringWrapper()
         {
             lock (_syncLock)
-                return ReadLineAsStringBaseCore(_buffer);
+                return ReadLineAsStringWrapperCore(_buffer);
         }
 
         public string ReadToEnd()
@@ -73,19 +73,19 @@ namespace WitherTorch.Common.IO.Internals
                 return ReadToEndCore(_buffer);
         }
 
-        public StringBase ReadToEndAsStringBase()
+        public StringWrapper ReadToEndAsStringWrapper()
         {
             lock (_syncLock)
-                return ReadToEndAsStringBaseCore(_buffer);
+                return ReadToEndAsStringWrapperCore(_buffer);
         }
 
         protected virtual bool CheckEndOfStreamCore() => _bufferPos >= _bufferLength;
 
         protected abstract char? ReadCharacterCore(byte[] buffer, bool movePosition);
         protected abstract string? ReadLineCore(byte[] buffer);
-        protected abstract StringBase? ReadLineAsStringBaseCore(byte[] buffer);
+        protected abstract StringWrapper? ReadLineAsStringWrapperCore(byte[] buffer);
         protected abstract string ReadToEndCore(byte[] buffer);
-        protected abstract StringBase ReadToEndAsStringBaseCore(byte[] buffer);
+        protected abstract StringWrapper ReadToEndAsStringWrapperCore(byte[] buffer);
 
         protected unsafe void ReadStream()
         {
@@ -141,16 +141,16 @@ namespace WitherTorch.Common.IO.Internals
             => Task<string?>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadLine(), this,
                 CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public Task<StringBase?> ReadLineAsStringBaseAsync() 
-            => Task<StringBase?>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadLineAsStringBase(), this,
+        public Task<StringWrapper?> ReadLineAsStringWrapperAsync() 
+            => Task<StringWrapper?>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadLineAsStringWrapper(), this,
                 CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
         public Task<string> ReadToEndAsync() 
             => Task<string>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadToEnd(), this,
                 CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
-        public Task<StringBase> ReadToEndAsStringBaseAsync()
-            => Task<StringBase>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadToEndAsStringBase(), this,
+        public Task<StringWrapper> ReadToEndAsStringWrapperAsync()
+            => Task<StringWrapper>.Factory.StartNew(state => ((CustomStreamReaderBase)state!).ReadToEndAsStringWrapper(), this,
                 CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
 
         ~CustomStreamReaderBase() => Dispose(disposing: false);

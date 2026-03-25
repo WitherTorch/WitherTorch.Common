@@ -9,7 +9,7 @@ namespace WitherTorch.Common.Text
     {
         public struct Enumerator : IEnumerator<char>
         {
-            private readonly StringBase _original;
+            private readonly StringWrapper _original;
             private readonly int _startIndex, _length;
 
             private bool _initialized;

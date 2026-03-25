@@ -7,7 +7,7 @@ using WitherTorch.Common.Extensions;
 
 namespace WitherTorch.Common.Text
 {
-    partial class StringBase
+    partial class StringWrapper
     {
         public bool StartsWith(char value)
         {
@@ -27,7 +27,7 @@ namespace WitherTorch.Common.Text
             return PartiallyEqualsCore(value, 0, unchecked((nuint)valueLength));
         }
 
-        public bool StartsWith(StringBase value)
+        public bool StartsWith(StringWrapper value)
         {
             int length = Length;
             int valueLength = value.Length;
@@ -57,7 +57,7 @@ namespace WitherTorch.Common.Text
             return unchecked(PartiallyEqualsCore(value, (nuint)(length - valueLength), (nuint)valueLength));
         }
 
-        public bool EndsWith(StringBase value)
+        public bool EndsWith(StringWrapper value)
         {
             int length = Length;
             int valueLength = value.Length;
@@ -96,7 +96,7 @@ namespace WitherTorch.Common.Text
             return unchecked(PartiallyEqualsCore(other, (nuint)startIndex, (nuint)count));
         }
 
-        public bool PartiallyEquals(StringBase other, int startIndex)
+        public bool PartiallyEquals(StringWrapper other, int startIndex)
         {
             int length = Length;
             int otherLength = other.Length;
@@ -111,7 +111,7 @@ namespace WitherTorch.Common.Text
             return unchecked(PartiallyEqualsCore(other, (nuint)startIndex, (nuint)otherLength));
         }
 
-        public bool PartiallyEquals(StringBase other, int startIndex, int count)
+        public bool PartiallyEquals(StringWrapper other, int startIndex, int count)
         {
             int length = Length;
             if (startIndex < 0)
@@ -138,7 +138,7 @@ namespace WitherTorch.Common.Text
             return CompareToCore(other, unchecked((nuint)length));
         }
 
-        public int CompareTo(StringBase? other)
+        public int CompareTo(StringWrapper? other)
         {
             if (other is null)
                 return 1;
@@ -160,7 +160,7 @@ namespace WitherTorch.Common.Text
             return Equals_Inline(other);
         }
 
-        public bool Equals(StringBase? other)
+        public bool Equals(StringWrapper? other)
         {
             if (other is null)
                 return false;
@@ -178,7 +178,7 @@ namespace WitherTorch.Common.Text
             return obj switch
             {
                 string other => Equals_Inline(other),
-                StringBase other => Equals_Inline(other),
+                StringWrapper other => Equals_Inline(other),
                 _ => false
             };
         }
@@ -195,7 +195,7 @@ namespace WitherTorch.Common.Text
         }
 
         [Inline(InlineBehavior.Remove)]
-        private bool Equals_Inline(StringBase other)
+        private bool Equals_Inline(StringWrapper other)
         {
             int length = Length;
             if (length != other.Length)
@@ -216,7 +216,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        protected virtual unsafe bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
+        protected virtual unsafe bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count)
         {
             if (count == 1)
                 return GetCharAt(startIndex) == other.GetCharAt(startIndex);
@@ -240,7 +240,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        protected virtual unsafe int CompareToCore(StringBase other, nuint length)
+        protected virtual unsafe int CompareToCore(StringWrapper other, nuint length)
         {
             if (length == 1)
                 return GetCharAt(0).CompareTo(other.GetCharAt(0));
@@ -265,7 +265,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        protected virtual unsafe bool EqualsCore(StringBase other, nuint length)
+        protected virtual unsafe bool EqualsCore(StringWrapper other, nuint length)
         {
             if (length == 1)
                 return GetCharAt(0) == other.GetCharAt(0);
@@ -284,7 +284,7 @@ namespace WitherTorch.Common.Text
             => this.SkipAndTake(startIndex, count).SequenceEqual(other, count);
 
         [Inline(InlineBehavior.Remove)]
-        private bool PartiallyEqualsCoreFallback(StringBase other, nuint startIndex, nuint count)
+        private bool PartiallyEqualsCoreFallback(StringWrapper other, nuint startIndex, nuint count)
             => this.SkipAndTake(startIndex, count).SequenceEqual(other);
 
         [Inline(InlineBehavior.Remove)]
@@ -292,7 +292,7 @@ namespace WitherTorch.Common.Text
             => this.SequenceCompare(other, length);
 
         [Inline(InlineBehavior.Remove)]
-        private int CompareToCoreFallback(StringBase other)
+        private int CompareToCoreFallback(StringWrapper other)
             => this.SequenceCompare(other);
 
         [Inline(InlineBehavior.Remove)]
@@ -300,7 +300,7 @@ namespace WitherTorch.Common.Text
             => this.SequenceEqual(other, length);
 
         [Inline(InlineBehavior.Remove)]
-        private bool EqualsCoreFallback(StringBase other)
+        private bool EqualsCoreFallback(StringWrapper other)
             => this.SequenceEqual(other);
     }
 }

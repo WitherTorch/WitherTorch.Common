@@ -7,7 +7,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    partial class StringBase
+    partial class StringWrapper
     {
 
         public bool Contains(char value)
@@ -64,7 +64,7 @@ namespace WitherTorch.Common.Text
             return unchecked(ContainsCore(value, (nuint)length, 0, (nuint)count));
         }
 
-        public bool Contains(StringBase value)
+        public bool Contains(StringWrapper value)
         {
             int length = Length;
             if (length <= 0)
@@ -77,7 +77,7 @@ namespace WitherTorch.Common.Text
             return unchecked(ContainsCore(value, (nuint)valueLength, 0, (nuint)length));
         }
 
-        public bool Contains(StringBase value, int startIndex, int count)
+        public bool Contains(StringWrapper value, int startIndex, int count)
         {
             int length = Length;
             if (startIndex < 0)
@@ -150,7 +150,7 @@ namespace WitherTorch.Common.Text
             return unchecked(IndexOfCore(value, (nuint)length, 0, (nuint)count));
         }
 
-        public int IndexOf(StringBase value)
+        public int IndexOf(StringWrapper value)
         {
             int length = Length;
             if (length <= 0)
@@ -163,7 +163,7 @@ namespace WitherTorch.Common.Text
             return unchecked(IndexOfCore(value, (nuint)valueLength, 0, (nuint)length));
         }
 
-        public int IndexOf(StringBase value, int startIndex, int count)
+        public int IndexOf(StringWrapper value, int startIndex, int count)
         {
             int length = Length;
             if (startIndex < 0)
@@ -194,7 +194,7 @@ namespace WitherTorch.Common.Text
                 return ContainsCore_Fallback(ptr, valueLength, startIndex, count);
         }
 
-        protected virtual unsafe bool ContainsCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected virtual unsafe bool ContainsCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             if (valueLength == 1)
                 return ContainsCore(value.GetCharAt(0), startIndex, count);
@@ -220,7 +220,7 @@ namespace WitherTorch.Common.Text
                 return IndexOfCore_Fallback(ptr, valueLength, startIndex, count);
         }
 
-        protected virtual unsafe int IndexOfCore(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        protected virtual unsafe int IndexOfCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             if (valueLength == 1)
                 return IndexOfCore(value.GetCharAt(0), startIndex, count);
@@ -252,7 +252,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private unsafe bool ContainsCore_Fallback(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        private unsafe bool ContainsCore_Fallback(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(count);
@@ -289,7 +289,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private unsafe int IndexOfCore_Fallback(StringBase value, nuint valueLength, nuint startIndex, nuint count)
+        private unsafe int IndexOfCore_Fallback(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(count);

@@ -120,7 +120,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(StringBase value)
+        public void Append(StringWrapper value)
         {
             int count = value.Length;
             if (count <= 0)
@@ -155,7 +155,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(StringBase value, int startIndex, int count)
+        public void Append(StringWrapper value, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -283,7 +283,7 @@ namespace WitherTorch.Common.Text
             => AppendFormatCore(format, new ParamArrayTiny<object>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(StringBase format, T arg0)
+        public void AppendFormat<T>(StringWrapper format, T arg0)
         {
             if (UnsafeHelper.IsUnmanagedType<T>())
             {
@@ -294,7 +294,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(StringBase format, T arg0, T arg1)
+        public void AppendFormat<T>(StringWrapper format, T arg0, T arg1)
         {
             ParamArrayTiny<T> array = new(arg0, arg1);
             if (UnsafeHelper.IsUnmanagedType<T>())
@@ -306,7 +306,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(StringBase format, T arg0, T arg1, T arg2)
+        public void AppendFormat<T>(StringWrapper format, T arg0, T arg1, T arg2)
         {
             ParamArrayTiny<T> array = new(arg0, arg1, arg2);
             if (UnsafeHelper.IsUnmanagedType<T>())
@@ -318,7 +318,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat<T>(StringBase format, params T[] args)
+        public void AppendFormat<T>(StringWrapper format, params T[] args)
         {
             if (UnsafeHelper.IsUnmanagedType<T>())
             {
@@ -330,7 +330,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormatWithArgs<T, TEnumerable>(StringBase format, TEnumerable args) where TEnumerable : IEnumerable<T>
+        public void AppendFormatWithArgs<T, TEnumerable>(StringWrapper format, TEnumerable args) where TEnumerable : IEnumerable<T>
         {
             if (typeof(TEnumerable) == typeof(T[]))
                 goto Array;
@@ -374,19 +374,19 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, object arg0)
+        public void AppendFormat(StringWrapper format, object arg0)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, object arg0, object arg1)
+        public void AppendFormat(StringWrapper format, object arg0, object arg1)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, object arg0, object arg1, object arg2)
+        public void AppendFormat(StringWrapper format, object arg0, object arg1, object arg2)
             => AppendFormatCore(format, new ParamArrayTiny<object>(arg0, arg1, arg2));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AppendFormat(StringBase format, params object[] args)
+        public void AppendFormat(StringWrapper format, params object[] args)
             => AppendFormatCore(format, new ParamArrayTiny<object>(args));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -461,7 +461,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Insert(int index, StringBase value)
+        public void Insert(int index, StringWrapper value)
         {
             int valueLength = value.Length;
             if (valueLength <= 0)
@@ -543,16 +543,16 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly StringBase ToStringBase()
+        public readonly StringWrapper ToStringWrapper()
         {
             StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
-                return StringBase.Create(builder.ToString());
+                return StringWrapper.Create(builder.ToString());
             char* start = _start;
             char* iterator = _iterator;
             if (start >= iterator)
-                return StringBase.Empty;
-            return StringBase.Create(start, 0, unchecked((nuint)(iterator - start)));
+                return StringWrapper.Empty;
+            return StringWrapper.Create(start, 0, unchecked((nuint)(iterator - start)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -4,7 +4,7 @@ namespace WitherTorch.Common.Text
 {
     partial class Latin1String
     {
-        protected internal override unsafe StringBase SubstringCore(nuint startIndex, nuint count)
+        protected internal override unsafe StringWrapper SubstringCore(nuint startIndex, nuint count)
         {
             byte[] buffer = new byte[count + 1];
             fixed (byte* ptrSource = _value, ptrBuffer = buffer)
@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Text
             return new Latin1String(buffer);
         }
 
-        protected override unsafe StringBase RemoveCore(nuint startIndex, nuint count)
+        protected override unsafe StringWrapper RemoveCore(nuint startIndex, nuint count)
         {
             nuint length = unchecked((nuint)_length);
             nuint endIndex = startIndex + count;

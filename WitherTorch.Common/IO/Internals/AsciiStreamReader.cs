@@ -148,7 +148,7 @@ namespace WitherTorch.Common.IO.Internals
             return builder.ToString();
         }
 
-        protected override unsafe StringBase? ReadLineAsStringBaseCore(byte[] buffer)
+        protected override unsafe StringWrapper? ReadLineAsStringWrapperCore(byte[] buffer)
         {
             if (CheckEndOfStream(fullyCheck: true))
                 return null;
@@ -160,11 +160,11 @@ namespace WitherTorch.Common.IO.Internals
             {
                 (buffer, int count) = list;
                 if (count <= 0)
-                    return isEndOfStream ? null : StringBase.Empty;
+                    return isEndOfStream ? null : StringWrapper.Empty;
                 fixed (byte* ptr = buffer)
                 {
                     SequenceHelper.ReplaceGreaterThan(ptr, unchecked((nuint)count), AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
-                    return StringBase.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
+                    return StringWrapper.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
                 }
             }
             finally
@@ -173,10 +173,10 @@ namespace WitherTorch.Common.IO.Internals
             }
         }
 
-        protected override unsafe StringBase ReadToEndAsStringBaseCore(byte[] buffer)
+        protected override unsafe StringWrapper ReadToEndAsStringWrapperCore(byte[] buffer)
         {
             if (CheckEndOfStream(fullyCheck: true))
-                return StringBase.Empty;
+                return StringWrapper.Empty;
 
             ArrayPool<byte> pool = ArrayPool<byte>.Shared;
             using PooledList<byte> list = new PooledList<byte>(pool, buffer.Length);
@@ -185,11 +185,11 @@ namespace WitherTorch.Common.IO.Internals
             {
                 (buffer, int count) = list;
                 if (count <= 0)
-                    return StringBase.Empty;
+                    return StringWrapper.Empty;
                 fixed (byte* ptr = buffer)
                 {
                     SequenceHelper.ReplaceGreaterThan(ptr, unchecked((nuint)count), AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
-                    return StringBase.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
+                    return StringWrapper.CreateAsciiString(ptr, 0u, unchecked((nuint)count));
                 }
             }
             finally

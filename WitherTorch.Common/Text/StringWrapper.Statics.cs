@@ -6,12 +6,12 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    partial class StringBase
+    partial class StringWrapper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StringBase Create(string str) => Create(str, WTCommon.StringCreateOptions);
+        public static StringWrapper Create(string str) => Create(str, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(string str, StringCreateOptions options)
+        public static unsafe StringWrapper Create(string str, StringCreateOptions options)
         {
             int length = str.Length;
             if (length <= 0)
@@ -42,7 +42,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (char* ptr = str)
                 {
-                    if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out StringBase? latin1String))
+                    if (Latin1String.TryCreate(ptr, unchecked((nuint)length), options, out StringWrapper? latin1String))
                         return latin1String;
                 }
             }
@@ -50,7 +50,7 @@ namespace WitherTorch.Common.Text
             {
                 fixed (char* ptr = str)
                 {
-                    if (Utf8String.TryCreate(ptr, unchecked((nuint)length), options, out StringBase? utf8String))
+                    if (Utf8String.TryCreate(ptr, unchecked((nuint)length), options, out StringWrapper? utf8String))
                         return utf8String;
                 }
             }
@@ -60,9 +60,9 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(char* ptr) => Create(ptr, WTCommon.StringCreateOptions);
+        public static unsafe StringWrapper Create(char* ptr) => Create(ptr, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(char* ptr, StringCreateOptions options)
+        public static unsafe StringWrapper Create(char* ptr, StringCreateOptions options)
         {
             nuint length = FindLength(ptr);
             if (length == 0)
@@ -72,9 +72,9 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(char* ptr, int startIndex, int count) => Create(ptr, startIndex, count, WTCommon.StringCreateOptions);
+        public static unsafe StringWrapper Create(char* ptr, int startIndex, int count) => Create(ptr, startIndex, count, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(char* ptr, int startIndex, int count, StringCreateOptions options)
+        public static unsafe StringWrapper Create(char* ptr, int startIndex, int count, StringCreateOptions options)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -87,9 +87,9 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(char* ptr, nuint startIndex, nuint count) => Create(ptr, startIndex, count, WTCommon.StringCreateOptions);
+        public static unsafe StringWrapper Create(char* ptr, nuint startIndex, nuint count) => Create(ptr, startIndex, count, WTCommon.StringCreateOptions);
 
-        public static unsafe StringBase Create(char* ptr, nuint startIndex, nuint count, StringCreateOptions options)
+        public static unsafe StringWrapper Create(char* ptr, nuint startIndex, nuint count, StringCreateOptions options)
         {
             if (count == 0)
                 return Empty;
@@ -98,7 +98,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe StringBase CreateCore(char* ptr, nuint length, StringCreateOptions options)
+        internal static unsafe StringWrapper CreateCore(char* ptr, nuint length, StringCreateOptions options)
         {
             if (length > unchecked((nuint)Limits.MaxStringLength))
                 throw new OutOfMemoryException();
@@ -107,7 +107,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static unsafe StringBase CreateCoreUnsafe(char* ptr, nuint length, StringCreateOptions options)
+        private static unsafe StringWrapper CreateCoreUnsafe(char* ptr, nuint length, StringCreateOptions options)
         {
             if ((options & StringCreateOptions.UseAsciiCompression) == StringCreateOptions.UseAsciiCompression)
             {
@@ -116,19 +116,19 @@ namespace WitherTorch.Common.Text
             }
             if ((options & StringCreateOptions.UseLatin1Compression) == StringCreateOptions.UseLatin1Compression)
             {
-                if (Latin1String.TryCreate(ptr, length, options, out StringBase? latin1String))
+                if (Latin1String.TryCreate(ptr, length, options, out StringWrapper? latin1String))
                     return latin1String;
             }
             if ((options & StringCreateOptions.UseUtf8Compression) == StringCreateOptions.UseUtf8Compression)
             {
-                if (Utf8String.TryCreate(ptr, length, options, out StringBase? utf8String))
+                if (Utf8String.TryCreate(ptr, length, options, out StringWrapper? utf8String))
                     return utf8String;
             }
             return Utf16String.Create(ptr, length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StringBase CreateUtf16String(string str)
+        public static StringWrapper CreateUtf16String(string str)
         {
             int length = str.Length;
             if (length <= 0)
@@ -137,7 +137,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf16String(char* ptr)
+        public static unsafe StringWrapper CreateUtf16String(char* ptr)
         {
             nuint length = FindLength(ptr);
             if (length == 0)
@@ -146,7 +146,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf16String(char* ptr, int startIndex, int count)
+        public static unsafe StringWrapper CreateUtf16String(char* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -156,7 +156,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf16String(char* ptr, nuint startIndex, nuint count)
+        public static unsafe StringWrapper CreateUtf16String(char* ptr, nuint startIndex, nuint count)
         {
             if (count == 0)
                 return Empty;
@@ -164,7 +164,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateLatin1String(byte* ptr)
+        public static unsafe StringWrapper CreateLatin1String(byte* ptr)
         {
             nuint length = FindLength(ptr);
             if (length == 0)
@@ -173,7 +173,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateLatin1String(byte* ptr, int startIndex, int count)
+        public static unsafe StringWrapper CreateLatin1String(byte* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -183,7 +183,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateLatin1String(byte* ptr, nuint startIndex, nuint count)
+        public static unsafe StringWrapper CreateLatin1String(byte* ptr, nuint startIndex, nuint count)
         {
             if (count == 0)
                 return Empty;
@@ -191,7 +191,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateAsciiString(byte* ptr)
+        public static unsafe StringWrapper CreateAsciiString(byte* ptr)
         {
             nuint length = FindLength(ptr);
             if (length == 0)
@@ -200,7 +200,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateAsciiString(byte* ptr, int startIndex, int count)
+        public static unsafe StringWrapper CreateAsciiString(byte* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -210,7 +210,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateAsciiString(byte* ptr, nuint startIndex, nuint count)
+        public static unsafe StringWrapper CreateAsciiString(byte* ptr, nuint startIndex, nuint count)
         {
             if (count == 0)
                 return Empty;
@@ -218,7 +218,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf8String(byte* ptr)
+        public static unsafe StringWrapper CreateUtf8String(byte* ptr)
         {
             nuint length = FindLength(ptr);
             if (length == 0)
@@ -227,7 +227,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf8String(byte* ptr, int startIndex, int count)
+        public static unsafe StringWrapper CreateUtf8String(byte* ptr, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -237,7 +237,7 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase CreateUtf8String(byte* ptr, nuint startIndex, nuint count)
+        public static unsafe StringWrapper CreateUtf8String(byte* ptr, nuint startIndex, nuint count)
         {
             if (count == 0)
                 return Empty;
@@ -245,10 +245,10 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrEmpty([NotNullWhen(false)] StringBase? str) => str is null || str.Length <= 0;
+        public static bool IsNullOrEmpty([NotNullWhen(false)] StringWrapper? str) => str is null || str.Length <= 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] StringBase? str) => str is null || str.IsFullyWhitespaced();
+        public static bool IsNullOrWhiteSpace([NotNullWhen(false)] StringWrapper? str) => str is null || str.IsFullyWhitespaced();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static unsafe nuint FindLength<T>(T* ptr) where T : unmanaged
@@ -264,7 +264,7 @@ namespace WitherTorch.Common.Text
             return limit;
         }
 
-        public static bool operator ==(StringBase left, StringBase right)
+        public static bool operator ==(StringWrapper left, StringWrapper right)
         {
             if (ReferenceEquals(left, right))
                 return true;
@@ -273,7 +273,7 @@ namespace WitherTorch.Common.Text
             return left.Equals(right);
         }
 
-        public static bool operator !=(StringBase left, StringBase right)
+        public static bool operator !=(StringWrapper left, StringWrapper right)
         {
             if (ReferenceEquals(left, right))
                 return false;

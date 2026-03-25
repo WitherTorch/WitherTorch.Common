@@ -11,7 +11,7 @@ namespace WitherTorch.Common.Text
                 return PartiallyEqualsCore(ptr, startIndex, count);
         }
 
-        protected override bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
+        protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count)
             => other switch
             {
                 Utf16String utf16 => PartiallyEqualsCore(utf16, startIndex, count),
@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Text
                 return CompareToCore(ptr, length);
         }
 
-        protected override int CompareToCore(StringBase other, nuint length)
+        protected override int CompareToCore(StringWrapper other, nuint length)
             => other switch
             {
                 Utf16String utf16 => CompareToCore(utf16, length),
@@ -37,7 +37,7 @@ namespace WitherTorch.Common.Text
                 return EqualsCore(ptr, length);
         }
 
-        protected override bool EqualsCore(StringBase other, nuint length)
+        protected override bool EqualsCore(StringWrapper other, nuint length)
             => other switch
             {
                 Utf16String utf16 => EqualsCore(utf16, length),
@@ -56,7 +56,7 @@ namespace WitherTorch.Common.Text
                 return SequenceHelper.Equals(source + startIndex, other, count);
         }
 
-        private unsafe bool PartiallyEqualsCore_Other(StringBase other, nuint startIndex, nuint count)
+        private unsafe bool PartiallyEqualsCore_Other(StringWrapper other, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(count);
@@ -86,7 +86,7 @@ namespace WitherTorch.Common.Text
                 return InternalSequenceHelper.CompareTo(source, other, length);
         }
 
-        private unsafe int CompareToCore_Other(StringBase other, nuint length)
+        private unsafe int CompareToCore_Other(StringWrapper other, nuint length)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(length);
@@ -116,7 +116,7 @@ namespace WitherTorch.Common.Text
                 return SequenceHelper.Equals(source, other, length);
         }
 
-        private unsafe bool EqualsCore_Other(StringBase other, nuint length)
+        private unsafe bool EqualsCore_Other(StringWrapper other, nuint length)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(length);

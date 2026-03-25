@@ -7,7 +7,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    internal sealed partial class Utf16String : StringBase, IPinnableReference<char>, IReadOnlyViewProvider<char>
+    internal sealed partial class Utf16String : StringWrapper, IPinnableReference<char>, IReadOnlyViewProvider<char>
     {
         private readonly string _value;
 

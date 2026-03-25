@@ -24,12 +24,12 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static unsafe StringBase Create(byte* source, nuint length)
+        public static unsafe StringWrapper Create(byte* source, nuint length)
         {
             if (length >= MaxStringLength)
                 throw new OutOfMemoryException();
 
-            StringBase result;
+            StringWrapper result;
             byte[] buffer;
             if (!SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte))
                 result = AsciiString.Allocate(length, out buffer);
@@ -40,7 +40,7 @@ namespace WitherTorch.Common.Text
             return result;
         }
 
-        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringBase? result)
+        public static unsafe bool TryCreate(char* source, nuint length, StringCreateOptions options, [NotNullWhen(true)] out StringWrapper? result)
         {
             if ((options & StringCreateOptions.UseAsciiCompression) != StringCreateOptions.UseAsciiCompression &&
                 !SequenceHelper.ContainsGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit))

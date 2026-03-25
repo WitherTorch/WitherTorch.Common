@@ -5,7 +5,7 @@ namespace WitherTorch.Common.Text
 {
     partial class Utf16String
     {
-        protected internal override unsafe StringBase SubstringCore(nuint startIndex, nuint count)
+        protected internal override unsafe StringWrapper SubstringCore(nuint startIndex, nuint count)
         {
             unchecked
             {
@@ -14,7 +14,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        protected override unsafe StringBase RemoveCore(nuint startIndex, nuint count)
+        protected override unsafe StringWrapper RemoveCore(nuint startIndex, nuint count)
         {
             string source = _value;
             nuint length = unchecked((nuint)source.Length);

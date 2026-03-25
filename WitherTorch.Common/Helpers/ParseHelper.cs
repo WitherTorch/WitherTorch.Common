@@ -26,7 +26,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ParseToInt32(StringBase input) => input.StringType switch
+        public static int ParseToInt32(StringWrapper input) => input.StringType switch
         {
             StringType.Utf16 => ParseToInt32(input.ToString()),
             _ => ParseToInt32_Other(input),
@@ -55,14 +55,14 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int ParseToInt32(StringBase input, int startIndex, int count) => input.StringType switch
+        public static int ParseToInt32(StringWrapper input, int startIndex, int count) => input.StringType switch
         {
             StringType.Utf16 => ParseToInt32(input.ToString(), startIndex, count),
             _ => ParseToInt32_Other(input, startIndex, count),
         };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int ParseToInt32_Other(StringBase input)
+        private static int ParseToInt32_Other(StringWrapper input)
         {
             int length = input.Length;
             if (length <= 0)
@@ -71,7 +71,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int ParseToInt32_Other(StringBase input, int startIndex, int count)
+        private static int ParseToInt32_Other(StringWrapper input, int startIndex, int count)
         {
             if (startIndex < 0)
                 throw new ArgumentOutOfRangeException(nameof(startIndex));
@@ -84,7 +84,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int ParseToInt32_OtherChecked(StringBase input, nuint startIndex, nuint length)
+        private static int ParseToInt32_OtherChecked(StringWrapper input, nuint startIndex, nuint length)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(input.Length);

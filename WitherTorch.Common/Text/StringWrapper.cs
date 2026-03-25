@@ -9,11 +9,11 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    public abstract partial class StringBase : ISimpleString, ICloneable,
-        IComparable<string>, IComparable<StringBase>,
-        IEquatable<string>, IEquatable<StringBase>
+    public abstract partial class StringWrapper : ISimpleString, ICloneable,
+        IComparable<string>, IComparable<StringWrapper>,
+        IEquatable<string>, IEquatable<StringWrapper>
     {
-        public static readonly StringBase Empty = EmptyString.Instance;
+        public static readonly StringWrapper Empty = EmptyString.Instance;
 
         public abstract StringType StringType { get; }
 
@@ -110,7 +110,7 @@ namespace WitherTorch.Common.Text
 
         public abstract IEnumerator<char> GetEnumerator();
 
-        public StringBase Clone() => this;
+        public StringWrapper Clone() => this;
 
         public override int GetHashCode() => ToString().GetHashCode();
 

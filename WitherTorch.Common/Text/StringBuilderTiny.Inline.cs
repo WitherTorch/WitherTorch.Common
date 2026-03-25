@@ -53,14 +53,14 @@ namespace WitherTorch.Common.Text
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(StringBase value)
+        public void AppendLine(StringWrapper value)
         {
             Append(value);
             AppendLine();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public void AppendLine(StringBase value, int startIndex, int count)
+        public void AppendLine(StringWrapper value, int startIndex, int count)
         {
             Append(value, startIndex, count);
             AppendLine();

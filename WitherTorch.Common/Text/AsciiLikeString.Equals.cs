@@ -11,7 +11,7 @@ namespace WitherTorch.Common.Text
                 return PartiallyEqualsCore(ptr, startIndex, count);
         }
 
-        protected override bool PartiallyEqualsCore(StringBase other, nuint startIndex, nuint count)
+        protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count)
             => other switch
             {
                 AsciiLikeString ascii => PartiallyEqualsCore(ascii, startIndex, count),
@@ -28,7 +28,7 @@ namespace WitherTorch.Common.Text
                 return CompareToCore(ptr, length);
         }
 
-        protected override int CompareToCore(StringBase other, nuint length)
+        protected override int CompareToCore(StringWrapper other, nuint length)
             => other switch
             {
                 AsciiLikeString ascii => CompareToCore(ascii, length),
@@ -43,7 +43,7 @@ namespace WitherTorch.Common.Text
                 return EqualsCore(ptr, length);
         }
 
-        protected override bool EqualsCore(StringBase other, nuint length)
+        protected override bool EqualsCore(StringWrapper other, nuint length)
             => other switch
             {
                 AsciiLikeString ascii => EqualsCore(ascii, length),
@@ -71,7 +71,7 @@ namespace WitherTorch.Common.Text
         private bool PartiallyEqualsCore(Utf16String compare, nuint startIndex, nuint count)
             => PartiallyEqualsCore(compare.GetInternalRepresentation(), startIndex, count);
 
-        private unsafe bool PartiallyEqualsCore_Other(StringBase compare, nuint startIndex, nuint count)
+        private unsafe bool PartiallyEqualsCore_Other(StringWrapper compare, nuint startIndex, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(count);
@@ -149,7 +149,7 @@ namespace WitherTorch.Common.Text
                 return CompareToCore(ptr, length);
         }
 
-        private unsafe int CompareToCore_Other(StringBase compare, nuint length)
+        private unsafe int CompareToCore_Other(StringWrapper compare, nuint length)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(length);
@@ -222,7 +222,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private unsafe bool EqualsCore_Other(StringBase compare, nuint count)
+        private unsafe bool EqualsCore_Other(StringWrapper compare, nuint count)
         {
             ArrayPool<char> pool = ArrayPool<char>.Shared;
             char[] buffer = pool.Rent(count);
