@@ -480,32 +480,16 @@ namespace WitherTorch.Common.Helpers
 #endif      
                 )
             {
-                if (IsUnsigned<T>())
-                {
-                    // a ^ ((a ^ b) & -(a < b))
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Clt_Un();
-                    IL.Emit.Neg();
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Xor();
-                    IL.Emit.And();
-                    IL.Push(a);
-                    IL.Emit.Xor();
-                }
-                else
-                {
-                    IL.Push(a);
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Sub();
-                    IL.Emit.Dup();
-                    IL.Push(SizeOf<T>() * 8 - 1);
-                    IL.Emit.Shr();
-                    IL.Emit.And();
-                    IL.Emit.Sub();
-                }
+                IL.Push(a);
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Sub();
+                IL.Emit.Dup();
+                IL.Push(SizeOf<T>() * 8 - 1);
+                IL.Emit.Shr();
+                IL.Emit.And();
+                IL.Emit.Sub();
+                IL.Emit.Ret();
             }
             else
             {
@@ -518,8 +502,48 @@ namespace WitherTorch.Common.Helpers
                 IL.Emit.Ret();
                 IL.MarkLabel(Label);
                 IL.Push(a);
+                IL.Emit.Ret();
             }
-            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T MaxUnsigned<T>(T a, T b)
+        {
+            if (
+#if NET8_0_OR_GREATER
+                false
+#else
+                IsIntegerType<T>()
+#endif      
+                )
+            {
+                // a ^ ((a ^ b) & -(a < b))
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Clt_Un();
+                IL.Emit.Neg();
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Xor();
+                IL.Emit.And();
+                IL.Push(a);
+                IL.Emit.Xor();
+                IL.Emit.Ret();
+            }
+            else
+            {
+                const string Label = "jump";
+
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Bgt_Un_S(Label);
+                IL.Push(b);
+                IL.Emit.Ret();
+                IL.MarkLabel(Label);
+                IL.Push(a);
+                IL.Emit.Ret();
+            }
             throw IL.Unreachable();
         }
 
@@ -534,35 +558,19 @@ namespace WitherTorch.Common.Helpers
 #endif      
                 )
             {
-                if (IsUnsigned<T>())
-                {
-                    //a ^ ((a ^ b) & -(a > b))
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Xor();
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Cgt_Un();
-                    IL.Emit.Neg();
-                    IL.Emit.And();
-                    IL.Push(a);
-                    IL.Emit.Xor();
-                }
-                else
-                {
-                    // min = b + ((a - b) & ((a - b) >> 31))
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Sub();
-                    IL.Push(a);
-                    IL.Push(b);
-                    IL.Emit.Sub();
-                    IL.Push(SizeOf<T>() * 8 - 1);
-                    IL.Emit.Shr();
-                    IL.Emit.And();
-                    IL.Push(b);
-                    IL.Emit.Add();
-                }
+                // min = b + ((a - b) & ((a - b) >> 31))
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Sub();
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Sub();
+                IL.Push(SizeOf<T>() * 8 - 1);
+                IL.Emit.Shr();
+                IL.Emit.And();
+                IL.Push(b);
+                IL.Emit.Add();
+                IL.Emit.Ret();
             }
             else
             {
@@ -575,8 +583,48 @@ namespace WitherTorch.Common.Helpers
                 IL.Emit.Ret();
                 IL.MarkLabel(Label);
                 IL.Push(a);
+                IL.Emit.Ret();
             }
-            IL.Emit.Ret();
+            throw IL.Unreachable();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T MinUnsigned<T>(T a, T b)
+        {
+            if (
+#if NET8_0_OR_GREATER
+                false
+#else
+                IsIntegerType<T>()
+#endif      
+                )
+            {
+                //a ^ ((a ^ b) & -(a > b))
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Xor();
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Cgt_Un();
+                IL.Emit.Neg();
+                IL.Emit.And();
+                IL.Push(a);
+                IL.Emit.Xor();
+                IL.Emit.Ret();
+            }
+            else
+            {
+                const string Label = "jump";
+
+                IL.Push(a);
+                IL.Push(b);
+                IL.Emit.Blt_Un_S(Label);
+                IL.Push(b);
+                IL.Emit.Ret();
+                IL.MarkLabel(Label);
+                IL.Push(a);
+                IL.Emit.Ret();
+            }
             throw IL.Unreachable();
         }
 
