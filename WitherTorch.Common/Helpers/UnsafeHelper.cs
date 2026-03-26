@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -165,34 +162,27 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsPrimitiveType<T>()
-                => (typeof(T) == typeof(bool)) ||
-                       (typeof(T) == typeof(byte)) ||
-                       (typeof(T) == typeof(short)) ||
-                       (typeof(T) == typeof(int)) ||
-                       (typeof(T) == typeof(long)) ||
-                       (typeof(T) == typeof(sbyte)) ||
-                       (typeof(T) == typeof(ushort)) ||
-                       (typeof(T) == typeof(uint)) ||
-                       (typeof(T) == typeof(ulong)) ||
-                       (typeof(T) == typeof(float)) ||
-                       (typeof(T) == typeof(double)) ||
-                       (typeof(T) == typeof(decimal)) ||
-                       (typeof(T) == typeof(char)) ||
-                       (typeof(T) == typeof(nint)) ||
-                       (typeof(T) == typeof(nuint));
+                => IsIntegerType<T>() || IsFloatingPointType<T>() || typeof(T) == typeof(bool);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsIntegerType<T>()
-                => (typeof(T) == typeof(byte)) ||
+            => IsSignedIntegerType<T>() || IsUnsignedIntegerType<T>();
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsSignedIntegerType<T>()
+                => (typeof(T) == typeof(sbyte)) ||
                        (typeof(T) == typeof(short)) ||
                        (typeof(T) == typeof(int)) ||
                        (typeof(T) == typeof(long)) ||
-                       (typeof(T) == typeof(sbyte)) ||
+                       (typeof(T) == typeof(nint));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static bool IsUnsignedIntegerType<T>()
+                => (typeof(T) == typeof(byte)) ||
+                       (typeof(T) == typeof(char)) ||
                        (typeof(T) == typeof(ushort)) ||
                        (typeof(T) == typeof(uint)) ||
                        (typeof(T) == typeof(ulong)) ||
-                       (typeof(T) == typeof(char)) ||
-                       (typeof(T) == typeof(nint)) ||
                        (typeof(T) == typeof(nuint));
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -202,21 +192,33 @@ namespace WitherTorch.Common.Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPrimitiveType(Type type)
-                => (type == typeof(bool)) ||
-                       (type == typeof(byte)) ||
-                       (type == typeof(short)) ||
-                       (type == typeof(int)) ||
-                       (type == typeof(long)) ||
-                       (type == typeof(sbyte)) ||
+                => IsIntegerType(type) || IsFloatingPointType(type) || type == typeof(bool);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsIntegerType(Type type)
+            => IsSignedIntegerType(type) || IsUnsignedIntegerType(type);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSignedIntegerType(Type type)
+        => (type == typeof(sbyte)) ||
+               (type == typeof(short)) ||
+               (type == typeof(int)) ||
+               (type == typeof(long)) ||
+               (type == typeof(nint));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUnsignedIntegerType(Type type)
+                => (type == typeof(byte)) ||
+                       (type == typeof(char)) ||
                        (type == typeof(ushort)) ||
                        (type == typeof(uint)) ||
                        (type == typeof(ulong)) ||
-                       (type == typeof(float)) ||
-                       (type == typeof(double)) ||
-                       (type == typeof(decimal)) ||
-                       (type == typeof(char)) ||
-                       (type == typeof(nint)) ||
                        (type == typeof(nuint));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsFloatingPointType(Type type)
+                => (type == typeof(float)) ||
+                       (type == typeof(double));
 
 #pragma warning disable CS0618
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -478,7 +480,7 @@ namespace WitherTorch.Common.Helpers
 #if NET8_0_OR_GREATER
                 false
 #else
-                IsIntegerType<T>()
+                IsSignedIntegerType<T>()
 #endif      
                 )
             {
@@ -508,7 +510,7 @@ namespace WitherTorch.Common.Helpers
 #if NET8_0_OR_GREATER
                 false
 #else
-                IsIntegerType<T>()
+                IsUnsignedIntegerType<T>()
 #endif      
                 )
             {
@@ -538,7 +540,7 @@ namespace WitherTorch.Common.Helpers
 #if NET8_0_OR_GREATER
                 false
 #else
-                IsIntegerType<T>()
+                IsSignedIntegerType<T>()
 #endif      
                 )
             {
@@ -569,7 +571,7 @@ namespace WitherTorch.Common.Helpers
 #if NET8_0_OR_GREATER
                 false
 #else
-                IsIntegerType<T>()
+                IsUnsignedIntegerType<T>()
 #endif      
                 )
             {
