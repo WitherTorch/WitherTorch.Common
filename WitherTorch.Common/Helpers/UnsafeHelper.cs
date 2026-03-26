@@ -163,7 +163,7 @@ namespace WitherTorch.Common.Helpers
             throw new PlatformNotSupportedException();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsPrimitiveType<T>()
                 => (typeof(T) == typeof(bool)) ||
                        (typeof(T) == typeof(byte)) ||
@@ -181,7 +181,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(nint)) ||
                        (typeof(T) == typeof(nuint));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsIntegerType<T>()
                 => (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(short)) ||
@@ -195,7 +195,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(nint)) ||
                        (typeof(T) == typeof(nuint));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsFloatingPointType<T>()
                 => (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
@@ -482,16 +482,8 @@ namespace WitherTorch.Common.Helpers
 #endif      
                 )
             {
-                IL.Push(a);
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Sub();
-                IL.Emit.Dup();
-                IL.Push(SizeOf<T>() * 8 - 1);
-                IL.Emit.Shr();
-                IL.Emit.And();
-                IL.Emit.Sub();
-                IL.Emit.Ret();
+                T diff = Subtract(a, b);
+                return Subtract(a, And(diff, RightShift(diff, As<uint, T>(SizeOf<T>() * 8 - 1))));
             }
             else
             {
@@ -521,17 +513,7 @@ namespace WitherTorch.Common.Helpers
                 )
             {
                 // a ^ ((a ^ b) & -(a < b))
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Clt_Un();
-                IL.Emit.Neg();
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Xor();
-                IL.Emit.And();
-                IL.Push(a);
-                IL.Emit.Xor();
-                IL.Emit.Ret();
+                return Xor(a, And(Xor(a, b), Negate(As<bool, T>(IsLessThanUnsigned(a, b)))));
             }
             else
             {
@@ -561,18 +543,8 @@ namespace WitherTorch.Common.Helpers
                 )
             {
                 // min = b + ((a - b) & ((a - b) >> 31))
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Sub();
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Sub();
-                IL.Push(SizeOf<T>() * 8 - 1);
-                IL.Emit.Shr();
-                IL.Emit.And();
-                IL.Push(b);
-                IL.Emit.Add();
-                IL.Emit.Ret();
+                T diff = Subtract(a, b);
+                return Add(b, And(diff, RightShift(diff, As<uint, T>(SizeOf<T>() * 8 - 1))));
             }
             else
             {
@@ -602,17 +574,7 @@ namespace WitherTorch.Common.Helpers
                 )
             {
                 //a ^ ((a ^ b) & -(a > b))
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Xor();
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Cgt_Un();
-                IL.Emit.Neg();
-                IL.Emit.And();
-                IL.Push(a);
-                IL.Emit.Xor();
-                IL.Emit.Ret();
+                return Xor(a, And(Xor(a, b), Negate(As<bool, T>(IsGreaterThanUnsigned(a, b)))));
             }
             else
             {

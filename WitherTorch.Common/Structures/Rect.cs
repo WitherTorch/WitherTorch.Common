@@ -134,7 +134,7 @@ namespace WitherTorch.Common.Structures
         public readonly bool IsValid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Left < Right && Top < Bottom;
+            get => Left >= 0 && Right >= 0 && Left < Right && Top < Bottom;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
