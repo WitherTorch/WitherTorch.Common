@@ -130,43 +130,43 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static sbyte Clamp(sbyte value, sbyte min, sbyte max)
-            => ClampCore(value, min, max);
+            => UnsafeHelper.Clamp(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static byte Clamp(byte value, byte min, byte max)
-            => ClampCoreUnsigned(value, min, max);
+            => UnsafeHelper.ClampUnsigned(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static short Clamp(short value, short min, short max)
-            => ClampCore(value, min, max);
+            => UnsafeHelper.Clamp(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static ushort Clamp(ushort value, ushort min, ushort max)
-            => ClampCoreUnsigned(value, min, max);
+            => UnsafeHelper.ClampUnsigned(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static int Clamp(int value, int min, int max)
-            => ClampCore(value, min, max);
+            => UnsafeHelper.Clamp(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static uint Clamp(uint value, uint min, uint max)
-            => ClampCoreUnsigned(value, min, max);
+            => UnsafeHelper.ClampUnsigned(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static long Clamp(long value, long min, long max)
-            => ClampCore(value, min, max);
+            => UnsafeHelper.Clamp(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static ulong Clamp(ulong value, ulong min, ulong max)
-            => ClampCoreUnsigned(value, min, max);
+            => UnsafeHelper.ClampUnsigned(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static nint Clamp(nint value, nint min, nint max)
-            => ClampCore(value, min, max);
+            => UnsafeHelper.Clamp(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static nuint Clamp(nuint value, nuint min, nuint max)
-            => ClampCoreUnsigned(value, min, max);
+            => UnsafeHelper.ClampUnsigned(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static unsafe void* Clamp(void* value, void* min, void* max)
@@ -205,13 +205,5 @@ namespace WitherTorch.Common.Helpers
             return Min(Max(value, min), max);
 #endif
         }
-
-        [Inline(InlineBehavior.Remove)]
-        private static T ClampCore<T>(T value, T min, T max) where T : unmanaged 
-            => UnsafeHelper.Min(UnsafeHelper.Max(value, min), max);
-
-        [Inline(InlineBehavior.Remove)]
-        private static T ClampCoreUnsigned<T>(T value, T min, T max) where T : unmanaged 
-            => UnsafeHelper.MinUnsigned(UnsafeHelper.MaxUnsigned(value, min), max);
     }
 }
