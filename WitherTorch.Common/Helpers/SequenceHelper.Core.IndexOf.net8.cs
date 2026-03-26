@@ -18,9 +18,7 @@ namespace WitherTorch.Common.Helpers
                     return VectorizedPointerIndexOfCore_256(ref ptr, ref length, value, method, accurateResult);
                 if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
                     return VectorizedPointerIndexOfCore_128(ref ptr, ref length, value, method, accurateResult);
-                if (Limits.UseVector64() && length >= (nuint)Vector64<T>.Count)
-                    return VectorizedPointerIndexOfCore_64(ref ptr, ref length, value, method, accurateResult);
-                throw new InvalidOperationException("Unreachable branch!");
+                return VectorizedPointerIndexOfCore_64(ref ptr, ref length, value, method, accurateResult);
             }
 
             [Inline(InlineBehavior.Remove)]

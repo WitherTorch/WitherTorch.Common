@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void InjectPopcntAsm_X64()
             {
-                if (WTCommon.SystemBuffersExists)
+                if (WTCommon.SystemMemoryExists)
                     StoreAsSpan.InjectPopcntAsm_X64();
                 else
                     StoreAsArray.InjectPopcntAsm_X64();

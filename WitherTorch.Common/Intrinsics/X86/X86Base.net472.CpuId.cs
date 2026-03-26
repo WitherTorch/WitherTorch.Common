@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Intrinsics.X86
 #if (B32_ARCH || ANYCPU)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void* BuildCpuIdAsm_X86() 
-            => WTCommon.SystemBuffersExists ? StoreAsSpan.BuildCpuIdAsm_X86() : StoreAsArray.BuildCpuIdAsm_X86();
+            => WTCommon.SystemMemoryExists ? StoreAsSpan.BuildCpuIdAsm_X86() : StoreAsArray.BuildCpuIdAsm_X86();
 
         partial class StoreAsArray
         {
@@ -80,7 +80,7 @@ namespace WitherTorch.Common.Intrinsics.X86
 #if (B64_ARCH || ANYCPU)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void* BuildCpuIdAsm_X64()
-            => WTCommon.SystemBuffersExists ? StoreAsSpan.BuildCpuIdAsm_X64() : StoreAsArray.BuildCpuIdAsm_X64();
+            => WTCommon.SystemMemoryExists ? StoreAsSpan.BuildCpuIdAsm_X64() : StoreAsArray.BuildCpuIdAsm_X64();
 
         partial class StoreAsArray
         {

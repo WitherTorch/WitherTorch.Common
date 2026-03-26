@@ -28,7 +28,7 @@ namespace WitherTorch.Common.Intrinsics.X86
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InjectLzcntAsm_X86()
         {
-            if (WTCommon.SystemBuffersExists)
+            if (WTCommon.SystemMemoryExists)
                 StoreAsSpan.InjectLzcntAsm_X86();
             else
                 StoreAsArray.InjectLzcntAsm_X86();
@@ -73,7 +73,7 @@ namespace WitherTorch.Common.Intrinsics.X86
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InjectLzcntAsm_X64()
         {
-            if (WTCommon.SystemBuffersExists)
+            if (WTCommon.SystemMemoryExists)
                 StoreAsSpan.InjectLzcntAsm_X64();
             else
                 StoreAsArray.InjectLzcntAsm_X64();

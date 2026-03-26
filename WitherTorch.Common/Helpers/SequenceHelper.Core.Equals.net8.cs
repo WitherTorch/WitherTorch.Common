@@ -19,9 +19,7 @@ namespace WitherTorch.Common.Helpers
                     return VectorizedEquals_256(ref ptr, ref ptr2, ref length);
                 if (Limits.UseVector128() && length >= (nuint)Vector128<byte>.Count)
                     return VectorizedEquals_128(ref ptr, ref ptr2, ref length);
-                if (Limits.UseVector64() && length >= (nuint)Vector64<byte>.Count)
-                    return VectorizedEquals_64(ref ptr, ref ptr2, ref length);
-                throw new InvalidOperationException("Unreachable branch!");
+                return VectorizedEquals_64(ref ptr, ref ptr2, ref length);
             }
 
             [Inline(InlineBehavior.Remove)]

@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Runtime.CompilerServices;
 
@@ -33,7 +33,7 @@ namespace WitherTorch.Common.Intrinsics.X86
 #if (B32_ARCH || ANYCPU)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void* BuildDiv64Asm_X86() 
-            => WTCommon.SystemBuffersExists ? StoreAsSpan.BuildDiv64Asm_X86() : StoreAsArray.BuildDiv64Asm_X86();
+            => WTCommon.SystemMemoryExists ? StoreAsSpan.BuildDiv64Asm_X86() : StoreAsArray.BuildDiv64Asm_X86();
 
         partial class StoreAsArray
         {
@@ -75,7 +75,7 @@ namespace WitherTorch.Common.Intrinsics.X86
 #if (B64_ARCH || ANYCPU)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void* BuildDiv64Asm_X64() 
-            => WTCommon.SystemBuffersExists ? StoreAsSpan.BuildDiv64Asm_X64() : StoreAsArray.BuildDiv64Asm_X64();
+            => WTCommon.SystemMemoryExists ? StoreAsSpan.BuildDiv64Asm_X64() : StoreAsArray.BuildDiv64Asm_X64();
 
         partial class StoreAsArray
         {

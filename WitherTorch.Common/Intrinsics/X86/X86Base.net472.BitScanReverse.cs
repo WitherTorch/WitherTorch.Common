@@ -28,7 +28,7 @@ namespace WitherTorch.Common.Intrinsics.X86
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InjectBsrAsm_X86()
         {
-            if (WTCommon.SystemBuffersExists)
+            if (WTCommon.SystemMemoryExists)
                 StoreAsSpan.InjectBsrAsm_X86();
             else
                 StoreAsArray.InjectBsrAsm_X86();
@@ -71,7 +71,7 @@ namespace WitherTorch.Common.Intrinsics.X86
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InjectBsrAsm_X64()
         {
-            if (WTCommon.SystemBuffersExists)
+            if (WTCommon.SystemMemoryExists)
                 StoreAsSpan.InjectBsrAsm_X64();
             else
                 StoreAsArray.InjectBsrAsm_X64();

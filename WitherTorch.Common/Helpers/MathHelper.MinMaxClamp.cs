@@ -178,32 +178,74 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static decimal Clamp(decimal value, decimal min, decimal max)
-        {
-#if NET8_0_OR_GREATER
-            return Math.Clamp(value, min, max);
-#else
-            return Min(Max(value, min), max);
-#endif
-        }
+            => Min(Max(value, min), max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static float Clamp(float value, float min, float max)
-        {
-#if NET8_0_OR_GREATER
-            return Math.Clamp(value, min, max);
-#else
-            return Min(Max(value, min), max);
-#endif
-        }
+            => UnsafeHelper.Clamp(value, min, max);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static double Clamp(double value, double min, double max)
-        {
-#if NET8_0_OR_GREATER
-            return Math.Clamp(value, min, max);
-#else
-            return Min(Max(value, min), max);
-#endif
-        }
+            => UnsafeHelper.Clamp(value, min, max);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static sbyte ClampUnordered(sbyte value, sbyte a, sbyte b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static byte ClampUnordered(byte value, byte a, byte b)
+            => UnsafeHelper.ClampUnorderedUnsigned(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static short ClampUnordered(short value, short a, short b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ushort ClampUnordered(ushort value, ushort a, ushort b)
+            => UnsafeHelper.ClampUnorderedUnsigned(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static int ClampUnordered(int value, int a, int b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static uint ClampUnordered(uint value, uint a, uint b)
+            => UnsafeHelper.ClampUnorderedUnsigned(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static long ClampUnordered(long value, long a, long b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static ulong ClampUnordered(ulong value, ulong a, ulong b)
+            => UnsafeHelper.ClampUnorderedUnsigned(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static nint ClampUnordered(nint value, nint a, nint b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static nuint ClampUnordered(nuint value, nuint a, nuint b)
+            => UnsafeHelper.ClampUnorderedUnsigned(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe void* ClampUnordered(void* value, void* a, void* b)
+            => unchecked((void*)ClampUnordered((nuint)value, (nuint)a, (nuint)b));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static unsafe T* ClampUnordered<T>(T* value, T* a, T* b)
+            => unchecked((T*)ClampUnordered((nuint)value, (nuint)a, (nuint)b));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static decimal ClampUnordered(decimal value, decimal a, decimal b)
+            => Math.Min(Math.Max(a, b), Math.Max(Math.Min(a, b), value));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float ClampUnordered(float value, float a, float b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static double ClampUnordered(double value, double a, double b)
+            => UnsafeHelper.ClampUnordered(value, a, b);
     }
 }

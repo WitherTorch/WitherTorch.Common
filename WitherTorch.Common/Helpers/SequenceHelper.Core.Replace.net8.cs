@@ -1,5 +1,4 @@
 #if NET8_0_OR_GREATER
-using System;
 using System.Runtime.Intrinsics;
 
 using InlineMethod;
@@ -18,10 +17,8 @@ namespace WitherTorch.Common.Helpers
                     VectorizedReplaceCore_256(ref ptr, ref length, filter, replacement, method);
                 else if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
                     VectorizedReplaceCore_128(ref ptr, ref length, filter, replacement, method);
-                else if (Limits.UseVector64() && length >= (nuint)Vector64<T>.Count)
-                    VectorizedReplaceCore_64(ref ptr, ref length, filter, replacement, method);
                 else
-                    throw new InvalidOperationException("Unreachable branch!");
+                    VectorizedReplaceCore_64(ref ptr, ref length, filter, replacement, method);
             }
 
             [Inline(InlineBehavior.Remove)]

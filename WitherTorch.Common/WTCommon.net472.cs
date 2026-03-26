@@ -1,21 +1,41 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace WitherTorch.Common
 {
     partial class WTCommon
     {
-        private static readonly Lazy<bool> _systemBuffersExistsLazy = new Lazy<bool>(CheckSystemBuffersExists, LazyThreadSafetyMode.PublicationOnly);
+        private static readonly bool _systemBuffersExists = CheckSystemBuffersExists();
+        private static readonly bool _systemMemoryExists = CheckSystemMemoryExists();
 
-        public static partial bool SystemBuffersExists => _systemBuffersExistsLazy.Value;
+        public static partial bool SystemBuffersExists
+        {
+            get => _systemBuffersExists;
+        }
+
+        public static partial bool SystemMemoryExists
+        {
+            get => _systemMemoryExists;
+        }
 
         private static bool CheckSystemBuffersExists()
         {
             try
             {
-                return SystemBufferChecker.CheckSpan() && SystemBufferChecker.CheckMemory() && SystemBufferChecker.CheckArrayPool();
+                return SystemBufferChecker.CheckArrayPool();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        private static bool CheckSystemMemoryExists()
+        {
+            try
+            {
+                return SystemMemoryChecker.CheckSpan() && SystemMemoryChecker.CheckMemory();
             }
             catch (Exception)
             {
@@ -26,13 +46,16 @@ namespace WitherTorch.Common
         private static class SystemBufferChecker
         {
             [MethodImpl(MethodImplOptions.NoInlining)]
+            public static bool CheckArrayPool() => System.Buffers.ArrayPool<byte>.Shared is not null;
+        }
+
+        private static class SystemMemoryChecker
+        {
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static bool CheckSpan() => ReadOnlySpan<byte>.Empty.Length == 0;
 
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static bool CheckMemory() => ReadOnlyMemory<byte>.Empty.Length == 0;
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            public static bool CheckArrayPool() => System.Buffers.ArrayPool<byte>.Shared is not null;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace WitherTorch.Common.Helpers
         {
             if (value <= uint.MaxValue)
                 return Log10((uint)value);
-            return MathI.FloorPositive(Math.Log10(value));
+            return MathI.Truncate(Math.Log10(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -100,7 +100,7 @@ namespace WitherTorch.Common.Helpers
 
         internal static int Log2SoftwareFallback(uint value)
         {
-            if (WTCommon.SystemBuffersExists)
+            if (WTCommon.SystemMemoryExists)
                 return DeBruijn_StoreAsSpan.Log2(value);
             else
                 return DeBruijn_StoreAsArray.Log2(value);

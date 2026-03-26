@@ -124,5 +124,19 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Conv_U();
             return IL.Return<nuint>();
         }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static float BooleanToFloat32(bool value)
+        {
+            int result = -BooleanToInt32(value) & 0x3F800000;
+            return UnsafeHelper.As<int, float>(ref result);
+        }
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static double BooleanToFloat64(bool value)
+        {
+            long result = -BooleanToInt64(value) & 0x3FF0000000000000L;
+            return UnsafeHelper.As<long, double>(ref result);
+        }
     }
 }

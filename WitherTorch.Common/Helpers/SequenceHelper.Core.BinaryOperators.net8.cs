@@ -18,10 +18,8 @@ namespace WitherTorch.Common.Helpers
                     VectorizedBinaryOperationCore_256(ref ptr, ref length, value, type);
                 else if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
                     VectorizedBinaryOperationCore_128(ref ptr, ref length, value, type);
-                else if (Limits.UseVector64() && length >= (nuint)Vector64<T>.Count)
-                    VectorizedBinaryOperationCore_64(ref ptr, ref length, value, type);
                 else
-                    throw new InvalidOperationException("Unreachable branch!");
+                    VectorizedBinaryOperationCore_64(ref ptr, ref length, value, type);
                 if (!FastCore.IsIdempotence(type))
                     ScalarizedBinaryOperationCore(ref ptr, ref length, value, type);
             }

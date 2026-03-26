@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Text;
 
@@ -16,7 +16,16 @@ namespace WitherTorch.Common
 #endif
 
         /// <summary>
-        /// 指示 System.Buffers 命名空間是否可使用
+        /// 指示 System.Memory 套件是否可使用
+        /// </summary>
+        public static partial bool SystemMemoryExists
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
+
+        /// <summary>
+        /// 指示 System.Buffers 套件是否可使用
         /// </summary>
         public static partial bool SystemBuffersExists
         {

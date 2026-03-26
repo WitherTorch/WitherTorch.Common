@@ -158,7 +158,7 @@ namespace WitherTorch.Common.Helpers
 
         internal static int TrailingZeroCountSoftwareFallback(uint value)
         {
-            if (WTCommon.SystemBuffersExists)
+            if (WTCommon.SystemMemoryExists)
                 return DeBruijn_StoreAsSpan.TrailingZeroCount(value);
             else
                 return DeBruijn_StoreAsArray.TrailingZeroCount(value);

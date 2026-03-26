@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void InjectUDiv128Asm_X64()
             {
-                if (WTCommon.SystemBuffersExists)
+                if (WTCommon.SystemMemoryExists)
                     StoreAsSpan.InjectUDiv128Asm_X64();
                 else
                     StoreAsArray.InjectUDiv128Asm_X64();

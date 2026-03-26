@@ -1,5 +1,6 @@
 #if NET472_OR_GREATER
 using System;
+using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -24,6 +25,7 @@ namespace WitherTorch.Common.Helpers
                 19, 27, 23, 06, 26, 05, 04, 31
             };
 
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static int TrailingZeroCount(uint value)
             {
                 // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
@@ -34,6 +36,7 @@ namespace WitherTorch.Common.Helpers
                     (nuint)(int)(((value & (uint)-(int)value) * 0x077CB531u) >> 27)); // Multi-cast mitigates redundant conv.u8
             }
 
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static int Log2(uint value)
             {
                 // Fill trailing zeros with ones, eg 00010010 becomes 00011111
@@ -70,6 +73,7 @@ namespace WitherTorch.Common.Helpers
                 19, 27, 23, 06, 26, 05, 04, 31
             ];
 
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static int TrailingZeroCount(uint value)
             {
                 // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
@@ -80,6 +84,7 @@ namespace WitherTorch.Common.Helpers
                     (nuint)(int)(((value & (uint)-(int)value) * 0x077CB531u) >> 27)); // Multi-cast mitigates redundant conv.u8
             }
 
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static int Log2(uint value)
             {
                 // Fill trailing zeros with ones, eg 00010010 becomes 00011111

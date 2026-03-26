@@ -19,10 +19,8 @@ namespace WitherTorch.Common.Helpers
                     VectorizedUnaryOperationCore_256(ref ptr, ref length, method);
                 else if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
                     VectorizedUnaryOperationCore_128(ref ptr, ref length, method);
-                else if (Limits.UseVector64() && length >= (nuint)Vector64<T>.Count)
-                    VectorizedUnaryOperationCore_64(ref ptr, ref length, method);
                 else
-                    throw new InvalidOperationException("Unreachable branch!");
+                    VectorizedUnaryOperationCore_64(ref ptr, ref length, method);
                 ScalarizedUnaryOperationCore(ref ptr, ref length, method);
             }
 

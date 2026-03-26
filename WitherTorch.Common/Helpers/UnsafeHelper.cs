@@ -630,29 +630,21 @@ namespace WitherTorch.Common.Helpers
             throw IL.Unreachable();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Clamp<T>(T value, T min, T max)
-        {
-            if (IsGreaterThan(min, max))
-                ThrowMinMaxException(min, max);
-            return ClampUnchecked(value, min, max);
-        }
-
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T ClampUnchecked<T>(T value, T min, T max)
+        public static T Clamp<T>(T value, T min, T max)
             => Max(min, Min(max, value));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [Inline(InlineBehavior.Keep, export: true)]
         public static T ClampUnsigned<T>(T value, T min, T max)
-        {
-            if (IsGreaterThanUnsigned(min, max))
-                ThrowMinMaxException(min, max);
-            return ClampUnsignedUnchecked(value, min, max);
-        }
+            => MaxUnsigned(min, MinUnsigned(max, value));
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static T ClampUnsignedUnchecked<T>(T value, T min, T max)
-            => MaxUnsigned(min, MinUnsigned(max, value));
+        public static T ClampUnordered<T>(T value, T a, T b)
+            => Min(Max(a, b), Max(Min(a, b), value));
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static T ClampUnorderedUnsigned<T>(T value, T a, T b)
+            => MinUnsigned(MaxUnsigned(a, b), MaxUnsigned(MinUnsigned(a, b), value));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Read<T>(void* source)
@@ -1016,10 +1008,5 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Sizeof<T>();
             return IL.Return<uint>();
         }
-
-        [DebuggerStepThrough]
-        [DoesNotReturn]
-        private static void ThrowMinMaxException<T>(T min, T max)
-            => throw new ArgumentException($"Min ({min}) must be <= Max ({max}).");
     }
 }

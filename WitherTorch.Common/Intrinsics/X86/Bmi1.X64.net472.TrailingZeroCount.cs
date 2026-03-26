@@ -26,7 +26,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private static void InjectTzcntAsm_X64()
             {
-                if (WTCommon.SystemBuffersExists)
+                if (WTCommon.SystemMemoryExists)
                     StoreAsSpan.InjectTzcntAsm_X64();
                 else
                     StoreAsArray.InjectTzcntAsm_X64();
