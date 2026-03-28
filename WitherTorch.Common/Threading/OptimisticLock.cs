@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Helpers;
@@ -144,6 +144,13 @@ namespace WitherTorch.Common.Threading
         {
             T value = GetValueCore();
             action.Invoke(value);
+            _version++;
+        }
+
+        public void Write<TArg>(Action<T, TArg> action, TArg argument)
+        {
+            T value = GetValueCore();
+            action.Invoke(value, argument);
             _version++;
         }
 
