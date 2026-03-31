@@ -5,6 +5,8 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
 
+using InlineMethod;
+
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
@@ -22,8 +24,8 @@ namespace WitherTorch.Common.Native
 
             static Win32NativeMethodInstance()
             {
-                _waitOnAddressFunc = GetImportedMethodPointerCore("kernelbase.dll", nameof(WaitOnAddress));
-                _wakeByAddressAllFunc = GetImportedMethodPointerCore("kernelbase.dll", nameof(WakeByAddressAll));
+                _waitOnAddressFunc = GetImportedMethodPointerCore_Internal("kernelbase.dll", nameof(WaitOnAddress));
+                _wakeByAddressAllFunc = GetImportedMethodPointerCore_Internal("kernelbase.dll", nameof(WakeByAddressAll));
             }
 
             [SuppressGCTransition]
@@ -243,6 +245,23 @@ namespace WitherTorch.Common.Native
                 return GetImportedMethodPointerCore(pool, module, methodName);
             }
 
+#if NET8_0_OR_GREATER
+            [Inline(InlineBehavior.Remove)]
+            private static void* GetImportedMethodPointerCore_Internal(string? dllName, string methodName)
+                => GetImportedMethodPointerCore(dllName, methodName);
+#else
+            private static void* GetImportedMethodPointerCore_Internal(string? dllName, string methodName)
+            {
+                IntPtr module = dllName is null ? GetModuleHandleW(null) : LoadLibrary(dllName);
+
+                ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+                if (pool is ArrayPool<byte>.SystemArrayPoolWrapper)
+                    return GetImportedMethodPointerCore(pool, module, methodName);
+
+                return GetImportedMethodPointerCore(module, methodName);
+            }
+#endif
+
             public static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<int> methodIndices)
             {
                 IntPtr module = dllName is null ? GetModuleHandleW(null) : LoadLibrary(dllName);
@@ -294,6 +313,19 @@ namespace WitherTorch.Common.Native
                 finally
                 {
                     pool.Return(buffer);
+                }
+            }
+
+            private static void* GetImportedMethodPointerCore(IntPtr module, string methodName)
+            {
+                int length = methodName.Length;
+                byte[] buffer = new byte[length + 1];
+                fixed (char* source = methodName)
+                fixed (byte* destination = buffer)
+                {
+                    AsciiEncodingHelper.ReadFromUtf16Buffer(source, source + length, destination, destination + length);
+                    destination[length] = 0;
+                    return GetProcAddress(module, destination);
                 }
             }
 

@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading;
 
+using InlineMethod;
+
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
@@ -40,7 +42,7 @@ namespace WitherTorch.Common.Native
                 };
                 if (_syscallID_futex == 0)
                     Debug.WriteLine($"This platform doesn't support futex, so {nameof(SetWaitingHandle)}, {nameof(WaitForWaitingHandle)} cannot work correctly!");
-                void* func = GetImportedMethodPointerCore(null, nameof(gettid));
+                void* func = GetImportedMethodPointerCore_Internal(null, nameof(gettid));
                 if (func is null)
                 {
 #if NET8_0_OR_GREATER
@@ -50,7 +52,7 @@ namespace WitherTorch.Common.Native
 #endif
                 }
                 _gettidFunc = func;
-                _cacheflushFunc = GetImportedMethodPointerCore(null, nameof(cacheflush));
+                _cacheflushFunc = GetImportedMethodPointerCore_Internal(null, nameof(cacheflush));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -324,6 +326,27 @@ namespace WitherTorch.Common.Native
                 return GetImportedMethodPointerCore(pool, module, methodName);
             }
 
+
+#if NET8_0_OR_GREATER
+            [Inline(InlineBehavior.Remove)]
+            private static void* GetImportedMethodPointerCore_Internal(string? dllName, string methodName)
+                => GetImportedMethodPointerCore(dllName, methodName);
+#else
+            private static void* GetImportedMethodPointerCore_Internal(string? dllName, string methodName)
+            {
+                const int RTLD_NOW = 2;
+                const int RTLD_LOCAL = 0;
+
+                IntPtr module = dlopen(dllName, RTLD_NOW | RTLD_LOCAL);
+
+                ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+                if (pool is ArrayPool<byte>.SystemArrayPoolWrapper)
+                    return GetImportedMethodPointerCore(pool, module, methodName);
+
+                return GetImportedMethodPointerCore(module, methodName);
+            }
+#endif
+
             public static void*[] GetImportedMethodPointersCore(string? dllName, ParamArrayTiny<string> methodNames)
             {
                 const int RTLD_NOW = 2;
@@ -362,6 +385,19 @@ namespace WitherTorch.Common.Native
                 finally
                 {
                     pool.Return(buffer);
+                }
+            }
+
+            public static void* GetImportedMethodPointerCore(IntPtr module, string methodName)
+            {
+                int length = methodName.Length;
+                byte[] buffer = new byte[length + 1];
+                fixed (char* source = methodName)
+                fixed (byte* destination = buffer)
+                {
+                    AsciiEncodingHelper.ReadFromUtf16Buffer(source, source + length, destination, destination + length);
+                    destination[length] = 0;
+                    return dlsym(module, destination);
                 }
             }
 
