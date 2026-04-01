@@ -7,8 +7,6 @@ using InlineMethod;
 
 using LocalsInit;
 
-using WitherTorch.Common.Intrinsics.X86;
-
 namespace WitherTorch.Common.Helpers
 {
     public static partial class MathHelper
@@ -140,13 +138,7 @@ namespace WitherTorch.Common.Helpers
 #if NET8_0_OR_GREATER
             return Math.DivRem(a, b, out rem);
 #else
-            if (X86Base.IsSupported)
-            {
-                (int quotient, rem) = X86Base.DivRem((uint)a, -BooleanToInt32(a < 0), b);
-                return quotient;
-            }
-
-            return DivRemSoftwareFallback(a, b, out rem);
+            return DivRemCore(a, b, out rem);
 #endif
         }
 
@@ -157,13 +149,7 @@ namespace WitherTorch.Common.Helpers
             (uint quotient, rem) = Math.DivRem(a, b);
             return quotient;
 #else
-            if (X86Base.IsSupported)
-            {
-                (uint quotient, rem) = X86Base.DivRem(a, 0, b);
-                return quotient;
-            }
-
-            return DivRemUnsignedSoftwareFallback(a, b, out rem);
+            return DivRemCore(a, b, out rem);
 #endif
         }
 
@@ -177,13 +163,7 @@ namespace WitherTorch.Common.Helpers
 #if NET8_0_OR_GREATER
             return Math.DivRem(a, b, out rem);
 #else
-            if (X86Base.X64.IsSupported)
-            {
-                (long quotient, rem) = X86Base.X64.DivRem((ulong)a, -BooleanToInt64(a < 0), b);
-                return quotient;
-            }
-
-            return DivRemSoftwareFallback(a, b, out rem);
+            return DivRemCore(a, b, out rem);
 #endif
         }
 
@@ -194,18 +174,7 @@ namespace WitherTorch.Common.Helpers
             (ulong quotient, rem) = Math.DivRem(a, b);
             return quotient;
 #else
-            if (X86Base.X64.IsSupported)
-            {
-                (ulong quotient, rem) = X86Base.X64.DivRem(a, 0, b);
-                return quotient;
-            }
-            if (X86Base.IsSupported && b <= uint.MaxValue)
-            {
-                (uint quotient, rem) = X86Base.DivRem(a, (uint)b);
-                return quotient;
-            }
-
-            return DivRemUnsignedSoftwareFallback(a, b, out rem);
+            return DivRemCore(a, b, out rem);
 #endif
         }
 

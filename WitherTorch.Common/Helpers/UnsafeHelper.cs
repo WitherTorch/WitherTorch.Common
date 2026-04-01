@@ -820,46 +820,46 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nint ByteOffset<T>(ref T origin, ref T target)
+        public static nint ByteOffset<T>(ref readonly T origin, ref readonly T target)
         {
-            IL.PushInRef(ref target);
-            IL.PushInRef(ref origin);
+            IL.PushInRef(in target);
+            IL.PushInRef(in origin);
             IL.Emit.Sub();
             return IL.Return<nint>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static nuint ByteOffsetUnsigned<T>(ref T origin, ref T target)
+        public static nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target)
         {
-            IL.PushInRef(ref target);
-            IL.PushInRef(ref origin);
+            IL.PushInRef(in target);
+            IL.PushInRef(in origin);
             IL.Emit.Sub();
             return IL.Return<nuint>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddByteOffset<T>(ref T source, nint byteOffset)
+        public static ref T AddByteOffset<T>(ref readonly T source, nint byteOffset)
         {
-            IL.PushInRef(ref source);
+            IL.PushInRef(in source);
             IL.Push(byteOffset);
             IL.Emit.Add();
             return ref IL.ReturnRef<T>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddByteOffset<T>(ref T source, nuint byteOffset)
+        public static ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset)
         {
-            IL.PushInRef(ref source);
+            IL.PushInRef(in source);
             IL.Push(byteOffset);
             IL.Emit.Add();
             return ref IL.ReturnRef<T>();
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref T source, nint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOfSigned<T>());
+        public static ref T AddTypedOffset<T>(ref readonly T source, nint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOfSigned<T>());
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref T source, nuint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOf<T>());
+        public static ref T AddTypedOffset<T>(ref readonly T source, nuint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOf<T>());
 
         [LocalsInit(false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
