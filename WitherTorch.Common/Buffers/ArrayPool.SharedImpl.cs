@@ -13,7 +13,7 @@ namespace WitherTorch.Common.Buffers
 {
     partial class ArrayPool<T>
     {
-        private sealed partial class SharedArrayPoolImpl : ArrayPool<T>
+        private sealed partial class SharedImpl : ArrayPool<T>
         {
             private const int LocalArrayQueuePreserveCount = 1;
             private const int GlobalArrayQueuePreserveCount = 1;
@@ -26,7 +26,7 @@ namespace WitherTorch.Common.Buffers
             private readonly ProcessorLocal<ArrayQueue>[] _localArrayQueues;
             private readonly LazyTiny<ConcurrentArrayQueue>[] _globalArrayQueues;
 
-            public SharedArrayPoolImpl()
+            public SharedImpl()
             {
                 ProcessorLocal<ArrayQueue>[] localArrayQueues = new ProcessorLocal<ArrayQueue>[LocalArrayQueueCount];
                 localArrayQueues[0] = new(static () => CreateLocalArrayQueue(16));

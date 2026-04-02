@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Buffers;
 
@@ -10,7 +10,7 @@ namespace WitherTorch.Common.Extensions
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static ArrayPool<T> CreateFromCLRArrayPool(System.Buffers.ArrayPool<T> pool)
-                => new ArrayPool<T>.SystemArrayPoolWrapper(pool);
+                => new ArrayPool<T>.SystemBufferImpl(pool);
         }
     }
 }

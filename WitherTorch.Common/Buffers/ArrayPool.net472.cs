@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System.Runtime.CompilerServices;
 
 namespace WitherTorch.Common.Buffers
@@ -9,14 +9,14 @@ namespace WitherTorch.Common.Buffers
         {
             if (WTCommon.SystemBuffersExists)
                 return UnsafeCreateWrappedSystemArrayPool();
-            return new SharedArrayPoolImpl();
+            return new SharedImpl();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static SystemArrayPoolWrapper UnsafeCreateWrappedSystemArrayPool()
+        private static SystemBufferImpl UnsafeCreateWrappedSystemArrayPool()
         {
             System.Buffers.ArrayPool<T> pool = System.Buffers.ArrayPool<T>.Shared;
-            return new SystemArrayPoolWrapper(pool);
+            return new SystemBufferImpl(pool);
         }
     }
 }

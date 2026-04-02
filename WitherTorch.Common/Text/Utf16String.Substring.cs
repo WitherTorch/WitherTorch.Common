@@ -1,5 +1,6 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -24,17 +25,15 @@ namespace WitherTorch.Common.Text
                 if (endIndex >= length)
                     return Create(ptr, 0, unchecked((int)startIndex));
 
-                ArrayPool<char> pool = ArrayPool<char>.Shared;
+                NativeMemoryPool pool = NativeMemoryPool.Shared;
                 nuint newLength = length - count;
-                char[] buffer = pool.Rent(newLength);
+                var buffer = pool.Rent<char>(newLength);
                 try
                 {
-                    fixed (char* ptrBuffer = buffer)
-                    {
-                        UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptr, startIndex * sizeof(char));
-                        UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptr + endIndex, (length - endIndex) * sizeof(char));
-                        return Create(ptrBuffer, 0, unchecked((int)newLength));
-                    }
+                    char* ptrBuffer = buffer.NativePointer;
+                    UnsafeHelper.CopyBlockUnaligned(ptrBuffer, ptr, startIndex * sizeof(char));
+                    UnsafeHelper.CopyBlockUnaligned(ptrBuffer + startIndex, ptr + endIndex, (length - endIndex) * sizeof(char));
+                    return Create(ptrBuffer, 0, unchecked((int)newLength));
                 }
                 finally
                 {

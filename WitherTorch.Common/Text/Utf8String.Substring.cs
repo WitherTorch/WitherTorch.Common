@@ -1,5 +1,6 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -10,14 +11,15 @@ namespace WitherTorch.Common.Text
             if (count > Utf16CompressionLengthLimit)
                 goto SlowRoute;
 
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
             nuint bufferLength = count * sizeof(char);
             byte[] source = _value;
-            byte[] buffer = pool.Rent(bufferLength);
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(bufferLength);
             try
             {
-                fixed (byte* ptrSource = source, ptrBuffer = buffer)
+                fixed (byte* ptrSource = source)
                 {
+                    byte* ptrBuffer = buffer.NativePointer;
                     byte* sourceIterator = ptrSource, sourceEnd = ptrSource + source.Length, bufferEnd = ptrBuffer + bufferLength;
                     nuint offset = SkipCharacters(ref sourceIterator, sourceEnd, ptrBuffer, bufferEnd, startIndex);
                     if (offset == (nuint)UnsafeHelper.PointerMaxValue ||
@@ -61,13 +63,14 @@ namespace WitherTorch.Common.Text
                 goto SlowRoute;
 
             byte[] source = _value;
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
             nuint bufferLength = resultLength * sizeof(char);
-            byte[] buffer = pool.Rent(bufferLength);
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(bufferLength);
             try
             {
-                fixed (byte* ptrSource = source, ptrBuffer = buffer)
+                fixed (byte* ptrSource = source)
                 {
+                    byte* ptrBuffer = buffer.NativePointer;
                     byte* sourceEnd = ptrSource + source.Length, bufferEnd = ptrBuffer + bufferLength;
                     byte* bufferIterator = TryCopyCharactersToBuffer(ptrSource, sourceEnd, ptrBuffer, ref bufferEnd, startIndex);
                     if (bufferIterator == null)

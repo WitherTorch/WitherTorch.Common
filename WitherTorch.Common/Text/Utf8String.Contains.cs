@@ -5,6 +5,7 @@ using LocalsInit;
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -82,15 +83,13 @@ namespace WitherTorch.Common.Text
             if (startIndex > 0 || count < unchecked((nuint)_length))
                 return base.ContainsCore(value, valueLength, startIndex, count);
 
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(valueLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0, valueLength);
-                    return ContainsCore(temp, valueLength);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0, valueLength);
+                return ContainsCore(temp, valueLength);
             }
             finally
             {
@@ -115,15 +114,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool ContainsCoreFast(char* value, nuint valueLength)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            var buffer = pool.Rent<byte>(valueLength);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    AsciiEncodingHelper.ReadFromUtf16BufferCore(value, temp, valueLength);
-                    return ContainsCore(temp, valueLength);
-                }
+                byte* temp = buffer.NativePointer;
+                AsciiEncodingHelper.ReadFromUtf16BufferCore(value, temp, valueLength);
+                return ContainsCore(temp, valueLength);
             }
             finally
             {
@@ -140,18 +137,16 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool ContainsCoreFallback(byte* value, nuint valueLength)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
             nuint bufferLength = valueLength * 2;
-            byte[] buffer = pool.Rent(bufferLength);
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(bufferLength);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    byte* iterator = temp, tempEnd = temp + bufferLength;
-                    for (nuint i = 0; i < valueLength; i++)
-                        iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, tempEnd, value[i]);
-                    return ContainsCore(temp, valueLength);
-                }
+                byte* temp = buffer.NativePointer;
+                byte* iterator = temp, tempEnd = temp + bufferLength;
+                for (nuint i = 0; i < valueLength; i++)
+                    iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, tempEnd, value[i]);
+                return ContainsCore(temp, valueLength);
             }
             finally
             {
@@ -179,18 +174,16 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool ContainsCoreFallbackFast(char* value, nuint valueLength)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
             nuint bufferLength = Utf8EncodingHelper.GetWorstCaseForEncodeLength(valueLength);
-            byte[] buffer = pool.Rent(bufferLength);
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(bufferLength);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    byte* iterator = temp, tempEnd = temp + bufferLength;
-                    for (nuint i = 0; i < valueLength; i++)
-                        iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, tempEnd, value[i]);
-                    return ContainsCore(temp, valueLength);
-                }
+                byte* temp = buffer.NativePointer;
+                byte* iterator = temp, tempEnd = temp + bufferLength;
+                for (nuint i = 0; i < valueLength; i++)
+                    iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, tempEnd, value[i]);
+                return ContainsCore(temp, valueLength);
             }
             finally
             {
@@ -200,18 +193,16 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool ContainsCoreFallbackSlow(char* value, nuint valueLength)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
             nuint bufferLength = Utf8EncodingHelper.GetWorstCaseForEncodeLength(valueLength);
-            byte[] buffer = pool.Rent(bufferLength);
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(bufferLength);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    byte* iterator = temp, tempEnd = temp + bufferLength;
-                    for (nuint i = 0; i < valueLength; i++)
-                        iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, tempEnd, value[i]);
-                    return ContainsCore(temp, valueLength);
-                }
+                byte* temp = buffer.NativePointer;
+                byte* iterator = temp, tempEnd = temp + bufferLength;
+                for (nuint i = 0; i < valueLength; i++)
+                    iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, tempEnd, value[i]);
+                return ContainsCore(temp, valueLength);
             }
             finally
             {

@@ -1,4 +1,4 @@
-﻿#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -61,15 +62,13 @@ namespace WitherTorch.Common.Text
                 int length = str._length;
                 if (length <= 0)
                     return string.Empty.GetHashCode();
-                ArrayPool<char> pool = ArrayPool<char>.Shared;
-                char[] buffer = pool.Rent(length);
+                NativeMemoryPool pool = NativeMemoryPool.Shared;
+                TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
                 try
                 {
-                    fixed (char* destination = buffer)
-                    {
-                        str.CopyToCore(destination, 0, unchecked((nuint)length));
-                        return _computeHash32Func(new ReadOnlySpan<byte>(destination, length * sizeof(char)), _hashingSeed);
-                    }
+                    char* destination = buffer.NativePointer;
+                    str.CopyToCore(destination, 0, unchecked((nuint)length));
+                    return _computeHash32Func(new ReadOnlySpan<byte>(destination, length * sizeof(char)), _hashingSeed);
                 }
                 finally
                 {

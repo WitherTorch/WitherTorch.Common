@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -236,15 +237,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool ContainsCore_Fallback(char* value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            var buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    CopyToCore(temp, startIndex, count);
-                    return InternalSequenceHelper.Contains(temp, count, value, valueLength);
-                }
+                char* temp = buffer.NativePointer;
+                CopyToCore(temp, startIndex, count);
+                return InternalSequenceHelper.Contains(temp, count, value, valueLength);
             }
             finally
             {
@@ -254,15 +253,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool ContainsCore_Fallback(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0, valueLength);
-                    return ContainsCore_Fallback(temp, valueLength, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0, valueLength);
+                return ContainsCore_Fallback(temp, valueLength, startIndex, count);
             }
             finally
             {
@@ -272,16 +269,14 @@ namespace WitherTorch.Common.Text
 
         private unsafe int IndexOfCore_Fallback(char* value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    CopyToCore(temp, startIndex, count);
-                    char* result = InternalSequenceHelper.PointerIndexOf(temp, count, value, valueLength);
-                    return result < temp ? -1 : unchecked((int)(result - temp)) + unchecked((int)MathHelper.MakeSigned(startIndex));
-                }
+                char* temp = buffer.NativePointer;
+                CopyToCore(temp, startIndex, count);
+                char* result = InternalSequenceHelper.PointerIndexOf(temp, count, value, valueLength);
+                return result < temp ? -1 : unchecked((int)(result - temp)) + unchecked((int)MathHelper.MakeSigned(startIndex));
             }
             finally
             {
@@ -291,15 +286,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe int IndexOfCore_Fallback(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0, valueLength);
-                    return IndexOfCore_Fallback(temp, valueLength, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0, valueLength);
+                return IndexOfCore_Fallback(temp, valueLength, startIndex, count);
             }
             finally
             {

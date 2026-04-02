@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 
 namespace WitherTorch.Common.Buffers
 {
     partial class ArrayPool<T>
     {
-        internal sealed class SystemArrayPoolWrapper : ArrayPool<T>
+        internal sealed class SystemBufferImpl : ArrayPool<T>
         {
             private readonly System.Buffers.ArrayPool<T> _pool;
 
-            public SystemArrayPoolWrapper(System.Buffers.ArrayPool<T> pool)
+            public SystemBufferImpl(System.Buffers.ArrayPool<T> pool)
             {
                 _pool = pool;
             }

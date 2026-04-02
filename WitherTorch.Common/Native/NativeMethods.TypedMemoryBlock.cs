@@ -1,6 +1,9 @@
 using System;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Security;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Native
 {
@@ -12,7 +15,8 @@ namespace WitherTorch.Common.Native
             void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            return new TypedNativeMemoryBlock<T>((T*)ptr, (void*)size);
+            GC.AddMemoryPressure(size);
+            return new TypedNativeMemoryBlock<T>((T*)ptr, (nuint)size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -21,7 +25,8 @@ namespace WitherTorch.Common.Native
             void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            return new TypedNativeMemoryBlock<T>((T*)ptr, (void*)size);
+            GC.AddMemoryPressure(size);
+            return new TypedNativeMemoryBlock<T>((T*)ptr, size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,16 +35,18 @@ namespace WitherTorch.Common.Native
             void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            return new TypedNativeMemoryBlock<T>((T*)ptr, (void*)size);
+            GC.AddMemoryPressure(size);
+            return new TypedNativeMemoryBlock<T>((T*)ptr, (nuint)size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe TypedNativeMemoryBlock<T> AllocMemoryBlock<T>(ulong size) where T : unmanaged
         {
-            void* ptr = _methodInstance.AllocMemory(new UIntPtr(size));
+            void* ptr = _methodInstance.AllocMemory((nuint)size);
             if (ptr == default)
                 return default;
-            return new TypedNativeMemoryBlock<T>((T*)ptr, (void*)size);
+            GC.AddMemoryPressure(MathHelper.MakeSigned(size));
+            return new TypedNativeMemoryBlock<T>((T*)ptr, (nuint)size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -48,7 +55,8 @@ namespace WitherTorch.Common.Native
             void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            return new TypedNativeMemoryBlock<T>((T*)ptr, (void*)size);
+            GC.AddMemoryPressure(size);
+            return new TypedNativeMemoryBlock<T>((T*)ptr, (nuint)size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,7 +65,8 @@ namespace WitherTorch.Common.Native
             void* ptr = AllocMemory(size);
             if (ptr == default)
                 return default;
-            return new TypedNativeMemoryBlock<T>((T*)ptr, (void*)size);
+            GC.AddMemoryPressure(MathHelper.MakeSigned(size));
+            return new TypedNativeMemoryBlock<T>((T*)ptr, size);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -67,6 +76,7 @@ namespace WitherTorch.Common.Native
             if (ptr == null)
                 return;
             _methodInstance.FreeMemory(ptr);
+            GC.RemoveMemoryPressure(MathHelper.MakeSigned(block.Length));
         }
     }
 }

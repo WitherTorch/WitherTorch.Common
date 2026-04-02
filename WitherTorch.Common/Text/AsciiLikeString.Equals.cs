@@ -1,5 +1,6 @@
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -73,15 +74,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool PartiallyEqualsCore_Other(StringWrapper compare, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    compare.CopyToCore(temp, 0, count);
-                    return PartiallyEqualsCore(temp, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                compare.CopyToCore(temp, 0, count);
+                return PartiallyEqualsCore(temp, startIndex, count);
             }
             finally
             {
@@ -94,16 +93,14 @@ namespace WitherTorch.Common.Text
             if (SequenceHelper.ContainsGreaterThan(compare, count, unchecked((char)GetCharacterLimit())))
                 return false;
 
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(count);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, count);
-                    fixed (byte* source = _value)
-                        return SequenceHelper.Equals(source + startIndex, temp, count);
-                }
+                byte* temp = buffer.NativePointer;
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, count);
+                fixed (byte* source = _value)
+                    return SequenceHelper.Equals(source + startIndex, temp, count);
             }
             finally
             {
@@ -151,15 +148,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe int CompareToCore_Other(StringWrapper compare, nuint length)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    compare.CopyToCore(temp, 0, length);
-                    return CompareToCore(temp, length);
-                }
+                char* temp = buffer.NativePointer;
+                compare.CopyToCore(temp, 0, length);
+                return CompareToCore(temp, length);
             }
             finally
             {
@@ -205,16 +200,14 @@ namespace WitherTorch.Common.Text
             if (SequenceHelper.ContainsGreaterThan(compare, length, unchecked((char)GetCharacterLimit())))
                 return false;
 
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            var buffer = pool.Rent<byte>(length);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, length);
-                    fixed (byte* source = _value)
-                        return SequenceHelper.Equals(source, temp, length);
-                }
+                byte* temp = buffer.NativePointer;
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, length);
+                fixed (byte* source = _value)
+                    return SequenceHelper.Equals(source, temp, length);
             }
             finally
             {
@@ -224,15 +217,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool EqualsCore_Other(StringWrapper compare, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    compare.CopyToCore(temp, 0, count);
-                    return EqualsCore(temp, count);
-                }
+                char* temp = buffer.NativePointer;
+                compare.CopyToCore(temp, 0, count);
+                return EqualsCore(temp, count);
             }
             finally
             {

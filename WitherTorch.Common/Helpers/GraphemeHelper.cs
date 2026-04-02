@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Native;
 using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.Helpers
@@ -27,15 +28,13 @@ namespace WitherTorch.Common.Helpers
                     return GetGraphemeIndicesCore(ptr, length);
             }
 
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    str.CopyToCore(temp, 0, (nuint)length);
-                    return GetGraphemeIndicesCore(temp, length);
-                }
+                char* temp = buffer.NativePointer;
+                str.CopyToCore(temp, 0, (nuint)length);
+                return GetGraphemeIndicesCore(temp, length);
             }
             finally
             {

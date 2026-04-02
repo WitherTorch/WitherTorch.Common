@@ -1,9 +1,10 @@
-﻿using InlineMethod;
-
 using System;
 using System.Runtime.CompilerServices;
 
+using InlineMethod;
+
 using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Native;
 using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.Helpers
@@ -86,15 +87,13 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int ParseToInt32_OtherChecked(StringWrapper input, nuint startIndex, nuint length)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(input.Length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
             try
             {
-                fixed (char* ptr = buffer)
-                {
-                    input.CopyToCore(ptr, 0, length);
-                    return ParseToInt32(ptr, (int)length);
-                }
+                char* ptr = buffer.NativePointer;
+                input.CopyToCore(ptr, 0, length);
+                return ParseToInt32(ptr, (int)length);
             }
             finally
             {

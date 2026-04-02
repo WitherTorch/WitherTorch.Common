@@ -1,9 +1,10 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 using LocalsInit;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -30,15 +31,13 @@ namespace WitherTorch.Common.Text
         {
             if (SequenceHelper.ContainsGreaterThan(b, length, Latin1EncodingHelper.Latin1EncodingLimit))
                 return false;
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(length);
             try
             {
-                fixed (byte* ptrBuffer = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(b, ptrBuffer, length);
-                    return SequenceHelper.Equals(a, ptrBuffer, length);
-                }
+                byte* ptrBuffer = buffer.NativePointer;
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(b, ptrBuffer, length);
+                return SequenceHelper.Equals(a, ptrBuffer, length);
             }
             finally
             {

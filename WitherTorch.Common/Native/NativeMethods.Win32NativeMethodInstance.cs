@@ -255,7 +255,7 @@ namespace WitherTorch.Common.Native
                 IntPtr module = dllName is null ? GetModuleHandleW(null) : LoadLibrary(dllName);
 
                 ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-                if (pool is ArrayPool<byte>.SystemArrayPoolWrapper)
+                if (pool is ArrayPool<byte>.SystemBufferImpl)
                     return GetImportedMethodPointerCore(pool, module, methodName);
 
                 return GetImportedMethodPointerCore(module, methodName);

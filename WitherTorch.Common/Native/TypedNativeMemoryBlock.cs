@@ -1,30 +1,27 @@
-﻿using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Native
 {
     [StructLayout(LayoutKind.Sequential, Pack = 8)]
     public unsafe readonly struct TypedNativeMemoryBlock<T> where T : unmanaged
     {
+        public static readonly TypedNativeMemoryBlock<T> Empty = new(null, 0);
+
         private readonly T* _nativePointer;
-        private readonly void* _size;
+        private readonly nuint _length;
 
-        public bool IsValid => _nativePointer != null;
+        public readonly bool IsValid => _nativePointer != null;
 
-        public T* NativePointer => _nativePointer;
+        public readonly nuint Length => _length;
 
-        public int Size => MathHelper.MakeSigned((uint)_size);
+        public readonly T* NativePointer => _nativePointer;
 
-        public long LongSize => MathHelper.MakeSigned((ulong)_size);
-
-        public IntPtr NativeSize => new IntPtr(_size);
-
-        public TypedNativeMemoryBlock(T* nativePointer, void* size)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TypedNativeMemoryBlock(T* nativePointer, nuint length)
         {
             _nativePointer = nativePointer;
-            _size = size;
+            _length = length;
         }
     }
 }

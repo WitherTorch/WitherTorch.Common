@@ -1,10 +1,11 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 
 using LocalsInit;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.IO.Internals
@@ -49,8 +50,8 @@ namespace WitherTorch.Common.IO.Internals
             nuint currentPos, currentLength;
             nuint? indexOf;
 
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] charBuffer = pool.Rent(buffer.Length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> charBuffer = pool.Rent<char>(buffer.Length);
             try
             {
                 while ((indexOf = FindNewLineMark(buffer, currentPos = _bufferPos, currentLength = _bufferLength)) is null)
@@ -58,8 +59,8 @@ namespace WitherTorch.Common.IO.Internals
                     if (currentPos < currentLength)
                     {
                         fixed (byte* source = buffer)
-                        fixed (char* destination = charBuffer)
                         {
+                            char* destination = charBuffer.NativePointer;
                             char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
                             SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
                             builder.Append(destination, destinationEnd);
@@ -77,12 +78,10 @@ namespace WitherTorch.Common.IO.Internals
                 nuint indexOfReal = indexOf.Value;
                 fixed (byte* source = buffer)
                 {
-                    fixed (char* destination = charBuffer)
-                    {
-                        char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOfReal, destination, destination + currentLength);
-                        SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
-                        builder.Append(destination, destinationEnd);
-                    }
+                    char* destination = charBuffer.NativePointer;
+                    char* destinationEnd = Latin1EncodingHelper.WriteToUtf16Buffer(source + currentPos, source + indexOfReal, destination, destination + currentLength);
+                    SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
+                    builder.Append(destination, destinationEnd);
                     byte* ptrIndexOf = source + currentPos + indexOfReal;
                     if (*ptrIndexOf == (byte)'\r')
                     {
@@ -114,8 +113,8 @@ namespace WitherTorch.Common.IO.Internals
             }
             nuint currentPos, currentLength;
 
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] charBuffer = pool.Rent(buffer.Length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> charBuffer = pool.Rent<char>(buffer.Length);
             try
             {
                 do
@@ -125,8 +124,8 @@ namespace WitherTorch.Common.IO.Internals
                     if (currentPos < currentLength)
                     {
                         fixed (byte* source = buffer)
-                        fixed (char* destination = charBuffer)
                         {
+                            char* destination = charBuffer.NativePointer;
                             char* destinationEnd = AsciiEncodingHelper.WriteToUtf16Buffer(source + currentPos, source + currentLength, destination, destination + currentLength);
                             SequenceHelper.ReplaceGreaterThan(destination, unchecked((nuint)(destinationEnd - destination)), AsciiEncodingHelper.AsciiEncodingLimit, '?');
                             builder.Append(destination, destinationEnd);

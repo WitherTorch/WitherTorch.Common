@@ -3,6 +3,7 @@ using System.Linq;
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -90,15 +91,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool PartiallyEqualsCoreFast(char* other, nuint startIndex, nuint count)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(count);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    AsciiEncodingHelper.ReadFromUtf16BufferCore(other, temp, count);
-                    return PartiallyEqualsCoreFast(temp, startIndex, count);
-                }
+                byte* temp = buffer.NativePointer;
+                AsciiEncodingHelper.ReadFromUtf16BufferCore(other, temp, count);
+                return PartiallyEqualsCoreFast(temp, startIndex, count);
             }
             finally
             {
@@ -154,15 +153,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe int CompareToCoreFast(char* other, nuint length)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            var buffer = pool.Rent<byte>(length);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    AsciiEncodingHelper.ReadFromUtf16BufferCore(other, temp, length);
-                    return CompareToCoreFast(temp, length);
-                }
+                byte* temp = buffer.NativePointer;
+                AsciiEncodingHelper.ReadFromUtf16BufferCore(other, temp, length);
+                return CompareToCoreFast(temp, length);
             }
             finally
             {
@@ -224,15 +221,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool EqualsCoreFast(char* other, nuint length)
         {
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            var buffer = pool.Rent<byte>(length);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    AsciiEncodingHelper.ReadFromUtf16BufferCore(other, temp, length);
-                    return EqualsCoreFast(temp, length);
-                }
+                byte* temp = buffer.NativePointer;
+                AsciiEncodingHelper.ReadFromUtf16BufferCore(other, temp, length);
+                return EqualsCoreFast(temp, length);
             }
             finally
             {

@@ -326,7 +326,6 @@ namespace WitherTorch.Common.Native
                 return GetImportedMethodPointerCore(pool, module, methodName);
             }
 
-
 #if NET8_0_OR_GREATER
             [Inline(InlineBehavior.Remove)]
             private static void* GetImportedMethodPointerCore_Internal(string? dllName, string methodName)
@@ -340,7 +339,7 @@ namespace WitherTorch.Common.Native
                 IntPtr module = dlopen(dllName, RTLD_NOW | RTLD_LOCAL);
 
                 ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-                if (pool is ArrayPool<byte>.SystemArrayPoolWrapper)
+                if (pool is ArrayPool<byte>.SystemBufferImpl)
                     return GetImportedMethodPointerCore(pool, module, methodName);
 
                 return GetImportedMethodPointerCore(module, methodName);

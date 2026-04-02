@@ -1,5 +1,6 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -58,15 +59,13 @@ namespace WitherTorch.Common.Text
 
         private bool ContainsCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            var buffer = pool.Rent<char>(valueLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0u, valueLength);
-                    return ContainsCore(temp, valueLength, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0u, valueLength);
+                return ContainsCore(temp, valueLength, startIndex, count);
             }
             finally
             {
@@ -89,15 +88,13 @@ namespace WitherTorch.Common.Text
 
         private int IndexOfCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(valueLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0u, valueLength);
-                    return IndexOfCore(temp, valueLength, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0u, valueLength);
+                return IndexOfCore(temp, valueLength, startIndex, count);
             }
             finally
             {

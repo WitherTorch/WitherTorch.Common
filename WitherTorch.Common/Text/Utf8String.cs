@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -77,22 +78,20 @@ namespace WitherTorch.Common.Text
                 bufferLength = length * sizeof(char);
             bufferLength = MathHelper.Min(bufferLength, MaxUtf8StringBufferSize);
 
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(bufferLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(bufferLength);
             try
             {
-                fixed (byte* ptr = buffer)
-                {
-                    byte* bufferEnd = Utf8EncodingHelper.TryReadFromUtf16BufferCore(source, source + length, ptr, ptr + bufferLength);
-                    if (bufferEnd == null)
-                        goto Failed;
-                    nuint resultLength = unchecked((nuint)(bufferEnd - ptr));
-                    byte[] resultBuffer = new byte[resultLength + 1];
-                    fixed (byte* dest = resultBuffer)
-                        UnsafeHelper.CopyBlockUnaligned(dest, ptr, resultLength * sizeof(byte));
-                    result = new Utf8String(resultBuffer, unchecked((int)length));
-                    return true;
-                }
+                byte* ptr = buffer.NativePointer;
+                byte* bufferEnd = Utf8EncodingHelper.TryReadFromUtf16BufferCore(source, source + length, ptr, ptr + bufferLength);
+                if (bufferEnd == null)
+                    goto Failed;
+                nuint resultLength = unchecked((nuint)(bufferEnd - ptr));
+                byte[] resultBuffer = new byte[resultLength + 1];
+                fixed (byte* dest = resultBuffer)
+                    UnsafeHelper.CopyBlockUnaligned(dest, ptr, resultLength * sizeof(byte));
+                result = new Utf8String(resultBuffer, unchecked((int)length));
+                return true;
             }
             finally
             {

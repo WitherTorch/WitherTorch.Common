@@ -1,5 +1,6 @@
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -76,15 +77,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe nuint GetSplitCount_Other(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
-            ArrayPool<char> bufferPool = ArrayPool<char>.Shared;
-            char[] buffer = bufferPool.Rent(separatorLength);
+            NativeMemoryPool bufferPool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = bufferPool.Rent<char>(separatorLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    separator.CopyToCore(temp, 0, separatorLength);
-                    return GetSplitCount(temp, separatorLength, pool, out rangeBuffer);
-                }
+                char* temp = buffer.NativePointer;
+                separator.CopyToCore(temp, 0, separatorLength);
+                return GetSplitCount(temp, separatorLength, pool, out rangeBuffer);
             }
             finally
             {

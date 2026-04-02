@@ -1,5 +1,6 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -80,16 +81,14 @@ namespace WitherTorch.Common.Text
             if (SequenceHelper.ContainsGreaterThan(value, valueLength, unchecked((char)GetCharacterLimit())))
                 return false;
 
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(valueLength);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(value, temp, valueLength);
-                    fixed (byte* source = _value)
-                        return InternalSequenceHelper.Contains(source + startIndex, count, temp, valueLength);
-                }
+                byte* temp = buffer.NativePointer;
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(value, temp, valueLength);
+                fixed (byte* source = _value)
+                    return InternalSequenceHelper.Contains(source + startIndex, count, temp, valueLength);
             }
             finally
             {
@@ -99,15 +98,13 @@ namespace WitherTorch.Common.Text
 
         private bool ContainsCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(valueLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0, valueLength);
-                    return ContainsCore(temp, valueLength, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0, valueLength);
+                return ContainsCore(temp, valueLength, startIndex, count);
             }
             finally
             {
@@ -143,17 +140,15 @@ namespace WitherTorch.Common.Text
             if (SequenceHelper.ContainsGreaterThan(value, valueLength, unchecked((char)GetCharacterLimit())))
                 return -1;
 
-            ArrayPool<byte> pool = ArrayPool<byte>.Shared;
-            byte[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(valueLength);
             try
             {
-                fixed (byte* temp = buffer)
-                {
-                    Latin1EncodingHelper.ReadFromUtf16BufferCore(value, temp, valueLength);
-                    fixed (byte* source = _value)
-                        return InternalSequenceHelper.ConvertToIndex32(
-                            InternalSequenceHelper.PointerIndexOf(source + startIndex, count, temp, valueLength), source);
-                }
+                byte* temp = buffer.NativePointer;
+                Latin1EncodingHelper.ReadFromUtf16BufferCore(value, temp, valueLength);
+                fixed (byte* source = _value)
+                    return InternalSequenceHelper.ConvertToIndex32(
+                        InternalSequenceHelper.PointerIndexOf(source + startIndex, count, temp, valueLength), source);
             }
             finally
             {
@@ -163,15 +158,13 @@ namespace WitherTorch.Common.Text
 
         private int IndexOfCore_Other(StringWrapper value, nuint valueLength, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(valueLength);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(valueLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    value.CopyToCore(temp, 0, valueLength);
-                    return IndexOfCore(temp, valueLength, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                value.CopyToCore(temp, 0, valueLength);
+                return IndexOfCore(temp, valueLength, startIndex, count);
             }
             finally
             {

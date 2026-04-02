@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,6 +6,7 @@ using InlineMethod;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
+using WitherTorch.Common.Native;
 using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Text
@@ -188,16 +189,14 @@ namespace WitherTorch.Common.Text
 
         private unsafe nuint GetSplitCount_Fallback(char* separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
-            ArrayPool<char> bufferPool = ArrayPool<char>.Shared;
+            NativeMemoryPool bufferPool = NativeMemoryPool.Shared;
             nuint length = unchecked((nuint)Length);
-            char[] buffer = bufferPool.Rent(length);
+            TypedNativeMemoryBlock<char> buffer = bufferPool.Rent<char>(length);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    CopyToCore(temp, 0, length);
-                    return GetSplitCount_Fallback(temp, length, separator, separatorLength, pool, out rangeBuffer);
-                }
+                char* temp = buffer.NativePointer;
+                CopyToCore(temp, 0, length);
+                return GetSplitCount_Fallback(temp, length, separator, separatorLength, pool, out rangeBuffer);
             }
             finally
             {
@@ -207,15 +206,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe nuint GetSplitCount_Fallback(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
-            ArrayPool<char> bufferPool = ArrayPool<char>.Shared;
-            char[] buffer = bufferPool.Rent(separatorLength);
+            NativeMemoryPool bufferPool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = bufferPool.Rent<char>(separatorLength);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    separator.CopyToCore(temp, 0, separatorLength);
-                    return GetSplitCount_Fallback(temp, separatorLength, pool, out rangeBuffer);
-                }
+                char* temp = buffer.NativePointer;
+                separator.CopyToCore(temp, 0, separatorLength);
+                return GetSplitCount_Fallback(temp, separatorLength, pool, out rangeBuffer);
             }
             finally
             {
@@ -223,7 +220,7 @@ namespace WitherTorch.Common.Text
             }
         }
 
-        private static unsafe nuint GetSplitCount_Fallback(char* source, nuint sourceLength, char* separator, nuint separatorLength, 
+        private static unsafe nuint GetSplitCount_Fallback(char* source, nuint sourceLength, char* separator, nuint separatorLength,
             ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
         {
             nuint result = 1;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Buffers
 
         private static readonly LazyTiny<ArrayPool<T>> _sharedLazy = new LazyTiny<ArrayPool<T>>(CreateSharedPool, LazyThreadSafetyMode.ExecutionAndPublication);
 
-        public static ArrayPool<T> Empty => EmptyArrayPoolImpl.Instance;
+        public static ArrayPool<T> Empty => EmptyImpl.Instance;
         public static ArrayPool<T> Shared => _sharedLazy.Value;
 
         [Inline(InlineBehavior.Keep, export: true)]

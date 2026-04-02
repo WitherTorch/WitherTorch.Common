@@ -1,5 +1,6 @@
-﻿using WitherTorch.Common.Buffers;
+using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -58,15 +59,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool PartiallyEqualsCore_Other(StringWrapper other, nuint startIndex, nuint count)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(count);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    other.CopyToCore(temp, 0, count);
-                    return PartiallyEqualsCore(temp, startIndex, count);
-                }
+                char* temp = buffer.NativePointer;
+                other.CopyToCore(temp, 0, count);
+                return PartiallyEqualsCore(temp, startIndex, count);
             }
             finally
             {
@@ -88,15 +87,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe int CompareToCore_Other(StringWrapper other, nuint length)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    other.CopyToCore(temp, 0, length);
-                    return CompareToCore(temp, length);
-                }
+                char* temp = buffer.NativePointer;
+                other.CopyToCore(temp, 0, length);
+                return CompareToCore(temp, length);
             }
             finally
             {
@@ -118,15 +115,13 @@ namespace WitherTorch.Common.Text
 
         private unsafe bool EqualsCore_Other(StringWrapper other, nuint length)
         {
-            ArrayPool<char> pool = ArrayPool<char>.Shared;
-            char[] buffer = pool.Rent(length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
             try
             {
-                fixed (char* temp = buffer)
-                {
-                    other.CopyToCore(temp, 0, length);
-                    return EqualsCore(temp, length);
-                }
+                char* temp = buffer.NativePointer;
+                other.CopyToCore(temp, 0, length);
+                return EqualsCore(temp, length);
             }
             finally
             {
