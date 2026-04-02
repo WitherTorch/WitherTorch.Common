@@ -2,12 +2,14 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
+using WitherTorch.Common.Helpers;
+
 namespace WitherTorch.Common.Threading
 {
     internal static class LazyTinyHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T InitializeAndReturn<T>(ref T? location, Func<T>? factory, bool threadSafe, object? syncRoot) where T : class
+        public static T InitializeAndReturn<T>(ref T? location, Func<T>? factory, bool threadSafe, object? syncLock) where T : class
         {
             T? result;
             if (!threadSafe) // 對應 LazyThreadSafetyMode.None
@@ -16,17 +18,23 @@ namespace WitherTorch.Common.Threading
                 location = result;
                 return result;
             }
-            if (syncRoot is null) // 對應 LazyThreadSafetyMode.PublicationOnly
+            if (syncLock is null) // 對應 LazyThreadSafetyMode.PublicationOnly
             {
-                result = InitializeOrThrow(factory);
-                T? oldValue = Interlocked.CompareExchange(ref location, result, null);
-                if (oldValue is null)
-                    return result;
-                (result as IDisposable)?.Dispose();
-                return oldValue;
+                result = InterlockedHelper.Read(ref location);
+                if (result is null)
+                {
+                    result = InitializeOrThrow(factory);
+                    T? oldResult = Interlocked.CompareExchange(ref location, result, null);
+                    if (oldResult is not null)
+                    {
+                        (result as IDisposable)?.Dispose();
+                        result = oldResult;
+                    }
+                }
+                return result;
             }
             // 對應 LazyThreadSafetyMode.ExecutionAndPublication
-            Monitor.Enter(syncRoot);
+            Monitor.Enter(syncLock);
             result = location;
             if (result is null)
             {
@@ -36,12 +44,12 @@ namespace WitherTorch.Common.Threading
                 }
                 catch (Exception)
                 {
-                    Monitor.Exit(syncRoot);
+                    Monitor.Exit(syncLock);
                     throw;
                 }
                 location = result;
             }
-            Monitor.Exit(syncRoot);
+            Monitor.Exit(syncLock);
             return result;
         }
 
@@ -50,10 +58,7 @@ namespace WitherTorch.Common.Threading
         {
             if (factory is null)
                 return Activator.CreateInstance<T>();
-            T result = factory.Invoke();
-            if (result is null)
-                throw new InvalidOperationException();
-            return result;
+            return NullSafetyHelper.ThrowIfNull(factory.Invoke());
         }
     }
 }

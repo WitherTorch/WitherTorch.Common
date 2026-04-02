@@ -60,37 +60,16 @@ namespace WitherTorch.Common.Helpers
                         else if (length == (nuint)Vector<T>.Count * 2)
                         {
                             T* ptr2 = ptr + Vector<T>.Count;
-                            switch (type)
-                            {
-                                case BinaryOperatorType.Left:
-                                    break;
-                                case BinaryOperatorType.Right:
-                                    UnsafeHelper.WriteUnaligned(ptr, valueVector);
-                                    UnsafeHelper.WriteUnaligned(ptr2, valueVector);
-                                    break;
-                                default:
-                                    Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                                    Vector<T> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2);
-                                    UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperation(sourceVector, valueVector, type));
-                                    UnsafeHelper.WriteUnaligned(ptr2, VectorizedBinaryOperation(sourceVector2, valueVector, type));
-                                    break;
-                            }
+                            Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                            Vector<T> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2);
+                            UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperation(sourceVector, valueVector, type));
+                            UnsafeHelper.WriteUnaligned(ptr2, VectorizedBinaryOperation(sourceVector2, valueVector, type));
                             return;
                         }
                         else
                         {
-                            switch (type)
-                            {
-                                case BinaryOperatorType.Left:
-                                    break;
-                                case BinaryOperatorType.Right:
-                                    UnsafeHelper.WriteUnaligned(ptr, valueVector);
-                                    break;
-                                default:
-                                    Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
-                                    UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperation(sourceVector, valueVector, type));
-                                    break;
-                            }
+                            Vector<T> sourceVector = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr);
+                            UnsafeHelper.WriteUnaligned(ptr, VectorizedBinaryOperation(sourceVector, valueVector, type));
                             ptr += (nuint)Vector<T>.Count;
                             length -= (nuint)Vector<T>.Count;
                             goto TailProcess;

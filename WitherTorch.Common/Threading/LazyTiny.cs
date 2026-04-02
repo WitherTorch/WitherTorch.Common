@@ -11,7 +11,7 @@ namespace WitherTorch.Common.Threading
     {
         private readonly bool _isThreadSafe;
         private readonly Func<T>? _factory;
-        private readonly object? _syncRoot;
+        private readonly object? _syncLock;
 
         private T? _value;
 
@@ -35,7 +35,7 @@ namespace WitherTorch.Common.Threading
         public LazyTiny(T value)
         {
             _isThreadSafe = true;
-            _syncRoot = null;
+            _syncLock = null;
             _factory = null;
             _value = value;
         }
@@ -44,7 +44,7 @@ namespace WitherTorch.Common.Threading
         {
             _isThreadSafe = isThreadSafe;
             _factory = factory;
-            _syncRoot = syncRoot;
+            _syncLock = syncRoot;
             _value = null;
         }
 
@@ -60,17 +60,34 @@ namespace WitherTorch.Common.Threading
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                T? result;
-                if (_isThreadSafe)
-                    result = InterlockedHelper.Read(ref _value);
-                else
-                    result = _value;
-                return result ?? LazyTinyHelper.InitializeAndReturn(ref _value, _factory, _isThreadSafe, _syncRoot);
+                T? result = _value;
+                return result ?? LazyTinyHelper.InitializeAndReturn(ref _value, _factory, _isThreadSafe, _syncLock);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T? GetValueDirectly() => _value;
+        public T? GetValueDirectly()
+        {
+            if (!_isThreadSafe)
+                return _value;
+            else
+            {
+                T? result = _value;
+                if (result is null)
+                {
+                    object? syncLock = _syncLock;
+                    if (syncLock is null)
+                        result = InterlockedHelper.Read(ref _value);
+                    else
+                    {
+                        Monitor.Enter(syncLock);
+                        result = _value;
+                        Monitor.Exit(syncLock);
+                    }
+                }
+                return result;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()

@@ -26,5 +26,19 @@ namespace WitherTorch.Common.Extensions
             x = _this.X;
             y = _this.Y;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Deconstruct(this Size _this, out int width, out int height)
+        {
+            width = _this.Width;
+            height = _this.Height;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Deconstruct(this SizeF _this, out float width, out float height)
+        {
+            width = _this.Width;
+            height = _this.Height;
+        }
     }
 }

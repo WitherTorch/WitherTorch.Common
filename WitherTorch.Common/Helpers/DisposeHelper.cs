@@ -54,6 +54,22 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SwapDispose<T>([NotNullIfNotNull(nameof(value))] ref T location, in T value = default) where T : struct, IDisposable
+        {
+            T oldObject = location;
+            location = value;
+            oldObject.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SwapDispose<T>([NotNullIfNotNull(nameof(value))] ref T? location, in T value = default) where T : struct, IDisposable
+        {
+            T? oldObjectOptional = location;
+            location = value;
+            oldObjectOptional?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SwapDisposeWeak<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value = null) where T : class?
         {
             T? oldObject = location;

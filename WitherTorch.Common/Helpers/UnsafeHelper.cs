@@ -856,10 +856,10 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref readonly T source, nint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOfSigned<T>());
+        public static ref T AddTypedOffset<T>(ref readonly T source, nint typedOffset) => ref AddByteOffset(in source, typedOffset * SizeOfSigned<T>());
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref readonly T source, nuint typedOffset) => ref AddByteOffset(ref source, typedOffset * SizeOf<T>());
+        public static ref T AddTypedOffset<T>(ref readonly T source, nuint typedOffset) => ref AddByteOffset(in source, typedOffset * SizeOf<T>());
 
         [LocalsInit(false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
