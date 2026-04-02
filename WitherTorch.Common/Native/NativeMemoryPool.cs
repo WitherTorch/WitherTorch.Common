@@ -169,7 +169,7 @@ namespace WitherTorch.Common.Native
             T* ptr = memoryBlock.NativePointer;
             if (ptr == null)
                 return;
-            ReturnCore(ptr, memoryBlock.Length);
+            ReturnCore(ptr, memoryBlock.Length * UnsafeHelper.SizeOf<T>());
         }
 
         public void Return<T>(in TypedNativeMemoryBlock<T> memoryBlock, bool clearContent) where T : unmanaged
