@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WitherTorch.Common.Threading
 {
@@ -72,11 +72,11 @@ namespace WitherTorch.Common.Threading
             _back = back;
         }
 
-        public T Value => GetValueCore(ref _front);
+        public T Value => GetValueCore(in _front);
 
         public T Swap() => SwapCore(ref _front, ref _back);
 
-        protected abstract T GetValueCore(ref T valueRef);
+        protected abstract T GetValueCore(ref readonly T valueRef);
 
         protected abstract T SwapCore(ref T front, ref T back);
     }

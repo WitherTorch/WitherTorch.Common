@@ -1,4 +1,4 @@
-﻿namespace WitherTorch.Common.Threading
+namespace WitherTorch.Common.Threading
 {
     partial class Swapable
     {
@@ -8,7 +8,7 @@
 
             public PessimisticSwapable(T front, T back) : base(front, back) => _syncLock = new object();
 
-            protected override T GetValueCore(ref T valueRef)
+            protected override T GetValueCore(ref readonly T valueRef)
             {
                 lock (_syncLock)
                     return valueRef;
