@@ -67,7 +67,7 @@ namespace WitherTorch.Common.Helpers
             private static void CountOf_CollectResult(in Vector<T> sourceVector, ref nuint counter, nuint offset, [InlineParameter] bool isFullyCheck, [InlineParameter] bool fromMostIndex)
             {
                 T* ptr = (T*)UnsafeHelper.AsPointerIn(in sourceVector);
-                T allBitSet = UnsafeHelper.GetAllBitSetValue<T>();
+                T allBitSet = UnsafeHelper.GetAllBitsSetValue<T>();
                 if (isFullyCheck)
                 {
                     switch (Vector<T>.Count)

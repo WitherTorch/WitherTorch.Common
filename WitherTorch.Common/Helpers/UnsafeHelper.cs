@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Concurrent;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -31,8 +29,6 @@ namespace WitherTorch.Common.Helpers
 #else
                 = PointerSizeConstant_Indeterminate;
 #endif
-
-        private static readonly ConcurrentDictionary<Type, bool> _unmanagedTypeCheckCacheDict = new ConcurrentDictionary<Type, bool>();
 
         public static int PointerSize
         {
@@ -67,97 +63,165 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T GetAllBitSetValue<T>() where T : unmanaged
+        public static T GetAllBitsSetValue<T>() where T : unmanaged
         {
-            switch (sizeof(T))
+            // signed integer types
+            if (typeof(T) == typeof(sbyte))
+                return As<sbyte, T>(-1);
+            if (typeof(T) == typeof(short))
+                return As<short, T>(-1);
+            if (typeof(T) == typeof(int))
+                return As<int, T>(-1);
+            if (typeof(T) == typeof(long))
+                return As<long, T>(-1);
+
+            // unsigned integer types
+            if (typeof(T) == typeof(byte))
+                return As<byte, T>(byte.MaxValue);
+            if (typeof(T) == typeof(ushort))
+                return As<ushort, T>(ushort.MaxValue);
+            if (typeof(T) == typeof(uint))
+                return As<uint, T>(uint.MaxValue);
+            if (typeof(T) == typeof(ulong))
+                return As<ulong, T>(ulong.MaxValue);
+
+            // signed native integer
+            if (typeof(T) == typeof(nint))
+                return As<nint, T>(-1);
+
+            // unsigned native integer
+            if (typeof(T) == typeof(nuint))
             {
-                case sizeof(byte):
-                    return As<byte, T>(byte.MaxValue);
-                case sizeof(ushort):
-                    return As<ushort, T>(ushort.MaxValue);
-                case sizeof(uint):
-                    return As<uint, T>(uint.MaxValue);
-                case sizeof(ulong):
-                    return As<ulong, T>(ulong.MaxValue);
-                default:
-                    T val;
-                    byte* ptr = (byte*)&val;
-                    for (nuint i = 0; i < SizeOf<T>(); i++)
-                        ptr[i] = byte.MaxValue;
-                    return val;
+#if NET8_0_OR_GREATER
+                return As<nuint, T>(nuint.MaxValue);
+#else
+                return As<nuint, T>(unchecked((nuint)(-1)));
+#endif
             }
+
+            // value struct types
+            if (typeof(T) == typeof(char))
+                return As<char, T>(char.MaxValue);
+
+            T result;
+            InitBlock(&result, 0xFF, SizeOf<T>());
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetMinValue<T>() where T : unmanaged
         {
-            if (IsUnsigned<T>())
-                return default;
+            // signed integer types
             if (typeof(T) == typeof(sbyte))
                 return As<sbyte, T>(sbyte.MinValue);
-            if (typeof(T) == typeof(char))
-                return As<char, T>(char.MinValue);
             if (typeof(T) == typeof(short))
                 return As<short, T>(short.MinValue);
             if (typeof(T) == typeof(int))
                 return As<int, T>(int.MinValue);
             if (typeof(T) == typeof(long))
                 return As<long, T>(long.MinValue);
-            if (typeof(T) == typeof(nint))
-                return As<nint, T>(PointerSizeConstant switch
-                {
-                    sizeof(int) => int.MinValue,
-                    sizeof(long) => unchecked((nint)long.MinValue),
-                    _ => PointerSize switch
-                    {
-                        sizeof(int) => int.MinValue,
-                        sizeof(long) => unchecked((nint)long.MinValue),
-                        _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
-                    },
-                });
+
+            // unsigned integer types
+            if (typeof(T) == typeof(byte))
+                return As<byte, T>(byte.MinValue);
+            if (typeof(T) == typeof(ushort))
+                return As<ushort, T>(ushort.MinValue);
+            if (typeof(T) == typeof(uint))
+                return As<uint, T>(uint.MinValue);
+            if (typeof(T) == typeof(ulong))
+                return As<ulong, T>(ulong.MinValue);
+
+            // floating types
             if (typeof(T) == typeof(float))
                 return As<float, T>(float.MinValue);
             if (typeof(T) == typeof(double))
                 return As<double, T>(double.MinValue);
+
+            // signed native integer
+            if (typeof(T) == typeof(nint))
+            {
+#if NET8_0_OR_GREATER
+                return As<nint, T>(nint.MinValue);
+#else
+                return As<nint, T>(~(unchecked((nint)(-1)) >>> 1));
+#endif
+            }
+
+            // unsigned native integer
+            if (typeof(T) == typeof(nuint))
+            {
+#if NET8_0_OR_GREATER
+                return As<nuint, T>(nuint.MinValue);
+#else
+                return default;
+#endif
+            }
+
+            // value struct types
+            if (typeof(T) == typeof(char))
+                return As<char, T>(char.MinValue);
             if (typeof(T) == typeof(decimal))
                 return As<decimal, T>(decimal.MinValue);
-            throw new PlatformNotSupportedException();
+
+            return MinHelper<T>.MinValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetMaxValue<T>() where T : unmanaged
         {
-            if (IsUnsigned<T>())
-                return Not<T>(default);
+            // signed integer types
             if (typeof(T) == typeof(sbyte))
                 return As<sbyte, T>(sbyte.MaxValue);
-            if (typeof(T) == typeof(char))
-                return As<char, T>(char.MaxValue);
             if (typeof(T) == typeof(short))
                 return As<short, T>(short.MaxValue);
             if (typeof(T) == typeof(int))
                 return As<int, T>(int.MaxValue);
             if (typeof(T) == typeof(long))
                 return As<long, T>(long.MaxValue);
-            if (typeof(T) == typeof(nint))
-                return As<nint, T>(PointerSizeConstant switch
-                {
-                    sizeof(int) => int.MaxValue,
-                    sizeof(long) => unchecked((nint)long.MaxValue),
-                    _ => PointerSize switch
-                    {
-                        sizeof(int) => int.MaxValue,
-                        sizeof(long) => unchecked((nint)long.MaxValue),
-                        _ => throw new NotSupportedException("Unsupported pointer size: " + PointerSize),
-                    },
-                });
+
+            // unsigned integer types
+            if (typeof(T) == typeof(byte))
+                return As<byte, T>(byte.MaxValue);
+            if (typeof(T) == typeof(ushort))
+                return As<ushort, T>(ushort.MaxValue);
+            if (typeof(T) == typeof(uint))
+                return As<uint, T>(uint.MaxValue);
+            if (typeof(T) == typeof(ulong))
+                return As<ulong, T>(ulong.MaxValue);
+
+            // floating types
             if (typeof(T) == typeof(float))
                 return As<float, T>(float.MaxValue);
             if (typeof(T) == typeof(double))
                 return As<double, T>(double.MaxValue);
+
+            // signed native integer
+            if (typeof(T) == typeof(nint))
+            {
+#if NET8_0_OR_GREATER
+                return As<nint, T>(nint.MaxValue);
+#else
+                return As<nint, T>(unchecked((nint)(-1)) >>> 1);
+#endif
+            }
+
+            // unsigned native integer
+            if (typeof(T) == typeof(nuint))
+            {
+#if NET8_0_OR_GREATER
+                return As<nuint, T>(nuint.MaxValue);
+#else
+                return As<nuint, T>(unchecked((nuint)(-1)));
+#endif
+            }
+
+            // value struct types
+            if (typeof(T) == typeof(char))
+                return As<char, T>(char.MaxValue);
             if (typeof(T) == typeof(decimal))
                 return As<decimal, T>(decimal.MaxValue);
-            throw new PlatformNotSupportedException();
+
+            return MaxHelper<T>.MaxValue;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -224,9 +288,9 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUnmanagedType<T>()
 #if NET472_OR_GREATER
-                => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || IsUnmanageTypeSlow(typeof(T));
+            => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || IsUnmanageTypeSlow<T>();
 #else
-                => !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+            => !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
 #endif
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -234,21 +298,6 @@ namespace WitherTorch.Common.Helpers
         public static bool IsUnmanagedType(Type type)
             => IsPrimitiveType(type) || type.IsEnum || type.IsPointer || IsUnmanageTypeSlow(type);
 #pragma warning restore CS0618
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool IsUnmanageTypeSlow(Type type)
-            => type.IsValueType && _unmanagedTypeCheckCacheDict.GetOrAdd(type, IsUnmanageTypeSlowCore);
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool IsUnmanageTypeSlowCore(Type type)
-        {
-            foreach (FieldInfo field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
-            {
-                if (!IsUnmanagedType(field.FieldType))
-                    return false;
-            }
-            return true;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUnsigned<T>()
@@ -481,7 +530,7 @@ namespace WitherTorch.Common.Helpers
                 false
 #else
                 IsSignedIntegerType<T>()
-#endif      
+#endif
                 )
             {
                 T diff = Subtract(a, b);
@@ -511,7 +560,7 @@ namespace WitherTorch.Common.Helpers
                 false
 #else
                 IsUnsignedIntegerType<T>()
-#endif      
+#endif
                 )
             {
                 // a ^ ((a ^ b) & -(a < b))
@@ -541,7 +590,7 @@ namespace WitherTorch.Common.Helpers
                 false
 #else
                 IsSignedIntegerType<T>()
-#endif      
+#endif
                 )
             {
                 // min = b + ((a - b) & ((a - b) >> 31))
@@ -572,7 +621,7 @@ namespace WitherTorch.Common.Helpers
                 false
 #else
                 IsUnsignedIntegerType<T>()
-#endif      
+#endif
                 )
             {
                 //a ^ ((a ^ b) & -(a > b))

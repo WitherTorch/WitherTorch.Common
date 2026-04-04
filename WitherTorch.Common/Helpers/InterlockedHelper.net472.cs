@@ -1,4 +1,4 @@
-﻿#if NET472_OR_GREATER
+#if NET472_OR_GREATER
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -418,6 +418,42 @@ namespace WitherTorch.Common.Helpers
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static partial nuint GetAndIncrement(ref nuint location) => GetAndAdd(ref location, 1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial int Decrement(ref int location) => Add(ref location, -1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial uint Decrement(ref uint location) => Add(ref location, uint.MaxValue);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial long Decrement(ref long location) => Add(ref location, -1L);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial ulong Decrement(ref ulong location) => Add(ref location, ulong.MaxValue);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial nint Decrement(ref nint location) => Add(ref location, -1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial nuint Decrement(ref nuint location) => Add(ref location, UnsafeHelper.GetMaxValue<nuint>());
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial int GetAndDecrement(ref int location) => GetAndAdd(ref location, -1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial uint GetAndDecrement(ref uint location) => GetAndAdd(ref location, uint.MaxValue);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial long GetAndDecrement(ref long location) => GetAndAdd(ref location, -1L);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial ulong GetAndDecrement(ref ulong location) => GetAndAdd(ref location, ulong.MaxValue);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial nint GetAndDecrement(ref nint location) => GetAndAdd(ref location, -1);
+
+        [Inline(InlineBehavior.Keep, export: true)]
+        public static partial nuint GetAndDecrement(ref nuint location) => GetAndAdd(ref location, UnsafeHelper.GetMaxValue<nuint>());
 
     }
 }

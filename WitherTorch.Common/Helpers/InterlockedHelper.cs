@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -114,6 +114,26 @@ namespace WitherTorch.Common.Helpers
         public static partial ulong GetAndIncrement(ref ulong location);
         public static partial nint GetAndIncrement(ref nint location);
         public static partial nuint GetAndIncrement(ref nuint location);
+
+        /// <inheritdoc cref="Interlocked.Decrement(ref int)"/>
+        public static partial int Decrement(ref int location);
+        /// <inheritdoc cref="Interlocked.Decrement(ref int)"/>
+        public static partial uint Decrement(ref uint location);
+        /// <inheritdoc cref="Interlocked.Decrement(ref long)"/>
+        public static partial long Decrement(ref long location);
+        /// <inheritdoc cref="Interlocked.Decrement(ref long)"/>
+        public static partial ulong Decrement(ref ulong location);
+        /// <inheritdoc cref="Interlocked.Decrement(ref long)"/>
+        public static partial nint Decrement(ref nint location);
+        /// <inheritdoc cref="Interlocked.Decrement(ref long)"/>
+        public static partial nuint Decrement(ref nuint location);
+
+        public static partial int GetAndDecrement(ref int location);
+        public static partial uint GetAndDecrement(ref uint location);
+        public static partial long GetAndDecrement(ref long location);
+        public static partial ulong GetAndDecrement(ref ulong location);
+        public static partial nint GetAndDecrement(ref nint location);
+        public static partial nuint GetAndDecrement(ref nuint location);
 
         // Slow routines
         [Inline(InlineBehavior.Remove)]

@@ -72,7 +72,7 @@ namespace WitherTorch.Common.Helpers
             private static T* IndexOf_FindResult(in Vector<T> sourceVector, ref T* sourcePointer)
             {
                 T* ptr = (T*)UnsafeHelper.AsPointerIn(in sourceVector);
-                T allBitSet = UnsafeHelper.GetAllBitSetValue<T>();
+                T allBitSet = UnsafeHelper.GetAllBitsSetValue<T>();
                 switch (Vector<T>.Count)
                 {
                     case 4:

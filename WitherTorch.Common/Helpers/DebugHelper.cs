@@ -41,10 +41,12 @@ namespace WitherTorch.Common.Helpers
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        [DoesNotReturn]
         public static void Throw() => throw new DebugException($"{nameof(DebugHelper)}.{nameof(Throw)} called!");
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
+        [DoesNotReturn]
         public static void Throw(string message) => throw new DebugException(message);
 
         [DebuggerHidden]
