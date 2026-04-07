@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
@@ -9,6 +10,8 @@ namespace WitherTorch.Common.Text
 {
     internal sealed partial class Utf16String : StringWrapper, IPinnableReference<char>, IReadOnlyViewProvider<char>
     {
+        public const int CodePage = 1200;
+
         private readonly string _value;
 
         public override StringType StringType => StringType.Utf16;
@@ -39,6 +42,8 @@ namespace WitherTorch.Common.Text
 
             return new Utf16String(new string(source, 0, unchecked((int)length)));
         }
+
+        public override bool IsSpecificEncoding(Encoding encoding) => encoding.CodePage == CodePage;
 
         protected internal override unsafe char GetCharAt(nuint index)
         {

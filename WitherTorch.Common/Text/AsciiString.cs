@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using WitherTorch.Common.Helpers;
 
@@ -8,11 +9,21 @@ namespace WitherTorch.Common.Text
 {
     internal sealed partial class AsciiString : AsciiLikeString, IPinnableReference<byte>
     {
+        public const int CodePage = 20127;
+
         public override StringType StringType => StringType.Ascii;
 
         internal AsciiString(byte[] value) : base(value) { }
 
         protected override byte GetCharacterLimit() => AsciiEncodingHelper.AsciiEncodingLimit_InByte;
+
+        public override bool IsSpecificEncoding(Encoding encoding)
+            => encoding.CodePage switch
+            {
+                CodePage or Latin1String.CodePage or
+                Latin1String.CodePage_Alternative or Utf8String.CodePage => true,
+                _ => false
+            };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AsciiString Allocate(nuint length, out byte[] buffer)

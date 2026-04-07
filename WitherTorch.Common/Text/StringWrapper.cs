@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Native;
 
 namespace WitherTorch.Common.Text
 {
@@ -33,6 +35,8 @@ namespace WitherTorch.Common.Text
         protected internal virtual char GetCharAt(nuint index) => this.Skip(index).First();
 
         protected virtual bool IsFullyWhitespaced() => this.All(Utf16StringHelper.IsWhiteSpaceCharacter);
+
+        public abstract bool IsSpecificEncoding(Encoding encoding);
 
         public unsafe void CopyTo(char[] destination)
         {
@@ -140,25 +144,85 @@ namespace WitherTorch.Common.Text
         public StringWrapper ToStringWrapper() => this;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual StringWrapper ToStringWrapper(StringCreateOptions options) => Create(ToString(), options);
+        public virtual unsafe StringWrapper ToStringWrapper(StringCreateOptions options)
+        {
+            switch (StringType)
+            {
+                case StringType.Empty:
+                    return this;
+                case StringType.Ascii:
+                    if (options.HasFlagFast(
+                        StringCreateOptions.UseAsciiCompression |
+                        StringCreateOptions.UseLatin1Compression |
+                        StringCreateOptions.UseUtf8Compression) ||
+                        (!options.HasFlagFast(StringCreateOptions._Force_Flag) && options.HasFlagFast(StringCreateOptions.UseUtf16Compression)))
+                        return this;
+                    break;
+                case StringType.Latin1:
+                    if (options.HasFlagFast(StringCreateOptions.UseLatin1Compression) ||
+                        (!options.HasFlagFast(StringCreateOptions._Force_Flag) && options.HasFlagFast(StringCreateOptions.UseUtf16Compression)))
+                        return this;
+                    break;
+                case StringType.Utf8:
+                    if (options.HasFlagFast(StringCreateOptions.UseUtf8Compression))
+                        return this;
+                    break;
+                case StringType.Utf16:
+                    if (options.HasFlagFast(StringCreateOptions.UseUtf16Compression))
+                        return this;
+                    break;
+                default:
+                    break;
+            }
+            nuint length = MathHelper.MakeUnsigned(Length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
+            try
+            {
+                char* ptr = buffer.NativePointer;
+                CopyToCore(ptr, 0, length);
+                return Create(ptr, 0, length, options);
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual StringWrapper ToStringWrapper(StringType type)
+        public virtual unsafe StringWrapper ToStringWrapper(StringType type)
         {
             if (StringType == type)
                 return this;
-            return type switch
+            switch (type)
             {
-                StringType.Empty => Empty,
-                _ => Create(ToString(), type switch
-                {
-                    StringType.Ascii => StringCreateOptions.ForceUseAscii,
-                    StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
-                    StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
-                    StringType.Utf16 => StringCreateOptions.ForceUseUtf16,
-                    _ => throw new ArgumentOutOfRangeException(nameof(type)),
-                }),
+                case StringType.Empty:
+                    return Empty;
+                case StringType.Utf16:
+                    return CreateUtf16String(ToString());
+                default:
+                    break;
+            }
+            StringCreateOptions options = type switch
+            {
+                StringType.Ascii => StringCreateOptions.ForceUseAscii,
+                StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
+                StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
+                _ => throw new ArgumentOutOfRangeException(nameof(type)),
             };
+            nuint length = MathHelper.MakeUnsigned(Length);
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
+            try
+            {
+                char* ptr = buffer.NativePointer;
+                CopyToCore(ptr, 0, length);
+                return Create(ptr, 0, length, options);
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
         }
 
         #region Interface Implementations

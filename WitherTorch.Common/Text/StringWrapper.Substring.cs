@@ -1,4 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+
+using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
@@ -38,7 +41,13 @@ namespace WitherTorch.Common.Text
             return unchecked(SubstringCore((nuint)startIndex, (nuint)count));
         }
 
-        protected internal abstract StringWrapper SubstringCore(nuint startIndex, nuint count);
+        protected internal virtual unsafe StringWrapper SubstringCore(nuint startIndex, nuint count)
+        {
+            string result = StringHelper.AllocateRawString((int)MathHelper.MakeSigned(count));
+            fixed (char* ptr = result)
+                CopyToCore(ptr, startIndex, count);
+            return result;
+        }
 
         public StringWrapper Remove(int startIndex)
         {
@@ -72,6 +81,20 @@ namespace WitherTorch.Common.Text
             return RemoveCore((nuint)startIndex, (nuint)count);
         }
 
-        protected abstract StringWrapper RemoveCore(nuint startIndex, nuint count);
+        protected virtual unsafe StringWrapper RemoveCore(nuint startIndex, nuint count)
+        {
+            string result = StringHelper.AllocateRawString((int)MathHelper.MakeSigned(count));
+            using IEnumerator<char> enumerator = GetEnumerator();
+            fixed (char* ptr = result)
+            {
+                char* iterator = ptr;
+                for (nuint i = 0; i < startIndex && enumerator.MoveNext(); i++)
+                    *iterator++ = enumerator.Current;
+                for (nuint i = 0; i < count && enumerator.MoveNext(); i++) ;
+                while (enumerator.MoveNext())
+                    *iterator++ = enumerator.Current;
+            }
+            return CreateUtf16String(result);
+        }
     }
 }

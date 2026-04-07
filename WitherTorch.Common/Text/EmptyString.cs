@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 using InlineMethod;
 
@@ -21,6 +22,8 @@ namespace WitherTorch.Common.Text
         public override int Length => 0;
 
         private EmptyString() { }
+
+        public override bool IsSpecificEncoding(Encoding encoding) => true;
 
         protected internal override char GetCharAt(nuint index) => throw new IndexOutOfRangeException();
 

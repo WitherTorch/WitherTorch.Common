@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
@@ -9,9 +10,19 @@ namespace WitherTorch.Common.Text
 {
     internal sealed partial class Latin1String : AsciiLikeString, IPinnableReference<byte>
     {
+        public const int CodePage = 28591;
+        public const int CodePage_Alternative = 1252;
+
         public override StringType StringType => StringType.Latin1;
 
         internal Latin1String(byte[] value) : base(value) { }
+
+        public override bool IsSpecificEncoding(Encoding encoding)
+            => encoding.CodePage switch
+            {
+                CodePage or CodePage_Alternative => true,
+                _ => false
+            };
 
         protected override byte GetCharacterLimit() => Latin1EncodingHelper.Latin1EncodingLimit_InByte;
 

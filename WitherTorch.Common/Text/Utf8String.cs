@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
@@ -12,6 +13,8 @@ namespace WitherTorch.Common.Text
 {
     internal sealed partial class Utf8String : StringWrapper, IPinnableReference<byte>, IReadOnlyViewProvider<byte>
     {
+        public const int CodePage = 65001;
+
         private static readonly nuint MaxUtf8StringBufferSize = unchecked((nuint)Limits.MaxArrayLength - 1);
         private static readonly nuint Utf16CompressionLengthLimit = unchecked((nuint)Limits.MaxArrayLength / 2 - 1);
 
@@ -113,6 +116,8 @@ namespace WitherTorch.Common.Text
             return false;
         }
 
+        public override bool IsSpecificEncoding(Encoding encoding) => encoding.CodePage == CodePage;
+
         public override IEnumerator<char> GetEnumerator() => new CharEnumerator(_value);
 
         protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
@@ -170,7 +175,11 @@ namespace WitherTorch.Common.Text
 
         nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length - 1);
 
-        ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView() => ReadOnlyView.FromArray(_value).Slice(0, _value.Length - 1);
+        ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView()
+        {
+            byte[] value = _value;
+            return new ReadOnlyView<byte>(value).Slice(0, value.Length - 1);
+        }
 
         private unsafe AsciiString ToStringWrapper_Ascii()
         {
