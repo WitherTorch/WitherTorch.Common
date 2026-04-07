@@ -10,7 +10,7 @@ namespace WitherTorch.Common.Extensions
     public static class EnumExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasFlagOptimized<T>(this T _this, T flag) where T : Enum
+        public static bool HasFlagFast<T>(this T _this, T flag) where T : Enum
         {
             switch (UnsafeHelper.SizeOf<T>())
             {

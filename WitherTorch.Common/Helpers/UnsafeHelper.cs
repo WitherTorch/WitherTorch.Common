@@ -53,186 +53,177 @@ namespace WitherTorch.Common.Helpers
         public static void* PointerMinValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
-            get => (void*)GetMinValue<nuint>();
+            get => (void*)0;
         }
 
         public static void* PointerMaxValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
-            get => (void*)GetMaxValue<nuint>();
+            get => (void*)-1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetAllBitsSetValue<T>() where T : unmanaged
-        {
-            // signed integer types
-            if (typeof(T) == typeof(sbyte))
-                return As<sbyte, T>(-1);
-            if (typeof(T) == typeof(short))
-                return As<short, T>(-1);
-            if (typeof(T) == typeof(int))
-                return As<int, T>(-1);
-            if (typeof(T) == typeof(long))
-                return As<long, T>(-1);
-
-            // unsigned integer types
-            if (typeof(T) == typeof(byte))
-                return As<byte, T>(byte.MaxValue);
-            if (typeof(T) == typeof(ushort))
-                return As<ushort, T>(ushort.MaxValue);
-            if (typeof(T) == typeof(uint))
-                return As<uint, T>(uint.MaxValue);
-            if (typeof(T) == typeof(ulong))
-                return As<ulong, T>(ulong.MaxValue);
-
-            // signed native integer
-            if (typeof(T) == typeof(nint))
-                return As<nint, T>(-1);
-
-            // unsigned native integer
-            if (typeof(T) == typeof(nuint))
+            => sizeof(T) switch
             {
-#if NET8_0_OR_GREATER
-                return As<nuint, T>(nuint.MaxValue);
-#else
-                return As<nuint, T>(unchecked((nuint)(-1)));
-#endif
-            }
+                8 => As<ulong, T>(ulong.MaxValue),
+                4 => As<uint, T>(uint.MaxValue),
+                2 => As<ushort, T>(ushort.MaxValue),
+                1 => As<byte, T>(byte.MaxValue),
+                _ => GetAllBitsValue_Other<T>()
+            };
 
-            // value struct types
-            if (typeof(T) == typeof(char))
-                return As<char, T>(char.MaxValue);
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetAllBitsValue_Other<T>() where T : unmanaged
+        {
             T result;
-            InitBlock(&result, 0xFF, SizeOf<T>());
+            InitBlockUnaligned(&result, 0xFF, SizeOf<T>());
             return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetMinValue<T>() where T : unmanaged
+            => sizeof(T) switch
+            {
+                1 => GetMinValue_1Bytes<T>(),
+                2 => GetMinValue_2Bytes<T>(),
+                4 => GetMinValue_4Bytes<T>(),
+                8 => GetMinValue_8Bytes<T>(),
+                16 => GetMinValue_16Bytes<T>(),
+                _ => GetMinValueSlow<T>()
+            };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMinValue_16Bytes<T>() where T : unmanaged
         {
-            // signed integer types
-            if (typeof(T) == typeof(sbyte))
-                return As<sbyte, T>(sbyte.MinValue);
-            if (typeof(T) == typeof(short))
-                return As<short, T>(short.MinValue);
-            if (typeof(T) == typeof(int))
-                return As<int, T>(int.MinValue);
-            if (typeof(T) == typeof(long))
-                return As<long, T>(long.MinValue);
-
-            // unsigned integer types
-            if (typeof(T) == typeof(byte))
-                return As<byte, T>(byte.MinValue);
-            if (typeof(T) == typeof(ushort))
-                return As<ushort, T>(ushort.MinValue);
-            if (typeof(T) == typeof(uint))
-                return As<uint, T>(uint.MinValue);
-            if (typeof(T) == typeof(ulong))
-                return As<ulong, T>(ulong.MinValue);
-
-            // floating types
-            if (typeof(T) == typeof(float))
-                return As<float, T>(float.MinValue);
-            if (typeof(T) == typeof(double))
-                return As<double, T>(double.MinValue);
-
-            // signed native integer
-            if (typeof(T) == typeof(nint))
-            {
-#if NET8_0_OR_GREATER
-                return As<nint, T>(nint.MinValue);
-#else
-                return As<nint, T>(~(unchecked((nint)(-1)) >>> 1));
-#endif
-            }
-
-            // unsigned native integer
-            if (typeof(T) == typeof(nuint))
-            {
-#if NET8_0_OR_GREATER
-                return As<nuint, T>(nuint.MinValue);
-#else
-                return default;
-#endif
-            }
-
-            // value struct types
-            if (typeof(T) == typeof(char))
-                return As<char, T>(char.MinValue);
             if (typeof(T) == typeof(decimal))
                 return As<decimal, T>(decimal.MinValue);
+            return GetMinValueSlow<T>();
+        }
 
-            return MinHelper<T>.MinValue;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMinValue_8Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(long) || typeof(T) == typeof(nint))
+                return As<long, T>(long.MinValue);
+            if (typeof(T) == typeof(ulong) || typeof(T) == typeof(nuint))
+                return As<ulong, T>(ulong.MinValue);
+            if (typeof(T) == typeof(double))
+                return As<double, T>(double.MinValue);
+            return GetMinValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMinValue_4Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(int) || typeof(T) == typeof(nint))
+                return As<int, T>(int.MinValue);
+            if (typeof(T) == typeof(uint) || typeof(T) == typeof(nuint))
+                return As<uint, T>(uint.MinValue);
+            if (typeof(T) == typeof(float))
+                return As<float, T>(float.MinValue);
+            return GetMinValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMinValue_2Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(short))
+                return As<short, T>(short.MinValue);
+            if (typeof(T) == typeof(ushort))
+                return As<ushort, T>(ushort.MinValue);
+            return GetMinValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMinValue_1Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(sbyte))
+                return As<sbyte, T>(sbyte.MinValue);
+            if (typeof(T) == typeof(byte))
+                return As<byte, T>(byte.MinValue);
+            return GetMinValueSlow<T>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetMaxValue<T>() where T : unmanaged
+            => sizeof(T) switch
+            {
+                1 => GetMaxValue_1Bytes<T>(),
+                2 => GetMaxValue_2Bytes<T>(),
+                4 => GetMaxValue_4Bytes<T>(),
+                8 => GetMaxValue_8Bytes<T>(),
+                16 => GetMaxValue_16Bytes<T>(),
+                _ => GetMaxValueSlow<T>()
+            };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMaxValue_16Bytes<T>() where T : unmanaged
         {
-            // signed integer types
-            if (typeof(T) == typeof(sbyte))
-                return As<sbyte, T>(sbyte.MaxValue);
-            if (typeof(T) == typeof(short))
-                return As<short, T>(short.MaxValue);
-            if (typeof(T) == typeof(int))
-                return As<int, T>(int.MaxValue);
-            if (typeof(T) == typeof(long))
-                return As<long, T>(long.MaxValue);
-
-            // unsigned integer types
-            if (typeof(T) == typeof(byte))
-                return As<byte, T>(byte.MaxValue);
-            if (typeof(T) == typeof(ushort))
-                return As<ushort, T>(ushort.MaxValue);
-            if (typeof(T) == typeof(uint))
-                return As<uint, T>(uint.MaxValue);
-            if (typeof(T) == typeof(ulong))
-                return As<ulong, T>(ulong.MaxValue);
-
-            // floating types
-            if (typeof(T) == typeof(float))
-                return As<float, T>(float.MaxValue);
-            if (typeof(T) == typeof(double))
-                return As<double, T>(double.MaxValue);
-
-            // signed native integer
-            if (typeof(T) == typeof(nint))
-            {
-#if NET8_0_OR_GREATER
-                return As<nint, T>(nint.MaxValue);
-#else
-                return As<nint, T>(unchecked((nint)(-1)) >>> 1);
-#endif
-            }
-
-            // unsigned native integer
-            if (typeof(T) == typeof(nuint))
-            {
-#if NET8_0_OR_GREATER
-                return As<nuint, T>(nuint.MaxValue);
-#else
-                return As<nuint, T>(unchecked((nuint)(-1)));
-#endif
-            }
-
-            // value struct types
-            if (typeof(T) == typeof(char))
-                return As<char, T>(char.MaxValue);
             if (typeof(T) == typeof(decimal))
                 return As<decimal, T>(decimal.MaxValue);
-
-            return MaxHelper<T>.MaxValue;
+            return GetMaxValueSlow<T>();
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMaxValue_8Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(long) || typeof(T) == typeof(nint))
+                return As<long, T>(long.MaxValue);
+            if (typeof(T) == typeof(ulong) || typeof(T) == typeof(nuint))
+                return As<ulong, T>(ulong.MaxValue);
+            if (typeof(T) == typeof(double))
+                return As<double, T>(double.MaxValue);
+            return GetMaxValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMaxValue_4Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(int) || typeof(T) == typeof(nint))
+                return As<int, T>(int.MaxValue);
+            if (typeof(T) == typeof(uint) || typeof(T) == typeof(nuint))
+                return As<uint, T>(uint.MaxValue);
+            if (typeof(T) == typeof(float))
+                return As<float, T>(float.MaxValue);
+            return GetMaxValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMaxValue_2Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(short))
+                return As<short, T>(short.MaxValue);
+            if (typeof(T) == typeof(ushort))
+                return As<ushort, T>(ushort.MaxValue);
+            return GetMaxValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T GetMaxValue_1Bytes<T>() where T : unmanaged
+        {
+            if (typeof(T) == typeof(sbyte))
+                return As<sbyte, T>(sbyte.MaxValue);
+            if (typeof(T) == typeof(byte))
+                return As<byte, T>(byte.MaxValue);
+            return GetMaxValueSlow<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static T GetMinValueSlow<T>() where T : unmanaged => MinHelper<T>.MinValue;
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static T GetMaxValueSlow<T>() where T : unmanaged => MaxHelper<T>.MaxValue;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPrimitiveType<T>()
                 => IsIntegerType<T>() || IsFloatingPointType<T>() || typeof(T) == typeof(bool);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsIntegerType<T>()
             => IsSignedIntegerType<T>() || IsUnsignedIntegerType<T>();
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSignedIntegerType<T>()
                 => (typeof(T) == typeof(sbyte)) ||
                        (typeof(T) == typeof(short)) ||
@@ -240,7 +231,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(long)) ||
                        (typeof(T) == typeof(nint));
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUnsignedIntegerType<T>()
                 => (typeof(T) == typeof(byte)) ||
                        (typeof(T) == typeof(char)) ||
@@ -249,7 +240,7 @@ namespace WitherTorch.Common.Helpers
                        (typeof(T) == typeof(ulong)) ||
                        (typeof(T) == typeof(nuint));
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsFloatingPointType<T>()
                 => (typeof(T) == typeof(float)) ||
                        (typeof(T) == typeof(double));
@@ -284,7 +275,14 @@ namespace WitherTorch.Common.Helpers
                 => (type == typeof(float)) ||
                        (type == typeof(double));
 
-#pragma warning disable CS0618
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsUnsigned<T>()
+            => (typeof(T) == typeof(byte)) ||
+                   (typeof(T) == typeof(ushort)) ||
+                   (typeof(T) == typeof(uint)) ||
+                   (typeof(T) == typeof(ulong)) ||
+                   (typeof(T) == typeof(nuint));
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsUnmanagedType<T>()
 #if NET472_OR_GREATER
@@ -297,15 +295,6 @@ namespace WitherTorch.Common.Helpers
         [SecuritySafeCritical]
         public static bool IsUnmanagedType(Type type)
             => IsPrimitiveType(type) || type.IsEnum || type.IsPointer || IsUnmanageTypeSlow(type);
-#pragma warning restore CS0618
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsUnsigned<T>()
-            => (typeof(T) == typeof(byte)) ||
-                   (typeof(T) == typeof(ushort)) ||
-                   (typeof(T) == typeof(uint)) ||
-                   (typeof(T) == typeof(ulong)) ||
-                   (typeof(T) == typeof(nuint));
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsGreaterThan<T>(T a, T b)
@@ -518,7 +507,7 @@ namespace WitherTorch.Common.Helpers
         {
             IL.Push(a);
             IL.Push(b);
-            IL.Emit.Shr();
+            IL.Emit.Shr_Un();
             return IL.Return<T>();
         }
 
@@ -806,6 +795,7 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TTo RewriteManagedObjectType<TFrom, TTo>(TFrom obj, TTo template) where TFrom : class where TTo : class
         {
+            // (Very dangerous, just a experiment method!
 #pragma warning disable CS8500
             **(nuint***)&obj = **(nuint***)&template;
 #pragma warning restore CS8500

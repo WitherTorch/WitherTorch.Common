@@ -264,7 +264,15 @@ namespace WitherTorch.Common.Text
             return limit;
         }
 
-        public static bool operator ==(StringWrapper left, StringWrapper right)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: NotNullIfNotNull(nameof(str))]
+        public static implicit operator StringWrapper?(string? str) => str is null ? null : CreateUtf16String(str);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: NotNullIfNotNull(nameof(str))]
+        public static explicit operator string?(StringWrapper? str) => str?.ToString();
+
+        public static bool operator ==(StringWrapper? left, StringWrapper? right)
         {
             if (ReferenceEquals(left, right))
                 return true;
@@ -273,13 +281,13 @@ namespace WitherTorch.Common.Text
             return left.Equals(right);
         }
 
-        public static bool operator !=(StringWrapper left, StringWrapper right)
+        public static bool operator !=(StringWrapper? left, StringWrapper? right)
         {
             if (ReferenceEquals(left, right))
                 return false;
             if (left is null || right is null)
-                return false;
-            return left.Equals(right);
+                return true;
+            return !left.Equals(right);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using WitherTorch.Common.Text;
@@ -10,8 +10,22 @@ namespace WitherTorch.Common.Extensions
         extension(StringWrapper)
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static StringWrapper Create(in ReadOnlyMemory<char> memory)
+                => StringWrapper.Create(memory.Span, WTCommon.StringCreateOptions);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static StringWrapper Create(in ReadOnlySpan<char> span)
                 => StringWrapper.Create(span, WTCommon.StringCreateOptions);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe StringWrapper Create(in ReadOnlyMemory<char> memory, StringCreateOptions options)
+            {
+                int length = memory.Length;
+                if (length <= 0)
+                    return StringWrapper.Empty;
+                fixed (char* ptr = memory.Span)
+                    return StringWrapper.CreateCore(ptr, unchecked((nuint)length), options);
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static unsafe StringWrapper Create(in ReadOnlySpan<char> span, StringCreateOptions options)
@@ -21,6 +35,16 @@ namespace WitherTorch.Common.Extensions
                     return StringWrapper.Empty;
                 fixed (char* ptr = span)
                     return StringWrapper.CreateCore(ptr, unchecked((nuint)length), options);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe StringWrapper CreateUtf16String(in ReadOnlyMemory<char> memory)
+            {
+                int length = memory.Length;
+                if (length <= 0)
+                    return StringWrapper.Empty;
+                fixed (char* ptr = memory.Span)
+                    return Utf16String.Create(ptr, unchecked((nuint)length));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,6 +58,16 @@ namespace WitherTorch.Common.Extensions
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe StringWrapper CreateAsciiString(in ReadOnlyMemory<byte> memory)
+            {
+                int length = memory.Length;
+                if (length <= 0)
+                    return StringWrapper.Empty;
+                fixed (byte* ptr = memory.Span)
+                    return AsciiString.Create(ptr, unchecked((nuint)length));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static unsafe StringWrapper CreateAsciiString(in ReadOnlySpan<byte> span)
             {
                 int length = span.Length;
@@ -44,6 +78,16 @@ namespace WitherTorch.Common.Extensions
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe StringWrapper CreateLatin1String(in ReadOnlyMemory<byte> memory)
+            {
+                int length = memory.Length;
+                if (length <= 0)
+                    return StringWrapper.Empty;
+                fixed (byte* ptr = memory.Span)
+                    return Latin1String.Create(ptr, unchecked((nuint)length));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static unsafe StringWrapper CreateLatin1String(in ReadOnlySpan<byte> span)
             {
                 int length = span.Length;
@@ -51,6 +95,16 @@ namespace WitherTorch.Common.Extensions
                     return StringWrapper.Empty;
                 fixed (byte* ptr = span)
                     return Latin1String.Create(ptr, unchecked((nuint)length));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static unsafe StringWrapper CreateUtf8String(in ReadOnlyMemory<byte> memory)
+            {
+                int length = memory.Length;
+                if (length <= 0)
+                    return StringWrapper.Empty;
+                fixed (byte* ptr = memory.Span)
+                    return Utf8String.Create(ptr, unchecked((nuint)length));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

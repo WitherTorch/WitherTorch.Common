@@ -10,7 +10,7 @@ namespace WitherTorch.Common.Text
     {
         public override StringType StringType => StringType.Ascii;
 
-        private AsciiString(byte[] value) : base(value) { }
+        internal AsciiString(byte[] value) : base(value) { }
 
         protected override byte GetCharacterLimit() => AsciiEncodingHelper.AsciiEncodingLimit_InByte;
 
@@ -74,5 +74,21 @@ namespace WitherTorch.Common.Text
                 AsciiEncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             return buffer;
         }
+
+        public override StringWrapper ToStringWrapper(StringCreateOptions options)
+        {
+            if (options == StringCreateOptions.ForceUseUtf16)
+                return CreateUtf16String(ToString());
+            return this;
+        }
+
+        public override StringWrapper ToStringWrapper(StringType type)
+            => type switch
+            {
+                StringType.Empty => Empty,
+                StringType.Ascii or StringType.Latin1 or StringType.Utf8 => this,
+                StringType.Utf16 => CreateUtf16String(ToString()),
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            };
     }
 }

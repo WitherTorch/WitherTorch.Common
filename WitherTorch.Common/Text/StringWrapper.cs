@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -134,6 +134,31 @@ namespace WitherTorch.Common.Text
             fixed (char* ptr = result)
                 CopyToCore(ptr, 0, unchecked((nuint)length));
             return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public StringWrapper ToStringWrapper() => this;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual StringWrapper ToStringWrapper(StringCreateOptions options) => Create(ToString(), options);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual StringWrapper ToStringWrapper(StringType type)
+        {
+            if (StringType == type)
+                return this;
+            return type switch
+            {
+                StringType.Empty => Empty,
+                _ => Create(ToString(), type switch
+                {
+                    StringType.Ascii => StringCreateOptions.ForceUseAscii,
+                    StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
+                    StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
+                    StringType.Utf16 => StringCreateOptions.ForceUseUtf16,
+                    _ => throw new ArgumentOutOfRangeException(nameof(type)),
+                }),
+            };
         }
 
         #region Interface Implementations

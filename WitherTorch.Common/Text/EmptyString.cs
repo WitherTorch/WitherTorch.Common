@@ -17,7 +17,7 @@ namespace WitherTorch.Common.Text
 
         private readonly char _zeroChar = '\0';
 
-        public override StringType StringType => StringType.Utf16;
+        public override StringType StringType => StringType.Empty;
         public override int Length => 0;
 
         private EmptyString() { }
@@ -81,6 +81,10 @@ namespace WitherTorch.Common.Text
         public override char[] ToCharArray() => Array.Empty<char>();
 
         public override string ToString() => string.Empty;
+
+        public override StringWrapper ToStringWrapper(StringCreateOptions options) => this;
+
+        public override StringWrapper ToStringWrapper(StringType type) => this;
 
         ref readonly char IPinnableReference<char>.GetPinnableReference() => ref _zeroChar;
 

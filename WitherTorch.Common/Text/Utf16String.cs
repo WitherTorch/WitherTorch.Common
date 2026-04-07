@@ -80,6 +80,22 @@ namespace WitherTorch.Common.Text
             return result;
         }
 
+        public override StringWrapper ToStringWrapper(StringCreateOptions options) => Create(_value, options);
+
+        public override StringWrapper ToStringWrapper(StringType type)
+            => type switch
+            {
+                StringType.Empty => Empty,
+                StringType.Utf16 => this,
+                _ => Create(_value, type switch
+                {
+                    StringType.Ascii => StringCreateOptions.ForceUseAscii,
+                    StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
+                    StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
+                    _ => throw new ArgumentOutOfRangeException(nameof(type)),
+                })
+            };
+
         public override string ToString() => _value;
 
         ref readonly char IPinnableReference<char>.GetPinnableReference() => ref CLRStringHelper.GetPinnableReference(_value);

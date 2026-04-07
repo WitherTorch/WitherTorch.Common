@@ -85,14 +85,6 @@ namespace WitherTorch.Common.Extensions
             return chars.Contains(str[0]);
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static StringWrapper ToStringWrapper(this string _this)
-            => StringWrapper.Create(_this);
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static StringWrapper ToStringWrapper(this string _this, StringCreateOptions options)
-            => StringWrapper.Create(_this, options);
-
         public static string[] ToUpperAscii(this string[] array)
         {
             for (int i = 0, length = array.Length; i < length; i++)

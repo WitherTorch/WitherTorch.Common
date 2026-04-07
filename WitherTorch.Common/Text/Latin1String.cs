@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
+using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
@@ -10,7 +11,7 @@ namespace WitherTorch.Common.Text
     {
         public override StringType StringType => StringType.Latin1;
 
-        private Latin1String(byte[] value) : base(value) { }
+        internal Latin1String(byte[] value) : base(value) { }
 
         protected override byte GetCharacterLimit() => Latin1EncodingHelper.Latin1EncodingLimit_InByte;
 
@@ -83,6 +84,76 @@ namespace WitherTorch.Common.Text
             fixed (byte* destination = buffer)
                 Latin1EncodingHelper.ReadFromUtf16BufferCore(source, destination, length);
             return buffer;
+        }
+
+        public override StringWrapper ToStringWrapper(StringCreateOptions options)
+        {
+            if (!options.HasFlagFast(StringCreateOptions._Force_Flag))
+                return this;
+
+            if (options.HasFlagFast(StringCreateOptions.UseAsciiCompression))
+                return ToStringWrapper_Ascii();
+            if (options.HasFlagFast(StringCreateOptions.UseUtf8Compression))
+                return ToStringWrapper_Utf8();
+            if (options.HasFlagFast(StringCreateOptions.UseUtf16Compression))
+                return CreateUtf16String(ToString());
+
+            return this;
+        }
+
+        public override StringWrapper ToStringWrapper(StringType type)
+            => type switch
+            {
+                StringType.Empty => Empty,
+                StringType.Ascii => ToStringWrapper_Ascii(),
+                StringType.Latin1 => this,
+                StringType.Utf8 => ToStringWrapper_Utf8(),
+                StringType.Utf16 => CreateUtf16String(ToString()),
+                _ => throw new ArgumentOutOfRangeException(nameof(type))
+            };
+
+        private unsafe AsciiString ToStringWrapper_Ascii()
+        {
+            nuint length = MathHelper.MakeUnsigned(_length);
+            AsciiString result = AsciiString.Allocate(length, out byte[] buffer);
+            fixed (byte* source = _value, destination = buffer)
+            {
+                UnsafeHelper.CopyBlockUnaligned(destination, source, length * sizeof(byte));
+                SequenceHelper.ReplaceGreaterThan(destination, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte, (byte)'?');
+            }
+            return result;
+        }
+
+        private unsafe StringWrapper ToStringWrapper_Utf8()
+        {
+            int signedLength = _length;
+            nuint length = MathHelper.MakeUnsigned(signedLength);
+            fixed (byte* source = _value)
+            {
+                nuint count = SequenceHelper.CountOfGreaterThan(source, length, AsciiEncodingHelper.AsciiEncodingLimit_InByte);
+                if (count == 0)
+                {
+                    AsciiString result = AsciiString.Allocate(length, out byte[] buffer);
+                    fixed (byte* destination = buffer)
+                        UnsafeHelper.CopyBlockUnaligned(destination, source, length * sizeof(byte));
+                    return result;
+                }
+                else
+                {
+                    nuint bufferLength = length + count;
+                    Utf8String result = Utf8String.Allocate(bufferLength, signedLength, out byte[] buffer);
+                    fixed (byte* destination = buffer)
+                    {
+                        byte* iterator = destination, destinationEnd = destination + bufferLength;
+                        for (nuint i = 0; i < length; i++)
+                        {
+                            byte c = source[i];
+                            iterator = Utf8EncodingHelper.TryWriteUtf8Character(iterator, destinationEnd, c);
+                        }
+                    }
+                    return result;
+                }
+            }
         }
     }
 }

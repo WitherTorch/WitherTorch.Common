@@ -1,10 +1,11 @@
-﻿namespace WitherTorch.Common.Text
+namespace WitherTorch.Common.Text
 {
     public enum StringType : uint
     {
-        Utf16 = 0,
-        Utf8 = 1,
-        Latin1 = 2,
-        Ascii = 3,
+        Empty = 0,
+        Utf16 = 1,
+        Utf8 = 2,
+        Latin1 = 3,
+        Ascii = 4,
     }
 }
