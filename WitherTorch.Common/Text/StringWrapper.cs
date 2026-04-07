@@ -9,7 +9,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    public abstract partial class StringWrapper : ISimpleString, ICloneable,
+    public abstract partial class StringWrapper : IStringLike, IStringWrapperConvertible, ICloneable,
         IComparable<string>, IComparable<StringWrapper>,
         IEquatable<string>, IEquatable<StringWrapper>
     {

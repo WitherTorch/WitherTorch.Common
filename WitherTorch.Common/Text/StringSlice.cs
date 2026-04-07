@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -7,7 +7,7 @@ using WitherTorch.Common.Helpers;
 
 namespace WitherTorch.Common.Text
 {
-    public readonly partial struct StringSlice
+    public readonly partial struct StringSlice : IStringWrapperConvertible
     {
         public static readonly StringSlice Empty = new StringSlice(StringWrapper.Empty, 0, 0);
 

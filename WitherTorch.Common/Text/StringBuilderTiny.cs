@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Security;
@@ -13,7 +13,7 @@ using WitherTorch.Common.Threading;
 
 namespace WitherTorch.Common.Text
 {
-    public unsafe ref partial struct StringBuilderTiny : IDisposable
+    public unsafe ref partial struct StringBuilderTiny : IStringWrapperConvertible, IDisposable
     {
         private char* _start, _iterator, _end;
         private LazyTinyRef<StringBuilder> _builderLazy;
@@ -547,12 +547,12 @@ namespace WitherTorch.Common.Text
         {
             StringBuilder? builder = _builderLazy.GetValueDirectly();
             if (builder is not null)
-                return StringWrapper.Create(builder.ToString());
+                return StringWrapper.CreateUtf16String(builder.ToString());
             char* start = _start;
             char* iterator = _iterator;
             if (start >= iterator)
                 return StringWrapper.Empty;
-            return StringWrapper.Create(start, 0, unchecked((nuint)(iterator - start)));
+            return StringWrapper.CreateUtf16String(start, 0, unchecked((nuint)(iterator - start)));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

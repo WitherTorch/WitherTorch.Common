@@ -1,8 +1,9 @@
-﻿using System.IO;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Text;
 
 namespace WitherTorch.Common.IO.Internals
@@ -46,13 +47,13 @@ namespace WitherTorch.Common.IO.Internals
         public StringWrapper? ReadLineAsStringWrapper()
         {
             string? result = _reader.ReadLine();
-            return result is null ? null : StringWrapper.Create(result, StringCreateOptions.None);
+            return result is null ? null : StringWrapper.CreateUtf16String(result);
         }
 
         public async Task<StringWrapper?> ReadLineAsStringWrapperAsync()
         {
             string? result = await _reader.ReadLineAsync();
-            return result is null ? null : StringWrapper.Create(result, StringCreateOptions.None);
+            return result is null ? null : StringWrapper.CreateUtf16String(result);
         }
 
         public string ReadToEnd() => _reader.ReadToEnd();
@@ -60,10 +61,10 @@ namespace WitherTorch.Common.IO.Internals
         public Task<string> ReadToEndAsync() => _reader.ReadToEndAsync();
 
         public StringWrapper ReadToEndAsStringWrapper()
-            => StringWrapper.Create(_reader.ReadToEnd(), StringCreateOptions.None);
+            => StringWrapper.CreateUtf16String(_reader.ReadToEnd());
 
         public async Task<StringWrapper> ReadToEndAsStringWrapperAsync()
-            => StringWrapper.Create(await _reader.ReadToEndAsync(), StringCreateOptions.None);
+            => StringWrapper.CreateUtf16String(await _reader.ReadToEndAsync());
 
         public void Dispose() => _reader.Dispose();
     }

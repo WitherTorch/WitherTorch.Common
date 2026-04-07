@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
 namespace WitherTorch.Common.Text
 {
-    partial struct StringSlice : ISimpleString
+    partial struct StringSlice : IStringLike
     {
         public bool Contains(char value)
             => _original.Contains(value, _startIndex, _length);

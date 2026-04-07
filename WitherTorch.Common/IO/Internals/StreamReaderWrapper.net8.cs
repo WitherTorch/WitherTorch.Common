@@ -1,4 +1,4 @@
-﻿#if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,14 +30,14 @@ namespace WitherTorch.Common.IO.Internals
         public async ValueTask<StringWrapper?> ReadLineAsStringWrapperAsync(CancellationToken token)
         {
             string? result = await _reader.ReadLineAsync(token);
-            return (result is null || token.IsCancellationRequested) ? null : StringWrapper.Create(result, StringCreateOptions.None);
+            return (result is null || token.IsCancellationRequested) ? null : StringWrapper.CreateUtf16String(result);
         }
 
         public async ValueTask<string> ReadToEndAsync(CancellationToken token)
             => await _reader.ReadToEndAsync(token);
 
         public async ValueTask<StringWrapper> ReadToEndAsStringWrapperAsync(CancellationToken token)
-            => StringWrapper.Create(await _reader.ReadToEndAsync(token), StringCreateOptions.None);
+            => StringWrapper.CreateUtf16String(await _reader.ReadToEndAsync(token));
     }
 }
 #endif

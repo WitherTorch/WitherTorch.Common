@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace WitherTorch.Common.Text
 {
-    public interface ISimpleString : IEnumerable<char>
+    public interface IStringLike : IStringWrapperConvertible, IEnumerable<char>
     {
         int Length { get; }
         char this[int index] { get; }
