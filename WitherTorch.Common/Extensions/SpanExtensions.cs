@@ -18,7 +18,7 @@ namespace WitherTorch.Common.Extensions
             => new Span<T>(_this.NativePointer, (int)MathHelper.MakeSigned(_this.Length));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [OverloadResolutionPriority(999)]
+        [OverloadResolutionPriority(int.MaxValue)]
         public static StringWrapper ToStringWrapper(this ReadOnlySpan<char> _this)
             => StringWrapper.Create(_this);
 

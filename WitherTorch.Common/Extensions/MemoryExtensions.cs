@@ -8,7 +8,7 @@ namespace WitherTorch.Common.Extensions
     public static class MemoryExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [OverloadResolutionPriority(999)]
+        [OverloadResolutionPriority(int.MaxValue)]
         public static StringWrapper ToStringWrapper(this ReadOnlyMemory<char> _this)
             => StringWrapper.Create(_this);
 

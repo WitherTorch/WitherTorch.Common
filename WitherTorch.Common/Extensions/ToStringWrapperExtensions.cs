@@ -12,7 +12,7 @@ namespace WitherTorch.Common.Extensions
     {
         [Inline(InlineBehavior.Keep, export: true)]
         [return: NotNullIfNotNull(nameof(_this))]
-        [OverloadResolutionPriority(999)]
+        [OverloadResolutionPriority(int.MaxValue)]
         public static StringWrapper? ToStringWrapper(this string? _this) => _this is null ? null : StringWrapper.CreateUtf16String(_this);
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -21,7 +21,7 @@ namespace WitherTorch.Common.Extensions
 
         [Inline(InlineBehavior.Keep, export: true)]
         [return: NotNullIfNotNull(nameof(_this))]
-        [OverloadResolutionPriority(999)]
+        [OverloadResolutionPriority(int.MaxValue)]
         public static StringWrapper? ToStringWrapper(this StringBuilder? _this) => _this is null ? null : StringWrapper.CreateUtf16String(_this.ToString());
 
         [Inline(InlineBehavior.Keep, export: true)]
