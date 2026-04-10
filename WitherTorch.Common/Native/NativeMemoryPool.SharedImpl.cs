@@ -85,14 +85,14 @@ namespace WitherTorch.Common.Native
                 NativeMemoryBlock memoryBlock;
                 if (index < LocalArrayQueueCount)
                 {
-                    ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _localArrayQueues[0], index).Value;
+                    ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
                     queue.Queue.TryDequeue(out memoryBlock);
                     capacity = memoryBlock.Length;
                     call = queue.Call;
                 }
                 else
                 {
-                    ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _globalArrayQueues[0], index - LocalArrayQueueCount).Value;
+                    ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_globalArrayQueues), index - LocalArrayQueueCount).Value;
                     queue.Queue.TryDequeue(out memoryBlock);
                     capacity = memoryBlock.Length;
                     call = queue.Call;
@@ -116,13 +116,13 @@ namespace WitherTorch.Common.Native
                 DelayedCall call;
                 if (index < LocalArrayQueueCount)
                 {
-                    ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _localArrayQueues[0], index).Value;
+                    ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
                     queue.Queue.Enqueue(new NativeMemoryBlock(ptr, length));
                     call = queue.Call;
                 }
                 else
                 {
-                    ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref _globalArrayQueues[0], index - LocalArrayQueueCount).Value;
+                    ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_globalArrayQueues), index - LocalArrayQueueCount).Value;
                     queue.Queue.Enqueue(new NativeMemoryBlock(ptr, length));
                     call = queue.Call;
                 }

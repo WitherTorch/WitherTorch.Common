@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Security;
 
 using InlineIL;
 
@@ -8,9 +7,7 @@ using InlineMethod;
 
 using LocalsInit;
 
-#pragma warning disable CS0162
-#pragma warning disable CS8601
-#pragma warning disable IDE0060
+#pragma warning disable CS8500
 
 namespace WitherTorch.Common.Helpers
 {
@@ -62,239 +59,127 @@ namespace WitherTorch.Common.Helpers
             get => (void*)-1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T GetAllBitsSetValue<T>() where T : unmanaged
-            => sizeof(T) switch
-            {
-                8 => As<ulong, T>(ulong.MaxValue),
-                4 => As<uint, T>(uint.MaxValue),
-                2 => As<ushort, T>(ushort.MaxValue),
-                1 => As<byte, T>(byte.MaxValue),
-                _ => GetAllBitsValue_Other<T>()
-            };
+        public static partial T GetAllBitsSetValue<T>() where T : unmanaged;
+
+        public static partial T GetMinValue<T>() where T : unmanaged;
+
+        public static partial T GetMaxValue<T>() where T : unmanaged;
+
+        public static partial bool IsSignedIntegerType<T>();
+
+        public static partial bool IsUnsignedIntegerType<T>();
+
+        public static partial bool IsFloatingPointType<T>();
+
+        public static partial bool IsPrimitiveType<T>();
+
+        public static partial bool IsUnmanagedType<T>();
+
+        public static partial bool IsSignedIntegerType(Type type);
+
+        public static partial bool IsUnsignedIntegerType(Type type);
+
+        public static partial bool IsFloatingPointType(Type type);
+
+        public static partial bool IsUnmanagedType(Type type);
+
+        public static partial bool IsPrimitiveType(Type type);
+
+        public static partial T Max<T>(T a, T b);
+
+        public static partial T MaxUnsigned<T>(T a, T b);
+
+        public static partial T Min<T>(T a, T b);
+
+        public static partial T MinUnsigned<T>(T a, T b);
+
+        public static partial T Read<T>(void* source);
+
+        public static partial T Read<T>(ref readonly byte source);
+
+        public static partial T ReadUnaligned<T>(void* source);
+
+        public static partial T ReadUnaligned<T>(ref readonly byte source);
+
+        public static partial void Write<T>(void* destination, T value);
+
+        public static partial void WriteUnaligned<T>(void* destination, T value);
+
+        public static partial void CopyBlock(void* destination, void* source, uint byteCount);
+
+        public static partial void CopyBlock(void* destination, void* source, nuint byteCount);
+
+        public static partial void CopyBlockUnaligned(void* destination, void* source, uint byteCount);
+
+        public static partial void CopyBlockUnaligned(void* destination, void* source, nuint byteCount);
+
+        public static partial TTo As<TFrom, TTo>(TFrom source);
+
+        public static partial ref TTo As<TFrom, TTo>(ref TFrom source);
+
+        public static partial T As<T>(object source) where T : class;
+
+        public static partial void InitBlock(ref byte location, byte value, uint count);
+
+        public static partial void InitBlock(ref byte location, byte value, nuint count);
+
+        public static partial void InitBlock(void* ptr, byte value, uint size);
+
+        public static partial void InitBlock(void* ptr, byte value, nuint size);
+
+        public static partial void InitBlockUnaligned(void* ptr, byte value, uint size);
+
+        public static partial void InitBlockUnaligned(void* ptr, byte value, nuint size);
+
+        public static partial nint ByteOffset<T>(ref readonly T origin, ref readonly T target);
+
+        public static partial nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target);
+
+        public static partial ref T AddByteOffset<T>(ref readonly T source, nint byteOffset);
+
+        public static partial ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset);
+
+        public static partial ref T AddTypedOffset<T>(ref readonly T source, nint elementOffset);
+
+        public static partial ref T AddTypedOffset<T>(ref readonly T source, nuint elementOffset);
+
+        public static partial void SkipInit<T>(out T value);
+
+        public static partial bool IsNullRef<T>(ref readonly T source);
+
+        public static partial ref T NullRef<T>();
+
+        public static partial ref T AsRef<T>(T* source);
+
+        public static partial ref T AsRefIn<T>(in T source);
+
+        public static partial ref T AsRefOut<T>(out T source);
+
+        public static partial T* AsPointerRef<T>(ref T value);
+
+        public static partial void** AsPointerRef(ref void* value);
+
+        public static partial T* AsPointerIn<T>(in T value);
+
+        public static partial void** AsPointerIn(in void* value);
+
+        public static partial T* AsPointerOut<T>(out T value);
+
+        public static partial void** AsPointerOut(out void* value);
+
+        public static partial ref readonly char GetStringDataReference(string str);
+
+        public static partial ref T GetArrayDataReference<T>(T[] array);
+
+        public static partial int SizeOfSigned<T>();
+
+        public static partial uint SizeOf<T>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetAllBitsValue_Other<T>() where T : unmanaged
-        {
-            T result;
-            InitBlockUnaligned(&result, 0xFF, SizeOf<T>());
-            return result;
-        }
+        public static bool IsIntegerType<T>() => IsSignedIntegerType<T>() || IsUnsignedIntegerType<T>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T GetMinValue<T>() where T : unmanaged
-            => sizeof(T) switch
-            {
-                1 => GetMinValue_1Bytes<T>(),
-                2 => GetMinValue_2Bytes<T>(),
-                4 => GetMinValue_4Bytes<T>(),
-                8 => GetMinValue_8Bytes<T>(),
-                16 => GetMinValue_16Bytes<T>(),
-                _ => GetMinValueSlow<T>()
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMinValue_16Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(decimal))
-                return As<decimal, T>(decimal.MinValue);
-            return GetMinValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMinValue_8Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(long) || typeof(T) == typeof(nint))
-                return As<long, T>(long.MinValue);
-            if (typeof(T) == typeof(ulong) || typeof(T) == typeof(nuint))
-                return As<ulong, T>(ulong.MinValue);
-            if (typeof(T) == typeof(double))
-                return As<double, T>(double.MinValue);
-            return GetMinValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMinValue_4Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(int) || typeof(T) == typeof(nint))
-                return As<int, T>(int.MinValue);
-            if (typeof(T) == typeof(uint) || typeof(T) == typeof(nuint))
-                return As<uint, T>(uint.MinValue);
-            if (typeof(T) == typeof(float))
-                return As<float, T>(float.MinValue);
-            return GetMinValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMinValue_2Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(short))
-                return As<short, T>(short.MinValue);
-            if (typeof(T) == typeof(ushort))
-                return As<ushort, T>(ushort.MinValue);
-            return GetMinValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMinValue_1Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(sbyte))
-                return As<sbyte, T>(sbyte.MinValue);
-            if (typeof(T) == typeof(byte))
-                return As<byte, T>(byte.MinValue);
-            return GetMinValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T GetMaxValue<T>() where T : unmanaged
-            => sizeof(T) switch
-            {
-                1 => GetMaxValue_1Bytes<T>(),
-                2 => GetMaxValue_2Bytes<T>(),
-                4 => GetMaxValue_4Bytes<T>(),
-                8 => GetMaxValue_8Bytes<T>(),
-                16 => GetMaxValue_16Bytes<T>(),
-                _ => GetMaxValueSlow<T>()
-            };
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMaxValue_16Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(decimal))
-                return As<decimal, T>(decimal.MaxValue);
-            return GetMaxValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMaxValue_8Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(long) || typeof(T) == typeof(nint))
-                return As<long, T>(long.MaxValue);
-            if (typeof(T) == typeof(ulong) || typeof(T) == typeof(nuint))
-                return As<ulong, T>(ulong.MaxValue);
-            if (typeof(T) == typeof(double))
-                return As<double, T>(double.MaxValue);
-            return GetMaxValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMaxValue_4Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(int) || typeof(T) == typeof(nint))
-                return As<int, T>(int.MaxValue);
-            if (typeof(T) == typeof(uint) || typeof(T) == typeof(nuint))
-                return As<uint, T>(uint.MaxValue);
-            if (typeof(T) == typeof(float))
-                return As<float, T>(float.MaxValue);
-            return GetMaxValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMaxValue_2Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(short))
-                return As<short, T>(short.MaxValue);
-            if (typeof(T) == typeof(ushort))
-                return As<ushort, T>(ushort.MaxValue);
-            return GetMaxValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T GetMaxValue_1Bytes<T>() where T : unmanaged
-        {
-            if (typeof(T) == typeof(sbyte))
-                return As<sbyte, T>(sbyte.MaxValue);
-            if (typeof(T) == typeof(byte))
-                return As<byte, T>(byte.MaxValue);
-            return GetMaxValueSlow<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static T GetMinValueSlow<T>() where T : unmanaged => MinHelper<T>.MinValue;
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private static T GetMaxValueSlow<T>() where T : unmanaged => MaxHelper<T>.MaxValue;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPrimitiveType<T>()
-                => IsIntegerType<T>() || IsFloatingPointType<T>() || typeof(T) == typeof(bool);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsIntegerType<T>()
-            => IsSignedIntegerType<T>() || IsUnsignedIntegerType<T>();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsSignedIntegerType<T>()
-                => (typeof(T) == typeof(sbyte)) ||
-                       (typeof(T) == typeof(short)) ||
-                       (typeof(T) == typeof(int)) ||
-                       (typeof(T) == typeof(long)) ||
-                       (typeof(T) == typeof(nint));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsUnsignedIntegerType<T>()
-                => (typeof(T) == typeof(byte)) ||
-                       (typeof(T) == typeof(char)) ||
-                       (typeof(T) == typeof(ushort)) ||
-                       (typeof(T) == typeof(uint)) ||
-                       (typeof(T) == typeof(ulong)) ||
-                       (typeof(T) == typeof(nuint));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsFloatingPointType<T>()
-                => (typeof(T) == typeof(float)) ||
-                       (typeof(T) == typeof(double));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPrimitiveType(Type type)
-                => IsIntegerType(type) || IsFloatingPointType(type) || type == typeof(bool);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsIntegerType(Type type)
-            => IsSignedIntegerType(type) || IsUnsignedIntegerType(type);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsSignedIntegerType(Type type)
-        => (type == typeof(sbyte)) ||
-               (type == typeof(short)) ||
-               (type == typeof(int)) ||
-               (type == typeof(long)) ||
-               (type == typeof(nint));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsUnsignedIntegerType(Type type)
-                => (type == typeof(byte)) ||
-                       (type == typeof(char)) ||
-                       (type == typeof(ushort)) ||
-                       (type == typeof(uint)) ||
-                       (type == typeof(ulong)) ||
-                       (type == typeof(nuint));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsFloatingPointType(Type type)
-                => (type == typeof(float)) ||
-                       (type == typeof(double));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsUnsigned<T>()
-            => (typeof(T) == typeof(byte)) ||
-                   (typeof(T) == typeof(ushort)) ||
-                   (typeof(T) == typeof(uint)) ||
-                   (typeof(T) == typeof(ulong)) ||
-                   (typeof(T) == typeof(nuint));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsUnmanagedType<T>()
-#if NET472_OR_GREATER
-            => IsPrimitiveType<T>() || typeof(T).IsEnum || typeof(T).IsPointer || IsUnmanageTypeSlow<T>();
-#else
-            => !RuntimeHelpers.IsReferenceOrContainsReferences<T>();
-#endif
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool IsUnmanagedType(Type type)
-            => IsPrimitiveType(type) || type.IsEnum || type.IsPointer || IsUnmanageTypeSlow(type);
+        public static bool IsIntegerType(Type type) => IsSignedIntegerType(type) || IsUnsignedIntegerType(type);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static bool IsGreaterThan<T>(T a, T b)
@@ -511,127 +396,6 @@ namespace WitherTorch.Common.Helpers
             return IL.Return<T>();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Max<T>(T a, T b)
-        {
-            if (
-#if NET8_0_OR_GREATER
-                false
-#else
-                IsSignedIntegerType<T>()
-#endif
-                )
-            {
-                T diff = Subtract(a, b);
-                return Subtract(a, And(diff, RightShift(diff, As<uint, T>(SizeOf<T>() * 8 - 1))));
-            }
-            else
-            {
-                const string Label = "jump";
-
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Bgt_S(Label);
-                IL.Push(b);
-                IL.Emit.Ret();
-                IL.MarkLabel(Label);
-                IL.Push(a);
-                IL.Emit.Ret();
-            }
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T MaxUnsigned<T>(T a, T b)
-        {
-            if (
-#if NET8_0_OR_GREATER
-                false
-#else
-                IsUnsignedIntegerType<T>()
-#endif
-                )
-            {
-                // a ^ ((a ^ b) & -(a < b))
-                return Xor(a, And(Xor(a, b), Negate(As<bool, T>(IsLessThanUnsigned(a, b)))));
-            }
-            else
-            {
-                const string Label = "jump";
-
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Bgt_Un_S(Label);
-                IL.Push(b);
-                IL.Emit.Ret();
-                IL.MarkLabel(Label);
-                IL.Push(a);
-                IL.Emit.Ret();
-            }
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Min<T>(T a, T b)
-        {
-            if (
-#if NET8_0_OR_GREATER
-                false
-#else
-                IsSignedIntegerType<T>()
-#endif
-                )
-            {
-                // min = b + ((a - b) & ((a - b) >> 31))
-                T diff = Subtract(a, b);
-                return Add(b, And(diff, RightShift(diff, As<uint, T>(SizeOf<T>() * 8 - 1))));
-            }
-            else
-            {
-                const string Label = "jump";
-
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Blt_S(Label);
-                IL.Push(b);
-                IL.Emit.Ret();
-                IL.MarkLabel(Label);
-                IL.Push(a);
-                IL.Emit.Ret();
-            }
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T MinUnsigned<T>(T a, T b)
-        {
-            if (
-#if NET8_0_OR_GREATER
-                false
-#else
-                IsUnsignedIntegerType<T>()
-#endif
-                )
-            {
-                //a ^ ((a ^ b) & -(a > b))
-                return Xor(a, And(Xor(a, b), Negate(As<bool, T>(IsGreaterThanUnsigned(a, b)))));
-            }
-            else
-            {
-                const string Label = "jump";
-
-                IL.Push(a);
-                IL.Push(b);
-                IL.Emit.Blt_Un_S(Label);
-                IL.Push(b);
-                IL.Emit.Ret();
-                IL.MarkLabel(Label);
-                IL.Push(a);
-                IL.Emit.Ret();
-            }
-            throw IL.Unreachable();
-        }
-
         [Inline(InlineBehavior.Keep, export: true)]
         public static T Clamp<T>(T value, T min, T max)
             => Max(min, Min(max, value));
@@ -647,369 +411,5 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Keep, export: true)]
         public static T ClampUnorderedUnsigned<T>(T value, T a, T b)
             => MinUnsigned(MaxUnsigned(a, b), MaxUnsigned(MinUnsigned(a, b), value));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Read<T>(void* source)
-        {
-            IL.Push(source);
-            IL.Emit.Ldobj(typeof(T));
-            return IL.Return<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T Read<T>(ref readonly byte source)
-        {
-            IL.PushInRef(in source);
-            IL.Emit.Ldobj(typeof(T));
-            return IL.Return<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T ReadUnaligned<T>(void* source)
-        {
-            IL.Push(source);
-            IL.Emit.Unaligned(1);
-            IL.Emit.Ldobj(typeof(T));
-            return IL.Return<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T ReadUnaligned<T>(ref readonly byte source)
-        {
-            IL.PushInRef(in source);
-            IL.Emit.Unaligned(1);
-            IL.Emit.Ldobj(typeof(T));
-            return IL.Return<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Write<T>(void* destination, T value)
-        {
-            IL.Push(destination);
-            IL.Push(value);
-            IL.Emit.Stobj(typeof(T));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void WriteUnaligned<T>(void* destination, T value)
-        {
-            IL.Push(destination);
-            IL.Push(value);
-            IL.Emit.Unaligned(1);
-            IL.Emit.Stobj(typeof(T));
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static void SwapBlock(void* destination, void* source, uint byteCount)
-        {
-            byte* iteratorSource = (byte*)source;
-            byte* iteratorDest = (byte*)destination;
-            uint blockSize = Math.Min(256, byteCount);
-            byte* buffer = stackalloc byte[unchecked((int)blockSize)];
-            do
-            {
-                CopyBlock(buffer, iteratorSource, blockSize);
-                CopyBlock(iteratorSource, iteratorDest, blockSize);
-                CopyBlock(iteratorDest, buffer, blockSize);
-                iteratorSource += blockSize;
-                iteratorDest += blockSize;
-                byteCount -= blockSize;
-                if (byteCount >= blockSize)
-                    continue;
-                blockSize = byteCount;
-            }
-            while (byteCount > 0u);
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void CopyBlock(void* destination, void* source, uint byteCount)
-        {
-            IL.Push(destination);
-            IL.Push(source);
-            IL.Push(byteCount);
-            IL.Emit.Cpblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void CopyBlock(void* destination, void* source, nuint byteCount)
-        {
-            IL.Push(destination);
-            IL.Push(source);
-            IL.Push(byteCount);
-            IL.Emit.Cpblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void CopyBlockUnaligned(void* destination, void* source, uint byteCount)
-        {
-            IL.Push(destination);
-            IL.Push(source);
-            IL.Push(byteCount);
-            IL.Emit.Unaligned(1);
-            IL.Emit.Cpblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void CopyBlockUnaligned(void* destination, void* source, nuint byteCount)
-        {
-            IL.Push(destination);
-            IL.Push(source);
-            IL.Push(byteCount);
-            IL.Emit.Unaligned(1);
-            IL.Emit.Cpblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static TTo As<TFrom, TTo>(TFrom source)
-        {
-#if NET8_0_OR_GREATER
-            return Unsafe.As<TFrom, TTo>(ref source);
-#else
-            IL.Push(source);
-            return IL.Return<TTo>();
-#endif
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static ref TTo As<TFrom, TTo>(ref TFrom source)
-        {
-#if NET8_0_OR_GREATER
-            return ref Unsafe.As<TFrom, TTo>(ref source);
-#else
-            IL.PushInRef(ref source);
-            return ref IL.ReturnRef<TTo>();
-#endif
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static T As<T>(object source) where T : class
-        {
-#if NET8_0_OR_GREATER
-            return Unsafe.As<T>(source);
-#else
-            IL.Push(source);
-            return IL.Return<T>();
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static TTo RewriteManagedObjectType<TFrom, TTo>(TFrom obj, TTo template) where TFrom : class where TTo : class
-        {
-            // (Very dangerous, just a experiment method!
-#pragma warning disable CS8500
-            **(nuint***)&obj = **(nuint***)&template;
-#pragma warning restore CS8500
-            return As<TFrom, TTo>(obj);
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void InitBlock(ref byte location, byte value, uint count)
-        {
-            IL.PushInRef(ref location);
-            IL.Push(value);
-            IL.Push(count);
-            IL.Emit.Initblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void InitBlock(ref byte location, byte value, nuint count)
-        {
-            IL.PushInRef(ref location);
-            IL.Push(value);
-            IL.Push(count);
-            IL.Emit.Initblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void InitBlock(void* ptr, byte value, uint size)
-        {
-            IL.Push(ptr);
-            IL.Push(value);
-            IL.Push(size);
-            IL.Emit.Initblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void InitBlock(void* ptr, byte value, nuint size)
-        {
-            IL.Push(ptr);
-            IL.Push(value);
-            IL.Push(size);
-            IL.Emit.Initblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void InitBlockUnaligned(void* ptr, byte value, uint size)
-        {
-            IL.Push(ptr);
-            IL.Push(value);
-            IL.Push(size);
-            IL.Emit.Unaligned(sizeof(byte));
-            IL.Emit.Initblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static void InitBlockUnaligned(void* ptr, byte value, nuint size)
-        {
-            IL.Push(ptr);
-            IL.Push(value);
-            IL.Push(size);
-            IL.Emit.Unaligned(sizeof(byte));
-            IL.Emit.Initblk();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static nint ByteOffset<T>(ref readonly T origin, ref readonly T target)
-        {
-            IL.PushInRef(in target);
-            IL.PushInRef(in origin);
-            IL.Emit.Sub();
-            return IL.Return<nint>();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target)
-        {
-            IL.PushInRef(in target);
-            IL.PushInRef(in origin);
-            IL.Emit.Sub();
-            return IL.Return<nuint>();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddByteOffset<T>(ref readonly T source, nint byteOffset)
-        {
-            IL.PushInRef(in source);
-            IL.Push(byteOffset);
-            IL.Emit.Add();
-            return ref IL.ReturnRef<T>();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset)
-        {
-            IL.PushInRef(in source);
-            IL.Push(byteOffset);
-            IL.Emit.Add();
-            return ref IL.ReturnRef<T>();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref readonly T source, nint typedOffset) => ref AddByteOffset(in source, typedOffset * SizeOfSigned<T>());
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static ref T AddTypedOffset<T>(ref readonly T source, nuint typedOffset) => ref AddByteOffset(in source, typedOffset * SizeOf<T>());
-
-        [LocalsInit(false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SkipInit<T>(out T value)
-        {
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-#pragma warning disable CS8500
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsNullRef<T>(ref readonly T source)
-        {
-            IL.PushInRef(in source);
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Conv_U();
-            IL.Emit.Ceq();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref T NullRef<T>()
-        {
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Conv_U();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref T AsRef<T>(T* value)
-        {
-            IL.Emit.Ldarg_0();
-            return ref IL.ReturnRef<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref T AsRefIn<T>(in T value)
-        {
-            IL.Emit.Ldarg_0();
-            return ref IL.ReturnRef<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ref T AsRefOut<T>(out T value)
-        {
-            IL.PushOutRef(out value);
-            return ref IL.ReturnRef<T>();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* AsPointerRef<T>(ref T value)
-        {
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void** AsPointerRef(ref void* value)
-        {
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* AsPointerIn<T>(in T value)
-        {
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void** AsPointerIn(in void* value)
-        {
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T* AsPointerOut<T>(out T value)
-        {
-            IL.PushOutRef(out value);
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void** AsPointerOut(out void* value)
-        {
-            IL.Emit.Ldarg_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static int SizeOfSigned<T>()
-        {
-            IL.Emit.Sizeof<T>();
-            return IL.Return<int>();
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static uint SizeOf<T>()
-        {
-            IL.Emit.Sizeof<T>();
-            return IL.Return<uint>();
-        }
     }
 }

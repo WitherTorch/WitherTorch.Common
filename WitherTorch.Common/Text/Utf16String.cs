@@ -103,7 +103,7 @@ namespace WitherTorch.Common.Text
 
         public override string ToString() => _value;
 
-        ref readonly char IPinnableReference<char>.GetPinnableReference() => ref CLRStringHelper.GetPinnableReference(_value);
+        ref readonly char IPinnableReference<char>.GetPinnableReference() => ref UnsafeHelper.GetStringDataReference(_value);
 
         nuint IPinnableReference<char>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length);
 

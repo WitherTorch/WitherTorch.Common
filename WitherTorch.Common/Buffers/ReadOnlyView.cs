@@ -109,9 +109,9 @@ namespace WitherTorch.Common.Buffers
         {
             object? source = _source;
             if (source is T[] array)
-                return ref array[0];
+                return ref UnsafeHelper.GetArrayDataReference(array);
             if (typeof(T) == typeof(char) && source is string str)
-                return ref UnsafeHelper.As<char, T>(ref UnsafeHelper.AsRefIn(in CLRStringHelper.GetPinnableReference(str)));
+                return ref UnsafeHelper.As<char, T>(ref UnsafeHelper.AsRefIn(in UnsafeHelper.GetStringDataReference(str)));
             return ref UnsafeHelper.NullRef<T>();
         }
 

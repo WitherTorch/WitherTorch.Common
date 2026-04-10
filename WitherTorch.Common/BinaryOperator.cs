@@ -308,10 +308,10 @@ namespace WitherTorch.Common
             public BinaryOperatorType Type => BinaryOperatorType.Divide;
 
             public override T Operate(T a, T b)
-                => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.DivideUnsigned(a, b) : UnsafeHelper.Divide(a, b);
+                => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.DivideUnsigned(a, b) : UnsafeHelper.Divide(a, b);
 
             public override BinaryOperation<T> ToOperation() =>
-                static (a, b) => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.DivideUnsigned(a, b) : UnsafeHelper.Divide(a, b);
+                static (a, b) => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.DivideUnsigned(a, b) : UnsafeHelper.Divide(a, b);
         }
 
         private sealed class MinImpl : BinaryOperator<T>, IDefaultBinaryOperator<T>

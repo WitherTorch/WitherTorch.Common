@@ -88,7 +88,7 @@ namespace WitherTorch.Common.Collections
                             int length = array.Length;
                             if (length <= 0)
                                 break;
-                            ref T arrayRef = ref array[0];
+                            ref T arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                             for (int i = 0; i < length; i++)
                                 AppendCore(UnsafeHelper.AddTypedOffset(ref arrayRef, i), index + i);
                             index += length;
@@ -366,7 +366,7 @@ namespace WitherTorch.Common.Collections
                 {
                     if (node is not object[] array)
                         return -1;
-                    ref object arrayRef = ref array[0];
+                    ref object arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                     for (int i = 0; i < nodeSize; i++)
                     {
                         int index = IndexOfCore(item, UnsafeHelper.AddTypedOffset(ref arrayRef, i), depth, nodeSize);
@@ -385,7 +385,7 @@ namespace WitherTorch.Common.Collections
                 {
                     if (node is not object[] array)
                         return -1;
-                    ref object arrayRef = ref array[0];
+                    ref object arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                     for (int i = 0; i < nodeSize; i++)
                     {
                         int index = IndexOfCore(item, UnsafeHelper.AddTypedOffset(ref arrayRef, i), comparer, depth, nodeSize);
@@ -403,7 +403,7 @@ namespace WitherTorch.Common.Collections
 
             private static int IndexOfCore<TEqualityComparer>(T item, T[] array, int count, TEqualityComparer comparer) where TEqualityComparer : IEqualityComparer<T>
             {
-                ref T arrayRef = ref array[0];
+                ref T arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                 for (int i = 0; i < count; i++)
                 {
                     if (comparer.Equals(item, UnsafeHelper.AddTypedOffset(ref arrayRef, i)))
@@ -418,7 +418,7 @@ namespace WitherTorch.Common.Collections
                 {
                     if (node is not object[] array)
                         return;
-                    ref object arrayRef = ref array[0];
+                    ref object arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                     for (int i = 0; i < nodeSize; i++)
                         ClearCore(UnsafeHelper.AddTypedOffset(ref arrayRef, i), depth - 1, nodeSize);
                 }

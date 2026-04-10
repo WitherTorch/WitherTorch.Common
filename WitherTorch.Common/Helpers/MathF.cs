@@ -159,7 +159,7 @@ namespace System
                 if (Math.Abs(x) < RoundingLimit)
                 {
                     float power10 = UnsafeHelper.AddTypedOffset(
-                        ref RoundPower10Single[0],
+                        ref UnsafeHelper.GetArrayDataReference(RoundPower10Single),
                         digits);
                     x = MathF.Round(x * power10, mode) / power10;
                 }

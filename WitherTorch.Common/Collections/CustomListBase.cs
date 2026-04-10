@@ -40,14 +40,14 @@ namespace WitherTorch.Common.Collections
             {
                 if (index < 0 || index >= _count)
                     throw new IndexOutOfRangeException();
-                return UnsafeHelper.AddTypedOffset(ref _array[0], index); // 忽略邊界檢查
+                return UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_array), index); // 忽略邊界檢查
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 if (index < 0 || index >= _count)
                     throw new IndexOutOfRangeException();
-                UnsafeHelper.AddTypedOffset(ref _array[0], index) = value; // 忽略邊界檢查
+                UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_array), index) = value; // 忽略邊界檢查
             }
         }
 

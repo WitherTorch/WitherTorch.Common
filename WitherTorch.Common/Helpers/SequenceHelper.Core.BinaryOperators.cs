@@ -1,14 +1,9 @@
-using InlineMethod;
-
 using System;
 using System.Runtime.CompilerServices;
-using System.Reflection;
 
-using WitherTorch.Common.Threading;
+using InlineMethod;
 
 using LocalsInit;
-
-using InlineIL;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -777,7 +772,7 @@ namespace WitherTorch.Common.Helpers
                     BinaryOperatorType.Add => UnsafeHelper.Add(item, value),
                     BinaryOperatorType.Subtract => UnsafeHelper.Subtract(item, value),
                     BinaryOperatorType.Multiply => UnsafeHelper.Multiply(item, value),
-                    BinaryOperatorType.Divide => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.DivideUnsigned(item, value) : UnsafeHelper.Divide(item, value),
+                    BinaryOperatorType.Divide => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.DivideUnsigned(item, value) : UnsafeHelper.Divide(item, value),
                     BinaryOperatorType.Min => UnsafeHelper.Min(item, value),
                     BinaryOperatorType.Max => UnsafeHelper.Max(item, value),
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),

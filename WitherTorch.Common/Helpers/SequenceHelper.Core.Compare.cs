@@ -26,10 +26,10 @@ namespace WitherTorch.Common.Helpers
                 {
                     CompareMethod.Include => UnsafeHelper.Equals(item, value),
                     CompareMethod.Exclude => UnsafeHelper.NotEquals(item, value),
-                    CompareMethod.GreaterThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsGreaterThanUnsigned(item, value) : UnsafeHelper.IsGreaterThan(item, value),
-                    CompareMethod.GreaterThanOrEquals => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsGreaterThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsGreaterThanOrEquals(item, value),
-                    CompareMethod.LessThan => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessThanUnsigned(item, value) : UnsafeHelper.IsLessThan(item, value),
-                    CompareMethod.LessThanOrEquals => UnsafeHelper.IsUnsigned<T>() ? UnsafeHelper.IsLessThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsLessThanOrEquals(item, value),
+                    CompareMethod.GreaterThan => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsGreaterThanUnsigned(item, value) : UnsafeHelper.IsGreaterThan(item, value),
+                    CompareMethod.GreaterThanOrEquals => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsGreaterThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsGreaterThanOrEquals(item, value),
+                    CompareMethod.LessThan => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsLessThanUnsigned(item, value) : UnsafeHelper.IsLessThan(item, value),
+                    CompareMethod.LessThanOrEquals => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsLessThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsLessThanOrEquals(item, value),
                     _ => throw new ArgumentOutOfRangeException(nameof(method)),
                 };
         }

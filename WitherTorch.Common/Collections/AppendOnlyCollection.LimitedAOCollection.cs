@@ -426,7 +426,7 @@ namespace WitherTorch.Common.Collections
 
             private static bool ContainsCore<TEqualityComparer>(T item, T[] array, int count, TEqualityComparer comparer) where TEqualityComparer : IEqualityComparer<T>
             {
-                ref T arrayRef = ref array[0];
+                ref T arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                 for (int i = 0; i < count; i++)
                 {
                     if (comparer.Equals(item, UnsafeHelper.AddTypedOffset(ref arrayRef, i)))
@@ -437,7 +437,7 @@ namespace WitherTorch.Common.Collections
 
             private static int IndexOfCore<TEqualityComparer>(T item, T[] array, int count, TEqualityComparer comparer) where TEqualityComparer : IEqualityComparer<T>
             {
-                ref T arrayRef = ref array[0];
+                ref T arrayRef = ref UnsafeHelper.GetArrayDataReference(array);
                 for (int i = 0; i < count; i++)
                 {
                     if (comparer.Equals(item, UnsafeHelper.AddTypedOffset(ref arrayRef, i)))

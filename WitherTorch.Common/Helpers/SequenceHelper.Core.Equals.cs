@@ -133,7 +133,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static bool IsGreaterOrEquals(T a, T b)
             {
-                if (UnsafeHelper.IsUnsigned<T>())
+                if (UnsafeHelper.IsUnsignedIntegerType<T>())
                     return UnsafeHelper.IsGreaterThanOrEqualsUnsigned(a, b);
                 return UnsafeHelper.IsGreaterThanOrEquals(a, b);
             }
@@ -141,7 +141,7 @@ namespace WitherTorch.Common.Helpers
             [Inline(InlineBehavior.Remove)]
             private static bool IsLessOrEquals(T a, T b)
             {
-                if (UnsafeHelper.IsUnsigned<T>())
+                if (UnsafeHelper.IsUnsignedIntegerType<T>())
                     return UnsafeHelper.IsLessThanOrEqualsUnsigned(a, b);
                 return UnsafeHelper.IsLessThanOrEquals(a, b);
             }

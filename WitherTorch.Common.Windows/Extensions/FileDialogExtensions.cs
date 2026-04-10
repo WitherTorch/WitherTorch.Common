@@ -50,7 +50,7 @@ namespace WitherTorch.Common.Windows.Extensions
             TypedNativeMemoryBlock<FileDialogFilterSpecification> buffer = pool.Rent<FileDialogFilterSpecification>(count);
             FileDialogFilterSpecification* ptr = buffer.NativePointer;
             UnsafeHelper.InitBlock(ptr, 0, count * UnsafeHelper.SizeOf<FileDialogFilterSpecification>());
-            ref (string name, string pattern) fileTypeRef = ref fileTypes[0];
+            ref (string name, string pattern) fileTypeRef = ref UnsafeHelper.GetArrayDataReference(fileTypes);
             try
             {
                 for (uint i = 0; i < count; i++)

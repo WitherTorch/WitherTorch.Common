@@ -29,7 +29,7 @@ namespace WitherTorch.Common.Text
         public override bool IsSpecificEncoding(Encoding encoding)
             => ReferenceEquals(encoding, _encoding) || encoding.CodePage == _codePage;
 
-        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref UnsafeHelper.GetArrayDataReference(_value);
 
         nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length - 1);
 

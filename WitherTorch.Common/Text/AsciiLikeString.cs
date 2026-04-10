@@ -67,7 +67,7 @@ namespace WitherTorch.Common.Text
 
         ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView() => ReadOnlyView.FromArray(_value).Slice(0, _length);
 
-        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref _value[0];
+        ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref UnsafeHelper.GetArrayDataReference(_value);
 
         nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_length);
     }

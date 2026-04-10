@@ -447,7 +447,7 @@ namespace WitherTorch.Common.Helpers
             int length = values.Length;
             if (length <= 0)
                 return false;
-            ref char valueRef = ref values[0];
+            ref char valueRef = ref UnsafeHelper.GetArrayDataReference(values);
             for (int i = 0; i < length; i++)
             {
                 if (SequenceHelper.Contains(str, UnsafeHelper.AddTypedOffset(ref valueRef, i)))

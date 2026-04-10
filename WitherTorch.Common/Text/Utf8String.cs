@@ -170,7 +170,7 @@ namespace WitherTorch.Common.Text
             int length = value.Length;
             if (length <= 0)
                 return ref ((IPinnableReference<byte>)Empty).GetPinnableReference();
-            return ref value[0];
+            return ref UnsafeHelper.GetArrayDataReference(value);
         }
 
         nuint IPinnableReference<byte>.GetPinnedLength() => MathHelper.MakeUnsigned(_value.Length - 1);

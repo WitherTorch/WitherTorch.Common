@@ -221,7 +221,7 @@ namespace WitherTorch.Common.Extensions
         IsArray_Core:
             if (length <= 0)
                 return;
-            ref T itemRef = ref array[0];
+            ref T itemRef = ref UnsafeHelper.GetArrayDataReference(array);
             for (nuint i = 0, limit = (nuint)length; i < limit; i++)
                 _this.Add(UnsafeHelper.AddTypedOffset(ref itemRef, i));
             return;
@@ -302,7 +302,7 @@ namespace WitherTorch.Common.Extensions
         IsArray_Core:
             if (length <= 0)
                 return;
-            ref T itemRef = ref array[0];
+            ref T itemRef = ref UnsafeHelper.GetArrayDataReference(array);
             for (nuint i = 0, limit = (nuint)length; i < limit; i++)
                 _this.Remove(UnsafeHelper.AddTypedOffset(ref itemRef, i));
             return;

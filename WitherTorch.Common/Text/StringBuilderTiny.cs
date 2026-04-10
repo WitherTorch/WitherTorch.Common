@@ -48,6 +48,14 @@ namespace WitherTorch.Common.Text
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetStartPointer(char* ptr, nuint length)
+        {
+            _start = ptr;
+            _iterator = ptr;
+            _end = ptr + length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EnsureCapacity(int capacity)
         {
             StringBuilder? builder = _builderLazy.GetValueDirectly();

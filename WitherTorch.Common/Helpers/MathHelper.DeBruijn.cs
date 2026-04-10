@@ -31,7 +31,7 @@ namespace WitherTorch.Common.Helpers
                 // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
                 return UnsafeHelper.AddByteOffset(
                     // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_0111_1100_1011_0101_0011_0001u
-                    ref TrailingZeroCountDeBruijn32[0],
+                    ref UnsafeHelper.GetArrayDataReference(TrailingZeroCountDeBruijn32),
                     // uint|long -> IntPtr cast on 32-bit platforms does expensive overflow checks not needed here
                     (nuint)(int)(((value & (uint)-(int)value) * 0x077CB531u) >> 27)); // Multi-cast mitigates redundant conv.u8
             }
@@ -49,7 +49,7 @@ namespace WitherTorch.Common.Helpers
                 // uint.MaxValue >> 27 is always in range [0 - 31] so we use Unsafe.AddByteOffset to avoid bounds check
                 return UnsafeHelper.AddByteOffset(
                     // Using deBruijn sequence, k=2, n=5 (2^5=32) : 0b_0000_0111_1100_0100_1010_1100_1101_1101u
-                    ref Log2DeBruijn32[0],
+                    ref UnsafeHelper.GetArrayDataReference(Log2DeBruijn32),
                     // uint|long -> IntPtr cast on 32-bit platforms does expensive overflow checks not needed here
                     (uint)(int)((value * 0x07C4ACDDu) >> 27));
             }
