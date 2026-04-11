@@ -104,5 +104,45 @@ namespace WitherTorch.Common.Helpers
             if (Debugger.IsAttached)
                 Debugger.Break();
         }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void WriteLineIf<T>(T? value, bool condition)
+        {
+            if (condition)
+                Debug.WriteLine(value?.ToString());
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void WriteLineIf(string? message, bool condition)
+        {
+            if (condition)
+                Debug.WriteLine(message);
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void WriteLineUnless<T>(T? value, bool condition)
+        {
+            if (!condition)
+                Debug.WriteLine(value?.ToString());
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void WriteLineUnless(string? message, bool condition)
+        {
+            if (!condition)
+                Debug.WriteLine(message);
+        }
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void WriteLine<T>(T? value) => Debug.WriteLine(value);
+
+        [DebuggerHidden]
+        [Conditional("DEBUG")]
+        public static void WriteLine(string? message) => Debug.WriteLine(message);
     }
 }
