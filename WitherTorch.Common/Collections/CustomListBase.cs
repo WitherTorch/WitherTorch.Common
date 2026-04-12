@@ -437,23 +437,6 @@ namespace WitherTorch.Common.Collections
                 Array.Clear(array, oldIndex, newIndex - oldIndex);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void MoveArrayCoreSlow(T[] array, int oldIndex, int newIndex, int count)
-        {
-            Array.Copy(array, oldIndex, array, newIndex, count);
-#pragma warning disable CS8500
-            fixed (T* ptr = array)
-                UnsafeHelper.InitBlock(ptr + oldIndex, 0, unchecked((uint)(count * sizeof(T))));
-#pragma warning restore CS8500
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void MoveArrayCoreVerySlow(T[] array, int oldIndex, int newIndex, int count)
-        {
-            for (int i = oldIndex + count - 1, j = newIndex + count - 1; i >= oldIndex; i--, j--)
-                (array[j], array[i]) = (array[i], default!);
-        }
-
         public struct Enumerator : IEnumerator<T>
         {
             private readonly T[] _array;

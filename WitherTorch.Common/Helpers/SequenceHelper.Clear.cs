@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 #pragma warning disable CS8500
@@ -12,8 +12,15 @@ namespace WitherTorch.Common.Helpers
             int length = array.Length;
             if (length <= 0)
                 return;
-            fixed (void* ptr = array)
-                UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)(length * UnsafeHelper.SizeOf<T>())));
+            if (UnsafeHelper.IsUnmanagedType<T>())
+            {
+                fixed (void* ptr = array)
+                    UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)(length * UnsafeHelper.SizeOf<T>())));
+            }
+            else
+            {
+                Array.Clear(array, 0, length);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -23,14 +30,21 @@ namespace WitherTorch.Common.Helpers
                 return;
             if (startIndex + count > array.Length)
                 throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
-            fixed (void* ptr = array)
+            if (UnsafeHelper.IsUnmanagedType<T>())
             {
-                if (startIndex == 0)
+                fixed (void* ptr = array)
                 {
-                    UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)(count * UnsafeHelper.SizeOf<T>())));
-                    return;
+                    if (startIndex == 0)
+                    {
+                        UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)(count * UnsafeHelper.SizeOf<T>())));
+                        return;
+                    }
+                    UnsafeHelper.InitBlockUnaligned((byte*)ptr + startIndex * UnsafeHelper.SizeOf<T>(), 0, unchecked((uint)(count * UnsafeHelper.SizeOf<T>())));
                 }
-                UnsafeHelper.InitBlockUnaligned((byte*)ptr + startIndex * UnsafeHelper.SizeOf<T>(), 0, unchecked((uint)(count * UnsafeHelper.SizeOf<T>())));
+            }
+            else
+            {
+                Array.Clear(array, startIndex, count);
             }
         }
     }

@@ -96,12 +96,7 @@ namespace WitherTorch.Common.Buffers
             if (length <= 0)
                 return;
             if (!UnsafeHelper.IsUnmanagedType<T>())
-            {
-#pragma warning disable CS8500
-                fixed (void* ptr = array)
-                    UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)length * UnsafeHelper.SizeOf<T>()));
-#pragma warning restore CS8500
-            }
+                Array.Clear(array, 0, length);
             ReturnCore(array);
         }
 
@@ -112,10 +107,17 @@ namespace WitherTorch.Common.Buffers
                 return;
             if (clearArray)
             {
+                if (UnsafeHelper.IsUnmanagedType<T>())
+                {
 #pragma warning disable CS8500
-                fixed (void* ptr = array)
-                    UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)length * UnsafeHelper.SizeOf<T>()));
+                    fixed (void* ptr = array)
+                        UnsafeHelper.InitBlock(ptr, 0, unchecked((uint)length * UnsafeHelper.SizeOf<T>()));
 #pragma warning restore CS8500
+                }
+                else
+                {
+                    Array.Clear(array, 0, length);
+                }
             }
             ReturnCore(array);
         }

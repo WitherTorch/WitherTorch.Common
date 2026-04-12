@@ -21,8 +21,15 @@ namespace WitherTorch.Common.Extensions
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static unsafe void Clear<T>(T[] array)
             {
-                fixed (T* ptr = array)
-                    UnsafeHelper.InitBlock(ptr, default, MathHelper.MakeUnsigned(array.Length) * UnsafeHelper.SizeOf<T>());
+                if (UnsafeHelper.IsUnmanagedType<T>())
+                {
+                    fixed (T* ptr = array)
+                        UnsafeHelper.InitBlock(ptr, default, MathHelper.MakeUnsigned(array.Length) * UnsafeHelper.SizeOf<T>());
+                }
+                else
+                {
+                    Array.Clear(array, 0, array.Length);
+                }
             }
 
             /// <inheritdoc cref="Array.Clear(Array, int, int)"/>
