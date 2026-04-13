@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 using WitherTorch.Common.Extensions;
@@ -47,13 +48,22 @@ namespace WitherTorch.Common.Buffers
                 Queue<T[]> queue = new Queue<T[]>(LocalArrayQueuePreserveCount);
                 for (int i = 0; i < LocalArrayQueuePreserveCount; i++)
                     queue.Enqueue(new T[arraySize]);
+                StrongBox<nuint> barrierBox = new StrongBox<nuint>(0);
                 DelayedCall call = new DelayedCall(() =>
                 {
-                    int count = queue.Count;
-                    for (int i = LocalArrayQueuePreserveCount; i < count; i++)
-                        queue.Dequeue();
+                    InterlockedHelper.Write(ref barrierBox.Value, (nuint)queue.Count);
+                    try
+                    {
+                        int count = queue.Count;
+                        for (int i = LocalArrayQueuePreserveCount; i < count; i++)
+                            queue.Dequeue();
+                    }
+                    finally
+                    {
+                        InterlockedHelper.Write(ref barrierBox.Value, 0);
+                    }
                 });
-                return new ArrayQueue(call, queue);
+                return new ArrayQueue(call, queue, barrierBox);
             }
 
             private static ConcurrentArrayQueue CreateGlobalArrayQueue()
@@ -82,7 +92,10 @@ namespace WitherTorch.Common.Buffers
                 if (index < LocalArrayQueueCount)
                 {
                     ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
-                    queue.Queue.TryDequeue(out array);
+                    if (InterlockedHelper.Read(ref queue.BarrierBox.Value) == 0)
+                        queue.Queue.TryDequeue(out array);
+                    else
+                        array = null;
                     call = queue.Call;
                 }
                 else
@@ -119,7 +132,8 @@ namespace WitherTorch.Common.Buffers
 
             private sealed record class ArrayQueue(
                 DelayedCall Call,
-                Queue<T[]> Queue
+                Queue<T[]> Queue,
+                StrongBox<nuint> BarrierBox
                 );
 
             private sealed record class ConcurrentArrayQueue(

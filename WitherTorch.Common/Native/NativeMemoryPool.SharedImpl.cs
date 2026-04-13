@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 using WitherTorch.Common.Extensions;
@@ -48,13 +49,22 @@ namespace WitherTorch.Common.Native
                 Queue<NativeMemoryBlock> queue = new Queue<NativeMemoryBlock>(LocalArrayQueuePreserveCount);
                 for (int i = 0; i < LocalArrayQueuePreserveCount; i++)
                     queue.Enqueue(NativeMethods.AllocMemoryBlock(blockSize));
+                StrongBox<nuint> barrierBox = new StrongBox<nuint>(0);
                 DelayedCall call = new DelayedCall(() =>
                 {
-                    int count = queue.Count;
-                    for (int i = LocalArrayQueuePreserveCount; i < count; i++)
-                        NativeMethods.FreeMemoryBlock(queue.Dequeue());
+                    InterlockedHelper.Write(ref barrierBox.Value, UnsafeHelper.GetMaxValue<nuint>());
+                    try
+                    {
+                        int count = queue.Count;
+                        for (int i = LocalArrayQueuePreserveCount; i < count; i++)
+                            NativeMethods.FreeMemoryBlock(queue.Dequeue());
+                    }
+                    finally
+                    {
+                        InterlockedHelper.Write(ref barrierBox.Value, 0);
+                    }
                 });
-                return new ArrayQueue(call, queue);
+                return new ArrayQueue(call, queue, barrierBox);
             }
 
             private static ConcurrentArrayQueue CreateGlobalArrayQueue()
@@ -86,8 +96,16 @@ namespace WitherTorch.Common.Native
                 if (index < LocalArrayQueueCount)
                 {
                     ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
-                    queue.Queue.TryDequeue(out memoryBlock);
-                    capacity = memoryBlock.Length;
+                    if (InterlockedHelper.Read(ref queue.BarrierBox.Value) == 0)
+                    {
+                        queue.Queue.TryDequeue(out memoryBlock);
+                        capacity = memoryBlock.Length;
+                    }
+                    else
+                    {
+                        memoryBlock = default;
+                        capacity = 0;
+                    }
                     call = queue.Call;
                 }
                 else
@@ -100,7 +118,7 @@ namespace WitherTorch.Common.Native
                 call.AddRef();
                 void* result = memoryBlock.NativePointer;
                 if (result != null)
-                    return result; 
+                    return result;
                 capacity = MinimumMemoryBlockSize << index;
                 return NativeMethods.AllocMemory(capacity);
             }
@@ -131,7 +149,8 @@ namespace WitherTorch.Common.Native
 
             private sealed record class ArrayQueue(
                 DelayedCall Call,
-                Queue<NativeMemoryBlock> Queue
+                Queue<NativeMemoryBlock> Queue,
+                StrongBox<nuint> BarrierBox
                 );
 
             private sealed record class ConcurrentArrayQueue(
