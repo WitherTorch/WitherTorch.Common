@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Threading
             }
             if (syncLock is null) // 對應 LazyThreadSafetyMode.PublicationOnly
             {
-                result = InterlockedHelper.Read(ref location);
+                result = Volatile.Read(ref location);
                 if (result is null)
                 {
                     result = InitializeOrThrow(factory);

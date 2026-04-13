@@ -77,7 +77,7 @@ namespace WitherTorch.Common.Threading
                 {
                     object? syncLock = _syncLock;
                     if (syncLock is null)
-                        result = InterlockedHelper.Read(ref _value);
+                        result = Volatile.Read(ref _value);
                     else
                     {
                         Monitor.Enter(syncLock);

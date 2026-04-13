@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
@@ -113,7 +114,7 @@ namespace WitherTorch.Common.Collections
         {
             TList list = _list;
 
-            ulong newVersion = InterlockedHelper.Read(ref _version);
+            ulong newVersion = Volatile.Read(ref _version);
             if (_oldVersion == newVersion)
                 return list;
             _oldVersion = newVersion;

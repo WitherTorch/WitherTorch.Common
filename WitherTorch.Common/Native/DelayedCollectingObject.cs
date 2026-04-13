@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 using InlineMethod;
 
@@ -12,11 +13,11 @@ namespace WitherTorch.Common.Native
 
         public bool IsDisposed => CheckDisposed();
 
-        public bool IsCreated => InterlockedHelper.Read(ref _created) > 0;
+        public bool IsCreated => Volatile.Read(ref _created) > 0;
 
-        public bool IsInReference => InterlockedHelper.Read(ref _refCount) > 0;
+        public bool IsInReference => Volatile.Read(ref _refCount) > 0;
 
-        public ulong LastDereferenceTime => InterlockedHelper.Read(ref _lastDerefTime);
+        public ulong LastDereferenceTime => Volatile.Read(ref _lastDerefTime);
 
         protected DelayedCollectingObject()
         {
@@ -89,7 +90,7 @@ namespace WitherTorch.Common.Native
         protected abstract void DestroyObject();
 
         [Inline(InlineBehavior.Remove)]
-        private bool CheckDisposed() => InterlockedHelper.Read(ref _disposed) != 0;
+        private bool CheckDisposed() => Volatile.Read(ref _disposed) != 0;
 
         protected virtual void Dispose(bool disposing)
         {
