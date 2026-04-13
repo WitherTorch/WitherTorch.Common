@@ -1,8 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security;
-using System.Threading;
 
 using WitherTorch.Common.Helpers;
 
@@ -64,10 +62,10 @@ namespace WitherTorch.Common.Structures
         }
 
         public void InterlockedReset()
-            => InterlockedHelper.Exchange(ref _data, ulong.MinValue);
+            => InterlockedHelper.Write(ref _data, ulong.MinValue);
 
         public void InterlockedSet()
-            => InterlockedHelper.Exchange(ref _data, ulong.MaxValue);
+            => InterlockedHelper.Write(ref _data, ulong.MaxValue);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ulong Exchange(ulong value)

@@ -286,7 +286,73 @@ namespace WitherTorch.Common.Helpers
         public static partial object? Read(ref readonly object? location) => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial T Read<T>(ref readonly T location) where T : class? => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+        public static partial T? Read<T>(ref readonly T? location) where T : class => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref int location, int value)
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(int))
+                Volatile.Write(ref location, value);
+            else
+                Exchange(ref location, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref uint location, uint value)
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(uint))
+                Volatile.Write(ref location, value);
+            else
+                Exchange(ref location, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref long location, long value)
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(long))
+                Volatile.Write(ref location, value);
+            else
+                Exchange(ref location, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref ulong location, ulong value)
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(ulong))
+                Volatile.Write(ref location, value);
+            else
+                Exchange(ref location, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref nint location, nint value) => Volatile.Write(ref location, value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref nuint location, nuint value) => Volatile.Write(ref location, value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref float location, float value)
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(float))
+                Volatile.Write(ref location, value);
+            else
+                Exchange(ref location, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref double location, double value)
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(double))
+                Volatile.Write(ref location, value);
+            else
+                Exchange(ref location, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write(ref object? location, object? value) => Volatile.Write(ref location, value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void Write<T>(ref T? location, T? value) where T : class => Volatile.Write(ref location, value);
 
         /// <inheritdoc cref="Interlocked.Exchange(ref int, int)"/>
         [Inline(InlineBehavior.Keep, export: true)]

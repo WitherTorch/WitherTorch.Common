@@ -3,8 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-using InlineMethod;
-
 namespace WitherTorch.Common.Helpers
 {
     public static partial class InterlockedHelper
@@ -63,8 +61,21 @@ namespace WitherTorch.Common.Helpers
         public static partial nuint Read(ref readonly nuint location);
         public static partial float Read(ref readonly float location);
         public static partial double Read(ref readonly double location);
-        public static partial object? Read(ref readonly object? location);
-        public static partial T Read<T>(ref readonly T location) where T : class?;
+        [return: NotNullIfNotNull(nameof(location))]
+        public static partial object? Read([NotNullIfNotNull(nameof(location))] ref readonly object? location);
+        [return: NotNullIfNotNull(nameof(location))]
+        public static partial T? Read<T>([NotNullIfNotNull(nameof(location))] ref readonly T? location) where T : class;
+
+        public static partial void Write(ref int location, int value);
+        public static partial void Write(ref uint location, uint value);
+        public static partial void Write(ref long location, long value);
+        public static partial void Write(ref ulong location, ulong value);
+        public static partial void Write(ref nint location, nint value);
+        public static partial void Write(ref nuint location, nuint value);
+        public static partial void Write(ref float location, float value);
+        public static partial void Write(ref double location, double value);
+        public static partial void Write([NotNullIfNotNull(nameof(value))] ref object? location, object? value);
+        public static partial void Write<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value) where T : class;
 
         public static partial int Exchange(ref int location, int value);
         public static partial uint Exchange(ref uint location, uint value);
@@ -136,7 +147,7 @@ namespace WitherTorch.Common.Helpers
         public static partial nuint GetAndDecrement(ref nuint location);
 
         // Slow routines
-        [Inline(InlineBehavior.Remove)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T OrCore<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = CompareExchangeCore(ref location, value, default);
@@ -152,7 +163,7 @@ namespace WitherTorch.Common.Helpers
             while (true);
         }
 
-        [Inline(InlineBehavior.Remove)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T AndCore<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
@@ -168,7 +179,7 @@ namespace WitherTorch.Common.Helpers
             while (true);
         }
 
-        [Inline(InlineBehavior.Remove)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T MinCore<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
@@ -185,7 +196,7 @@ namespace WitherTorch.Common.Helpers
             return oldValue;
         }
 
-        [Inline(InlineBehavior.Remove)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T MinCoreUnsigned<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
@@ -202,7 +213,7 @@ namespace WitherTorch.Common.Helpers
             return oldValue;
         }
 
-        [Inline(InlineBehavior.Remove)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T MaxCore<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
@@ -219,7 +230,7 @@ namespace WitherTorch.Common.Helpers
             return oldValue;
         }
 
-        [Inline(InlineBehavior.Remove)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static T MaxCoreUnsigned<T>(ref T location, T value) where T : unmanaged
         {
             T oldValue = ReadCore(ref location);
@@ -237,86 +248,35 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T ReadCore<T>(ref T location) where T : unmanaged
-        {
-            if (typeof(T) == typeof(int))
-                return UnsafeHelper.As<int, T>(Read(ref UnsafeHelper.As<T, int>(ref location)));
-            if (typeof(T) == typeof(uint))
-                return UnsafeHelper.As<uint, T>(Read(ref UnsafeHelper.As<T, uint>(ref location)));
-            if (typeof(T) == typeof(long))
-                return UnsafeHelper.As<long, T>(Read(ref UnsafeHelper.As<T, long>(ref location)));
-            if (typeof(T) == typeof(ulong))
-                return UnsafeHelper.As<ulong, T>(Read(ref UnsafeHelper.As<T, ulong>(ref location)));
-            if (typeof(T) == typeof(nint))
-                return UnsafeHelper.As<nint, T>(Read(ref UnsafeHelper.As<T, nint>(ref location)));
-            if (typeof(T) == typeof(nuint))
-                return UnsafeHelper.As<nuint, T>(Read(ref UnsafeHelper.As<T, nuint>(ref location)));
-            if (typeof(T) == typeof(float))
-                return UnsafeHelper.As<float, T>(Read(ref UnsafeHelper.As<T, float>(ref location)));
-            if (typeof(T) == typeof(double))
-                return UnsafeHelper.As<double, T>(Read(ref UnsafeHelper.As<T, double>(ref location)));
-            throw new PlatformNotSupportedException();
-        }
+        private static unsafe T ReadCore<T>(ref T location) where T : unmanaged
+            => sizeof(T) switch
+            {
+                sizeof(uint) => UnsafeHelper.As<uint, T>(Read(ref UnsafeHelper.As<T, uint>(ref location))),
+                sizeof(ulong) => UnsafeHelper.As<ulong, T>(Read(ref UnsafeHelper.As<T, ulong>(ref location))),
+                _ => throw new PlatformNotSupportedException()
+            };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T ExchangeCore<T>(ref T location, T value) where T : unmanaged
-        {
-            if (typeof(T) == typeof(int))
-                return UnsafeHelper.As<int, T>(Exchange(ref UnsafeHelper.As<T, int>(ref location),
-                    UnsafeHelper.As<T, int>(value)));
-            if (typeof(T) == typeof(uint))
-                return UnsafeHelper.As<uint, T>(Exchange(ref UnsafeHelper.As<T, uint>(ref location),
-                    UnsafeHelper.As<T, uint>(value)));
-            if (typeof(T) == typeof(long))
-                return UnsafeHelper.As<long, T>(Exchange(ref UnsafeHelper.As<T, long>(ref location),
-                    UnsafeHelper.As<T, long>(value)));
-            if (typeof(T) == typeof(ulong))
-                return UnsafeHelper.As<ulong, T>(Exchange(ref UnsafeHelper.As<T, ulong>(ref location),
-                    UnsafeHelper.As<T, ulong>(value)));
-            if (typeof(T) == typeof(nint))
-                return UnsafeHelper.As<nint, T>(Exchange(ref UnsafeHelper.As<T, nint>(ref location),
-                    UnsafeHelper.As<T, nint>(value)));
-            if (typeof(T) == typeof(nuint))
-                return UnsafeHelper.As<nuint, T>(Exchange(ref UnsafeHelper.As<T, nuint>(ref location),
-                    UnsafeHelper.As<T, nuint>(value)));
-            if (typeof(T) == typeof(float))
-                return UnsafeHelper.As<float, T>(Exchange(ref UnsafeHelper.As<T, float>(ref location),
-                    UnsafeHelper.As<T, float>(value)));
-            if (typeof(T) == typeof(double))
-                return UnsafeHelper.As<double, T>(Exchange(ref UnsafeHelper.As<T, double>(ref location),
-                    UnsafeHelper.As<T, double>(value)));
-            throw new PlatformNotSupportedException();
-        }
+        private static unsafe T ExchangeCore<T>(ref T location, T value) where T : unmanaged
+            => sizeof(T) switch
+            {
+                sizeof(uint) => UnsafeHelper.As<uint, T>(Exchange(ref UnsafeHelper.As<T, uint>(ref location),
+                    UnsafeHelper.As<T, uint>(value))),
+                sizeof(ulong) => UnsafeHelper.As<ulong, T>(Exchange(ref UnsafeHelper.As<T, ulong>(ref location),
+                    UnsafeHelper.As<T, ulong>(value))),
+                _ => throw new PlatformNotSupportedException()
+            };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static T CompareExchangeCore<T>(ref T location, T value, T comparand) where T : unmanaged
-        {
-            if (typeof(T) == typeof(int))
-                return UnsafeHelper.As<int, T>(CompareExchange(ref UnsafeHelper.As<T, int>(ref location),
-                    UnsafeHelper.As<T, int>(value), UnsafeHelper.As<T, int>(comparand)));
-            if (typeof(T) == typeof(uint))
-                return UnsafeHelper.As<uint, T>(CompareExchange(ref UnsafeHelper.As<T, uint>(ref location),
-                    UnsafeHelper.As<T, uint>(value), UnsafeHelper.As<T, uint>(comparand)));
-            if (typeof(T) == typeof(long))
-                return UnsafeHelper.As<long, T>(CompareExchange(ref UnsafeHelper.As<T, long>(ref location),
-                    UnsafeHelper.As<T, long>(value), UnsafeHelper.As<T, long>(comparand)));
-            if (typeof(T) == typeof(ulong))
-                return UnsafeHelper.As<ulong, T>(CompareExchange(ref UnsafeHelper.As<T, ulong>(ref location),
-                    UnsafeHelper.As<T, ulong>(value), UnsafeHelper.As<T, ulong>(comparand)));
-            if (typeof(T) == typeof(nint))
-                return UnsafeHelper.As<nint, T>(CompareExchange(ref UnsafeHelper.As<T, nint>(ref location),
-                    UnsafeHelper.As<T, nint>(value), UnsafeHelper.As<T, nint>(comparand)));
-            if (typeof(T) == typeof(nuint))
-                return UnsafeHelper.As<nuint, T>(CompareExchange(ref UnsafeHelper.As<T, nuint>(ref location),
-                    UnsafeHelper.As<T, nuint>(value), UnsafeHelper.As<T, nuint>(comparand)));
-            if (typeof(T) == typeof(float))
-                return UnsafeHelper.As<float, T>(CompareExchange(ref UnsafeHelper.As<T, float>(ref location),
-                    UnsafeHelper.As<T, float>(value), UnsafeHelper.As<T, float>(comparand)));
-            if (typeof(T) == typeof(double))
-                return UnsafeHelper.As<double, T>(CompareExchange(ref UnsafeHelper.As<T, double>(ref location),
-                    UnsafeHelper.As<T, double>(value), UnsafeHelper.As<T, double>(comparand)));
-            throw new PlatformNotSupportedException();
-        }
+        private static unsafe T CompareExchangeCore<T>(ref T location, T value, T comparand) where T : unmanaged
+            => sizeof(T) switch
+            {
+                sizeof(uint) => UnsafeHelper.As<uint, T>(CompareExchange(ref UnsafeHelper.As<T, uint>(ref location),
+                    UnsafeHelper.As<T, uint>(value), UnsafeHelper.As<T, uint>(comparand))),
+                sizeof(ulong) => UnsafeHelper.As<ulong, T>(CompareExchange(ref UnsafeHelper.As<T, ulong>(ref location),
+                    UnsafeHelper.As<T, ulong>(value), UnsafeHelper.As<T, ulong>(comparand))),
+                _ => throw new PlatformNotSupportedException()
+            };
 
         private static int FallbackGetAndAdd(ref int location, int value) => Interlocked.Add(ref location, value) - value;
 

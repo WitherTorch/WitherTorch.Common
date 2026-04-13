@@ -55,7 +55,7 @@ namespace WitherTorch.Common.Native
                     InterlockedHelper.CompareExchange(ref _refCount, 0, ulong.MaxValue);
                     break;
                 case 0:
-                    InterlockedHelper.Exchange(ref _lastDerefTime, NativeMethods.GetTicksForSystem());
+                    InterlockedHelper.Write(ref _lastDerefTime, NativeMethods.GetTicksForSystem());
                     break;
                 default:
                     break;
