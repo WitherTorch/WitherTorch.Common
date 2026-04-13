@@ -20,7 +20,7 @@ namespace WitherTorch.Common.Native
 
             public readonly bool IsAutoReset => _autoReset;
 
-            public readonly bool State => MathHelper.ToBoolean(Volatile.Read(ref UnsafeHelper.AsRefIn(in _state)));
+            public readonly bool State => MathHelper.ToBoolean(InterlockedHelper.Read(ref UnsafeHelper.AsRefIn(in _state)));
 
             public static IntPtr GetWaitingHandleFromEvent(RawWaitingEvent* source)
                 => (IntPtr)(&source->_state);

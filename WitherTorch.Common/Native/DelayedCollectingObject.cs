@@ -15,9 +15,9 @@ namespace WitherTorch.Common.Native
 
         public bool IsCreated => Volatile.Read(ref _created) > 0;
 
-        public bool IsInReference => Volatile.Read(ref _refCount) > 0;
+        public bool IsInReference => InterlockedHelper.Read(ref _refCount) > 0;
 
-        public ulong LastDereferenceTime => Volatile.Read(ref _lastDerefTime);
+        public ulong LastDereferenceTime => InterlockedHelper.Read(ref _lastDerefTime);
 
         protected DelayedCollectingObject()
         {

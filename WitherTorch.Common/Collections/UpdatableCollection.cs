@@ -114,7 +114,7 @@ namespace WitherTorch.Common.Collections
         {
             TList list = _list;
 
-            ulong newVersion = Volatile.Read(ref _version);
+            ulong newVersion = InterlockedHelper.Read(ref _version);
             if (_oldVersion == newVersion)
                 return list;
             _oldVersion = newVersion;

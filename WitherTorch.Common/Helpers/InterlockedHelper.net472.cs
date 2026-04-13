@@ -228,63 +228,65 @@ namespace WitherTorch.Common.Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int Read(ref readonly int location)
-            => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0, 0);
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(int))
+                return Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+            return Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0, 0);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint Read(ref readonly uint location)
-            => UnsafeHelper.As<int, uint>(Interlocked.CompareExchange(ref UnsafeHelper.As<uint, int>(ref UnsafeHelper.AsRefIn(in location)), 0, 0));
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(uint))
+                return Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+            return UnsafeHelper.As<int, uint>(Interlocked.CompareExchange(ref UnsafeHelper.As<uint, int>(ref UnsafeHelper.AsRefIn(in location)), 0, 0));
+        }
 
         /// <inheritdoc cref="Interlocked.Read(ref long)"/>
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long Read(ref readonly long location)
-            => Interlocked.Read(ref UnsafeHelper.AsRefIn(in location));
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(long))
+                return Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+            return Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0L, 0L);
+        }
 
         /// <inheritdoc cref="Interlocked.Read(ref long)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ulong Read(ref readonly ulong location)
-            => UnsafeHelper.As<long, ulong>(Interlocked.Read(ref UnsafeHelper.As<ulong, long>(ref UnsafeHelper.AsRefIn(in location))));
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(ulong))
+                return Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+            return UnsafeHelper.As<long, ulong>(Interlocked.Read(ref UnsafeHelper.As<ulong, long>(ref UnsafeHelper.AsRefIn(in location))));
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial nint Read(ref readonly nint location) => UnsafeHelper.PointerSizeConstant switch
-        {
-            sizeof(int) => UnsafeHelper.As<int, nint>(Interlocked.CompareExchange(ref UnsafeHelper.As<nint, int>(ref UnsafeHelper.AsRefIn(in location)), 0, 0)),
-            sizeof(long) => UnsafeHelper.As<long, nint>(Interlocked.Read(ref UnsafeHelper.As<nint, long>(ref UnsafeHelper.AsRefIn(in location)))),
-            _ => UnsafeHelper.PointerSize switch
-            {
-                sizeof(int) => UnsafeHelper.As<int, nint>(Interlocked.CompareExchange(ref UnsafeHelper.As<nint, int>(ref UnsafeHelper.AsRefIn(in location)), 0, 0)),
-                sizeof(long) => UnsafeHelper.As<long, nint>(Interlocked.Read(ref UnsafeHelper.As<nint, long>(ref UnsafeHelper.AsRefIn(in location)))),
-                _ => throw new PlatformNotSupportedException()
-            }
-        };
+        public static partial nint Read(ref readonly nint location) => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial nuint Read(ref readonly nuint location) => UnsafeHelper.PointerSizeConstant switch
-        {
-            sizeof(uint) => UnsafeHelper.As<int, nuint>(Interlocked.CompareExchange(ref UnsafeHelper.As<nuint, int>(ref UnsafeHelper.AsRefIn(in location)), 0, 0)),
-            sizeof(ulong) => UnsafeHelper.As<long, nuint>(Interlocked.Read(ref UnsafeHelper.As<nuint, long>(ref UnsafeHelper.AsRefIn(in location)))),
-            _ => UnsafeHelper.PointerSize switch
-            {
-                sizeof(uint) => UnsafeHelper.As<int, nuint>(Interlocked.CompareExchange(ref UnsafeHelper.As<nuint, int>(ref UnsafeHelper.AsRefIn(in location)), 0, 0)),
-                sizeof(ulong) => UnsafeHelper.As<long, nuint>(Interlocked.Read(ref UnsafeHelper.As<nuint, long>(ref UnsafeHelper.AsRefIn(in location)))),
-                _ => throw new PlatformNotSupportedException()
-            }
-        };
+        public static partial nuint Read(ref readonly nuint location) => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial float Read(ref readonly float location)
-            => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0.0f, 0.0f);
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(float))
+                return Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+            return Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0.0f, 0.0f);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial double Read(ref readonly double location)
-             => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0.0, 0.0);
+        {
+            if (UnsafeHelper.PointerSize >= sizeof(double))
+                return Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
+            return Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), 0.0, 0.0);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial object? Read(ref readonly object? location)
-            => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location), null, null);
+        public static partial object? Read(ref readonly object? location) => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial T Read<T>(ref readonly T location) where T : class?
-             => Interlocked.CompareExchange(ref UnsafeHelper.AsRefIn(in location)!, default, default)!;
+        public static partial T Read<T>(ref readonly T location) where T : class? => Volatile.Read(ref UnsafeHelper.AsRefIn(in location));
 
         /// <inheritdoc cref="Interlocked.Exchange(ref int, int)"/>
         [Inline(InlineBehavior.Keep, export: true)]
