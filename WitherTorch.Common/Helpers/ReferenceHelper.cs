@@ -48,48 +48,45 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: NotNullIfNotNull(nameof(location))]
         public static T? CompareExchange<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand)
+            => UnsafeHelper.IsPrimitiveType<T>() ? CompareExchange_Primitive(ref location, value, comparand) : CompareExchange_Fallback(ref location, value, comparand);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: NotNullIfNotNull(nameof(location))]
+        private static T? CompareExchange_Primitive<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand)
         {
-            T? result = location;
+            T? oldValue = location;
+            T mask = UnsafeHelper.Negate(UnsafeHelper.As<bool, T>(UnsafeHelper.Equals(location, comparand)));
+            location = UnsafeHelper.Or(UnsafeHelper.And(oldValue, UnsafeHelper.Not(mask)), UnsafeHelper.And(value, mask));
+            return oldValue;
+        }
 
-            if (UnsafeHelper.IsPrimitiveType<T>())
-                goto Primitive;
-            goto Fallback;
-
-        Primitive:
-            if (UnsafeHelper.Equals(result, comparand))
-                goto Change;
-            goto Result;
-
-        Fallback:
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: NotNullIfNotNull(nameof(location))]
+        private static T? CompareExchange_Fallback<T>([NotNullIfNotNull(nameof(value))] ref T location, T value, T comparand)
+        {
+            T oldValue = location;
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-            if (comparer.Equals(value!, comparand!))
-                goto Change;
-            goto Result;
-
-        Change:
-            location = value;
-            goto Result;
-
-        Result:
-            return result;
+            if (comparer.Equals(oldValue, comparand))
+                location = value;
+            return oldValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void* CompareExchange(ref void* location, void* value, void* comparand)
         {
-            void* result = location;
-            if (location == comparand)
-                location = value;
-            return result;
+            void* oldValue = location;
+            nuint mask = UnsafeHelper.Negate(MathHelper.BooleanToNativeUnsigned(location == comparand));
+            location = (void*)((nuint)oldValue & ~mask | (nuint)value & mask);
+            return oldValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe T* CompareExchange<T>(ref T* location, T* value, T* comparand)
         {
-            T* result = location;
-            if (location == comparand)
-                location = value;
-            return result;
+            T* oldValue = location;
+            nuint mask = UnsafeHelper.Negate(MathHelper.BooleanToNativeUnsigned(location == comparand));
+            location = (T*)((nuint)oldValue & ~mask | (nuint)value & mask);
+            return oldValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
