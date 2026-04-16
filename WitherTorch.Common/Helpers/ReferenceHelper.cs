@@ -56,8 +56,12 @@ namespace WitherTorch.Common.Helpers
         public static unsafe void* CompareExchange(ref void* location, void* value, void* comparand)
         {
             void* oldValue = location;
+#if NET8_0_OR_GREATER
+            location = (oldValue == comparand) ? value : oldValue; // 強制 JIT 生成 cmp + cmovne
+#else
             nuint mask = UnsafeHelper.Negate(MathHelper.BooleanToNativeUnsigned(location == comparand));
             location = (void*)((nuint)oldValue & ~mask | (nuint)value & mask);
+#endif
             return oldValue;
         }
 
@@ -65,8 +69,12 @@ namespace WitherTorch.Common.Helpers
         public static unsafe T* CompareExchange<T>(ref T* location, T* value, T* comparand)
         {
             T* oldValue = location;
+#if NET8_0_OR_GREATER
+            location = (oldValue == comparand) ? value : oldValue; // 強制 JIT 生成 cmp + cmovne
+#else
             nuint mask = UnsafeHelper.Negate(MathHelper.BooleanToNativeUnsigned(location == comparand));
             location = (T*)((nuint)oldValue & ~mask | (nuint)value & mask);
+#endif
             return oldValue;
         }
 
@@ -88,8 +96,12 @@ namespace WitherTorch.Common.Helpers
         private static T? CompareExchangeFast<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand)
         {
             T? oldValue = location;
+#if NET8_0_OR_GREATER
+            location = UnsafeHelper.Equals(location, comparand) ? value : oldValue; // 強制 JIT 生成 cmp + cmovne
+#else
             T mask = UnsafeHelper.Negate(UnsafeHelper.As<bool, T>(UnsafeHelper.Equals(location, comparand)));
             location = UnsafeHelper.Or(UnsafeHelper.And(oldValue, UnsafeHelper.Not(mask)), UnsafeHelper.And(value, mask));
+#endif
             return oldValue;
         }
 
@@ -99,6 +111,14 @@ namespace WitherTorch.Common.Helpers
             where TComparer : IEqualityComparer<T>
         {
             T? oldValue = location;
+#if NET8_0_OR_GREATER
+            bool shouldChange;
+            if (oldValue is null)
+                shouldChange = comparand is null;
+            else
+                shouldChange = comparand is not null && comparer.Equals(oldValue, comparand);
+            location = shouldChange ? value : oldValue;
+#else
             if (oldValue is null)
             {
                 if (comparand is null)
@@ -114,8 +134,9 @@ namespace WitherTorch.Common.Helpers
 
         Change:
             location = value;
-
+            
         Return:
+#endif
             return oldValue;
         }
     }
