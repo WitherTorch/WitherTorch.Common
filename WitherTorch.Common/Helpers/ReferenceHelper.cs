@@ -48,28 +48,9 @@ namespace WitherTorch.Common.Helpers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: NotNullIfNotNull(nameof(location))]
         public static T? CompareExchange<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand)
-            => UnsafeHelper.IsPrimitiveType<T>() ? CompareExchange_Primitive(ref location, value, comparand) : CompareExchange_Fallback(ref location, value, comparand);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [return: NotNullIfNotNull(nameof(location))]
-        private static T? CompareExchange_Primitive<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand)
-        {
-            T? oldValue = location;
-            T mask = UnsafeHelper.Negate(UnsafeHelper.As<bool, T>(UnsafeHelper.Equals(location, comparand)));
-            location = UnsafeHelper.Or(UnsafeHelper.And(oldValue, UnsafeHelper.Not(mask)), UnsafeHelper.And(value, mask));
-            return oldValue;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [return: NotNullIfNotNull(nameof(location))]
-        private static T? CompareExchange_Fallback<T>([NotNullIfNotNull(nameof(value))] ref T location, T value, T comparand)
-        {
-            T oldValue = location;
-            EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-            if (comparer.Equals(oldValue, comparand))
-                location = value;
-            return oldValue;
-        }
+            => UnsafeHelper.IsPrimitiveType<T>() ? 
+            CompareExchangeFast(ref location, value, comparand) :
+            CompareExchangeSlow(ref location, value, comparand, EqualityComparer<T>.Default);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe void* CompareExchange(ref void* location, void* value, void* comparand)
@@ -91,12 +72,51 @@ namespace WitherTorch.Common.Helpers
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         [return: NotNullIfNotNull(nameof(location))]
-        public static T? CompareExchange<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand, IEqualityComparer<T> comparer)
+        public static T? CompareExchange<T, TComparer>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand, TComparer comparer) 
+            where TComparer : IEqualityComparer<T>
         {
-            T? result = location;
-            if (comparer.Equals(value!, comparand!))
-                location = value;
-            return result;
+            if (typeof(TComparer) == typeof(EqualityComparer<T>) && 
+                UnsafeHelper.IsPrimitiveType<T>() &&
+                ReferenceEquals(comparer, EqualityComparer<T>.Default))
+                return CompareExchangeFast(ref location, value, comparand);
+
+            return CompareExchangeSlow(ref location, value, comparand, comparer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: NotNullIfNotNull(nameof(location))]
+        private static T? CompareExchangeFast<T>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand)
+        {
+            T? oldValue = location;
+            T mask = UnsafeHelper.Negate(UnsafeHelper.As<bool, T>(UnsafeHelper.Equals(location, comparand)));
+            location = UnsafeHelper.Or(UnsafeHelper.And(oldValue, UnsafeHelper.Not(mask)), UnsafeHelper.And(value, mask));
+            return oldValue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [return: NotNullIfNotNull(nameof(location))]
+        private static T? CompareExchangeSlow<T, TComparer>([NotNullIfNotNull(nameof(value))] ref T? location, T? value, T? comparand, TComparer comparer)
+            where TComparer : IEqualityComparer<T>
+        {
+            T? oldValue = location;
+            if (oldValue is null)
+            {
+                if (comparand is null)
+                    goto Change;
+            }
+            else
+            {
+                if (comparand is not null && comparer.Equals(oldValue, comparand))
+                    goto Change;
+            }
+
+            goto Return;
+
+        Change:
+            location = value;
+
+        Return:
+            return oldValue;
         }
     }
 }
