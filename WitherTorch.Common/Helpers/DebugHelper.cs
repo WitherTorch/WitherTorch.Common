@@ -9,7 +9,7 @@ namespace WitherTorch.Common.Helpers
     {
         [DebuggerHidden]
         [Conditional("DEBUG")]
-        public static void ThrowIf(bool condition)
+        public static void ThrowIf([DoesNotReturnIf(true)] bool condition)
         {
             if (condition)
                 throw new DebugException($"{nameof(ThrowIf)} called!");
@@ -17,7 +17,7 @@ namespace WitherTorch.Common.Helpers
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
-        public static void ThrowIf(bool condition, string message)
+        public static void ThrowIf([DoesNotReturnIf(true)] bool condition, string message)
         {
             if (condition)
                 throw new DebugException(message);
@@ -25,7 +25,7 @@ namespace WitherTorch.Common.Helpers
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
-        public static void ThrowUnless(bool condition)
+        public static void ThrowUnless([DoesNotReturnIf(false)] bool condition)
         {
             if (!condition)
                 throw new DebugException($"{nameof(ThrowUnless)} called!");
@@ -33,7 +33,7 @@ namespace WitherTorch.Common.Helpers
 
         [DebuggerHidden]
         [Conditional("DEBUG")]
-        public static void ThrowUnless(bool condition, string message)
+        public static void ThrowUnless([DoesNotReturnIf(false)] bool condition, string message)
         {
             if (!condition)
                 throw new DebugException(message);
