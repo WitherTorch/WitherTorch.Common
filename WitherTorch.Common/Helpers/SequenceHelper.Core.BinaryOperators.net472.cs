@@ -66,7 +66,7 @@ namespace WitherTorch.Common.Helpers
                             Vector<T> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<T>>(ptr2);
                             UnsafeHelper.WriteUnaligned(ptr, DoOperation(sourceVector, valueVector, type));
                             UnsafeHelper.WriteUnaligned(ptr2, DoOperation(sourceVector2, valueVector, type));
-                            return Unit.Value;
+                            return Unit.Default;
                         }
                         else
                         {
@@ -115,7 +115,7 @@ namespace WitherTorch.Common.Helpers
                             UnsafeHelper.WriteUnaligned(ptr, DoOperation(sourceVector, valueVector, type));
                             break;
                     }
-                    return Unit.Value;
+                    return Unit.Default;
                 }
                 else
                     return ScalarizedBinaryOperationCore(ref ptr, ref length, value, type);
@@ -196,7 +196,7 @@ namespace WitherTorch.Common.Helpers
                             Vector<byte> sourceVector2 = UnsafeHelper.ReadUnaligned<Vector<byte>>(ptr2);
                             UnsafeHelper.WriteUnaligned(ptr, DoOperation(sourceVector, valueVector, type));
                             UnsafeHelper.WriteUnaligned(ptr2, DoOperation(sourceVector2, valueVector, type));
-                            return Unit.Value;
+                            return Unit.Default;
                         }
                         else
                         {
@@ -241,7 +241,7 @@ namespace WitherTorch.Common.Helpers
                             UnsafeHelper.WriteUnaligned(ptr, DoOperation(sourceVector, valueVector, type));
                             break;
                     }
-                    return Unit.Value;
+                    return Unit.Default;
                 }
                 else
                     return ScalarizedBinaryOperationCore(ref ptr, ref length, value, type);

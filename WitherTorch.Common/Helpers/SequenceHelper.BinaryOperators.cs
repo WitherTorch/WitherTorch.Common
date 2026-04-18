@@ -495,7 +495,7 @@ namespace WitherTorch.Common.Helpers
                     BinaryOperatorType.Divide => DivideCore(ptr, length, value),
                     BinaryOperatorType.Min => MinCore(ptr, length, value),
                     BinaryOperatorType.Max => MaxCore(ptr, length, value),
-                    _ => Unit.Value
+                    _ => Unit.Default
                 };
                 return;
             }

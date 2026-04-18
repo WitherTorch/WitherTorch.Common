@@ -14,7 +14,7 @@ namespace WitherTorch.Common.Helpers
         {
             if (typeof(T) == typeof(bool))
                 return FastCoreOfBoolean.Left((bool*)ptr, length, UnsafeHelper.As<T, bool>(value));
-            return Unit.Value;
+            return Unit.Default;
         }
 
         private static partial Unit RightCore<T>(T* ptr, nuint length, T value)

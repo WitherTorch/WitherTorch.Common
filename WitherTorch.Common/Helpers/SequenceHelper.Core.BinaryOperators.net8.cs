@@ -23,7 +23,7 @@ namespace WitherTorch.Common.Helpers
                 else
                     VectorizedBinaryOperationCore_64(ref ptr, ref length, value, type);
                 if (FastCore.IsIdempotence(type))
-                    return Unit.Value;
+                    return Unit.Default;
                 else
                     return ScalarizedBinaryOperationCore(ref ptr, ref length, value, type);
             }
@@ -533,7 +533,7 @@ namespace WitherTorch.Common.Helpers
                     VectorizedBinaryOperationCore_128(ref ptr, ref length, value, type);
                 else
                     VectorizedBinaryOperationCore_64(ref ptr, ref length, value, type);
-                return FastCore.IsIdempotence(type) ? Unit.Value : ScalarizedBinaryOperationCore(ref ptr, ref length, value, type);
+                return FastCore.IsIdempotence(type) ? Unit.Default : ScalarizedBinaryOperationCore(ref ptr, ref length, value, type);
             }
 
             [Inline(InlineBehavior.Remove)]

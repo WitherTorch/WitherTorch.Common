@@ -160,7 +160,7 @@ namespace WitherTorch.Common.Helpers
                 *ptr = DoOperation(*ptr, value, method);
 
             Return:
-                return Unit.Value;
+                return Unit.Default;
 
                 [Inline(InlineBehavior.Remove)]
                 static T DoOperation(T item, T value, [InlineParameter] BinaryOperatorType method)
@@ -280,7 +280,7 @@ namespace WitherTorch.Common.Helpers
                 *ptr = DoOperation(*ptr, value, method);
 
             Return:
-                return Unit.Value;
+                return Unit.Default;
 
                 [Inline(InlineBehavior.Remove)]
                 static bool Normalize(bool item) => UnsafeHelper.And(item, true);
@@ -348,7 +348,7 @@ namespace WitherTorch.Common.Helpers
             private static Unit BinaryOperationCore(ref T* ptr, ref nuint length, T value, [InlineParameter] BinaryOperatorType operatorType)
             {
                 if (operatorType == BinaryOperatorType.Left)
-                    return Unit.Value;
+                    return Unit.Default;
                 return BinaryOperationCore(ptr, length, value, operatorType switch
                 {
                     BinaryOperatorType.Left => BinaryOperator<T>.Left,
@@ -390,7 +390,7 @@ namespace WitherTorch.Common.Helpers
                 *ptr = @operator.Operate(*ptr, value);
 
             Return:
-                return Unit.Value;
+                return Unit.Default;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -417,7 +417,7 @@ namespace WitherTorch.Common.Helpers
                 *ptr = operation.Invoke(*ptr, value);
 
             Return:
-                return Unit.Value;
+                return Unit.Default;
             }
         }
     }
