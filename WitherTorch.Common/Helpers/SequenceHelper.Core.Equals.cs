@@ -108,6 +108,7 @@ namespace WitherTorch.Common.Helpers
                     b: ScalarRangedAdd(*ptr2, valueToAddInRange, lowerBound, higherBound)))
                     return false;
                 ptr++;
+                ptr2++;
                 if (ptr >= ptrEnd)
                     return true;
                 if (UnsafeHelper.NotEquals(
@@ -115,6 +116,7 @@ namespace WitherTorch.Common.Helpers
                     b: ScalarRangedAdd(*ptr2, valueToAddInRange, lowerBound, higherBound)))
                     return false;
                 ptr++;
+                ptr2++;
                 if (ptr >= ptrEnd)
                     return true;
                 return UnsafeHelper.Equals(
