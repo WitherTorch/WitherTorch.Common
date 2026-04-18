@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -13,6 +15,10 @@ namespace WitherTorch.Common.Helpers
     public static unsafe class StringHelper
     {
         private static readonly void* _fastAllocateStringFuncPointer;
+
+        public static IEqualityComparer<string> OrdinalEqualityComparer => OridinalEqualityComparerImpl.Instance;
+
+        public static IEqualityComparer<string> OrdinalIgnoreCaseEqualityComparer => OridinalIgnoreCaseEqualityComparerImpl.Instance;
 
         static StringHelper()
         {
@@ -501,6 +507,49 @@ namespace WitherTorch.Common.Helpers
                     newLine = MathHelper.Min(newLine, newLine2);
             }
             return new string(start, 0, (int)(newLine - start));
+        }
+
+        private sealed class OridinalEqualityComparerImpl : IEqualityComparer<string>
+        {
+            public static readonly OridinalEqualityComparerImpl Instance = new OridinalEqualityComparerImpl();
+
+            private OridinalEqualityComparerImpl() { }
+
+            public bool Equals(string? x, string? y) => SequenceHelper.Equals(x, y);
+
+            public int GetHashCode(string obj) => obj.GetHashCode();
+        }
+
+        private sealed class OridinalIgnoreCaseEqualityComparerImpl : IEqualityComparer<string>
+        {
+            public static readonly OridinalIgnoreCaseEqualityComparerImpl Instance = new OridinalIgnoreCaseEqualityComparerImpl();
+
+#if NET8_0_OR_GREATER
+            private OridinalIgnoreCaseEqualityComparerImpl() { }
+
+            public int GetHashCode(string obj) => string.GetHashCode(obj, StringComparison.OrdinalIgnoreCase);
+#else
+            private static delegate* managed<string, int> _hashCodePointer;
+
+            private OridinalIgnoreCaseEqualityComparerImpl()
+            {
+                nint pointer = ReflectionHelper.GetMethodPointer(typeof(TextInfo), "GetHashCodeOrdinalIgnoreCase",
+                     [typeof(string)], typeof(int),
+                     BindingFlags.Static | BindingFlags.NonPublic);
+                if (pointer == default)
+                    _hashCodePointer = &GetHashCodeOrdinalIgnoreCase_Fallback;
+                else
+                    _hashCodePointer = (delegate* managed<string, int>)pointer;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int GetHashCode(string obj) => _hashCodePointer(obj);
+
+            private static int GetHashCodeOrdinalIgnoreCase_Fallback(string str)
+                => StringComparer.OrdinalIgnoreCase.GetHashCode(str);
+#endif
+
+            public bool Equals(string? x, string? y) => SequenceHelper.Equals(x, y, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

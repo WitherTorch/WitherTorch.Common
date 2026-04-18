@@ -377,9 +377,7 @@ namespace WitherTorch.Common.Helpers
                     return VectorizedRangedAddAndEquals_256(ref ptr, ref ptr2, ref length, lowerBound, higherBound, valueToAddInRange);
                 if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
                     return VectorizedRangedAddAndEquals_128(ref ptr, ref ptr2, ref length, lowerBound, higherBound, valueToAddInRange);
-                if (Limits.UseVector64() && length >= (nuint)Vector64<T>.Count)
-                    return VectorizedRangedAddAndEquals_64(ref ptr, ref ptr2, ref length, lowerBound, higherBound, valueToAddInRange);
-                throw new InvalidOperationException("Unreachable branch!");
+                return VectorizedRangedAddAndEquals_64(ref ptr, ref ptr2, ref length, lowerBound, higherBound, valueToAddInRange);
             }
 
             [Inline(InlineBehavior.Remove)]

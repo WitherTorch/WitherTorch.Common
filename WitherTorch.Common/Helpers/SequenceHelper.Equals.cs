@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -7,7 +7,7 @@ using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
 {
-    #pragma warning disable CS8500
+#pragma warning disable CS8500
 
     unsafe partial class SequenceHelper
     {

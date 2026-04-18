@@ -125,7 +125,7 @@ namespace WitherTorch.Common.Helpers
                         if (length > (nuint)Vector<T>.Count * 2)
                         {
                             bool isSameRemainder = headRemainder == headRemainder2;
-                            headRemainder = UnsafeHelper.SizeOf<Vector<T>>() - headRemainder; // 取得數量
+                            headRemainder = (UnsafeHelper.SizeOf<Vector<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             ptr2 += headRemainder;
                             length -= headRemainder;
