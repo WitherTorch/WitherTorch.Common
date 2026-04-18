@@ -70,10 +70,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.Contains((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => FastCore<byte>.Contains((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => FastCore<sbyte>.Contains((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => FastCore<short>.Contains((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.Contains((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => FastCore<ushort>.Contains((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => FastCore<int>.Contains((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => FastCore<uint>.Contains((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => FastCore<long>.Contains((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -148,10 +148,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => FastCore<byte>.ContainsExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => FastCore<sbyte>.ContainsExclude((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => FastCore<short>.ContainsExclude((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsExclude((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => FastCore<ushort>.ContainsExclude((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => FastCore<int>.ContainsExclude((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => FastCore<uint>.ContainsExclude((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => FastCore<long>.ContainsExclude((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -226,10 +226,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => FastCore<byte>.ContainsGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => FastCore<sbyte>.ContainsGreaterThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => FastCore<short>.ContainsGreaterThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsGreaterThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => FastCore<ushort>.ContainsGreaterThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => FastCore<int>.ContainsGreaterThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => FastCore<uint>.ContainsGreaterThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => FastCore<long>.ContainsGreaterThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -304,10 +304,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => FastCore<byte>.ContainsGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => FastCore<sbyte>.ContainsGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => FastCore<short>.ContainsGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => FastCore<ushort>.ContainsGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => FastCore<int>.ContainsGreaterThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => FastCore<uint>.ContainsGreaterThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => FastCore<long>.ContainsGreaterThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -382,10 +382,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => FastCore<byte>.ContainsLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => FastCore<sbyte>.ContainsLessThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => FastCore<short>.ContainsLessThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsLessThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => FastCore<ushort>.ContainsLessThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => FastCore<int>.ContainsLessThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => FastCore<uint>.ContainsLessThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => FastCore<long>.ContainsLessThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -460,10 +460,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => FastCore<byte>.ContainsLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => FastCore<byte>.ContainsLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => FastCore<sbyte>.ContainsLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => FastCore<short>.ContainsLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => FastCore<ushort>.ContainsLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => FastCore<ushort>.ContainsLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => FastCore<int>.ContainsLessThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => FastCore<uint>.ContainsLessThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => FastCore<long>.ContainsLessThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),

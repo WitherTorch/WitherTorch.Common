@@ -1,8 +1,13 @@
+using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
 using LocalsInit;
+
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Helpers
 {
@@ -19,10 +24,18 @@ namespace WitherTorch.Common.Helpers
                 type is BinaryOperatorType.Left or BinaryOperatorType.Right or
                 BinaryOperatorType.Or or BinaryOperatorType.And or
                 BinaryOperatorType.Min or BinaryOperatorType.Max;
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            [DebuggerStepThrough]
+            [DoesNotReturn]
+            public static Unit ThrowDivideByZeroException() => throw new DivideByZeroException();
         }
 
         [LocalsInit(false)]
         private static partial class FastCore<T> where T : unmanaged { }
+
+        [LocalsInit(false)]
+        private static partial class FastCoreOfBoolean { }
 
         [LocalsInit(false)]
         private static partial class SlowCore { }

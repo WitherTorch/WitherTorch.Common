@@ -327,7 +327,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.Replace((byte*)ptr, length, UnsafeHelper.As<T, byte>(filter), UnsafeHelper.As<T, byte>(replacement));
                         return;
                     case TypeCode.SByte:
@@ -336,7 +336,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.Replace((short*)ptr, length, UnsafeHelper.As<T, short>(filter), UnsafeHelper.As<T, short>(replacement));
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.Replace((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(filter), UnsafeHelper.As<T, ushort>(replacement));
                         return;
                     case TypeCode.Int32:
@@ -438,7 +438,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.ReplaceExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(filter), UnsafeHelper.As<T, byte>(replacement));
                         return;
                     case TypeCode.SByte:
@@ -447,7 +447,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.ReplaceExclude((short*)ptr, length, UnsafeHelper.As<T, short>(filter), UnsafeHelper.As<T, short>(replacement));
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.ReplaceExclude((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(filter), UnsafeHelper.As<T, ushort>(replacement));
                         return;
                     case TypeCode.Int32:
@@ -549,7 +549,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.ReplaceGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(filter), UnsafeHelper.As<T, byte>(replacement));
                         return;
                     case TypeCode.SByte:
@@ -558,7 +558,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.ReplaceGreaterThan((short*)ptr, length, UnsafeHelper.As<T, short>(filter), UnsafeHelper.As<T, short>(replacement));
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.ReplaceGreaterThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(filter), UnsafeHelper.As<T, ushort>(replacement));
                         return;
                     case TypeCode.Int32:
@@ -660,7 +660,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.ReplaceGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(filter), UnsafeHelper.As<T, byte>(replacement));
                         return;
                     case TypeCode.SByte:
@@ -669,7 +669,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.ReplaceGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(filter), UnsafeHelper.As<T, short>(replacement));
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.ReplaceGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(filter), UnsafeHelper.As<T, ushort>(replacement));
                         return;
                     case TypeCode.Int32:
@@ -771,7 +771,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.ReplaceLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(filter), UnsafeHelper.As<T, byte>(replacement));
                         return;
                     case TypeCode.SByte:
@@ -780,7 +780,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.ReplaceLessThan((short*)ptr, length, UnsafeHelper.As<T, short>(filter), UnsafeHelper.As<T, short>(replacement));
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.ReplaceLessThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(filter), UnsafeHelper.As<T, ushort>(replacement));
                         return;
                     case TypeCode.Int32:
@@ -882,7 +882,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.ReplaceLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(filter), UnsafeHelper.As<T, byte>(replacement));
                         return;
                     case TypeCode.SByte:
@@ -891,7 +891,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.ReplaceLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(filter), UnsafeHelper.As<T, short>(replacement));
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.ReplaceLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(filter), UnsafeHelper.As<T, ushort>(replacement));
                         return;
                     case TypeCode.Int32:

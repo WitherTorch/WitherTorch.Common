@@ -13,8 +13,14 @@ namespace WitherTorch.Common.Helpers
             Type type = typeof(T);
             if (type == typeof(sbyte))
                 return (T*)FastCore<sbyte>.PointerIndexOf((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
-            if (type == typeof(byte) || type == typeof(bool))
+            if (type == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+            if (typeof(T) == typeof(bool))
+            {
+                return UnsafeHelper.Equals(value, default)
+                    ? (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, default)
+                    : (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, default);
+            }
             if (type == typeof(short))
                 return (T*)FastCore<short>.PointerIndexOf((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (type == typeof(ushort) || type == typeof(char))
@@ -40,10 +46,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOf((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOf((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOf((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOf((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOf((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOf((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOf((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -64,8 +70,14 @@ namespace WitherTorch.Common.Helpers
             Type type = typeof(T);
             if (type == typeof(sbyte))
                 return (T*)FastCore<sbyte>.PointerIndexOfExclude((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
-            if (type == typeof(byte) || type == typeof(bool))
+            if (type == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+            if (typeof(T) == typeof(bool))
+            {
+                return UnsafeHelper.Equals(value, default)
+                    ? (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, default)
+                    : (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, default);
+            }
             if (type == typeof(short))
                 return (T*)FastCore<short>.PointerIndexOfExclude((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (type == typeof(ushort) || type == typeof(char))
@@ -91,10 +103,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfExclude((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfExclude((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfExclude((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfExclude((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfExclude((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfExclude((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfExclude((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -115,8 +127,14 @@ namespace WitherTorch.Common.Helpers
             Type type = typeof(T);
             if (type == typeof(sbyte))
                 return (T*)FastCore<sbyte>.PointerIndexOfGreaterThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
-            if (type == typeof(byte) || type == typeof(bool))
+            if (type == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+            if (typeof(T) == typeof(bool))
+            {
+                return UnsafeHelper.Equals(value, default)
+                    ? (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, default)
+                    : null;
+            }
             if (type == typeof(short))
                 return (T*)FastCore<short>.PointerIndexOfGreaterThan((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (type == typeof(ushort) || type == typeof(char))
@@ -142,10 +160,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfGreaterThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfGreaterThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfGreaterThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfGreaterThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfGreaterThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfGreaterThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfGreaterThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfGreaterThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -166,8 +184,14 @@ namespace WitherTorch.Common.Helpers
             Type type = typeof(T);
             if (type == typeof(sbyte))
                 return (T*)FastCore<sbyte>.PointerIndexOfGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
-            if (type == typeof(byte) || type == typeof(bool))
+            if (type == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+            if (typeof(T) == typeof(bool))
+            {
+                return UnsafeHelper.Equals(value, default)
+                    ? ptr
+                    : (T*)FastCore<byte>.PointerIndexOfExclude((byte*)ptr, length, default);
+            }
             if (type == typeof(short))
                 return (T*)FastCore<short>.PointerIndexOfGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (type == typeof(ushort) || type == typeof(char))
@@ -193,10 +217,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfGreaterThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfGreaterThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfGreaterThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfGreaterThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfGreaterThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfGreaterThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfGreaterThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -217,8 +241,14 @@ namespace WitherTorch.Common.Helpers
             Type type = typeof(T);
             if (type == typeof(sbyte))
                 return (T*)FastCore<sbyte>.PointerIndexOfLessThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
-            if (type == typeof(byte) || type == typeof(bool))
+            if (type == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+            if (typeof(T) == typeof(bool))
+            {
+                return UnsafeHelper.Equals(value, default)
+                    ? null
+                    : (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, default);
+            }
             if (type == typeof(short))
                 return (T*)FastCore<short>.PointerIndexOfLessThan((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (type == typeof(ushort) || type == typeof(char))
@@ -244,10 +274,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfLessThan((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfLessThan((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfLessThan((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfLessThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfLessThan((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfLessThan((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfLessThan((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfLessThan((long*)ptr, length, UnsafeHelper.As<T, long>(value)),
@@ -268,8 +298,14 @@ namespace WitherTorch.Common.Helpers
             Type type = typeof(T);
             if (type == typeof(sbyte))
                 return (T*)FastCore<sbyte>.PointerIndexOfLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value));
-            if (type == typeof(byte) || type == typeof(bool))
+            if (type == typeof(byte))
                 return (T*)FastCore<byte>.PointerIndexOfLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value));
+            if (typeof(T) == typeof(bool))
+            {
+                return UnsafeHelper.Equals(value, default)
+                    ? (T*)FastCore<byte>.PointerIndexOf((byte*)ptr, length, default)
+                    : ptr;
+            }
             if (type == typeof(short))
                 return (T*)FastCore<short>.PointerIndexOfLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value));
             if (type == typeof(ushort) || type == typeof(char))
@@ -295,10 +331,10 @@ namespace WitherTorch.Common.Helpers
             {
                 return Type.GetTypeCode(type.GetEnumUnderlyingType()) switch
                 {
-                    TypeCode.Boolean or TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
+                    TypeCode.Byte => (T*)FastCore<byte>.PointerIndexOfLessThanOrEquals((byte*)ptr, length, UnsafeHelper.As<T, byte>(value)),
                     TypeCode.SByte => (T*)FastCore<sbyte>.PointerIndexOfLessThanOrEquals((sbyte*)ptr, length, UnsafeHelper.As<T, sbyte>(value)),
                     TypeCode.Int16 => (T*)FastCore<short>.PointerIndexOfLessThanOrEquals((short*)ptr, length, UnsafeHelper.As<T, short>(value)),
-                    TypeCode.Char or TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
+                    TypeCode.UInt16 => (T*)FastCore<ushort>.PointerIndexOfLessThanOrEquals((ushort*)ptr, length, UnsafeHelper.As<T, ushort>(value)),
                     TypeCode.Int32 => (T*)FastCore<int>.PointerIndexOfLessThanOrEquals((int*)ptr, length, UnsafeHelper.As<T, int>(value)),
                     TypeCode.UInt32 => (T*)FastCore<uint>.PointerIndexOfLessThanOrEquals((uint*)ptr, length, UnsafeHelper.As<T, uint>(value)),
                     TypeCode.Int64 => (T*)FastCore<long>.PointerIndexOfLessThanOrEquals((long*)ptr, length, UnsafeHelper.As<T, long>(value)),

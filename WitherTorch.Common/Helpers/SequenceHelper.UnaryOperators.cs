@@ -189,7 +189,7 @@ namespace WitherTorch.Common.Helpers
             {
                 switch (Type.GetTypeCode(type.GetEnumUnderlyingType()))
                 {
-                    case TypeCode.Boolean or TypeCode.Byte:
+                    case TypeCode.Byte:
                         FastCore<byte>.Not((byte*)ptr, length);
                         return;
                     case TypeCode.SByte:
@@ -198,7 +198,7 @@ namespace WitherTorch.Common.Helpers
                     case TypeCode.Int16:
                         FastCore<short>.Not((short*)ptr, length);
                         return;
-                    case TypeCode.Char or TypeCode.UInt16:
+                    case TypeCode.UInt16:
                         FastCore<ushort>.Not((ushort*)ptr, length);
                         return;
                     case TypeCode.Int32:
