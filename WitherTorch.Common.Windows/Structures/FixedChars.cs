@@ -5,9 +5,8 @@ using InlineIL;
 
 namespace WitherTorch.Common.Windows.Structures
 {
-
     [StructLayout(LayoutKind.Sequential, Pack = 2, Size = 260 * sizeof(char))]
-    public unsafe readonly struct FixedChar260
+    public readonly struct FixedChar260
     {
 #if DEBUG
         readonly ulong _0, _1, _2, _3, _4, _5, _6, _7, _8, _9;

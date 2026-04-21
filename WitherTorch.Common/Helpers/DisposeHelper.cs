@@ -12,35 +12,91 @@ namespace WitherTorch.Common.Helpers
         {
             if (array is null)
                 return;
-            for (int i = 0, length = array.Length; i < length; i++)
-                array[i]?.Dispose();
+            DisposeAllUnsafe(ref UnsafeHelper.GetArrayDataReference(array), MathHelper.MakeUnsigned(array.Length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeAllWeak<T>(T[]? array)
+        public static void DisposeAllWeak<T>(T?[]? array)
         {
             if (array is null)
                 return;
-            for (int i = 0, length = array.Length; i < length; i++)
-                (array[i] as IDisposable)?.Dispose();
+            DisposeAllWeakUnsafe(ref UnsafeHelper.GetArrayDataReference(array), MathHelper.MakeUnsigned(array.Length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeAllWeakUnsafe<T>(ref T? arrayReference, nint length)
+        public static void DisposeAllUnsafe<T>(ref readonly T? arrayReference, nint length) where T : IDisposable
         {
-            if (UnsafeHelper.IsNullRef(ref arrayReference) || length <= 0)
+            if (UnsafeHelper.IsNullRef(in arrayReference) || length <= 0)
                 return;
-            for (nint i = 0; i < length; i++)
-                (UnsafeHelper.AddTypedOffset(ref arrayReference, i) as IDisposable)?.Dispose();
+            DisposeAllUnsafe(in arrayReference, MathHelper.MakeUnsigned(length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void DisposeAllWeakUnsafe<T>(ref T? arrayReference, nuint length)
+        public static void DisposeAllUnsafe<T>(ref readonly T? arrayReference, nuint length) where T : IDisposable
         {
-            if (UnsafeHelper.IsNullRef(ref arrayReference) || length == 0)
+            if (UnsafeHelper.IsNullRef(in arrayReference) || length == 0)
                 return;
-            for (nuint i = 0; i < length; i++)
-                (UnsafeHelper.AddTypedOffset(ref arrayReference, i) as IDisposable)?.Dispose();
+            nuint limit = length;
+            for (nuint i = 0; limit >= 4; limit -= 4, i += 4)
+            {
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 2));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 3));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 4));
+            }
+            switch (limit)
+            {
+                case 3:
+                    Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 3));
+                    goto case 2;
+                case 2:
+                    Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 2));
+                    goto case 1;
+                case 1:
+                    Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 1));
+                    break;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void Dispose(T? disposable) => disposable?.Dispose();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeAllWeakUnsafe<T>(ref readonly T? arrayReference, nint length)
+        {
+            if (UnsafeHelper.IsNullRef(in arrayReference) || length <= 0)
+                return;
+            DisposeAllWeakUnsafe(in arrayReference, MathHelper.MakeUnsigned(length));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void DisposeAllWeakUnsafe<T>(ref readonly T? arrayReference, nuint length)
+        {
+            if (UnsafeHelper.IsNullRef(in arrayReference) || length == 0)
+                return;
+            nuint limit = length;
+            for (nuint i = 0; limit >= 4; limit -= 4, i += 4)
+            {
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 2));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 3));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 4));
+            }
+            switch (limit)
+            {
+                case 3:
+                    Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 3));
+                    goto case 2;
+                case 2:
+                    Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 2));
+                    goto case 1;
+                case 1:
+                    Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 1));
+                    break;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static void Dispose(T? disposable) => (disposable as IDisposable)?.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
