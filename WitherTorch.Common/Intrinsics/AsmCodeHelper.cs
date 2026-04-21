@@ -1,13 +1,14 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
+
+using InlineIL;
 
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Intrinsics
 {
@@ -28,9 +29,14 @@ namespace WitherTorch.Common.Intrinsics
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void* PackAsmCodeIntoNativeMemory(byte* source, nuint length)
         {
-            byte* result = GetValidStartAddress(length);
-            UnsafeHelper.CopyBlockUnaligned(result, source, length);
-            return result;
+            IL.Emit.Ldarg_1();
+            IL.Emit.Call(new MethodRef(typeof(AsmCodeHelper), nameof(GetValidStartAddress)));
+            IL.Emit.Dup();
+            IL.Emit.Ldarg_0();
+            IL.Emit.Ldarg_1();
+            IL.Emit.Cpblk();
+            IL.Emit.Ret();
+            throw IL.Unreachable();
         }
 
         private static byte* GetValidStartAddress(nuint requestedSize)
@@ -42,7 +48,7 @@ namespace WitherTorch.Common.Intrinsics
         [Inline(InlineBehavior.Remove)]
         private static byte* GetValidStartAddressCore(nuint requestedSize)
         {
-            nuint addressAlignment = UnsafeHelper.PointerSizeUnsigned;
+            nuint addressAlignment = (nuint)sizeof(void*);
 
             byte* result = _pageNextAddress;
             if (result == null)
@@ -57,15 +63,13 @@ namespace WitherTorch.Common.Intrinsics
 
         ChangeAddress:
             byte* pageStartAddress = _pageStartAddress;
-            NativeMethods.ProtectMemoryPage(pageStartAddress, unchecked((nuint)(pageEndAddress - pageStartAddress)),
-                NativeMethods.ProtectMemoryPageFlags.CanExecute);
+            LetMemoryPageCanExecute(pageStartAddress, unchecked((nuint)(pageEndAddress - pageStartAddress)));
 
         NewAllocate:
             nuint pageSize = _pageSize;
             if (requestedSize > pageSize)
                 pageSize = CeilDiv_Internal(requestedSize, pageSize) * pageSize;
-            result = (byte*)NativeMethods.AllocMemoryPage(pageSize, NativeMethods.ProtectMemoryPageFlags.CanExecute |
-                NativeMethods.ProtectMemoryPageFlags.CanWrite | NativeMethods.ProtectMemoryPageFlags.CanRead);
+            result = (byte*)AllocNewPage(pageSize);
             _pageStartAddress = result;
             _pageNextAddress = result + CeilDiv_Internal(requestedSize, addressAlignment) * addressAlignment;
             _pageEndAddress = result + pageSize;
@@ -77,7 +81,7 @@ namespace WitherTorch.Common.Intrinsics
         private static nuint CeilDiv_Internal(nuint a, nuint b) // 由於 MathHelper 也會使用這個類別，為避免造成循環參考，故在這裡重新實作一份 CeilDiv
         {
             nuint quotient = a / b;
-            return quotient + MathHelper.BooleanToNativeUnsigned((a - quotient * b) != 0);
+            return quotient + (((a - quotient * b) != 0) ? 1u : 0u);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -113,12 +117,155 @@ namespace WitherTorch.Common.Intrinsics
             }
         OutOfLoop:
 
-            NativeMethods.ProtectMemoryPage(dest, length, 
-                NativeMethods.ProtectMemoryPageFlags.CanRead | 
-                NativeMethods.ProtectMemoryPageFlags.CanWrite | 
+            // 此處可安全使用 NativeMethods，因為非 Intrinsics static constuctor 會呼叫到的部分
+            NativeMethods.ProtectMemoryPage(dest, length,
+                NativeMethods.ProtectMemoryPageFlags.CanRead |
+                NativeMethods.ProtectMemoryPageFlags.CanWrite |
                 NativeMethods.ProtectMemoryPageFlags.CanExecute);
             UnsafeHelper.CopyBlock(dest, source, length);
             NativeMethods.FlushInstructionCache(dest, length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void* AllocNewPage(nuint pageSize)
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.Win32NT:
+                    return Native_Win32.VirtualAlloc(null, pageSize,
+                        Native_Win32.MemoryAllocationTypes.Commit | Native_Win32.MemoryAllocationTypes.Reserve, Native_Win32.PageAccessRights.ExecuteReadWrite);
+                case PlatformID.Unix:
+                case PlatformID.MacOSX:
+                    return Native_Unix.mmap(null, pageSize,
+                        NativeMethods.ProtectMemoryPageFlags.CanRead | NativeMethods.ProtectMemoryPageFlags.CanWrite | NativeMethods.ProtectMemoryPageFlags.CanExecute,
+                        Native_Unix.MemoryMapFlags.Private | Native_Unix.MemoryMapFlags.Anomymous, -1, 0);
+            }
+            return (void*)Marshal.AllocHGlobal((nint)pageSize);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void LetMemoryPageCanExecute(void* pageStartAddress, nuint pageSize)
+        {
+            switch (Environment.OSVersion.Platform)
+            {
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.Win32NT:
+                    {
+                        Native_Win32.PageAccessRights dropped;
+                        Native_Win32.VirtualProtect(pageStartAddress, pageSize, Native_Win32.PageAccessRights.ExecuteRead, &dropped);
+                    }
+                    break;
+                case PlatformID.Unix:
+                case PlatformID.MacOSX:
+                    {
+                        Native_Unix.mprotect(pageStartAddress, pageSize, NativeMethods.ProtectMemoryPageFlags.CanRead | NativeMethods.ProtectMemoryPageFlags.CanExecute);
+                    }
+                    break;
+            }
+        }
+
+        private static class Native_Win32
+        {
+            [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
+            public static extern void* VirtualAlloc(void* address, nuint dwSize, MemoryAllocationTypes allocationTypes, PageAccessRights rights);
+
+            [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
+            public static extern SysBool32 VirtualProtect(void* address, nuint dwSize, PageAccessRights rights, PageAccessRights* oldRights);
+
+            [Flags]
+            public enum MemoryAllocationTypes : uint
+            {
+                None = 0,
+                Commit = 0x00001000,
+                Reserve = 0x00002000,
+                ReplacePlaceholder = 0x00004000,
+                ReservePlaceholder = 0x00040000,
+                Reset = 0x00080000,
+                TopDown = 0x00100000,
+                WriteWatch = 0x00200000,
+                Physical = 0x00400000,
+                Rotate = 0x00800000,
+                DifferenceImageBaseOk = 0x00800000,
+                ResetUndo = 0x01000000,
+                LargePages = 0x20000000,
+                Alloc4MbPages = 0x80000000,
+                Alloc64KPages = (LargePages | Physical),
+                UnmapWithTransientBoost = 0x00000001,
+                Coalesce_Placeholders = 0x00000001,
+                PreservePlaceholder = 0x00000002,
+                Decommit = 0x00004000,
+                Release = 0x00008000,
+                Free = 0x00010000
+            }
+
+            [Flags]
+            public enum PageAccessRights : uint
+            {
+                None = 0x00,
+                NoAccess = 0x01,
+                ReadOnly = 0x02,
+                ReadWrite = 0x04,
+                WriteCopy = 0x08,
+                Execute = 0x10,
+                ExecuteRead = 0x20,
+                ExecuteReadWrite = 0x40,
+                ExecuteWriteCopy = 0x80,
+                Guard = 0x100,
+                NoCache = 0x200,
+                WriteCombine = 0x400,
+                GraphicsNoAccess = 0x0800,
+                GraphicsReadOnly = 0x1000,
+                GraphicsReadWrite = 0x2000,
+                GraphicsExecute = 0x4000,
+                GraphicsExecuteRead = 0x8000,
+                GraphicsExecuteReadWrite = 0x10000,
+                GraphicsConherent = 0x20000,
+                GraphicsNoCache = 0x40000,
+                EnclaveThreadControl = 0x80000000,
+                RevertToFileMap = 0x80000000,
+                TargetsNoUpdate = 0x40000000,
+                TargetsInvalid = 0x40000000,
+                EnclaveUnvalidated = 0x20000000,
+                EnclaveMask = 0x10000000,
+                EnclaveDecommit = (EnclaveMask | 0),
+                EnclaveSSFirst = (EnclaveMask | 1),
+                EnclaveSSRest = (EnclaveMask | 2),
+            }
+        }
+
+        private static class Native_Unix
+        {
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void* mmap(void* ptr, nuint length, NativeMethods.ProtectMemoryPageFlags prot, MemoryMapFlags flags, int fd, nint offset);
+
+            [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int mprotect(void* ptr, nuint length, NativeMethods.ProtectMemoryPageFlags flags);
+
+            public enum MemoryMapFlags : uint
+            {
+                Failed = unchecked((uint)-1),
+
+                Shared = 0x01,
+                Private = 0x02,
+                SharedValidate = 0x03,
+                Fixed = 0x10,
+                Anomymous = 0x20,
+                NoReserve = 0x4000,
+                GrowsDown = 0x0100,
+                DenyWrite = 0x0800,
+                Executable = 0x1000,
+                Locked = 0x2000,
+                Populate = 0x8000,
+                NonBlock = 0x10000,
+                Stack = 0x20000,
+                HugeTlb = 0x40000,
+                Sync = 0x80000,
+                FixedNoReplace = 0x100000,
+                File = 0
+            }
         }
     }
 }
