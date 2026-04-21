@@ -1,5 +1,6 @@
 #if NET472_OR_GREATER
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,6 +17,8 @@ namespace WitherTorch.Common.Helpers
 {
     public static unsafe partial class UnsafeHelper
     {
+        private static readonly bool _isMono = Type.GetType("Mono.Runtime") is not null;
+
         public static partial T GetAllBitsSetValue<T>() where T : unmanaged
             => sizeof(T) switch
             {
@@ -705,10 +708,33 @@ namespace WitherTorch.Common.Helpers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial ref readonly char GetStringDataReference(string str) => ref StringHelper.GetReference(str);
+        public static partial ref readonly char GetStringDataReference(string str)
+        {
+            if (!_isMono)
+                return ref FastRoute(str);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static partial ref T GetArrayDataReference<T>(T[] array) => ref ArrayHelper<T>.GetReference(array);
+            return ref LegacyStringHelper.GetReference(str);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ref char FastRoute(string str) // 切割方法以誘導 JIT 內聯
+            {
+                DebugHelper.ThrowIf(RuntimeHelpers.OffsetToStringData < PointerSize);
+                return ref AddByteOffset(ref As<byte, char>(ref As<RawData>(str).Data), RuntimeHelpers.OffsetToStringData - PointerSize);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static partial ref T GetArrayDataReference<T>(T[] array)
+        {
+            if (!_isMono)
+                return ref FastRoute(array);
+
+            return ref LegacyArrayHelper.GetReference(array);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            static ref T FastRoute(T[] array) // 切割方法以誘導 JIT 內聯
+                => ref AddByteOffset(ref As<byte, T>(ref As<RawData>(array).Data), PointerSize);
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private sealed class RawData
@@ -716,13 +742,13 @@ namespace WitherTorch.Common.Helpers
             public byte Data;
         }
 
-        private static class StringHelper
+        private static class LegacyStringHelper
         {
             private static readonly nuint Offset = GetFirstCharOffsetOfString();
 
             private static nuint GetFirstCharOffsetOfString()
             {
-                string str = "A";
+                string str = string.Empty;
                 fixed (char* ptr = str)
                 {
                     ref byte firstField = ref As<RawData>(str).Data;
@@ -730,25 +756,23 @@ namespace WitherTorch.Common.Helpers
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static ref char GetReference(string str)
                 => ref As<byte, char>(ref AddByteOffset(ref As<RawData>(str).Data, Offset));
         }
 
-        private static class ArrayHelper<T>
+        private static class LegacyArrayHelper
         {
             private static readonly nuint Offset = GetFirstElementOffsetOfArray();
 
             private static nuint GetFirstElementOffsetOfArray()
             {
-                T?[] array = new T?[1] { default };
-                fixed (T* ptr = array)
-                {
-                    ref byte firstField = ref As<RawData>(array).Data;
-                    return ByteOffsetUnsigned(ref firstField, ref As<T, byte>(ref AsRef(ptr)));
-                }
+                byte[] array = new byte[1] { default };
+                return ByteOffsetUnsigned(ref As<RawData>(array).Data, ref array[0]);
             }
 
-            public static ref T GetReference(T[] array)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static ref T GetReference<T>(T[] array)
                 => ref As<byte, T>(ref AddByteOffset(ref As<RawData>(array).Data, Offset));
         }
 

@@ -54,10 +54,10 @@ namespace WitherTorch.Common.Helpers
             // 0010..    2      31-2    29
             // 0100..    1      31-1    30
             // 1000..    0      31-0    31
-            if (Lzcnt.IsSupported)
+            if (_isLzcntSupported)
                 return 31 ^ unchecked((int)Lzcnt.LeadingZeroCount(value));
 
-            if (X86Base.IsSupported)
+            if (_isX86BaseSupported)
                 return unchecked((int)X86Base.BitScanReverse(value));
 
             return Log2SoftwareFallback(value);
@@ -70,10 +70,10 @@ namespace WitherTorch.Common.Helpers
             // Log(1) is 0, and setting the LSB for values > 1 does not change the log2 result.
             value |= 1;
 
-            if (Lzcnt.X64.IsSupported)
+            if (_isLzcnt_X64Supported)
                 return 63 ^ unchecked((int)Lzcnt.X64.LeadingZeroCount(value));
 
-            if (X86Base.X64.IsSupported)
+            if (_isX86Base_X64Supported)
                 return unchecked((int)X86Base.X64.BitScanReverse(value));
 
             uint hi = (uint)(value >> 32);
@@ -100,7 +100,7 @@ namespace WitherTorch.Common.Helpers
 
         internal static int Log2SoftwareFallback(uint value)
         {
-            if (WTCommon.SystemMemoryExists)
+            if (_isSystemMemoryExists)
                 return DeBruijn_StoreAsSpan.Log2(value);
             else
                 return DeBruijn_StoreAsArray.Log2(value);

@@ -65,7 +65,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             }
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void InjectBsfAsm() {};
+            private static void InjectBsfAsm() {}
 #endif
         }
     }

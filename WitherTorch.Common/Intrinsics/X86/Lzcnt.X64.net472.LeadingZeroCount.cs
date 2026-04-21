@@ -65,7 +65,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             }
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void InjectLzcntAsm() {};
+            private static void InjectLzcntAsm() {}
 #endif
         }
     }

@@ -14,7 +14,7 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static int LeadingZeroCountCore(uint value)
         {
-            if (Lzcnt.IsSupported)
+            if (_isLzcntSupported)
             {
                 // LZCNT contract is 0->32
                 return (int)Lzcnt.LeadingZeroCount(value);
@@ -24,7 +24,7 @@ namespace WitherTorch.Common.Helpers
             if (value == 0)
                 return 32;
 
-            if (X86Base.IsSupported)
+            if (_isX86BaseSupported)
             {
                 // LZCNT returns index starting from MSB, whereas BSR gives the index from LSB.
                 // 31 ^ BSR here is equivalent to 31 - BSR since the BSR result is always between 0 and 31.
@@ -38,13 +38,13 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static int LeadingZeroCountCore(ulong value)
         {
-            if (Lzcnt.X64.IsSupported)
+            if (_isLzcnt_X64Supported)
             {
                 // LZCNT contract is 0->64
                 return (int)Lzcnt.X64.LeadingZeroCount(value);
             }
 
-            if (X86Base.X64.IsSupported)
+            if (_isX86Base_X64Supported)
             {
                 // BSR contract is 0->undefined
                 return value == 0 ? 64 : 63 ^ (int)X86Base.X64.BitScanReverse(value);
@@ -75,13 +75,13 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static int TrailingZeroCountCore(uint value)
         {
-            if (Bmi1.IsSupported)
+            if (_isBmi1Supported)
                 return unchecked((int)Bmi1.TrailingZeroCount(value));
 
             if (value == 0)
                 return 32;
 
-            if (X86Base.IsSupported)
+            if (_isX86BaseSupported)
                 return unchecked((int)X86Base.BitScanForward(value));
 
             return TrailingZeroCountSoftwareFallback(value);
@@ -90,13 +90,13 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static int TrailingZeroCountCore(ulong value)
         {
-            if (Bmi1.X64.IsSupported)
+            if (_isBmi1_X64Supported)
                 return unchecked((int)Bmi1.X64.TrailingZeroCount(value));
 
             if (value == 0UL)
                 return 64;
 
-            if (X86Base.X64.IsSupported)
+            if (_isX86Base_X64Supported)
                 return unchecked((int)X86Base.X64.BitScanForward(value));
 
             uint lo = (uint)value;
@@ -124,7 +124,7 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static int PopCountCore(uint value)
         {
-            if (Popcnt.IsSupported)
+            if (_isPopcntSupported)
                 return unchecked((int)Popcnt.PopCount(value));
 
             return PopCountSoftwareFallback(value);
@@ -133,10 +133,10 @@ namespace WitherTorch.Common.Helpers
         [Inline(InlineBehavior.Remove)]
         private static int PopCountCore(ulong value)
         {
-            if (Popcnt.X64.IsSupported)
+            if (_isPopcnt_X64Supported)
                 return unchecked((int)Popcnt.X64.PopCount(value));
 
-            if (Popcnt.IsSupported)
+            if (_isPopcntSupported)
                 return unchecked((int)(Popcnt.PopCount((uint)value) + Popcnt.PopCount((uint)(value >> 32))));
 
             return PopCountSoftwareFallback(value);
@@ -158,7 +158,7 @@ namespace WitherTorch.Common.Helpers
 
         internal static int TrailingZeroCountSoftwareFallback(uint value)
         {
-            if (WTCommon.SystemMemoryExists)
+            if (_isSystemMemoryExists)
                 return DeBruijn_StoreAsSpan.TrailingZeroCount(value);
             else
                 return DeBruijn_StoreAsArray.TrailingZeroCount(value);

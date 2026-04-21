@@ -1,7 +1,5 @@
 #if NET472_OR_GREATER
-using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 using InlineMethod;
 
@@ -14,6 +12,8 @@ namespace System
 {
     public static class MathF
     {
+        private static readonly bool _isSystemMemoryExists = WTCommon.SystemBuffersExists;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float CopySign(float x, float y)
         {
@@ -108,7 +108,7 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(float value, int digits, MidpointRounding mode)
         {
-            if (WTCommon.SystemMemoryExists)
+            if (_isSystemMemoryExists)
                 return StoreAsSpan.Round(value, digits, mode);
             else
                 return StoreAsArray.Round(value, digits, mode);

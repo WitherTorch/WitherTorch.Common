@@ -73,7 +73,7 @@ namespace WitherTorch.Common.Intrinsics.X86
             }
 #else
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static void InjectUDiv128Asm() {};
+            private static void InjectUDiv128Asm() {}
 #endif
         }
     }
