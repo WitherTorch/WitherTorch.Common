@@ -40,9 +40,9 @@ namespace WitherTorch.Common.Helpers
             for (nuint i = 0; limit >= 4; limit -= 4, i += 4)
             {
                 Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 1));
                 Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 2));
                 Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 3));
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 4));
             }
             switch (limit)
             {
@@ -78,9 +78,9 @@ namespace WitherTorch.Common.Helpers
             for (nuint i = 0; limit >= 4; limit -= 4, i += 4)
             {
                 Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i));
+                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 1));
                 Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 2));
                 Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 3));
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 4));
             }
             switch (limit)
             {
