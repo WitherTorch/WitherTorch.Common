@@ -23,6 +23,7 @@ namespace System
 
             IL.Emit.Ldarga_S(nameof(x));
             IL.Emit.Dup();
+            IL.Emit.Dup();
             IL.Emit.Ldind_I4();
             IL.Push(~SignMask);
             IL.Emit.And();
@@ -32,7 +33,6 @@ namespace System
             IL.Emit.And();
             IL.Emit.Or();
             IL.Emit.Stind_I4();
-            IL.Emit.Ldarga_S(nameof(x));
             IL.Emit.Ldind_R4();
             return IL.Return<float>();
         }
