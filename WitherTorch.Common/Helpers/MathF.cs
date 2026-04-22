@@ -1,6 +1,8 @@
 #if NET472_OR_GREATER
 using System.Runtime.CompilerServices;
 
+using InlineIL;
+
 using InlineMethod;
 
 using WitherTorch.Common;
@@ -19,15 +21,20 @@ namespace System
         {
             const uint SignMask = 0x80000000;
 
-            // This method is required to work for all inputs,
-            // including NaN, so we operate on the raw bits.
-            uint xbits = UnsafeHelper.As<float, uint>(ref x);
-            uint ybits = UnsafeHelper.As<float, uint>(ref y);
-
-            // Remove the sign from x, and remove everything but the sign from y
-            // Then, simply OR them to get the correct sign
-            xbits = (xbits & ~SignMask) | (ybits & SignMask);
-            return UnsafeHelper.As<uint, float>(ref xbits);
+            IL.Emit.Ldarga_S(nameof(x));
+            IL.Emit.Dup();
+            IL.Emit.Ldind_I4();
+            IL.Push(~SignMask);
+            IL.Emit.And();
+            IL.Emit.Ldarga_S(nameof(y));
+            IL.Emit.Ldind_I4();
+            IL.Push(SignMask);
+            IL.Emit.And();
+            IL.Emit.Or();
+            IL.Emit.Stind_I4();
+            IL.Emit.Ldarga_S(nameof(x));
+            IL.Emit.Ldind_R4();
+            return IL.Return<float>();
         }
 
         /// <inheritdoc cref="Math.Floor(double)"/>

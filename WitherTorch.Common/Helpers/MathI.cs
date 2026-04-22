@@ -42,7 +42,7 @@ namespace System
         public static int Round(float a) => (int)MathF.Round(a);
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static int Round(float value, MidpointRounding mode)
+        public static int Round(float value, [InlineParameter] MidpointRounding mode)
             => mode switch
             {
                 MidpointRounding.AwayFromZero => Truncate(value + MathF.CopySign(0.49999997f, value)),
