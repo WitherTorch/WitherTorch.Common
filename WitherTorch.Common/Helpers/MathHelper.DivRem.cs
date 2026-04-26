@@ -1,7 +1,7 @@
 #if NET472_OR_GREATER
-using InlineMethod;
+using System.Runtime.Intrinsics.X86;
 
-using WitherTorch.Common.Intrinsics.X86;
+using InlineMethod;
 
 namespace WitherTorch.Common.Helpers
 {

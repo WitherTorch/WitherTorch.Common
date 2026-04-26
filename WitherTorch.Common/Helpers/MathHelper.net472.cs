@@ -1,11 +1,11 @@
 #if NET472_OR_GREATER
-using WitherTorch.Common.Intrinsics.X86;
+using System.Runtime.Intrinsics.X86;
 
 namespace WitherTorch.Common.Helpers
 {
     partial class MathHelper
     {
-        private static readonly bool _isSystemMemoryExists = WTCommon.SystemBuffersExists;
+        private static readonly bool _isSystemMemoryExists = WTCommon.SystemMemoryExists;
         private static readonly bool _isLzcntSupported = Lzcnt.IsSupported;
         private static readonly bool _isLzcnt_X64Supported = Lzcnt.X64.IsSupported;
         private static readonly bool _isPopcntSupported = Popcnt.IsSupported;

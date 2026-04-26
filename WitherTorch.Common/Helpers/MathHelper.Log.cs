@@ -1,9 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 
 using InlineMethod;
-
-using WitherTorch.Common.Intrinsics.X86;
 
 namespace WitherTorch.Common.Helpers
 {
