@@ -46,7 +46,7 @@ namespace WitherTorch.Common.UnitTest
         {
             string target = CreateRandomString(10, 200);
             int selectedIndex = new Random().Next(target.Length);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
             Assert.Equal(testing[selectedIndex], target[selectedIndex]);
         }
@@ -55,7 +55,7 @@ namespace WitherTorch.Common.UnitTest
         public void IndexOfAsciiPartTest()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
 
             int length = target.Length;
@@ -69,7 +69,7 @@ namespace WitherTorch.Common.UnitTest
         public void IndexOfBmpPartTest()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
 
             int length = target.Length;
@@ -83,7 +83,7 @@ namespace WitherTorch.Common.UnitTest
         public void ContainsAsciiPartTest()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
 
             int length = target.Length;
@@ -97,7 +97,7 @@ namespace WitherTorch.Common.UnitTest
         public void ContainsBmpPartTest()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
 
             int length = target.Length;
@@ -111,7 +111,7 @@ namespace WitherTorch.Common.UnitTest
         public void ToStringTest()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
             Assert.Equal(testing.ToString(), target);
         }
@@ -120,7 +120,7 @@ namespace WitherTorch.Common.UnitTest
         public void SubstringTest1()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
             int targetIndex = new Random().Next(target.Length);
             _output.WriteLine($"Target index: {targetIndex}");
@@ -131,7 +131,7 @@ namespace WitherTorch.Common.UnitTest
         public void SubstringTest2()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
             Random random = new Random();
             int targetIndex = random.Next(target.Length);
@@ -144,7 +144,7 @@ namespace WitherTorch.Common.UnitTest
         public void SplitTest1()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
             char c = target[new Random().Next(target.Length)];
             _output.WriteLine($"Target separator: {c}");
@@ -155,7 +155,7 @@ namespace WitherTorch.Common.UnitTest
         public void SplitTest2()
         {
             string target = CreateRandomString(10, 200);
-            StringBase testing = StringBase.Create(target, StringCreateOptions.UseUtf8Compression);
+            StringWrapper testing = StringWrapper.Create(target, StringCreateOptions.UseUtf8Compression);
             _output.WriteLine($"Target: {target}\nType = {testing.GetType().FullName}");
             Random random = new Random();
             int targetIndex = random.Next(target.Length);
