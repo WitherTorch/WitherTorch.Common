@@ -51,11 +51,6 @@ namespace WitherTorch.Common.Helpers
                 (ulong quotient, rem) = X86Base.X64.DivRem(a, 0, b);
                 return quotient;
             }
-            if (_isX86BaseSupported && b <= uint.MaxValue)
-            {
-                (uint quotient, rem) = X86Base.DivRem(a, (uint)b);
-                return quotient;
-            }
 
             return DivRemUnsignedSoftwareFallback(a, b, out rem);
         }
