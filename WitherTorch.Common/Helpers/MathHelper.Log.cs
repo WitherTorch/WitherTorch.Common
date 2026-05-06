@@ -59,7 +59,7 @@ namespace WitherTorch.Common.Helpers
             if (_isX86BaseSupported)
                 return unchecked((int)X86Base.BitScanReverse(value));
 
-            return Log2SoftwareFallback(value);
+            return unchecked((int)RiceTea.Backport.Fallbacks.X86.X86Base.BitScanReverse(value));
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -96,14 +96,6 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new PlatformNotSupportedException()
                 }
             };
-
-        internal static int Log2SoftwareFallback(uint value)
-        {
-            if (_isSystemMemoryExists)
-                return DeBruijn_StoreAsSpan.Log2(value);
-            else
-                return DeBruijn_StoreAsArray.Log2(value);
-        }
 #endif
     }
 }

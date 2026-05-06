@@ -31,7 +31,7 @@ namespace WitherTorch.Common.Helpers
                 return 31 ^ (int)X86Base.BitScanReverse(value);
             }
 
-            return 31 ^ Log2SoftwareFallback(value);
+            return (int)RiceTea.Backport.Fallbacks.X86.Lzcnt.LeadingZeroCount(value);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -83,7 +83,7 @@ namespace WitherTorch.Common.Helpers
             if (_isX86BaseSupported)
                 return unchecked((int)X86Base.BitScanForward(value));
 
-            return TrailingZeroCountSoftwareFallback(value);
+            return (int)RiceTea.Backport.Fallbacks.X86.Bmi1.TrailingZeroCount(value);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -126,7 +126,7 @@ namespace WitherTorch.Common.Helpers
             if (_isPopcntSupported)
                 return unchecked((int)Popcnt.PopCount(value));
 
-            return PopCountSoftwareFallback(value);
+            return (int)RiceTea.Backport.Fallbacks.X86.Popcnt.PopCount(value);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -138,7 +138,7 @@ namespace WitherTorch.Common.Helpers
             if (_isPopcntSupported)
                 return unchecked((int)(Popcnt.PopCount((uint)value) + Popcnt.PopCount((uint)(value >> 32))));
 
-            return PopCountSoftwareFallback(value);
+            return (int)RiceTea.Backport.Fallbacks.X86.Popcnt.X64.PopCount(value);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -154,42 +154,6 @@ namespace WitherTorch.Common.Helpers
                     _ => throw new PlatformNotSupportedException()
                 }
             };
-
-        internal static int TrailingZeroCountSoftwareFallback(uint value)
-        {
-            if (_isSystemMemoryExists)
-                return DeBruijn_StoreAsSpan.TrailingZeroCount(value);
-            else
-                return DeBruijn_StoreAsArray.TrailingZeroCount(value);
-        }
-
-        internal static int PopCountSoftwareFallback(uint value)
-        {
-            const uint c1 = 0x_55555555u;
-            const uint c2 = 0x_33333333u;
-            const uint c3 = 0x_0F0F0F0Fu;
-            const uint c4 = 0x_01010101u;
-
-            value -= (value >> 1) & c1;
-            value = (value & c2) + ((value >> 2) & c2);
-            value = (((value + (value >> 4)) & c3) * c4) >> 24;
-
-            return (int)value;
-        }
-
-        internal static int PopCountSoftwareFallback(ulong value)
-        {
-            const ulong c1 = 0x_55555555_55555555ul;
-            const ulong c2 = 0x_33333333_33333333ul;
-            const ulong c3 = 0x_0F0F0F0F_0F0F0F0Ful;
-            const ulong c4 = 0x_01010101_01010101ul;
-
-            value -= (value >> 1) & c1;
-            value = (value & c2) + ((value >> 2) & c2);
-            value = (((value + (value >> 4)) & c3) * c4) >> 56;
-
-            return (int)value;
-        }
     }
 }
 #endif
