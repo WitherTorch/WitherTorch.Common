@@ -723,7 +723,7 @@ namespace WitherTorch.Common.Helpers
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T GetArrayDataReference<T>(T[] array)
         {
             if (!_isMono)
