@@ -1,4 +1,6 @@
-﻿using System;
+using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using WitherTorch.Common.Native;
 using WitherTorch.Common.Windows.Structures;
@@ -36,17 +38,18 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
         protected override void FillMethodTable(ref VTableStack table)
         {
             base.FillMethodTable(ref table);
-            table.Push((delegate*<NativeDataHolder*, long, StreamSeekType, ulong*, uint>)&Seek);
-            table.Push((delegate*<NativeDataHolder*, ulong, uint>)&SetSize);
-            table.Push((delegate*<NativeDataHolder*, void*, ulong, ulong*, ulong*, uint>)&CopyTo);
-            table.Push((delegate*<NativeDataHolder*, StreamCommitFlags, uint>)&Commit);
-            table.Push((delegate*<NativeDataHolder*, uint>)&Revert);
-            table.Push((delegate*<NativeDataHolder*, ulong, ulong, LockType, uint>)&LockRegion);
-            table.Push((delegate*<NativeDataHolder*, ulong, ulong, LockType, uint>)&UnlockRegion);
-            table.Push((delegate*<NativeDataHolder*, StructuredStorageStat*, StructuredStorageStatFlags, uint>)&Stat);
-            table.Push((delegate*<NativeDataHolder*, void**, uint>)&Clone);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, long, StreamSeekType, ulong*, uint>)&Seek);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, ulong, uint>)&SetSize);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, void*, ulong, ulong*, ulong*, uint>)&CopyTo);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, StreamCommitFlags, uint>)&Commit);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, uint>)&Revert);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, ulong, ulong, LockType, uint>)&LockRegion);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, ulong, ulong, LockType, uint>)&UnlockRegion);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, StructuredStorageStat*, StructuredStorageStatFlags, uint>)&Stat);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, void**, uint>)&Clone);
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Seek(NativeDataHolder* nativePointer, long dlibMove, StreamSeekType dwOrigin, ulong* plibNewPosition)
         {
             const uint S_OK = 0x00000000;
@@ -74,6 +77,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint SetSize(NativeDataHolder* nativePointer, ulong libNewSize)
         {
             const uint S_OK = 0x00000000;
@@ -94,6 +98,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint CopyTo(NativeDataHolder* nativePointer, void* pstm, ulong cb, ulong* pcbRead, ulong* pcbWritten)
         {
             const uint S_OK = 0x00000000;
@@ -119,6 +124,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Commit(NativeDataHolder* nativePointer, StreamCommitFlags flags)
         {
             const uint S_OK = 0x00000000;
@@ -139,6 +145,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Revert(NativeDataHolder* nativePointer)
         {
             const uint S_OK = 0x00000000;
@@ -157,6 +164,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint LockRegion(NativeDataHolder* nativePointer, ulong libOffset, ulong cb, LockType dwLockType)
         {
             const uint S_OK = 0x00000000;
@@ -182,6 +190,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint UnlockRegion(NativeDataHolder* nativePointer, ulong libOffset, ulong cb, LockType dwLockType)
         {
             const uint S_OK = 0x00000000;
@@ -207,6 +216,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Stat(NativeDataHolder* nativePointer, StructuredStorageStat* pStatstg, StructuredStorageStatFlags grfStatFlag)
         {
             const uint S_OK = 0x00000000;
@@ -230,6 +240,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return S_OK;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Clone(NativeDataHolder* nativePointer, void** ppstm)
         {
             const uint S_OK = 0x00000000;

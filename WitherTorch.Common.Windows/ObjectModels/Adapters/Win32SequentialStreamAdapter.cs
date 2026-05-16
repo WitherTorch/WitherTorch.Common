@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace WitherTorch.Common.Windows.ObjectModels.Adapters
 {
@@ -21,10 +23,11 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
         protected override void FillMethodTable(ref VTableStack table)
         {
             base.FillMethodTable(ref table);
-            table.Push((delegate*<NativeDataHolder*, void*, ulong, ulong*, uint>)&Read);
-            table.Push((delegate*<NativeDataHolder*, void*, ulong, ulong*, uint>)&Write);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, void*, ulong, ulong*, uint>)&Read);
+            table.Push((delegate* unmanaged[Stdcall]<NativeDataHolder*, void*, ulong, ulong*, uint>)&Write);
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Read(NativeDataHolder* nativePointer, void* pv, ulong cb, ulong* pcbRead)
         {
             const uint S_OK = 0x00000000;
@@ -62,6 +65,7 @@ namespace WitherTorch.Common.Windows.ObjectModels.Adapters
             return result == cb ? S_OK : S_FALSE;
         }
 
+        [UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
         private static uint Write(NativeDataHolder* nativePointer, void* pv, ulong cb, ulong* pcbWritten)
         {
             const uint S_OK = 0x00000000;
