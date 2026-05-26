@@ -77,7 +77,7 @@ namespace WitherTorch.Common.Collections
         public unsafe void SetAllBitsAsTrue()
         {
             nuint[] array = _array;
-            nuint length = MathHelper.CeilDiv(MathHelper.MakeUnsigned(_count), SectionSize);
+            nuint length = MathHelper.CeilDiv(MathHelper.MakeUnsigned(_count), (uint)SectionSize);
             fixed (nuint* ptr = _array)
                 UnsafeHelper.InitBlock(ptr, 0xFF, length * UnsafeHelper.SizeOf<nuint>());
         }
@@ -86,7 +86,7 @@ namespace WitherTorch.Common.Collections
         public unsafe void SetAllBitsAsFalse()
         {
             nuint[] array = _array;
-            nuint length = MathHelper.CeilDiv(MathHelper.MakeUnsigned(_count), SectionSize);
+            nuint length = MathHelper.CeilDiv(MathHelper.MakeUnsigned(_count), (uint)SectionSize);
             fixed (nuint* ptr = _array)
                 UnsafeHelper.InitBlock(ptr, 0x00, length * UnsafeHelper.SizeOf<nuint>());
         }
