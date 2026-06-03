@@ -45,6 +45,31 @@ namespace WitherTorch.Common.Structures
             }
         }
 
+        public bool this[uint index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                if (index > 255)
+                    throw new IndexOutOfRangeException();
+                ulong section = _data[(index & 255) >> 6];
+                ulong mask = 1UL << (int)(index & 63);
+                return (section & mask) == mask;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                if (index > 255)
+                    throw new IndexOutOfRangeException();
+                ref ulong section = ref _data[(index & 255) >> 6];
+                ulong mask = 1UL << (int)(index & 63);
+                if (value)
+                    section |= mask;
+                else
+                    section &= ~mask;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {

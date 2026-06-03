@@ -36,6 +36,29 @@ namespace WitherTorch.Common.Structures
             }
         }
 
+        public bool this[uint index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            readonly get
+            {
+                if (index > 63)
+                    throw new IndexOutOfRangeException();
+                ulong mask = 1UL << (int)index;
+                return (_data & mask) == mask;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set
+            {
+                if (index > 63)
+                    throw new IndexOutOfRangeException();
+                ulong mask = 1UL << (int)index;
+                if (value)
+                    _data |= mask;
+                else
+                    _data &= ~mask;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _data = ulong.MinValue;
 
@@ -50,11 +73,30 @@ namespace WitherTorch.Common.Structures
             return (InterlockedHelper.Read(ref _data) & mask) == mask;
         }
 
+        public bool InterlockedGet(uint index)
+        {
+            if (index > 63)
+                throw new IndexOutOfRangeException();
+            ulong mask = 1UL << (int)index;
+            return (InterlockedHelper.Read(ref _data) & mask) == mask;
+        }
+
         public bool InterlockedSet(int index, bool value)
         {
             if (index < 0 || index > 63)
                 throw new IndexOutOfRangeException();
             ulong mask = 1UL << index;
+            if (value)
+                return (InterlockedHelper.Or(ref _data, mask) & mask) == mask;
+            else
+                return (InterlockedHelper.And(ref _data, ~mask) & mask) == mask;
+        }
+
+        public bool InterlockedSet(uint index, bool value)
+        {
+            if (index > 63)
+                throw new IndexOutOfRangeException();
+            ulong mask = 1UL << (int)index;
             if (value)
                 return (InterlockedHelper.Or(ref _data, mask) & mask) == mask;
             else
