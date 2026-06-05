@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Extensions
 {
@@ -81,5 +82,8 @@ namespace WitherTorch.Common.Extensions
                     array[i] = value;
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeArrayRef<T> AsUnsafeRef<T>(this T[] array) => new UnsafeArrayRef<T>(array);
     }
 }
