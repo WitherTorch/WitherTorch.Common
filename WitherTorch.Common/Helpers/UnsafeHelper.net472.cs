@@ -279,8 +279,8 @@ namespace WitherTorch.Common.Helpers
         {
             if (IsSignedIntegerType<T>())
             {
-                T diff = Subtract(a, b);
-                return Subtract(a, And(diff, RightShift(diff, As<uint, T>(SizeOf<T>() * 8 - 1))));
+                T mask = Negate(As<bool, T>(IsGreaterThan(a, b)));
+                return Or(And(a, mask), And(b, Not(mask)));
             }
             else
             {
@@ -327,9 +327,8 @@ namespace WitherTorch.Common.Helpers
         {
             if (IsSignedIntegerType<T>())
             {
-                // min = b + ((a - b) & ((a - b) >> 31))
-                T diff = Subtract(a, b);
-                return Add(b, And(diff, RightShift(diff, As<uint, T>(SizeOf<T>() * 8 - 1))));
+                T mask = Negate(As<bool, T>(IsLessThan(a, b)));
+                return Or(And(a, mask), And(b, Not(mask)));
             }
             else
             {

@@ -9,11 +9,6 @@ namespace WitherTorch.Common.Helpers
 {
     public static class ThrowHelper
     {
-#if B64_ARCH
-        private static readonly bool _bmi1X64Supported = Bmi1.X64.IsSupported;
-#endif
-        private static readonly bool _bmi1Supported = Bmi1.IsSupported;
-
         [Inline(InlineBehavior.Keep, export: true)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ThrowExceptionForHR(int errorCode)
@@ -33,14 +28,7 @@ namespace WitherTorch.Common.Helpers
         public static unsafe void ResetPointerForHR(int errorCode, ref void* resultPointer)
         {
             const int SignBitShift = sizeof(int) * 8 - 1;
-
-            errorCode >>= SignBitShift;
-            if (_bmi1X64Supported)
-                resultPointer = (void*)Bmi1.X64.AndNot((ulong)errorCode, (ulong)resultPointer);
-            else if (_bmi1Supported)
-                resultPointer = (void*)Bmi1.AndNot((uint)errorCode, (uint)resultPointer);
-            else
-                resultPointer = (void*)(~(nuint)errorCode & (nuint)resultPointer);
+            resultPointer = (void*)(~(nuint)(errorCode >>= SignBitShift) & (nuint)resultPointer);
         }
     }
 }
