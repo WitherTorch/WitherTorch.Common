@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
-using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Native;
 using WitherTorch.Common.Text;
 
@@ -13,9 +12,8 @@ namespace WitherTorch.Common.Helpers
     {
 #if NET5_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ParseToInt32(string input)
         {
 #if NET5_0_OR_GREATER
@@ -35,9 +33,8 @@ namespace WitherTorch.Common.Helpers
 
 #if NET5_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int ParseToInt32(string input, int startIndex, int count)
         {
 #if NET5_0_OR_GREATER
@@ -103,6 +100,7 @@ namespace WitherTorch.Common.Helpers
 
 #if NET5_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static int ParseToInt32(char* input, int length)
         {
@@ -120,6 +118,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryParseToInt32(string input, out int result) => int.TryParse(input, out result);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -141,6 +140,7 @@ namespace WitherTorch.Common.Helpers
 
 #if NET5_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         public static bool TryParseToInt32(char* input, int length, out int result)
         {

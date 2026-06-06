@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Runtime.CompilerServices;
 using System.Security;
 
 using InlineMethod;
@@ -23,9 +24,10 @@ namespace WitherTorch.Common.Windows.ObjectModels
         public ModalWindow(void* nativePointer, ReferenceType pointerType) : base(nativePointer, pointerType) { }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Show() => Show(IntPtr.Zero);
 
-        public unsafe bool Show(nint hwndOwner)
+        public bool Show(nint hwndOwner)
         {
             const int E_CANCEL = unchecked((int)0x800704C7U);
 

@@ -9,26 +9,32 @@ namespace WitherTorch.Common.Helpers
     unsafe partial class SequenceHelper
     {
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOf<T>(T* ptrStart, T* ptrEnd, T value)
             => ptrStart >= ptrEnd ? null : PointerIndexOf(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfExclude<T>(T* ptrStart, T* ptrEnd, T value)
             => ptrStart >= ptrEnd ? null : PointerIndexOfExclude(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfGreaterThan<T>(T* ptrStart, T* ptrEnd, T value)
             => ptrStart >= ptrEnd ? null : PointerIndexOfGreaterThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfGreaterThanOrEquals<T>(T* ptrStart, T* ptrEnd, T value)
             => ptrStart >= ptrEnd ? null : PointerIndexOfGreaterThanOrEquals(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfLessThan<T>(T* ptrStart, T* ptrEnd, T value)
             => ptrStart >= ptrEnd ? null : PointerIndexOfLessThan(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T* PointerIndexOfLessThanOrEquals<T>(T* ptrStart, T* ptrEnd, T value)
             => ptrStart >= ptrEnd ? null : PointerIndexOfLessThanOrEquals(ptrStart, unchecked((nuint)(ptrEnd - ptrStart)), value);
 

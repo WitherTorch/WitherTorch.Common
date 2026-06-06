@@ -15,6 +15,7 @@ namespace WitherTorch.Common.Extensions
         {
             /// <inheritdoc cref="Array.Clear(Array, int, int)"/>
             [Inline(InlineBehavior.Keep, export: true)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void Clear(Array array)
                 => Array.Clear(array, 0, array.Length);
 

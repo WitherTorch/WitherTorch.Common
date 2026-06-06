@@ -39,9 +39,11 @@ namespace System
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Round(float a) => (int)MathF.Round(a);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Round(float value, [InlineParameter] MidpointRounding mode)
             => mode switch
             {
@@ -56,15 +58,19 @@ namespace System
             };
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Round(double val) => unchecked((int)Math.Round(val));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Round(double val, MidpointRounding mode) => unchecked((int)Math.Round(val, mode));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Truncate(double val) => (int)val;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Truncate(float val) => (int)val;
     }
 }

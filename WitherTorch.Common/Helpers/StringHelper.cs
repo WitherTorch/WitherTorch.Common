@@ -53,6 +53,7 @@ namespace WitherTorch.Common.Helpers
         private static string LegacyAllocateRawString(int length) => new string('\0', length);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNullOrEmpty([NotNullWhen(false)] string? str)
             => str is null || str.Length <= 0;
 
@@ -69,7 +70,7 @@ namespace WitherTorch.Common.Helpers
             return true;
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetStringFromUtf32Character([InlineParameter] uint unicodeValue)
         {
             string result;
@@ -86,7 +87,7 @@ namespace WitherTorch.Common.Helpers
             return result;
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int WriteUtf32CharacterToUtf16Buffer(char* buffer, [InlineParameter] uint unicodeValue)
         {
             if (unicodeValue < 0x10000)
@@ -99,6 +100,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteUtf32CharacterToUtf16Buffer_Unchecked(char* buffer, uint unicodeValue)
         {
             unicodeValue -= 0x10000;
@@ -165,6 +167,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Join(char separator, params string[] values)
         {
 #if NET5_0_OR_GREATER
@@ -175,6 +178,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string Join(string separator, params string[] values)
         {
             return string.Join(separator, values);
@@ -396,12 +400,15 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOf(string str, char value) => SequenceHelper.IndexOf(str, value);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOf(string str, char value, int startIndex) => SequenceHelper.IndexOf(str, value, startIndex);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int IndexOf(string str, char value, int startIndex, int count) => SequenceHelper.IndexOf(str, value, startIndex, count);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -444,6 +451,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains(string str, char value) => SequenceHelper.Contains(str, value);
 
 #if !NET8_0_OR_GREATER

@@ -30,6 +30,7 @@ namespace WitherTorch.Common.Helpers
         public static int PointerSize
         {
             [Inline(InlineBehavior.Keep, export: true)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => PointerSizeConstant switch
             {
                 PointerSizeConstant_Indeterminate => sizeof(void*),
@@ -40,6 +41,7 @@ namespace WitherTorch.Common.Helpers
         public static uint PointerSizeUnsigned
         {
             [Inline(InlineBehavior.Keep, export: true)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => PointerSizeConstant switch
             {
                 PointerSizeConstant_Indeterminate => SizeOf<nuint>(),
@@ -50,12 +52,14 @@ namespace WitherTorch.Common.Helpers
         public static void* PointerMinValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => (void*)0;
         }
 
         public static void* PointerMaxValue
         {
             [Inline(InlineBehavior.Keep, export: true)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => (void*)-1;
         }
 
@@ -182,6 +186,7 @@ namespace WitherTorch.Common.Helpers
         public static bool IsIntegerType(Type type) => IsSignedIntegerType(type) || IsUnsignedIntegerType(type);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsGreaterThan<T>(T a, T b)
         {
             IL.Push(a);
@@ -191,6 +196,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsGreaterThanUnsigned<T>(T a, T b)
         {
             IL.Push(a);
@@ -200,6 +206,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsGreaterThanOrEquals<T>(T a, T b)
         {
             IL.Push(a);
@@ -211,6 +218,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsGreaterThanOrEqualsUnsigned<T>(T a, T b)
         {
             IL.Push(a);
@@ -222,6 +230,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLessThan<T>(T a, T b)
         {
             IL.Push(a);
@@ -231,6 +240,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLessThanUnsigned<T>(T a, T b)
         {
             IL.Push(a);
@@ -240,6 +250,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLessThanOrEquals<T>(T a, T b)
         {
             IL.Push(a);
@@ -251,6 +262,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLessThanOrEqualsUnsigned<T>(T a, T b)
         {
             IL.Push(a);
@@ -262,6 +274,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals<T>(T a, T b)
         {
             IL.Push(a);
@@ -271,6 +284,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool NotEquals<T>(T a, T b)
         {
             IL.Push(a);
@@ -282,6 +296,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Or<T>(T a, T b)
         {
             IL.Push(a);
@@ -291,6 +306,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T And<T>(T a, T b)
         {
             IL.Push(a);
@@ -300,6 +316,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Xor<T>(T a, T b)
         {
             IL.Push(a);
@@ -309,6 +326,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Negate<T>(T value)
         {
             IL.Push(value);
@@ -317,6 +335,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Not<T>(T value)
         {
             IL.Push(value);
@@ -325,6 +344,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Add<T>(T a, T b)
         {
             IL.Push(a);
@@ -334,6 +354,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Subtract<T>(T a, T b)
         {
             IL.Push(a);
@@ -343,6 +364,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Multiply<T>(T a, T b)
         {
             IL.Push(a);
@@ -352,6 +374,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Divide<T>(T a, T b)
         {
             IL.Push(a);
@@ -361,6 +384,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T DivideUnsigned<T>(T a, T b)
         {
             IL.Push(a);
@@ -370,6 +394,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T LeftShift<T>(T a, T b)
         {
             IL.Push(a);
@@ -379,6 +404,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T RightShift<T>(T a, T b)
         {
             IL.Push(a);
@@ -388,6 +414,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T RightShiftUnsigned<T>(T a, T b)
         {
             IL.Push(a);
@@ -397,18 +424,22 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Clamp<T>(T value, T min, T max)
             => Max(min, Min(max, value));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ClampUnsigned<T>(T value, T min, T max)
             => MaxUnsigned(min, MinUnsigned(max, value));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ClampUnordered<T>(T value, T a, T b)
             => Min(Max(a, b), Max(Min(a, b), value));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T ClampUnorderedUnsigned<T>(T value, T a, T b)
             => MinUnsigned(MaxUnsigned(a, b), MaxUnsigned(MinUnsigned(a, b), value));
     }

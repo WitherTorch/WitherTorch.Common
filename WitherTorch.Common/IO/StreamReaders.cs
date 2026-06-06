@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -15,18 +15,22 @@ namespace WitherTorch.Common.IO
             => new StreamReaderWrapper(stream);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IStreamReader CreateStreamReader(Stream stream, bool detectEncodingFromByteOrderMarks)
             => CreateStreamReader(stream, detectEncodingFromByteOrderMarks, Encoding.Default, bufferSize: 1024, leaveOpen: false);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IStreamReader CreateStreamReader(Stream stream, Encoding encoding)
             => CreateStreamReader(stream, detectEncodingFromByteOrderMarks: false, encoding, bufferSize: 1024, leaveOpen: false);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IStreamReader CreateStreamReader(Stream stream, Encoding encoding, int bufferSize)
             => CreateStreamReader(stream, detectEncodingFromByteOrderMarks: false, encoding, bufferSize, leaveOpen: false);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IStreamReader CreateStreamReader(Stream stream, Encoding encoding, int bufferSize, bool leaveOpen)
             => CreateStreamReader(stream, detectEncodingFromByteOrderMarks: false, encoding, bufferSize, leaveOpen: false);
 

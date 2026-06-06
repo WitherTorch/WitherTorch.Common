@@ -54,10 +54,12 @@ namespace System
 
         /// <inheritdoc cref="Math.Floor(double)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Floor(double d) => unchecked((float)Math.Floor(d));
 
         /// <inheritdoc cref="Math.Ceiling(double)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Ceiling(float a)
         {
             const float Magic = 8388608.0f;
@@ -86,6 +88,7 @@ namespace System
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Ceiling(double a) => unchecked((float)Math.Ceiling(a));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,6 +104,7 @@ namespace System
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(float value, int digits) => Round(value, digits, mode: MidpointRounding.ToEven);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -122,15 +126,19 @@ namespace System
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(double a) => unchecked((float)Math.Round(a));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(double value, int digit) => unchecked((float)Math.Round(value, digit));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(double value, MidpointRounding mode) => unchecked((float)Math.Round(value, mode));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(double value, int digit, MidpointRounding mode) => unchecked((float)Math.Round(value, digit, mode));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

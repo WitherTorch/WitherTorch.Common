@@ -5,19 +5,24 @@ using System.Security;
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
-using WitherTorch.Common.Text;
+using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Extensions
 {
     public static partial class StringExtensions
     {
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char FirstOrDefault(this string obj, char defaultValue = '\0')
-            => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[0];
+            => obj.Length <= 0 ? defaultValue : UnsafeHelper.GetStringDataReference(obj);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char LastOrDefault(this string obj, char defaultValue = '\0')
-            => StringHelper.IsNullOrEmpty(obj) ? defaultValue : obj[obj.Length - 1];
+        {
+            int length = obj.Length;
+            if (length <= 0)
+                return defaultValue;
+            return UnsafeHelper.AddTypedOffset(in UnsafeHelper.GetStringDataReference(obj), length - 1);
+        }
 
 #if !NET8_0_OR_GREATER
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -72,49 +77,44 @@ namespace WitherTorch.Common.Extensions
             return false;
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static bool StartsWith(this string str, char c)
-            => !StringHelper.IsNullOrEmpty(str) && str[0] == c;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool StartsWith(this string _this, char c)
+            => _this.Length > 0 && c == _this.AsUnsafeRef().FirstElement;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [SecuritySafeCritical]
-        public static bool StartsWithAny(this string str, params char[] chars)
+        public static bool StartsWithAny(this string _this, params char[] chars)
+            => _this.Length > 0 && SequenceHelper.Contains(chars, _this.AsUnsafeRef().FirstElement);
+
+        public static string[] ToUpperAscii(this string[] _this)
         {
-            if (StringHelper.IsNullOrEmpty(str))
-                return false;
-            return chars.Contains(str[0]);
+            for (int i = 0, length = _this.Length; i < length; i++)
+                _this[i] = ToUpperAscii(_this[i]);
+            return _this;
         }
 
-        public static string[] ToUpperAscii(this string[] array)
+        public static string[] ToLowerAscii(this string[] _this)
         {
-            for (int i = 0, length = array.Length; i < length; i++)
-                array[i] = ToUpperAscii(array[i]);
-            return array;
+            for (int i = 0, length = _this.Length; i < length; i++)
+                _this[i] = ToLowerAscii(_this[i]);
+            return _this;
         }
 
-        public static string[] ToLowerAscii(this string[] array)
+        public static unsafe string ToUpperAscii(this string _this)
         {
-            for (int i = 0, length = array.Length; i < length; i++)
-                array[i] = ToLowerAscii(array[i]);
-            return array;
-        }
-
-        public static unsafe string ToUpperAscii(this string value)
-        {
-            int length = value.Length;
+            int length = _this.Length;
             if (length <= 0)
                 return string.Empty;
-            fixed (char* ptr = value)
-                return ToUpperAsciiCore(ptr, ptr + length) ?? value;
+            fixed (char* ptr = _this)
+                return ToUpperAsciiCore(ptr, ptr + length) ?? _this;
         }
 
-        public static unsafe string ToLowerAscii(this string value)
+        public static unsafe string ToLowerAscii(this string _this)
         {
-            int length = value.Length;
+            int length = _this.Length;
             if (length <= 0)
                 return string.Empty;
-            fixed (char* ptr = value)
-                return ToLowerAsciiCore(ptr, ptr + length) ?? value;
+            fixed (char* ptr = _this)
+                return ToLowerAsciiCore(ptr, ptr + length) ?? _this;
         }
 
         private static unsafe string? ToUpperAsciiCore(char* ptr, char* ptrEnd)
@@ -123,15 +123,18 @@ namespace WitherTorch.Common.Extensions
         private static unsafe string? ToLowerAsciiCore(char* ptr, char* ptrEnd)
             => ToLowerOrUpperAsciiCore(ptr, ptrEnd, isUpper: false);
 
-        public static string[] WithPrefix(this string[] array, string prefix)
+        public static string[] WithPrefix(this string[] _this, string prefix)
         {
-            for (int i = 0, length = array.Length; i < length; i++)
-                array[i] = array[i].WithPrefix(prefix);
-            return array;
+            for (int i = 0, length = _this.Length; i < length; i++)
+                _this[i] = _this[i].WithPrefix(prefix);
+            return _this;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static string WithPrefix(this string value, string prefix)
-            => prefix + value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static string WithPrefix(this string _this, string prefix) => string.Concat(prefix, _this);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static UnsafeStringRef AsUnsafeRef(this string _this) => new UnsafeStringRef(_this);
     }
 }

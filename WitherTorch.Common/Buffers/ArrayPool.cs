@@ -20,6 +20,7 @@ namespace WitherTorch.Common.Buffers
         public static ArrayPool<T> Shared => _sharedLazy.Value;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T[] Rent() => Rent(MinimumArraySize);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -125,15 +126,19 @@ namespace WitherTorch.Common.Buffers
         protected abstract void ReturnCore(T[] array);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FixedArrayList<T> RentList() => new FixedArrayList<T>(Rent(), initialCount: 0);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public FixedArrayList<T> RentList(int capacity) => new FixedArrayList<T>(Rent(capacity), initialCount: 0);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReturnList(FixedArrayList<T> list) => Return(list.AsArray());
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReturnList(FixedArrayList<T> list, bool clearArray) => Return(list.AsArray(), clearArray);
 
         private static partial ArrayPool<T> CreateSharedPool();

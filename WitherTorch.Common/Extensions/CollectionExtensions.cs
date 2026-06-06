@@ -34,40 +34,48 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAnyItem<T>(this IList<T> obj) => obj.Count > 0;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAnyItem<T>(this Stack<T> obj) => obj.Count > 0;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasAnyItem<T>(this Queue<T> obj) => obj.Count > 0;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? FirstOrDefault<T>(this T[] array) => FirstOrDefault(array, default);
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        public static T? FirstOrDefault<T>(this T[] array, T? defaultValue) => array.Length > 0 ? array[0] : defaultValue;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static T? FirstOrDefault<T>(this T[] array, T? defaultValue) 
+            => array.Length > 0 ? array.AsUnsafeRef().FirstElement : defaultValue;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? LastOrDefault<T>(this T[] array) => LastOrDefault(array, default);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? LastOrDefault<T>(this T[] array, T? defaultValue)
         {
             int length = array.Length;
-            return length > 0 ? array[length - 1] : defaultValue;
+            return length > 0 ? array.AsUnsafeRef().LastElement : defaultValue;
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? FirstOrDefault<T>(this IList<T> list) => FirstOrDefault(list, default);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? FirstOrDefault<T>(this IList<T> list, T? defaultValue) => list.Count > 0 ? list[0] : defaultValue;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? LastOrDefault<T>(this IList<T> list) => LastOrDefault(list, default);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T? LastOrDefault<T>(this IList<T> list, T? defaultValue)
         {
             int count = list.Count;
@@ -87,6 +95,7 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains<T>(this T[] array, T value) where T : unmanaged
             => SequenceHelper.Contains(array, value);
 
@@ -94,7 +103,7 @@ namespace WitherTorch.Common.Extensions
         public static bool Contains<T>(this T[] array, T value, int startIndex, int length)
             => SequenceHelper.Contains(array, value, startIndex, length);
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryPop<T>(this Stack<T> obj, [MaybeNullWhen(false)] out T? value)
         {
             if (obj.Count > 0)
@@ -106,7 +115,7 @@ namespace WitherTorch.Common.Extensions
             return false;
         }
 
-        [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryDequeue<T>(this Queue<T> obj, [MaybeNullWhen(false)] out T? value)
         {
             if (obj.Count > 0)

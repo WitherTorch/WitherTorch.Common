@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Runtime.CompilerServices;
 
 using InlineIL;
 
@@ -9,6 +10,7 @@ namespace WitherTorch.Common.Helpers
     partial class MathHelper
     {
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte MakeUnsigned(sbyte value)
         {
             IL.Push(value);
@@ -36,6 +38,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort MakeUnsigned(short value)
         {
             IL.Push(value);
@@ -63,6 +66,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint MakeUnsigned(int value)
         {
             IL.Push(value);
@@ -89,6 +93,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong MakeUnsigned(long value)
         {
             IL.Push(value);
@@ -116,7 +121,8 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
-        public static unsafe nuint MakeUnsigned(nint value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint MakeUnsigned(nint value)
         {
             IL.Push(value);
 #if NET8_0_OR_GREATER
@@ -133,7 +139,7 @@ namespace WitherTorch.Common.Helpers
             IL.Emit.Ret();
             throw IL.Unreachable();
 #else
-            IL.Push(sizeof(nint) * 8 - 1);
+            IL.Push(UnsafeHelper.PointerSize * 8 - 1);
             IL.Emit.Shr();
             IL.Emit.Not();
             IL.Push(value);

@@ -225,6 +225,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.Read{T}(void*)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial T Read<T>(void* source) => Unsafe.Read<T>(source);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -261,7 +262,8 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.CopyBlockUnaligned(void*, void*, uint)"/>
         [Inline(InlineBehavior.Keep, export: true)]
-        public static partial void CopyBlockUnaligned(void* destination, void* source, uint byteCount) => Unsafe.CopyBlock(destination, source, byteCount);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static partial void CopyBlockUnaligned(void* destination, void* source, uint byteCount) => Unsafe.CopyBlockUnaligned(destination, source, byteCount);
 
         /// <inheritdoc cref="Unsafe.CopyBlockUnaligned(void*, void*, uint)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -276,18 +278,22 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.BitCast{TFrom, TTo}(TFrom)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial TTo As<TFrom, TTo>(TFrom source) => ReadUnaligned<TTo>(ref As<TFrom, byte>(ref source));
 
         /// <inheritdoc cref="Unsafe.As{TFrom, TTo}(ref TFrom)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref TTo As<TFrom, TTo>(ref TFrom source) => ref Unsafe.As<TFrom, TTo>(ref source);
 
         /// <inheritdoc cref="Unsafe.As{T}(object)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial T As<T>(object source) where T : class => Unsafe.As<T>(source);
 
         /// <inheritdoc cref="Unsafe.InitBlock(ref byte, byte, uint)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlock(ref byte location, byte value, uint count) => Unsafe.InitBlock(ref location, value, count);
 
         /// <inheritdoc cref="Unsafe.InitBlock(ref byte, byte, uint)"/>
@@ -302,6 +308,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.InitBlock(void*, byte, uint)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlock(void* ptr, byte value, uint size) => Unsafe.InitBlock(ptr, value, size);
 
         /// <inheritdoc cref="Unsafe.InitBlock(void*, byte, uint)"/>
@@ -316,6 +323,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.InitBlockUnaligned(void*, byte, uint)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlockUnaligned(void* ptr, byte value, uint size) => Unsafe.InitBlockUnaligned(ptr, value, size);
 
         /// <inheritdoc cref="Unsafe.InitBlockUnaligned(void*, byte, uint)"/>
@@ -331,10 +339,12 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.ByteOffset{T}(ref readonly T, ref readonly T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint ByteOffset<T>(ref readonly T origin, ref readonly T target) => Unsafe.ByteOffset(in origin, in target);
 
         /// <inheritdoc cref="Unsafe.ByteOffset{T}(ref readonly T, ref readonly T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target) => (nuint)Unsafe.ByteOffset(in origin, in target);
 
         /// <inheritdoc cref="Unsafe.AddByteOffset{T}(ref T, nint)"/>
@@ -383,14 +393,17 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.SkipInit{T}(out T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void SkipInit<T>(out T value) => Unsafe.SkipInit(out value);
 
         /// <inheritdoc cref="Unsafe.IsNullRef{T}(ref readonly T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial bool IsNullRef<T>(ref readonly T source) => Unsafe.IsNullRef(in source);
 
         /// <inheritdoc cref="Unsafe.NullRef{T}()"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T NullRef<T>() => ref Unsafe.NullRef<T>();
 
         /// <inheritdoc cref="Unsafe.AsRef{T}(void*)"/>
@@ -399,6 +412,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.AsRef{T}(ref readonly T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T AsRefIn<T>(in T source) => ref Unsafe.AsRef(in source);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -410,6 +424,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.AsPointer{T}(ref T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial T* AsPointerRef<T>(ref T value) => (T*)Unsafe.AsPointer(ref value);
 
         /// <inheritdoc cref="Unsafe.AsPointer{T}(ref T)"/>
@@ -459,18 +474,22 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Unsafe.SizeOf{T}"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int SizeOfSigned<T>() => Unsafe.SizeOf<T>();
 
         /// <inheritdoc cref="Unsafe.SizeOf{T}"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint SizeOf<T>() => (uint)Unsafe.SizeOf<T>();
 
         /// <inheritdoc cref="string.GetPinnableReference"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref readonly char GetStringDataReference(string str) => ref str.GetPinnableReference();
 
         /// <inheritdoc cref="MemoryMarshal.GetArrayDataReference{T}(T[])"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T GetArrayDataReference<T>(T[] array) => ref MemoryMarshal.GetArrayDataReference(array);
 
         private static class MaxHelper<T> where T : unmanaged

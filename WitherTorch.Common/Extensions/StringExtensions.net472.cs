@@ -15,6 +15,7 @@ namespace WitherTorch.Common.Extensions
     public static partial class StringExtensions
     {
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Contains(this string obj, char value) => StringHelper.Contains(obj, value);
 
         private const int SplitPathLength = 256;

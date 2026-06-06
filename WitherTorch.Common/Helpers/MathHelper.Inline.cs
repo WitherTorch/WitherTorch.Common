@@ -46,6 +46,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte BooleanToInt8(bool value)
         {
             IL.Push(value);
@@ -54,6 +55,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte BooleanToUInt8(bool value)
         {
             IL.Push(value);
@@ -62,6 +64,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short BooleanToInt16(bool value)
         {
             IL.Push(value);
@@ -70,6 +73,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort BooleanToUInt16(bool value)
         {
             IL.Push(value);
@@ -78,6 +82,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int BooleanToInt32(bool value)
         {
             IL.Push(value);
@@ -86,6 +91,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint BooleanToUInt32(bool value)
         {
             IL.Push(value);
@@ -94,6 +100,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long BooleanToInt64(bool value)
         {
             IL.Push(value);
@@ -102,6 +109,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong BooleanToUInt64(bool value)
         {
             IL.Push(value);
@@ -110,6 +118,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nint BooleanToNative(bool value)
         {
             IL.Push(value);
@@ -118,6 +127,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint BooleanToNativeUnsigned(bool value)
         {
             IL.Push(value);
@@ -126,6 +136,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float BooleanToFloat32(bool value)
         {
             int result = -BooleanToInt32(value) & 0x3F800000;
@@ -133,6 +144,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static double BooleanToFloat64(bool value)
         {
             long result = -BooleanToInt64(value) & 0x3FF0000000000000L;

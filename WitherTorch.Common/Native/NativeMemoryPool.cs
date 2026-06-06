@@ -19,6 +19,7 @@ namespace WitherTorch.Common.Native
         public static NativeMemoryPool Shared => _sharedLazy.Value;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeMemoryBlock Rent() => Rent(MinimumMemoryBlockSize);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -79,6 +80,7 @@ namespace WitherTorch.Common.Native
         private NativeMemoryBlock RentCore(nuint capacity) => new NativeMemoryBlock(RentCore(ref capacity), capacity);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TypedNativeMemoryBlock<T> Rent<T>() where T : unmanaged
             => Rent<T>(MinimumMemoryBlockSize);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 
 using InlineMethod;
@@ -10,6 +10,7 @@ namespace WitherTorch.Common.Helpers
     public static partial class ArrayHelper
     {
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] CreateUninitializedArray<T>(int length)
         {
 #if NET472_OR_GREATER
@@ -20,6 +21,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNullOrEmpty<T>([InlineParameter] T?[] array) => array is null || array.Length == 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

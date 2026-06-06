@@ -13,6 +13,18 @@ namespace WitherTorch.Common.Structures
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public UnsafeArrayRef(T[] array) => _array = array;
 
+        public ref T FirstElement
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref UnsafeHelper.GetArrayDataReference(_array);
+        }
+
+        public ref T LastElement
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_array), _array.Length - 1);
+        }
+
         public ref T this[nint index]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

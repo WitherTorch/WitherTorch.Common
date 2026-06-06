@@ -27,6 +27,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int Add(ref int location, int value) => Interlocked.Add(ref location, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,6 +35,7 @@ namespace WitherTorch.Common.Helpers
             => unchecked((uint)Interlocked.Add(ref UnsafeHelper.As<uint, int>(ref location), (int)value));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long Add(ref long location, long value) => Interlocked.Add(ref location, value);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -356,6 +358,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.Exchange(ref int, int)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int Exchange(ref int location, int value)
             => Interlocked.Exchange(ref location, value);
 
@@ -365,6 +368,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.Exchange(ref long, long)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long Exchange(ref long location, long value)
             => Interlocked.Exchange(ref location, value);
 
@@ -374,6 +378,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.Exchange(ref IntPtr, IntPtr)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint Exchange(ref nint location, nint value)
             => Interlocked.Exchange(ref location, value);
 
@@ -383,26 +388,31 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.Exchange(ref float, float)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial float Exchange(ref float location, float value)
             => Interlocked.Exchange(ref location, value);
 
         /// <inheritdoc cref="Interlocked.Exchange(ref double, double)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial double Exchange(ref double location, double value)
             => Interlocked.Exchange(ref location, value);
 
         /// <inheritdoc cref="Interlocked.Exchange(ref object?, object?)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial object? Exchange(ref object? location, object? value)
             => Interlocked.Exchange(ref location, value);
 
         /// <inheritdoc cref="Interlocked.Exchange{T}(ref T, T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial T Exchange<T>(ref T location, T value) where T : class?
             => Interlocked.Exchange(ref location, value);
 
         /// <inheritdoc cref="Interlocked.CompareExchange(ref int, int, int)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int CompareExchange(ref int location, int value, int comparand)
             => Interlocked.CompareExchange(ref location, value, comparand);
 
@@ -413,6 +423,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.CompareExchange(ref long, long, long)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long CompareExchange(ref long location, long value, long comparand)
             => Interlocked.CompareExchange(ref location, value, comparand);
 
@@ -423,6 +434,7 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.CompareExchange(ref IntPtr, IntPtr, IntPtr)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint CompareExchange(ref nint location, nint value, nint comparand)
             => Interlocked.CompareExchange(ref location, value, comparand);
 
@@ -433,94 +445,121 @@ namespace WitherTorch.Common.Helpers
 
         /// <inheritdoc cref="Interlocked.CompareExchange(ref float, float, float)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial float CompareExchange(ref float location, float value, float comparand)
             => Interlocked.CompareExchange(ref location, value, comparand);
 
         /// <inheritdoc cref="Interlocked.CompareExchange(ref double, double, double)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial double CompareExchange(ref double location, double value, double comparand)
             => Interlocked.CompareExchange(ref location, value, comparand);
 
         /// <inheritdoc cref="Interlocked.CompareExchange(ref object?, object?, object?)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial object? CompareExchange(ref object? location, object? value, object? comparand)
             => Interlocked.CompareExchange(ref location, value, comparand);
 
         /// <inheritdoc cref="Interlocked.CompareExchange{T}(ref T, T, T)"/>
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial T CompareExchange<T>(ref T location, T value, T comparand) where T : class?
             => Interlocked.CompareExchange(ref location, value, comparand);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int Increment(ref int location) => Add(ref location, 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint Increment(ref uint location) => Add(ref location, 1U);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long Increment(ref long location) => Add(ref location, 1L);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ulong Increment(ref ulong location) => Add(ref location, 1UL);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint Increment(ref nint location) => Add(ref location, 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nuint Increment(ref nuint location) => Add(ref location, 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int GetAndIncrement(ref int location) => GetAndAdd(ref location, 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint GetAndIncrement(ref uint location) => GetAndAdd(ref location, 1U);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long GetAndIncrement(ref long location) => GetAndAdd(ref location, 1L);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ulong GetAndIncrement(ref ulong location) => GetAndAdd(ref location, 1UL);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint GetAndIncrement(ref nint location) => GetAndAdd(ref location, 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
         public static partial nuint GetAndIncrement(ref nuint location) => GetAndAdd(ref location, 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int Decrement(ref int location) => Add(ref location, -1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint Decrement(ref uint location) => Add(ref location, uint.MaxValue);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long Decrement(ref long location) => Add(ref location, -1L);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ulong Decrement(ref ulong location) => Add(ref location, ulong.MaxValue);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint Decrement(ref nint location) => Add(ref location, -1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nuint Decrement(ref nuint location) => Add(ref location, UnsafeHelper.GetMaxValue<nuint>());
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int GetAndDecrement(ref int location) => GetAndAdd(ref location, -1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint GetAndDecrement(ref uint location) => GetAndAdd(ref location, uint.MaxValue);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial long GetAndDecrement(ref long location) => GetAndAdd(ref location, -1L);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ulong GetAndDecrement(ref ulong location) => GetAndAdd(ref location, ulong.MaxValue);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint GetAndDecrement(ref nint location) => GetAndAdd(ref location, -1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nuint GetAndDecrement(ref nuint location) => GetAndAdd(ref location, UnsafeHelper.GetMaxValue<nuint>());
 
     }

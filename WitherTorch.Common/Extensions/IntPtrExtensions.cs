@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using InlineMethod;
@@ -7,9 +8,11 @@ namespace WitherTorch.Common.Extensions
     public static class IntPtrExtensions
     {
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Words GetWords(this nint This) => new Words() { RawValueSigned = (int)This };
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Words GetWords(this nuint This) => new Words() { RawValue = (uint)This };
     }
 

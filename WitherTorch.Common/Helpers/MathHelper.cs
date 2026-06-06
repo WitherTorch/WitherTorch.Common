@@ -27,6 +27,7 @@ namespace WitherTorch.Common.Helpers
         public static unsafe nint Abs(nint value) => AbsCore(value, sizeof(nint) * 8 - 1);
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte DivRemForConstantDivisor(byte a, byte b, out byte rem)
         {
             rem = unchecked((byte)(a % b));
@@ -34,6 +35,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static sbyte DivRemForConstantDivisor(sbyte a, sbyte b, out sbyte rem)
         {
             rem = unchecked((sbyte)(a % b));
@@ -41,6 +43,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static short DivRemForConstantDivisor(short a, short b, out short rem)
         {
             rem = unchecked((short)(a % b));
@@ -48,6 +51,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ushort DivRemForConstantDivisor(ushort a, ushort b, out ushort rem)
         {
             rem = unchecked((ushort)(a % b));
@@ -55,6 +59,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int DivRemForConstantDivisor(int a, int b, out int rem)
         {
             rem = a % b;
@@ -62,6 +67,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint DivRemForConstantDivisor(uint a, uint b, out uint rem)
         {
             rem = a % b;
@@ -69,6 +75,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long DivRemForConstantDivisor(long a, long b, out long rem)
         {
             rem = a % b;
@@ -76,6 +83,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ulong DivRemForConstantDivisor(ulong a, ulong b, out ulong rem)
         {
             rem = a % b;
@@ -83,6 +91,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nint DivRemForConstantDivisor(nint a, nint b, out nint rem)
         {
             rem = a % b;
@@ -90,6 +99,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint DivRemForConstantDivisor(nuint a, nuint b, out nuint rem)
         {
             rem = a % b;
@@ -130,9 +140,8 @@ namespace WitherTorch.Common.Helpers
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int DivRem(int a, int b, out int rem)
         {
 #if NET8_0_OR_GREATER
@@ -155,9 +164,8 @@ namespace WitherTorch.Common.Helpers
 
 #if NET8_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
-#else
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long DivRem(long a, long b, out long rem)
         {
 #if NET8_0_OR_GREATER
@@ -285,6 +293,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LeadingZeroCount(nuint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -297,6 +306,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LeadingZeroCount(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -309,6 +319,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int LeadingZeroCount(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -321,6 +332,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int TrailingZeroCount(nuint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -333,6 +345,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int TrailingZeroCount(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -345,6 +358,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int TrailingZeroCount(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -357,6 +371,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int PopCount(nuint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -369,6 +384,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int PopCount(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -381,6 +397,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int PopCount(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -393,6 +410,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Log2(nuint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -405,6 +423,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Log2(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -417,6 +436,7 @@ namespace WitherTorch.Common.Helpers
 #if NETCOREAPP3_0_OR_GREATER
         [Inline(InlineBehavior.Keep, export: true)]
 #endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int Log2(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -427,6 +447,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPow2(nuint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -437,6 +458,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPow2(ulong value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -447,6 +469,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPow2(uint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -457,6 +480,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPow2(nint value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -467,6 +491,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPow2(long value)
         {
 #if NETCOREAPP3_0_OR_GREATER
@@ -477,6 +502,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPow2(int value)
         {
 #if NETCOREAPP3_0_OR_GREATER

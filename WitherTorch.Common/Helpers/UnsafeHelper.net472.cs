@@ -1,6 +1,5 @@
 #if NET472_OR_GREATER
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -17,7 +16,7 @@ namespace WitherTorch.Common.Helpers
 {
     public static unsafe partial class UnsafeHelper
     {
-        private static readonly bool _isMono = Type.GetType("Mono.Runtime") is not null;
+        private static readonly bool _isMono = PlatformHelper.IsMono;
 
         public static partial T GetAllBitsSetValue<T>() where T : unmanaged
             => sizeof(T) switch
@@ -424,6 +423,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void CopyBlock(void* destination, void* source, uint byteCount)
         {
             IL.Push(destination);
@@ -433,6 +433,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void CopyBlock(void* destination, void* source, nuint byteCount)
         {
             IL.Push(destination);
@@ -442,6 +443,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void CopyBlockUnaligned(void* destination, void* source, uint byteCount)
         {
             IL.Push(destination);
@@ -452,6 +454,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void CopyBlockUnaligned(void* destination, void* source, nuint byteCount)
         {
             IL.Push(destination);
@@ -462,6 +465,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial TTo As<TFrom, TTo>(TFrom source)
         {
             IL.Push(source);
@@ -469,6 +473,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref TTo As<TFrom, TTo>(ref TFrom source)
         {
             IL.PushInRef(ref source!);
@@ -476,6 +481,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial T As<T>(object source) where T : class
         {
             IL.Push(source);
@@ -483,6 +489,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlock(ref byte location, byte value, uint count)
         {
             IL.PushInRef(ref location);
@@ -492,6 +499,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlock(ref byte location, byte value, nuint count)
         {
             IL.PushInRef(ref location);
@@ -501,6 +509,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlock(void* ptr, byte value, uint size)
         {
             IL.Push(ptr);
@@ -510,6 +519,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlock(void* ptr, byte value, nuint size)
         {
             IL.Push(ptr);
@@ -519,6 +529,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlockUnaligned(void* ptr, byte value, uint size)
         {
             IL.Push(ptr);
@@ -529,6 +540,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial void InitBlockUnaligned(void* ptr, byte value, nuint size)
         {
             IL.Push(ptr);
@@ -539,6 +551,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nint ByteOffset<T>(ref readonly T origin, ref readonly T target)
         {
             IL.PushInRef(in target);
@@ -548,6 +561,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target)
         {
             IL.PushInRef(in target);
@@ -557,6 +571,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T AddByteOffset<T>(ref readonly T source, nint byteOffset)
         {
             IL.PushInRef(in source);
@@ -566,6 +581,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset)
         {
             IL.PushInRef(in source);
@@ -575,6 +591,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T AddTypedOffset<T>(ref readonly T source, nint elementOffset)
         {
             IL.PushInRef(in source);
@@ -586,6 +603,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial ref T AddTypedOffset<T>(ref readonly T source, nuint elementOffset)
         {
             IL.PushInRef(in source);
@@ -694,6 +712,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial int SizeOfSigned<T>()
         {
             IL.Emit.Sizeof<T>();
@@ -701,6 +720,7 @@ namespace WitherTorch.Common.Helpers
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static partial uint SizeOf<T>()
         {
             IL.Emit.Sizeof<T>();

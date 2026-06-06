@@ -27,6 +27,7 @@ namespace WitherTorch.Common.Extensions
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEmpty<TKey, TValue>(this IDictionary<TKey, TValue> _this) => _this.Count <= 0;
 
 #if NET472_OR_GREATER

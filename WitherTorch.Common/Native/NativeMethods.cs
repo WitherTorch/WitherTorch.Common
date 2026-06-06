@@ -4,6 +4,7 @@ using System.Threading;
 
 using InlineMethod;
 
+using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Structures;
 
 namespace WitherTorch.Common.Native
@@ -15,25 +16,10 @@ namespace WitherTorch.Common.Native
         [Inline(InlineBehavior.Remove)]
         private static INativeMethodInstance GetOSDependedInstance()
         {
-#if NET40_OR_GREATER
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Unix:
-                case PlatformID.MacOSX:
-                    return new UnixNativeMethodInstance();
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                case PlatformID.Win32NT:
-                    return new Win32NativeMethodInstance();
-                default:
-                    break;
-            }
-#elif NET5_0_OR_GREATER
-            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
-                return new UnixNativeMethodInstance();
-            if (OperatingSystem.IsWindows())
+            if (PlatformHelper.IsWindows)
                 return new Win32NativeMethodInstance();
-#endif
+            if (PlatformHelper.IsUnix)
+                return new UnixNativeMethodInstance();
             return new FallbackNativeMethodInstance();
         }
 
@@ -65,6 +51,7 @@ namespace WitherTorch.Common.Native
         };
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IntPtr CreateWaitingHandle(bool autoReset) => CreateWaitingHandle(initialState: false, autoReset);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -137,9 +124,11 @@ namespace WitherTorch.Common.Native
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WaitForWaitingHandle(IntPtr handle) => WaitForWaitingHandle(handle, unchecked((uint)Timeout.Infinite));
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool WaitForWaitingHandle(IntPtr handle, TimeSpan timeout)
             => WaitForWaitingHandle(handle, (uint)(ulong)timeout.Ticks);
 

@@ -13,21 +13,27 @@ namespace WitherTorch.Common.Text
         public const byte Latin1EncodingLimit_InByte = 0x00FF;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetWorstCaseForEncodeLength(int length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetWorstCaseForEncodeLength(uint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint GetWorstCaseForEncodeLength(nuint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetWorstCaseForDecodeLength(int length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetWorstCaseForDecodeLength(uint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint GetWorstCaseForDecodeLength(nuint length) => length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

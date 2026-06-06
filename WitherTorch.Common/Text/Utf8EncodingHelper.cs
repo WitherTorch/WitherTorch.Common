@@ -47,21 +47,27 @@ namespace WitherTorch.Common.Text
         public const uint Utf8DecodeErrorCodePoint = 0xFFFD;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetWorstCaseForEncodeLength(int length) => length * 3;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetWorstCaseForEncodeLength(uint length) => length * 3;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint GetWorstCaseForEncodeLength(nuint length) => length * 3;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetWorstCaseForDecodeLength(int length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static uint GetWorstCaseForDecodeLength(uint length) => length;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static nuint GetWorstCaseForDecodeLength(nuint length) => length;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,9 +96,11 @@ namespace WitherTorch.Common.Text
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsLeadSurrogate(char c) => c >= Utf16LeadSurrogateStart && c <= Utf16LeadSurrogateEnd;
 
         [Inline(InlineBehavior.Keep, export: true)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsTrailSurrogate(char c) => c >= Utf16TrailSurrogateStart && c <= Utf16TrailSurrogateEnd;
 
         [Inline(InlineBehavior.Remove)]
