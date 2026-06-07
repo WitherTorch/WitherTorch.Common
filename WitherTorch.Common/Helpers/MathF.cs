@@ -15,6 +15,7 @@ namespace System
     public static class MathF
     {
         private static readonly bool _isSystemMemoryExists = WTCommon.SystemBuffersExists;
+        private static readonly float[] _power10 = new float[] { 1f, 10f, 100f, 1000f, 10000f, 100000f, 1000000f };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float CopySign(float x, float y)
@@ -119,10 +120,24 @@ namespace System
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Round(float value, int digits, MidpointRounding mode)
         {
-            if (_isSystemMemoryExists)
-                return StoreAsSpan.Round(value, digits, mode);
-            else
-                return StoreAsArray.Round(value, digits, mode);
+            const uint MaxRoundingDigits = 6;
+            const float RoundingLimit = 1e8f;
+
+            if (digits > MaxRoundingDigits)
+                return Throw();
+
+            if (Math.Abs(value) < RoundingLimit)
+            {
+                float power10 = UnsafeHelper.AddTypedOffset(
+                    in UnsafeHelper.GetArrayDataReference(_power10),
+                    digits);
+                value = Round(value * power10, mode) / power10;
+            }
+
+            return value;
+
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            static float Throw() => throw new ArgumentOutOfRangeException(nameof(digits));
         }
 
         [Inline(InlineBehavior.Keep, export: true)]
@@ -156,56 +171,6 @@ namespace System
             }
 
             return d;
-        }
-
-        private static class StoreAsArray
-        {
-            private static readonly float[] RoundPower10Single = [1e0f, 1e1f, 1e2f, 1e3f, 1e4f, 1e5f, 1e6f];
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            public static float Round(float x, int digits, MidpointRounding mode)
-            {
-                const uint MaxRoundingDigits = 6;
-                const float RoundingLimit = 1e8f;
-
-                if (digits > MaxRoundingDigits)
-                    throw new ArgumentOutOfRangeException(nameof(digits));
-
-                if (Math.Abs(x) < RoundingLimit)
-                {
-                    float power10 = UnsafeHelper.AddTypedOffset(
-                        ref UnsafeHelper.GetArrayDataReference(RoundPower10Single),
-                        digits);
-                    x = MathF.Round(x * power10, mode) / power10;
-                }
-
-                return x;
-            }
-        }
-
-        private static class StoreAsSpan
-        {
-            private static ReadOnlySpan<float> RoundPower10Single => [1e0f, 1e1f, 1e2f, 1e3f, 1e4f, 1e5f, 1e6f];
-
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            public static float Round(float x, int digits, MidpointRounding mode)
-            {
-                const uint MaxRoundingDigits = 6;
-                const float RoundingLimit = 1e8f;
-
-                if (digits > MaxRoundingDigits)
-                    throw new ArgumentOutOfRangeException(nameof(digits));
-
-                if (Math.Abs(x) < RoundingLimit)
-                {
-                    float power10 = UnsafeHelper.AddTypedOffset(
-                        ref UnsafeHelper.AsRefIn(in RoundPower10Single.GetPinnableReference()),
-                        digits);
-                    x = MathF.Round(x * power10, mode) / power10;
-                }
-
-                return x;
-            }
         }
     }
 }
