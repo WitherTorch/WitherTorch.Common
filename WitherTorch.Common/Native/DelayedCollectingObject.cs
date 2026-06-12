@@ -29,37 +29,17 @@ namespace WitherTorch.Common.Native
 
         public void AddRef()
         {
-            if (CheckDisposed())
+            if (CheckDisposed() || InterlockedHelper.LimitedIncrement(ref _refCount, ulong.MaxValue) != 1)
                 return;
-            switch (InterlockedHelper.Increment(ref _refCount))
-            {
-                case 0:
-                    InterlockedHelper.CompareExchange(ref _refCount, ulong.MaxValue, 0);
-                    break;
-                case 1:
-                    DelayedCollector.Instance.AddObject(this);
-                    TryGenerateObject();
-                    break;
-                default:
-                    break;
-            }
+            DelayedCollector.Instance.AddObject(this);
+            TryGenerateObject();
         }
 
         public void RemoveRef()
         {
-            if (CheckDisposed())
+            if (CheckDisposed() || InterlockedHelper.LimitedDecrement(ref _refCount, 0) != 0)
                 return;
-            switch (InterlockedHelper.Add(ref _refCount, ulong.MaxValue))
-            {
-                case ulong.MaxValue:
-                    InterlockedHelper.CompareExchange(ref _refCount, 0, ulong.MaxValue);
-                    break;
-                case 0:
-                    InterlockedHelper.Write(ref _lastDerefTime, NativeMethods.GetTicksForSystem());
-                    break;
-                default:
-                    break;
-            }
+            InterlockedHelper.Write(ref _lastDerefTime, NativeMethods.GetTicksForSystem());
         }
 
         internal void RemoveObject()

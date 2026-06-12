@@ -115,6 +115,40 @@ namespace WitherTorch.Common.Extensions
             return first ?? throw new ArgumentNullException(nameof(first));
         }
 
+        /// <inheritdoc cref="Enumerable.Concat{TSource}(IEnumerable{TSource}, IEnumerable{TSource})"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IEnumerable<TSource> ConcatOptimized<TSource>(this IEnumerable<TSource> first, TSource second)
+        {
+            switch (first)
+            {
+                case TSource[] array:
+                    if (array.Length <= 0)
+                        goto ReturnSecond;
+                    break;
+                case ICollection<TSource> collection:
+                    if (collection.Count <= 0)
+                        goto ReturnSecond;
+                    break;
+                case IReadOnlyCollection<TSource> collection:
+                    if (collection.Count <= 0)
+                        goto ReturnSecond;
+                    break;
+            }
+
+            return ConcatOptimizedCore(first, second);
+
+        ReturnSecond:
+            return [second];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static IEnumerable<TSource> ConcatOptimizedCore<TSource>(this IEnumerable<TSource> first, TSource second)
+        {
+            foreach (TSource item in first)
+                yield return item;
+            yield return second;
+        }
+
         /// <inheritdoc cref="Enumerable.Reverse{TSource}(IEnumerable{TSource})"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerable<TSource> ReverseOptimized<TSource>(this IEnumerable<TSource> source)

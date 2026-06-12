@@ -281,5 +281,137 @@ namespace WitherTorch.Common.Helpers
         private static int FallbackGetAndAdd(ref int location, int value) => Interlocked.Add(ref location, value) - value;
 
         private static long FallbackGetAndAdd(ref long location, long value) => Interlocked.Add(ref location, value) - value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int LimitedIncrement(ref int location, int limit)
+            => LimitedIncrementCore(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint LimitedIncrement(ref uint location, uint limit)
+            => LimitedIncrementCoreUnsigned(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long LimitedIncrement(ref long location, long limit)
+            => LimitedIncrementCore(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong LimitedIncrement(ref ulong location, ulong limit)
+            => LimitedIncrementCoreUnsigned(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint LimitedIncrement(ref nint location, nint limit)
+            => LimitedIncrementCore(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint LimitedIncrement(ref nuint location, nuint limit)
+            => LimitedIncrementCoreUnsigned(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T LimitedIncrementCore<T>(ref T location, T limit) where T : unmanaged
+        {
+            T oldValue = ReadCore(ref location);
+            do
+            {
+                T currentValue, newValue;
+                if (UnsafeHelper.IsGreaterThanOrEquals(oldValue, limit))
+                    newValue = currentValue = ReadCore(ref location);
+                else
+                {
+                    newValue = UnsafeHelper.Add(oldValue, UnsafeHelper.As<int, T>(1));
+                    currentValue = CompareExchangeCore(ref location, newValue, oldValue);
+                }
+                if (UnsafeHelper.Equals(currentValue, oldValue))
+                    return newValue;
+                oldValue = currentValue;
+            }
+            while (true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T LimitedIncrementCoreUnsigned<T>(ref T location, T limit) where T : unmanaged
+        {
+            T oldValue = ReadCore(ref location);
+            do
+            {
+                T currentValue, newValue;
+                if (UnsafeHelper.IsGreaterThanOrEqualsUnsigned(oldValue, limit))
+                    newValue = currentValue = ReadCore(ref location);
+                else
+                {
+                    newValue = UnsafeHelper.Add(oldValue, UnsafeHelper.As<int, T>(1));
+                    currentValue = CompareExchangeCore(ref location, newValue, oldValue);
+                }
+                if (UnsafeHelper.Equals(currentValue, oldValue))
+                    return newValue;
+                oldValue = currentValue;
+            }
+            while (true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int LimitedDecrement(ref int location, int limit)
+            => LimitedDecrementCore(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static uint LimitedDecrement(ref uint location, uint limit)
+            => LimitedDecrementCoreUnsigned(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long LimitedDecrement(ref long location, long limit)
+            => LimitedDecrementCore(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ulong LimitedDecrement(ref ulong location, ulong limit)
+            => LimitedDecrementCoreUnsigned(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nint LimitedDecrement(ref nint location, nint limit)
+            => LimitedDecrementCore(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint LimitedDecrement(ref nuint location, nuint limit)
+            => LimitedDecrementCoreUnsigned(ref location, limit);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T LimitedDecrementCore<T>(ref T location, T limit) where T : unmanaged
+        {
+            T oldValue = ReadCore(ref location);
+            do
+            {
+                T currentValue, newValue;
+                if (UnsafeHelper.IsLessThanOrEquals(oldValue, limit))
+                    newValue = currentValue = ReadCore(ref location);
+                else
+                {
+                    newValue = UnsafeHelper.Subtract(oldValue, UnsafeHelper.As<int, T>(1));
+                    currentValue = CompareExchangeCore(ref location, newValue, oldValue);
+                }
+                if (UnsafeHelper.Equals(currentValue, oldValue))
+                    return newValue;
+                oldValue = currentValue;
+            }
+            while (true);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static T LimitedDecrementCoreUnsigned<T>(ref T location, T limit) where T : unmanaged
+        {
+            T oldValue = ReadCore(ref location);
+            do
+            {
+                T currentValue, newValue;
+                if (UnsafeHelper.IsLessThanOrEqualsUnsigned(oldValue, limit))
+                    newValue = currentValue = ReadCore(ref location);
+                else
+                {
+                    newValue = UnsafeHelper.Subtract(oldValue, UnsafeHelper.As<int, T>(1));
+                    currentValue = CompareExchangeCore(ref location, newValue, oldValue);
+                }
+                if (UnsafeHelper.Equals(currentValue, oldValue))
+                    return newValue;
+                oldValue = currentValue;
+            }
+            while (true);
+        }
     }
 }
