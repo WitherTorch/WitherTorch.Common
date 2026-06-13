@@ -409,7 +409,7 @@ namespace WitherTorch.Common.Helpers
                         if (length > (nuint)Vector512<T>.Count * 2)
                         {
                             bool isSameRemainder = headRemainder == headRemainder2;
-                            headRemainder = UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder; // 取得數量
+                            headRemainder = (UnsafeHelper.SizeOf<Vector512<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             ptr2 += headRemainder;
                             length -= headRemainder;
@@ -493,6 +493,8 @@ namespace WitherTorch.Common.Helpers
                 Vector256<T> lowerBoundVector = Vector256.Create(lowerBound);
                 Vector256<T> higherBoundVector = Vector256.Create(higherBound);
 
+                DebugHelper.BreakIf(length < (nuint)Vector256<T>.Count);
+
                 nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector256<T>>();
                 nuint headRemainder2 = (nuint)ptr2 % UnsafeHelper.SizeOf<Vector256<T>>();
                 if (headRemainder == 0)
@@ -515,7 +517,7 @@ namespace WitherTorch.Common.Helpers
                         if (length > (nuint)Vector256<T>.Count * 2)
                         {
                             bool isSameRemainder = headRemainder == headRemainder2;
-                            headRemainder = UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder; // 取得數量
+                            headRemainder = (UnsafeHelper.SizeOf<Vector256<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             ptr2 += headRemainder;
                             length -= headRemainder;
@@ -621,7 +623,7 @@ namespace WitherTorch.Common.Helpers
                         if (length > (nuint)Vector128<T>.Count * 2)
                         {
                             bool isSameRemainder = headRemainder == headRemainder2;
-                            headRemainder = UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder; // 取得數量
+                            headRemainder = (UnsafeHelper.SizeOf<Vector128<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             ptr2 += headRemainder;
                             length -= headRemainder;
@@ -727,7 +729,7 @@ namespace WitherTorch.Common.Helpers
                         if (length > (nuint)Vector64<T>.Count * 2)
                         {
                             bool isSameRemainder = headRemainder == headRemainder2;
-                            headRemainder = UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder; // 取得數量
+                            headRemainder = (UnsafeHelper.SizeOf<Vector64<T>>() - headRemainder) / UnsafeHelper.SizeOf<T>(); // 取得數量
                             ptr += headRemainder;
                             ptr2 += headRemainder;
                             length -= headRemainder;
