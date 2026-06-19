@@ -1,9 +1,8 @@
 using System;
 
-namespace WitherTorch.Common
+namespace WitherTorch.Common;
+
+public interface ICheckableDisposable : IDisposable
 {
-    public interface ICheckableDisposable : IDisposable
-    {
-        bool IsDisposed { get; }
-    }
+    bool IsDisposed { get; }
 }

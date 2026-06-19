@@ -1,7 +1,6 @@
-namespace WitherTorch.Common.Text
+namespace WitherTorch.Common.Text;
+
+public interface IStringWrapperConvertible
 {
-    public interface IStringWrapperConvertible
-    {
-        public StringWrapper? ToStringWrapper();
-    }
+    public StringWrapper? ToStringWrapper();
 }

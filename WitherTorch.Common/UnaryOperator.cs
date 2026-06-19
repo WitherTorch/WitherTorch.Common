@@ -8,130 +8,129 @@ using InlineIL;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Threading;
 
-namespace WitherTorch.Common
+namespace WitherTorch.Common;
+
+public delegate T UnaryOperation<T>(T value);
+
+public interface IUnaryOperator<T>
 {
-    public delegate T UnaryOperation<T>(T value);
+    T Operate(T value);
 
-    public interface IUnaryOperator<T>
+    UnaryOperation<T> ToOperation();
+}
+
+internal interface IDefaultUnaryOperator<T> : IUnaryOperator<T>
+{
+    UnaryOperatorType Type { get; }
+}
+
+public enum UnaryOperatorType
+{
+    Identity,
+    Not
+}
+
+public abstract class UnaryOperator<T> : IUnaryOperator<T>
+{
+    public static UnaryOperator<T> Identity => IdentityImpl.Instance;
+    public static UnaryOperator<T> Not => NotImpl.Instance;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UnaryOperator<T> Create(UnaryOperation<T> operation) => new DelegateImpl(operation);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UnaryOperator<T> GetDefault(UnaryOperatorType type)
+        => type switch
+        {
+            UnaryOperatorType.Identity => Identity,
+            UnaryOperatorType.Not => Not,
+            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+        };
+
+    public abstract T Operate(T value);
+
+    public virtual UnaryOperation<T> ToOperation() => Operate;
+
+    private sealed class DelegateImpl : UnaryOperator<T>
     {
-        T Operate(T value);
+        private readonly UnaryOperation<T> _operation;
 
-        UnaryOperation<T> ToOperation();
+        public DelegateImpl(UnaryOperation<T> operation) => _operation = operation;
+
+        public override T Operate(T value) => _operation.Invoke(value);
+
+        public override UnaryOperation<T> ToOperation() => _operation;
     }
 
-    internal interface IDefaultUnaryOperator<T> : IUnaryOperator<T>
+    private sealed class IdentityImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
     {
-        UnaryOperatorType Type { get; }
+        public static readonly UnaryOperator<T> Instance = new IdentityImpl();
+
+        private IdentityImpl() { }
+
+        public UnaryOperatorType Type => UnaryOperatorType.Identity;
+
+        public override T Operate(T value) => value;
+
+        public override UnaryOperation<T> ToOperation() => static (value) => value;
     }
 
-    public enum UnaryOperatorType
+    internal sealed unsafe class ReflectionImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
     {
-        Identity,
-        Not
+        private readonly delegate* managed<T, T> _func;
+        private readonly UnaryOperatorType _type;
+
+        private UnaryOperation<T>? _cachedOperation;
+
+        public ReflectionImpl(UnaryOperatorType type, string funcName)
+        {
+            _type = type;
+            nint functionPointer = ReflectionHelper.GetMethodPointer(typeof(T), funcName, [typeof(T)], typeof(T),
+                    BindingFlags.Public | BindingFlags.Static);
+            if (functionPointer == default)
+                throw new InvalidOperationException($"{typeof(T)} doesn't have the operator of {type}!");
+            _func = (delegate* managed<T, T>)functionPointer;
+        }
+
+        public UnaryOperatorType Type => _type;
+
+        public override T Operate(T value) => _func(value);
+
+        public override UnaryOperation<T> ToOperation()
+        {
+            UnaryOperation<T>? operation = _cachedOperation;
+            if (operation is null)
+            {
+                IL.Emit.Ldnull();
+                IL.Push(_func);
+                IL.Emit.Newobj(MethodRef.Constructor(typeof(UnaryOperation<T>), typeof(object), typeof(nint)));
+                IL.Pop(out operation);
+                _cachedOperation = operation;
+            }
+            return operation!;
+        }
     }
 
-    public abstract class UnaryOperator<T> : IUnaryOperator<T>
+    private sealed class NotImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
     {
-        public static UnaryOperator<T> Identity => IdentityImpl.Instance;
-        public static UnaryOperator<T> Not => NotImpl.Instance;
+        public static readonly UnaryOperator<T> Instance;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnaryOperator<T> Create(UnaryOperation<T> operation) => new DelegateImpl(operation);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UnaryOperator<T> GetDefault(UnaryOperatorType type)
-            => type switch
+        static NotImpl()
+        {
+            if (UnsafeHelper.IsPrimitiveType<T>())
             {
-                UnaryOperatorType.Identity => Identity,
-                UnaryOperatorType.Not => Not,
-                _ => throw new ArgumentOutOfRangeException(nameof(type)),
-            };
-
-        public abstract T Operate(T value);
-
-        public virtual UnaryOperation<T> ToOperation() => Operate;
-
-        private sealed class DelegateImpl : UnaryOperator<T>
-        {
-            private readonly UnaryOperation<T> _operation;
-
-            public DelegateImpl(UnaryOperation<T> operation) => _operation = operation;
-
-            public override T Operate(T value) => _operation.Invoke(value);
-
-            public override UnaryOperation<T> ToOperation() => _operation;
-        }
-
-        private sealed class IdentityImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
-        {
-            public static readonly UnaryOperator<T> Instance = new IdentityImpl();
-
-            private IdentityImpl() { }
-
-            public UnaryOperatorType Type => UnaryOperatorType.Identity;
-
-            public override T Operate(T value) => value;
-
-            public override UnaryOperation<T> ToOperation() => static (value) => value;
-        }
-
-        internal sealed unsafe class ReflectionImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
-        {
-            private readonly delegate* managed<T, T> _func;
-            private readonly UnaryOperatorType _type;
-
-            private UnaryOperation<T>? _cachedOperation;
-
-            public ReflectionImpl(UnaryOperatorType type, string funcName)
-            {
-                _type = type;
-                nint functionPointer = ReflectionHelper.GetMethodPointer(typeof(T), funcName, [typeof(T)], typeof(T),
-                        BindingFlags.Public | BindingFlags.Static);
-                if (functionPointer == default)
-                    throw new InvalidOperationException($"{typeof(T)} doesn't have the operator of {type}!");
-                _func = (delegate* managed<T, T>)functionPointer;
+                if (typeof(T) == typeof(float) || typeof(T) == typeof(double))
+                    throw new InvalidOperationException($"{typeof(T)} doesn't have the operator of {UnaryOperatorType.Not}!");
+                Instance = new NotImpl();
             }
-
-            public UnaryOperatorType Type => _type;
-
-            public override T Operate(T value) => _func(value);
-
-            public override UnaryOperation<T> ToOperation()
-            {
-                UnaryOperation<T>? operation = _cachedOperation;
-                if (operation is null)
-                {
-                    IL.Emit.Ldnull();
-                    IL.Push(_func);
-                    IL.Emit.Newobj(MethodRef.Constructor(typeof(UnaryOperation<T>), typeof(object), typeof(nint)));
-                    IL.Pop(out operation);
-                    _cachedOperation = operation;
-                }
-                return operation!;
-            }
+            else
+                Instance = new ReflectionImpl(UnaryOperatorType.Not, "op_OnesComplement");
         }
 
-        private sealed class NotImpl : UnaryOperator<T>, IDefaultUnaryOperator<T>
-        {
-            public static readonly UnaryOperator<T> Instance;
+        public UnaryOperatorType Type => UnaryOperatorType.Not;
 
-            static NotImpl()
-            {
-                if (UnsafeHelper.IsPrimitiveType<T>())
-                {
-                    if (typeof(T) == typeof(float) || typeof(T) == typeof(double))
-                        throw new InvalidOperationException($"{typeof(T)} doesn't have the operator of {UnaryOperatorType.Not}!");
-                    Instance = new NotImpl();
-                }
-                else
-                    Instance = new ReflectionImpl(UnaryOperatorType.Not, "op_OnesComplement");
-            }
+        public override T Operate(T value) => UnsafeHelper.Not(value);
 
-            public UnaryOperatorType Type => UnaryOperatorType.Not;
-
-            public override T Operate(T value) => UnsafeHelper.Not(value);
-
-            public override UnaryOperation<T> ToOperation() => static (value) => UnsafeHelper.Not(value);
-        }
+        public override UnaryOperation<T> ToOperation() => static (value) => UnsafeHelper.Not(value);
     }
 }

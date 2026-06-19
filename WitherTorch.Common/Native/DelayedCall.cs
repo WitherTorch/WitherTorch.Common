@@ -1,15 +1,14 @@
-﻿using System;
+using System;
 
-namespace WitherTorch.Common.Native
+namespace WitherTorch.Common.Native;
+
+internal sealed class DelayedCall : DelayedCollectingObject
 {
-    internal sealed class DelayedCall : DelayedCollectingObject
-    {
-        private readonly Action _action;
+    private readonly Action _action;
 
-        public DelayedCall(Action action) => _action = action;
+    public DelayedCall(Action action) => _action = action;
 
-        protected override void GenerateObject() { }
+    protected override void GenerateObject() { }
 
-        protected override void DestroyObject() => _action.Invoke();
-    }
+    protected override void DestroyObject() => _action.Invoke();
 }

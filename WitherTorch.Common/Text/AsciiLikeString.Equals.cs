@@ -2,239 +2,238 @@ using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
 
-namespace WitherTorch.Common.Text
+namespace WitherTorch.Common.Text;
+
+partial class AsciiLikeString
 {
-    partial class AsciiLikeString
+    protected override unsafe bool PartiallyEqualsCore(string other, nuint startIndex, nuint count)
     {
-        protected override unsafe bool PartiallyEqualsCore(string other, nuint startIndex, nuint count)
+        fixed (char* ptr = other)
+            return PartiallyEqualsCore(ptr, startIndex, count);
+    }
+
+    protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count)
+        => other switch
         {
-            fixed (char* ptr = other)
-                return PartiallyEqualsCore(ptr, startIndex, count);
+            AsciiLikeString ascii => PartiallyEqualsCore(ascii, startIndex, count),
+            Utf16String utf16 => PartiallyEqualsCore(utf16, startIndex, count),
+            Utf8String utf8 => PartiallyEqualsCore(utf8, startIndex, count),
+            _ => PartiallyEqualsCore_Other(other, startIndex, count),
+        };
+
+    public override int GetHashCode() => HashingHelper.GetHashCode(this);
+
+    protected override unsafe int CompareToCore(string other, nuint length)
+    {
+        fixed (char* ptr = other)
+            return CompareToCore(ptr, length);
+    }
+
+    protected override int CompareToCore(StringWrapper other, nuint length)
+        => other switch
+        {
+            AsciiLikeString ascii => CompareToCore(ascii, length),
+            Utf16String utf16 => CompareToCore(utf16, length),
+            Utf8String utf8 => CompareToCore(utf8, length),
+            _ => CompareToCore_Other(other, length),
+        };
+
+    protected override unsafe bool EqualsCore(string other, nuint length)
+    {
+        fixed (char* ptr = other)
+            return EqualsCore(ptr, length);
+    }
+
+    protected override bool EqualsCore(StringWrapper other, nuint length)
+        => other switch
+        {
+            AsciiLikeString ascii => EqualsCore(ascii, length),
+            Utf16String utf16 => EqualsCore(utf16, length),
+            Utf8String utf8 => EqualsCore(utf8, length),
+            _ => EqualsCore_Other(other, length),
+        };
+
+    private unsafe bool PartiallyEqualsCore(AsciiLikeString compare, nuint startIndex, nuint count)
+    {
+        fixed (byte* source = _value, sourceB = compare._value)
+            return SequenceHelper.Equals(source + startIndex, sourceB, count);
+    }
+
+    private unsafe bool PartiallyEqualsCore(Utf8String compare, nuint startIndex, nuint count)
+    {
+        byte characterLimit = GetCharacterLimit();
+        if (characterLimit > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
+            return PartiallyEqualsCoreSlow(compare, startIndex, count, characterLimit);
+
+        fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
+            return SequenceHelper.Equals(source + startIndex, sourceB, count);
+    }
+
+    private bool PartiallyEqualsCore(Utf16String compare, nuint startIndex, nuint count)
+        => PartiallyEqualsCore(compare.GetInternalRepresentation(), startIndex, count);
+
+    private unsafe bool PartiallyEqualsCore_Other(StringWrapper compare, nuint startIndex, nuint count)
+    {
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
+        try
+        {
+            char* temp = buffer.NativePointer;
+            compare.CopyToCore(temp, 0, count);
+            return PartiallyEqualsCore(temp, startIndex, count);
         }
-
-        protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count)
-            => other switch
-            {
-                AsciiLikeString ascii => PartiallyEqualsCore(ascii, startIndex, count),
-                Utf16String utf16 => PartiallyEqualsCore(utf16, startIndex, count),
-                Utf8String utf8 => PartiallyEqualsCore(utf8, startIndex, count),
-                _ => PartiallyEqualsCore_Other(other, startIndex, count),
-            };
-
-        public override int GetHashCode() => HashingHelper.GetHashCode(this);
-
-        protected override unsafe int CompareToCore(string other, nuint length)
+        finally
         {
-            fixed (char* ptr = other)
-                return CompareToCore(ptr, length);
+            pool.Return(buffer);
         }
+    }
 
-        protected override int CompareToCore(StringWrapper other, nuint length)
-            => other switch
-            {
-                AsciiLikeString ascii => CompareToCore(ascii, length),
-                Utf16String utf16 => CompareToCore(utf16, length),
-                Utf8String utf8 => CompareToCore(utf8, length),
-                _ => CompareToCore_Other(other, length),
-            };
+    private unsafe bool PartiallyEqualsCore(char* compare, nuint startIndex, nuint count)
+    {
+        if (SequenceHelper.ContainsGreaterThan(compare, count, unchecked((char)GetCharacterLimit())))
+            return false;
 
-        protected override unsafe bool EqualsCore(string other, nuint length)
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(count);
+        try
         {
-            fixed (char* ptr = other)
-                return EqualsCore(ptr, length);
-        }
-
-        protected override bool EqualsCore(StringWrapper other, nuint length)
-            => other switch
-            {
-                AsciiLikeString ascii => EqualsCore(ascii, length),
-                Utf16String utf16 => EqualsCore(utf16, length),
-                Utf8String utf8 => EqualsCore(utf8, length),
-                _ => EqualsCore_Other(other, length),
-            };
-
-        private unsafe bool PartiallyEqualsCore(AsciiLikeString compare, nuint startIndex, nuint count)
-        {
-            fixed (byte* source = _value, sourceB = compare._value)
-                return SequenceHelper.Equals(source + startIndex, sourceB, count);
-        }
-
-        private unsafe bool PartiallyEqualsCore(Utf8String compare, nuint startIndex, nuint count)
-        {
-            byte characterLimit = GetCharacterLimit();
-            if (characterLimit > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
-                return PartiallyEqualsCoreSlow(compare, startIndex, count, characterLimit);
-
-            fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
-                return SequenceHelper.Equals(source + startIndex, sourceB, count);
-        }
-
-        private bool PartiallyEqualsCore(Utf16String compare, nuint startIndex, nuint count)
-            => PartiallyEqualsCore(compare.GetInternalRepresentation(), startIndex, count);
-
-        private unsafe bool PartiallyEqualsCore_Other(StringWrapper compare, nuint startIndex, nuint count)
-        {
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
-            try
-            {
-                char* temp = buffer.NativePointer;
-                compare.CopyToCore(temp, 0, count);
-                return PartiallyEqualsCore(temp, startIndex, count);
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        private unsafe bool PartiallyEqualsCore(char* compare, nuint startIndex, nuint count)
-        {
-            if (SequenceHelper.ContainsGreaterThan(compare, count, unchecked((char)GetCharacterLimit())))
-                return false;
-
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            TypedNativeMemoryBlock<byte> buffer = pool.Rent<byte>(count);
-            try
-            {
-                byte* temp = buffer.NativePointer;
-                Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, count);
-                fixed (byte* source = _value)
-                    return SequenceHelper.Equals(source + startIndex, temp, count);
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        private unsafe bool PartiallyEqualsCoreSlow(Utf8String compare, nuint startIndex, nuint count, byte characterLimit)
-        {
-            byte[] compareArray = compare.GetInternalRepresentation();
-            fixed (byte* source = _value, sourceB = compareArray)
-            {
-                byte* iteratorA = source + startIndex, iteratorB = sourceB, endB = sourceB + compareArray.Length - 1;
-                for (nuint i = 0; i < count; i++)
-                {
-                    if ((iteratorB = Utf8EncodingHelper.TryReadUtf8Character(iteratorB, endB, out uint unicodeValue)) == null ||
-                        unicodeValue > characterLimit ||
-                        iteratorA[i] != unicodeValue)
-                        return false;
-                }
-            }
-            return true;
-        }
-
-        private unsafe int CompareToCore(AsciiLikeString compare, nuint length)
-        {
-            fixed (byte* source = _value, sourceB = compare._value)
-                return InternalSequenceHelper.CompareTo(source, sourceB, length);
-        }
-
-        private unsafe int CompareToCore(Utf8String compare, nuint length)
-        {
-            if (GetCharacterLimit() > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
-                return CompareToCoreSlow(compare, length);
-
-            fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
-                return InternalSequenceHelper.CompareTo(source, sourceB, length);
-        }
-
-        private unsafe int CompareToCore(Utf16String compare, nuint length)
-        {
-            fixed (char* ptr = compare.GetInternalRepresentation())
-                return CompareToCore(ptr, length);
-        }
-
-        private unsafe int CompareToCore_Other(StringWrapper compare, nuint length)
-        {
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
-            try
-            {
-                char* temp = buffer.NativePointer;
-                compare.CopyToCore(temp, 0, length);
-                return CompareToCore(temp, length);
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        private unsafe int CompareToCore(char* compare, nuint length)
-        {
+            byte* temp = buffer.NativePointer;
+            Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, count);
             fixed (byte* source = _value)
-                return AsciiLikeStringHelper.CompareTo_Utf16(source, compare, length);
+                return SequenceHelper.Equals(source + startIndex, temp, count);
         }
-
-        private unsafe int CompareToCoreSlow(Utf8String compare, nuint length)
+        finally
         {
-            fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
-                return -Utf8StringHelper.CompareTo_Latin1(sourceB, source, length);
+            pool.Return(buffer);
         }
+    }
 
-        private unsafe bool EqualsCore(AsciiLikeString compare, nuint length)
+    private unsafe bool PartiallyEqualsCoreSlow(Utf8String compare, nuint startIndex, nuint count, byte characterLimit)
+    {
+        byte[] compareArray = compare.GetInternalRepresentation();
+        fixed (byte* source = _value, sourceB = compareArray)
         {
-            fixed (byte* source = _value, sourceB = compare._value)
-                return SequenceHelper.Equals(source, sourceB, length);
-        }
-
-        private unsafe bool EqualsCore(Utf8String compare, nuint length)
-        {
-            if (GetCharacterLimit() > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
-                return EqualsCoreSlow(compare, length);
-
-            fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
-                return SequenceHelper.Equals(source, sourceB, length);
-        }
-
-        private unsafe bool EqualsCore(Utf16String compare, nuint length)
-        {
-            fixed (char* ptr = compare.GetInternalRepresentation())
-                return EqualsCore(ptr, length);
-        }
-
-        private unsafe bool EqualsCore(char* compare, nuint length)
-        {
-            if (SequenceHelper.ContainsGreaterThan(compare, length, unchecked((char)GetCharacterLimit())))
-                return false;
-
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            var buffer = pool.Rent<byte>(length);
-            try
+            byte* iteratorA = source + startIndex, iteratorB = sourceB, endB = sourceB + compareArray.Length - 1;
+            for (nuint i = 0; i < count; i++)
             {
-                byte* temp = buffer.NativePointer;
-                Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, length);
-                fixed (byte* source = _value)
-                    return SequenceHelper.Equals(source, temp, length);
-            }
-            finally
-            {
-                pool.Return(buffer);
+                if ((iteratorB = Utf8EncodingHelper.TryReadUtf8Character(iteratorB, endB, out uint unicodeValue)) == null ||
+                    unicodeValue > characterLimit ||
+                    iteratorA[i] != unicodeValue)
+                    return false;
             }
         }
+        return true;
+    }
 
-        private unsafe bool EqualsCore_Other(StringWrapper compare, nuint count)
-        {
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
-            try
-            {
-                char* temp = buffer.NativePointer;
-                compare.CopyToCore(temp, 0, count);
-                return EqualsCore(temp, count);
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
+    private unsafe int CompareToCore(AsciiLikeString compare, nuint length)
+    {
+        fixed (byte* source = _value, sourceB = compare._value)
+            return InternalSequenceHelper.CompareTo(source, sourceB, length);
+    }
 
-        private unsafe bool EqualsCoreSlow(Utf8String compare, nuint length)
+    private unsafe int CompareToCore(Utf8String compare, nuint length)
+    {
+        if (GetCharacterLimit() > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
+            return CompareToCoreSlow(compare, length);
+
+        fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
+            return InternalSequenceHelper.CompareTo(source, sourceB, length);
+    }
+
+    private unsafe int CompareToCore(Utf16String compare, nuint length)
+    {
+        fixed (char* ptr = compare.GetInternalRepresentation())
+            return CompareToCore(ptr, length);
+    }
+
+    private unsafe int CompareToCore_Other(StringWrapper compare, nuint length)
+    {
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
+        try
         {
-            fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
-                return Utf8StringHelper.Equals_Latin1(source, sourceB, length);
+            char* temp = buffer.NativePointer;
+            compare.CopyToCore(temp, 0, length);
+            return CompareToCore(temp, length);
         }
+        finally
+        {
+            pool.Return(buffer);
+        }
+    }
+
+    private unsafe int CompareToCore(char* compare, nuint length)
+    {
+        fixed (byte* source = _value)
+            return AsciiLikeStringHelper.CompareTo_Utf16(source, compare, length);
+    }
+
+    private unsafe int CompareToCoreSlow(Utf8String compare, nuint length)
+    {
+        fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
+            return -Utf8StringHelper.CompareTo_Latin1(sourceB, source, length);
+    }
+
+    private unsafe bool EqualsCore(AsciiLikeString compare, nuint length)
+    {
+        fixed (byte* source = _value, sourceB = compare._value)
+            return SequenceHelper.Equals(source, sourceB, length);
+    }
+
+    private unsafe bool EqualsCore(Utf8String compare, nuint length)
+    {
+        if (GetCharacterLimit() > AsciiEncodingHelper.AsciiEncodingLimit_InByte)
+            return EqualsCoreSlow(compare, length);
+
+        fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
+            return SequenceHelper.Equals(source, sourceB, length);
+    }
+
+    private unsafe bool EqualsCore(Utf16String compare, nuint length)
+    {
+        fixed (char* ptr = compare.GetInternalRepresentation())
+            return EqualsCore(ptr, length);
+    }
+
+    private unsafe bool EqualsCore(char* compare, nuint length)
+    {
+        if (SequenceHelper.ContainsGreaterThan(compare, length, unchecked((char)GetCharacterLimit())))
+            return false;
+
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        var buffer = pool.Rent<byte>(length);
+        try
+        {
+            byte* temp = buffer.NativePointer;
+            Latin1EncodingHelper.ReadFromUtf16BufferCore(compare, temp, length);
+            fixed (byte* source = _value)
+                return SequenceHelper.Equals(source, temp, length);
+        }
+        finally
+        {
+            pool.Return(buffer);
+        }
+    }
+
+    private unsafe bool EqualsCore_Other(StringWrapper compare, nuint count)
+    {
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(count);
+        try
+        {
+            char* temp = buffer.NativePointer;
+            compare.CopyToCore(temp, 0, count);
+            return EqualsCore(temp, count);
+        }
+        finally
+        {
+            pool.Return(buffer);
+        }
+    }
+
+    private unsafe bool EqualsCoreSlow(Utf8String compare, nuint length)
+    {
+        fixed (byte* source = _value, sourceB = compare.GetInternalRepresentation())
+            return Utf8StringHelper.Equals_Latin1(source, sourceB, length);
     }
 }

@@ -4,36 +4,35 @@ using System.Runtime.InteropServices;
 
 using WitherTorch.Common.Structures;
 
-namespace WitherTorch.Common.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals;
+
+internal static unsafe class Kernel32
 {
-    internal static unsafe class Kernel32
+    private const string LibraryName = "kernel32.dll";
+
+    [SuppressGCTransition]
+    [DllImport(LibraryName)]
+    public static extern SysBool32 CloseHandle(IntPtr hObject);
+
+    [SuppressGCTransition]
+    [DllImport(LibraryName)]
+    public static extern void* GetProcAddress(IntPtr hModule, byte* lpProcName);
+
+    [DllImport(LibraryName)]
+    public static extern IntPtr LoadLibraryW(char* lpLibFileName);
+
+    [SuppressGCTransition]
+    [DllImport(LibraryName)]
+    public static extern IntPtr OpenThread(uint dwDesiredAccess, SysBool32 bInheritHandle, uint dwThreadId);
+
+    [SuppressGCTransition]
+    [DllImport(LibraryName)]
+    public static extern int GetCurrentThreadId();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IntPtr LoadLibrary(string lpLibFileName)
     {
-        private const string LibraryName = "kernel32.dll";
-
-        [SuppressGCTransition]
-        [DllImport(LibraryName)]
-        public static extern SysBool32 CloseHandle(IntPtr hObject);
-
-        [SuppressGCTransition]
-        [DllImport(LibraryName)]
-        public static extern void* GetProcAddress(IntPtr hModule, byte* lpProcName);
-
-        [DllImport(LibraryName)]
-        public static extern IntPtr LoadLibraryW(char* lpLibFileName);
-
-        [SuppressGCTransition]
-        [DllImport(LibraryName)]
-        public static extern IntPtr OpenThread(uint dwDesiredAccess, SysBool32 bInheritHandle, uint dwThreadId);
-
-        [SuppressGCTransition]
-        [DllImport(LibraryName)]
-        public static extern int GetCurrentThreadId();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IntPtr LoadLibrary(string lpLibFileName)
-        {
-            fixed (char* ptr = lpLibFileName)
-                return LoadLibraryW(ptr);
-        }
+        fixed (char* ptr = lpLibFileName)
+            return LoadLibraryW(ptr);
     }
 }

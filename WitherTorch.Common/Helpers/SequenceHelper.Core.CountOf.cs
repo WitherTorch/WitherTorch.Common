@@ -8,162 +8,161 @@ using LocalsInit;
 
 #pragma warning disable CS8500
 
-namespace WitherTorch.Common.Helpers
+namespace WitherTorch.Common.Helpers;
+
+partial class SequenceHelper
 {
-    partial class SequenceHelper
+    unsafe partial class FastCore<T>
     {
-        unsafe partial class FastCore<T>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint CountOf(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, ref length, value, CompareMethod.Include);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint CountOfExclude(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, ref length, value, CompareMethod.Exclude);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint CountOfGreaterThan(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThan);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint CountOfLessThan(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, ref length, value, CompareMethod.LessThan);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint CountOfGreaterThanOrEquals(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThanOrEquals);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static nuint CountOfLessThanOrEquals(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, ref length, value, CompareMethod.LessThanOrEquals);
+
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static nuint VectorizedCountOf(T* ptr, nuint length, T value)
+            => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.Include);
+
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static nuint VectorizedCountOfExclude(T* ptr, nuint length, T value)
+            => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.Exclude);
+
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static nuint VectorizedCountOfGreaterThan(T* ptr, nuint length, T value)
+            => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThan);
+
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static nuint VectorizedCountOfLessThan(T* ptr, nuint length, T value)
+            => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.LessThan);
+
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static nuint VectorizedCountOfGreaterThanOrEquals(T* ptr, nuint length, T value)
+            => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThanOrEquals);
+
+        [LocalsInit(false)]
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static nuint VectorizedCountOfLessThanOrEquals(T* ptr, nuint length, T value)
+            => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.LessThanOrEquals);
+
+        [Inline(InlineBehavior.Remove)]
+        private static nuint CountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method)
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static nuint CountOf(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, ref length, value, CompareMethod.Include);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static nuint CountOfExclude(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, ref length, value, CompareMethod.Exclude);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static nuint CountOfGreaterThan(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThan);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static nuint CountOfLessThan(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, ref length, value, CompareMethod.LessThan);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static nuint CountOfGreaterThanOrEquals(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThanOrEquals);
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static nuint CountOfLessThanOrEquals(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, ref length, value, CompareMethod.LessThanOrEquals);
-
-            [LocalsInit(false)]
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private static nuint VectorizedCountOf(T* ptr, nuint length, T value)
-                => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.Include);
-
-            [LocalsInit(false)]
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private static nuint VectorizedCountOfExclude(T* ptr, nuint length, T value)
-                => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.Exclude);
-
-            [LocalsInit(false)]
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private static nuint VectorizedCountOfGreaterThan(T* ptr, nuint length, T value)
-                => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThan);
-
-            [LocalsInit(false)]
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private static nuint VectorizedCountOfLessThan(T* ptr, nuint length, T value)
-                => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.LessThan);
-
-            [LocalsInit(false)]
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private static nuint VectorizedCountOfGreaterThanOrEquals(T* ptr, nuint length, T value)
-                => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.GreaterThanOrEquals);
-
-            [LocalsInit(false)]
-            [MethodImpl(MethodImplOptions.NoInlining)]
-            private static nuint VectorizedCountOfLessThanOrEquals(T* ptr, nuint length, T value)
-                => VectorizedCountOfCore(ref ptr, ref length, value, CompareMethod.LessThanOrEquals);
-
-            [Inline(InlineBehavior.Remove)]
-            private static nuint CountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method)
-            {
-                if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
-                    return method switch
-                    {
-                        CompareMethod.Include => VectorizedCountOf(ptr, length, value),
-                        CompareMethod.Exclude => VectorizedCountOfExclude(ptr, length, value),
-                        CompareMethod.GreaterThan => VectorizedCountOfGreaterThan(ptr, length, value),
-                        CompareMethod.GreaterThanOrEquals => VectorizedCountOfGreaterThanOrEquals(ptr, length, value),
-                        CompareMethod.LessThan => VectorizedCountOfLessThan(ptr, length, value),
-                        CompareMethod.LessThanOrEquals => VectorizedCountOfLessThanOrEquals(ptr, length, value),
-                        _ => throw new ArgumentOutOfRangeException(nameof(method))
-                    };
-
-                return ScalarizedCountOfCore(ref ptr, ref length, value, method);
-            }
-
-            [LocalsInit(false)]
-            [Inline(InlineBehavior.Remove)]
-            private static partial nuint VectorizedCountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method);
-
-            [Inline(InlineBehavior.Remove)]
-            private static nuint ScalarizedCountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method)
-            {
-                nuint counter = 0;
-                for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
+            if (Limits.CheckTypeCanBeVectorized<T>() && length > Limits.GetLimitForVectorizing<T>())
+                return method switch
                 {
-                    counter +=
-                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[0], value, method)) +
-                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[1], value, method)) +
-                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[2], value, method)) +
-                        MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[3], value, method));
-                }
-                T* ptrEnd = ptr + length;
-                if (ptr >= ptrEnd)
-                    goto Result;
-                counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
-                ptr++;
-                if (ptr >= ptrEnd)
-                    goto Result;
-                counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
-                ptr++;
-                if (ptr >= ptrEnd)
-                    goto Result;
-                counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
+                    CompareMethod.Include => VectorizedCountOf(ptr, length, value),
+                    CompareMethod.Exclude => VectorizedCountOfExclude(ptr, length, value),
+                    CompareMethod.GreaterThan => VectorizedCountOfGreaterThan(ptr, length, value),
+                    CompareMethod.GreaterThanOrEquals => VectorizedCountOfGreaterThanOrEquals(ptr, length, value),
+                    CompareMethod.LessThan => VectorizedCountOfLessThan(ptr, length, value),
+                    CompareMethod.LessThanOrEquals => VectorizedCountOfLessThanOrEquals(ptr, length, value),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method))
+                };
 
-            Result:
-                return counter;
-            }
+            return ScalarizedCountOfCore(ref ptr, ref length, value, method);
         }
 
-        unsafe partial class SlowCore<T>
+        [LocalsInit(false)]
+        [Inline(InlineBehavior.Remove)]
+        private static partial nuint VectorizedCountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method);
+
+        [Inline(InlineBehavior.Remove)]
+        private static nuint ScalarizedCountOfCore(ref T* ptr, ref nuint length, T value, [InlineParameter] CompareMethod method)
         {
-            public static nuint CountOf(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, length, value, CompareMethod.Include);
-
-            public static nuint CountOfExclude(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, length, value, CompareMethod.Exclude);
-
-            public static nuint CountOfGreaterThan(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, length, value, CompareMethod.GreaterThan);
-
-            public static nuint CountOfLessThan(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, length, value, CompareMethod.LessThan);
-
-            public static nuint CountOfGreaterThanOrEquals(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, length, value, CompareMethod.GreaterThanOrEquals);
-
-            public static nuint CountOfLessThanOrEquals(T* ptr, nuint length, T value)
-                => CountOfCore(ref ptr, length, value, CompareMethod.LessThanOrEquals);
-
-            [Inline(InlineBehavior.Remove)]
-            private static nuint CountOfCore(ref T* ptr, nuint length, T value, [InlineParameter] CompareMethod method)
+            nuint counter = 0;
+            for (; length >= 4; length -= 4, ptr += 4) // 4x 展開
             {
-                nuint counter = 0;
-                if (method == CompareMethod.Include || method == CompareMethod.Exclude)
-                {
-                    EqualityComparer<T> comparer = EqualityComparer<T>.Default;
-                    for (nuint i = 0; i < length; i++, ptr++)
-                    {
-                        if (Compare(comparer, *ptr, value, method))
-                            counter++;
-                    }
-                }
-                else
-                {
-                    Comparer<T> comparer = Comparer<T>.Default;
-                    for (nuint i = 0; i < length; i++, ptr++)
-                    {
-                        if (Compare(comparer, *ptr, value, method))
-                            counter++;
-                    }
-                }
-                return counter;
+                counter +=
+                    MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[0], value, method)) +
+                    MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[1], value, method)) +
+                    MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[2], value, method)) +
+                    MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(ptr[3], value, method));
             }
+            T* ptrEnd = ptr + length;
+            if (ptr >= ptrEnd)
+                goto Result;
+            counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
+            ptr++;
+            if (ptr >= ptrEnd)
+                goto Result;
+            counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
+            ptr++;
+            if (ptr >= ptrEnd)
+                goto Result;
+            counter += MathHelper.BooleanToNativeUnsigned(ScalarizedCompare(*ptr, value, method));
+
+        Result:
+            return counter;
+        }
+    }
+
+    unsafe partial class SlowCore<T>
+    {
+        public static nuint CountOf(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, length, value, CompareMethod.Include);
+
+        public static nuint CountOfExclude(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, length, value, CompareMethod.Exclude);
+
+        public static nuint CountOfGreaterThan(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, length, value, CompareMethod.GreaterThan);
+
+        public static nuint CountOfLessThan(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, length, value, CompareMethod.LessThan);
+
+        public static nuint CountOfGreaterThanOrEquals(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, length, value, CompareMethod.GreaterThanOrEquals);
+
+        public static nuint CountOfLessThanOrEquals(T* ptr, nuint length, T value)
+            => CountOfCore(ref ptr, length, value, CompareMethod.LessThanOrEquals);
+
+        [Inline(InlineBehavior.Remove)]
+        private static nuint CountOfCore(ref T* ptr, nuint length, T value, [InlineParameter] CompareMethod method)
+        {
+            nuint counter = 0;
+            if (method == CompareMethod.Include || method == CompareMethod.Exclude)
+            {
+                EqualityComparer<T> comparer = EqualityComparer<T>.Default;
+                for (nuint i = 0; i < length; i++, ptr++)
+                {
+                    if (Compare(comparer, *ptr, value, method))
+                        counter++;
+                }
+            }
+            else
+            {
+                Comparer<T> comparer = Comparer<T>.Default;
+                for (nuint i = 0; i < length; i++, ptr++)
+                {
+                    if (Compare(comparer, *ptr, value, method))
+                        counter++;
+                }
+            }
+            return counter;
         }
     }
 }

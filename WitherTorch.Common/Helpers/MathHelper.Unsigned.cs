@@ -5,147 +5,146 @@ using InlineIL;
 
 using InlineMethod;
 
-namespace WitherTorch.Common.Helpers
+namespace WitherTorch.Common.Helpers;
+
+partial class MathHelper
 {
-    partial class MathHelper
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static byte MakeUnsigned(sbyte value)
     {
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte MakeUnsigned(sbyte value)
-        {
-            IL.Push(value);
+        IL.Push(value);
 #if NET8_0_OR_GREATER
-            const string JumpLabel = "ZeroReturn";
+        const string JumpLabel = "ZeroReturn";
 
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Blt(JumpLabel);
-            IL.Push(value);
-            IL.Emit.Ret();
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Blt(JumpLabel);
+        IL.Push(value);
+        IL.Emit.Ret();
 
-            IL.MarkLabel(JumpLabel);
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+        IL.MarkLabel(JumpLabel);
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Ret();
+        throw IL.Unreachable();
 #else
-            IL.Push(sizeof(sbyte) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Not();
-            IL.Push(value);
-            IL.Emit.And();
-            IL.Emit.Conv_U1();
-            return IL.Return<byte>();
+        IL.Push(sizeof(sbyte) * 8 - 1);
+        IL.Emit.Shr();
+        IL.Emit.Not();
+        IL.Push(value);
+        IL.Emit.And();
+        IL.Emit.Conv_U1();
+        return IL.Return<byte>();
 #endif
-        }
+    }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ushort MakeUnsigned(short value)
-        {
-            IL.Push(value);
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ushort MakeUnsigned(short value)
+    {
+        IL.Push(value);
 #if NET8_0_OR_GREATER
-            const string JumpLabel = "ZeroReturn";
+        const string JumpLabel = "ZeroReturn";
 
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Blt(JumpLabel);
-            IL.Push(value);
-            IL.Emit.Ret();
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Blt(JumpLabel);
+        IL.Push(value);
+        IL.Emit.Ret();
 
-            IL.MarkLabel(JumpLabel);
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+        IL.MarkLabel(JumpLabel);
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Ret();
+        throw IL.Unreachable();
 #else
-            IL.Push(sizeof(short) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Not();
-            IL.Push(value);
-            IL.Emit.And();
-            IL.Emit.Conv_U2();
-            return IL.Return<ushort>();
+        IL.Push(sizeof(short) * 8 - 1);
+        IL.Emit.Shr();
+        IL.Emit.Not();
+        IL.Push(value);
+        IL.Emit.And();
+        IL.Emit.Conv_U2();
+        return IL.Return<ushort>();
 #endif
-        }
+    }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static uint MakeUnsigned(int value)
-        {
-            IL.Push(value);
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static uint MakeUnsigned(int value)
+    {
+        IL.Push(value);
 #if NET8_0_OR_GREATER
-            const string JumpLabel = "ZeroReturn";
+        const string JumpLabel = "ZeroReturn";
 
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Blt(JumpLabel);
-            IL.Push(value);
-            IL.Emit.Ret();
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Blt(JumpLabel);
+        IL.Push(value);
+        IL.Emit.Ret();
 
-            IL.MarkLabel(JumpLabel);
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+        IL.MarkLabel(JumpLabel);
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Ret();
+        throw IL.Unreachable();
 #else
-            IL.Push(sizeof(int) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Not();
-            IL.Push(value);
-            IL.Emit.And();
-            return IL.Return<uint>();
+        IL.Push(sizeof(int) * 8 - 1);
+        IL.Emit.Shr();
+        IL.Emit.Not();
+        IL.Push(value);
+        IL.Emit.And();
+        return IL.Return<uint>();
 #endif
-        }
+    }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ulong MakeUnsigned(long value)
-        {
-            IL.Push(value);
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ulong MakeUnsigned(long value)
+    {
+        IL.Push(value);
 #if NET8_0_OR_GREATER
-            const string JumpLabel = "ZeroReturn";
+        const string JumpLabel = "ZeroReturn";
 
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Blt(JumpLabel);
-            IL.Push(value);
-            IL.Emit.Ret();
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Blt(JumpLabel);
+        IL.Push(value);
+        IL.Emit.Ret();
 
-            IL.MarkLabel(JumpLabel);
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Conv_U8();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+        IL.MarkLabel(JumpLabel);
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Conv_U8();
+        IL.Emit.Ret();
+        throw IL.Unreachable();
 #else
-            IL.Push(sizeof(long) * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Not();
-            IL.Push(value);
-            IL.Emit.And();
-            return IL.Return<uint>();
+        IL.Push(sizeof(long) * 8 - 1);
+        IL.Emit.Shr();
+        IL.Emit.Not();
+        IL.Push(value);
+        IL.Emit.And();
+        return IL.Return<uint>();
 #endif
-        }
+    }
 
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static nuint MakeUnsigned(nint value)
-        {
-            IL.Push(value);
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static nuint MakeUnsigned(nint value)
+    {
+        IL.Push(value);
 #if NET8_0_OR_GREATER
-            const string JumpLabel = "ZeroReturn";
+        const string JumpLabel = "ZeroReturn";
 
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Blt(JumpLabel);
-            IL.Push(value);
-            IL.Emit.Ret();
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Blt(JumpLabel);
+        IL.Push(value);
+        IL.Emit.Ret();
 
-            IL.MarkLabel(JumpLabel);
-            IL.Emit.Ldc_I4_0();
-            IL.Emit.Conv_U();
-            IL.Emit.Ret();
-            throw IL.Unreachable();
+        IL.MarkLabel(JumpLabel);
+        IL.Emit.Ldc_I4_0();
+        IL.Emit.Conv_U();
+        IL.Emit.Ret();
+        throw IL.Unreachable();
 #else
-            IL.Push(UnsafeHelper.PointerSize * 8 - 1);
-            IL.Emit.Shr();
-            IL.Emit.Not();
-            IL.Push(value);
-            IL.Emit.And();
-            return IL.Return<uint>();
+        IL.Push(UnsafeHelper.PointerSize * 8 - 1);
+        IL.Emit.Shr();
+        IL.Emit.Not();
+        IL.Push(value);
+        IL.Emit.And();
+        return IL.Return<uint>();
 #endif
-        }
     }
 }

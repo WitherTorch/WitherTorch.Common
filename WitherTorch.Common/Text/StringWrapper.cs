@@ -9,226 +9,225 @@ using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 using WitherTorch.Common.Native;
 
-namespace WitherTorch.Common.Text
+namespace WitherTorch.Common.Text;
+
+public abstract partial class StringWrapper : IStringLike, IStringWrapperConvertible, ICloneable,
+    IComparable<string>, IComparable<StringWrapper>,
+    IEquatable<string>, IEquatable<StringWrapper>
 {
-    public abstract partial class StringWrapper : IStringLike, IStringWrapperConvertible, ICloneable,
-        IComparable<string>, IComparable<StringWrapper>,
-        IEquatable<string>, IEquatable<StringWrapper>
+    public static readonly StringWrapper Empty = EmptyString.Instance;
+
+    public abstract StringType StringType { get; }
+
+    public abstract int Length { get; }
+
+    public char this[int index]
     {
-        public static readonly StringWrapper Empty = EmptyString.Instance;
-
-        public abstract StringType StringType { get; }
-
-        public abstract int Length { get; }
-
-        public char this[int index]
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                if (index < 0 || index >= Length)
-                    throw new IndexOutOfRangeException();
-                return GetCharAt(unchecked((nuint)index));
-            }
-        }
-
-        protected internal virtual char GetCharAt(nuint index) => this.Skip(index).First();
-
-        protected virtual bool IsFullyWhitespaced() => this.All(Utf16StringHelper.IsWhiteSpaceCharacter);
-
-        public abstract bool IsSpecificEncoding(Encoding encoding);
-
-        public unsafe void CopyTo(char[] destination)
-        {
-            int length = MathHelper.Min(Length, destination.Length);
-            if (length <= 0)
-                return;
-            fixed (char* ptr = destination)
-                CopyToCore(ptr, 0, unchecked((nuint)length));
-        }
-
-        public unsafe void CopyTo(char[] destination, int sourceStartIndex, int destStartIndex, int count)
-        {
-            int length = Length;
-            if (sourceStartIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(sourceStartIndex));
-            if (destStartIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(destStartIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-            if (sourceStartIndex + count > length)
-                throw new ArgumentOutOfRangeException(sourceStartIndex >= length ? nameof(sourceStartIndex) : nameof(count));
-            if (destStartIndex + count > destination.Length)
-                throw new ArgumentOutOfRangeException(destStartIndex >= destination.Length ? nameof(destStartIndex) : nameof(count));
-            if (count == 0)
-                return;
-            fixed (char* ptr = destination)
-                CopyToCore(ptr + destStartIndex, unchecked((nuint)sourceStartIndex), unchecked((nuint)count));
-        }
-
-        public unsafe void CopyTo(char* destination)
-        {
-            int length = Length;
-            if (length <= 0)
-                return;
-            CopyToCore(destination, 0, unchecked((nuint)length));
-        }
-
-        public unsafe void CopyTo(char* destination, int startIndex, int count)
-        {
-            int length = Length;
-            if (startIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
-            if (startIndex + count > length)
-                throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
-            if (count == 0)
-                return;
-            CopyToCore(destination, unchecked((nuint)startIndex), unchecked((nuint)count));
-        }
-
-        public unsafe void CopyTo(char* destination, nuint startIndex, nuint count)
-        {
-            int length = Length;
-            if (length <= 0)
-                return;
-            nuint castedLength = unchecked((nuint)length);
-            if (startIndex + count > castedLength)
-                throw new ArgumentOutOfRangeException(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
-            if (count == 0)
-                return;
-            CopyToCore(destination, startIndex, count);
-        }
-
-        protected internal virtual unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
-        {
-            using IEnumerator<char> enumerator = this.Skip(startIndex).GetEnumerator();
-            for (nuint i = 0; i < count; i++)
-            {
-                if (!enumerator.MoveNext())
-                    return;
-                *destination = enumerator.Current;
-            }
-        }
-
-        public abstract IEnumerator<char> GetEnumerator();
-
-        public StringWrapper Clone() => this;
-
-        public override int GetHashCode() => ToString().GetHashCode();
-
-        public unsafe virtual char[] ToCharArray()
-        {
-            int length = Length;
-            if (length <= 0)
-                return Array.Empty<char>();
-            char[] result = new char[length];
-            fixed (char* ptr = result)
-                CopyToCore(ptr, 0, unchecked((nuint)length));
-            return result;
-        }
-
-        public override unsafe string ToString()
-        {
-            int length = Length;
-            if (length <= 0)
-                return string.Empty;
-            string result = StringHelper.AllocateRawString(length);
-            fixed (char* ptr = result)
-                CopyToCore(ptr, 0, unchecked((nuint)length));
-            return result;
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public StringWrapper ToStringWrapper() => this;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe StringWrapper ToStringWrapper(StringCreateOptions options)
+        get
         {
-            switch (StringType)
-            {
-                case StringType.Empty:
-                    return this;
-                case StringType.Ascii:
-                    if (options.HasFlagFast(
-                        StringCreateOptions.UseAsciiCompression |
-                        StringCreateOptions.UseLatin1Compression |
-                        StringCreateOptions.UseUtf8Compression) ||
-                        (!options.HasFlagFast(StringCreateOptions._Force_Flag) && options.HasFlagFast(StringCreateOptions.UseUtf16Compression)))
-                        return this;
-                    break;
-                case StringType.Latin1:
-                    if (options.HasFlagFast(StringCreateOptions.UseLatin1Compression) ||
-                        (!options.HasFlagFast(StringCreateOptions._Force_Flag) && options.HasFlagFast(StringCreateOptions.UseUtf16Compression)))
-                        return this;
-                    break;
-                case StringType.Utf8:
-                    if (options.HasFlagFast(StringCreateOptions.UseUtf8Compression))
-                        return this;
-                    break;
-                case StringType.Utf16:
-                    if (options.HasFlagFast(StringCreateOptions.UseUtf16Compression))
-                        return this;
-                    break;
-                default:
-                    break;
-            }
-            nuint length = MathHelper.MakeUnsigned(Length);
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
-            try
-            {
-                char* ptr = buffer.NativePointer;
-                CopyToCore(ptr, 0, length);
-                return Create(ptr, 0, length, options);
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
+            if (index < 0 || index >= Length)
+                throw new IndexOutOfRangeException();
+            return GetCharAt(unchecked((nuint)index));
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual unsafe StringWrapper ToStringWrapper(StringType type)
-        {
-            if (StringType == type)
-                return this;
-            switch (type)
-            {
-                case StringType.Empty:
-                    return Empty;
-                case StringType.Utf16:
-                    return CreateUtf16String(ToString());
-                default:
-                    break;
-            }
-            StringCreateOptions options = type switch
-            {
-                StringType.Ascii => StringCreateOptions.ForceUseAscii,
-                StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
-                StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
-                _ => throw new ArgumentOutOfRangeException(nameof(type)),
-            };
-            nuint length = MathHelper.MakeUnsigned(Length);
-            NativeMemoryPool pool = NativeMemoryPool.Shared;
-            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
-            try
-            {
-                char* ptr = buffer.NativePointer;
-                CopyToCore(ptr, 0, length);
-                return Create(ptr, 0, length, options);
-            }
-            finally
-            {
-                pool.Return(buffer);
-            }
-        }
-
-        #region Interface Implementations
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        object ICloneable.Clone() => this;
-        #endregion
     }
+
+    protected internal virtual char GetCharAt(nuint index) => this.Skip(index).First();
+
+    protected virtual bool IsFullyWhitespaced() => this.All(Utf16StringHelper.IsWhiteSpaceCharacter);
+
+    public abstract bool IsSpecificEncoding(Encoding encoding);
+
+    public unsafe void CopyTo(char[] destination)
+    {
+        int length = MathHelper.Min(Length, destination.Length);
+        if (length <= 0)
+            return;
+        fixed (char* ptr = destination)
+            CopyToCore(ptr, 0, unchecked((nuint)length));
+    }
+
+    public unsafe void CopyTo(char[] destination, int sourceStartIndex, int destStartIndex, int count)
+    {
+        int length = Length;
+        if (sourceStartIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(sourceStartIndex));
+        if (destStartIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(destStartIndex));
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count));
+        if (sourceStartIndex + count > length)
+            throw new ArgumentOutOfRangeException(sourceStartIndex >= length ? nameof(sourceStartIndex) : nameof(count));
+        if (destStartIndex + count > destination.Length)
+            throw new ArgumentOutOfRangeException(destStartIndex >= destination.Length ? nameof(destStartIndex) : nameof(count));
+        if (count == 0)
+            return;
+        fixed (char* ptr = destination)
+            CopyToCore(ptr + destStartIndex, unchecked((nuint)sourceStartIndex), unchecked((nuint)count));
+    }
+
+    public unsafe void CopyTo(char* destination)
+    {
+        int length = Length;
+        if (length <= 0)
+            return;
+        CopyToCore(destination, 0, unchecked((nuint)length));
+    }
+
+    public unsafe void CopyTo(char* destination, int startIndex, int count)
+    {
+        int length = Length;
+        if (startIndex < 0)
+            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        if (count < 0)
+            throw new ArgumentOutOfRangeException(nameof(count));
+        if (startIndex + count > length)
+            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+        if (count == 0)
+            return;
+        CopyToCore(destination, unchecked((nuint)startIndex), unchecked((nuint)count));
+    }
+
+    public unsafe void CopyTo(char* destination, nuint startIndex, nuint count)
+    {
+        int length = Length;
+        if (length <= 0)
+            return;
+        nuint castedLength = unchecked((nuint)length);
+        if (startIndex + count > castedLength)
+            throw new ArgumentOutOfRangeException(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
+        if (count == 0)
+            return;
+        CopyToCore(destination, startIndex, count);
+    }
+
+    protected internal virtual unsafe void CopyToCore(char* destination, nuint startIndex, nuint count)
+    {
+        using IEnumerator<char> enumerator = this.Skip(startIndex).GetEnumerator();
+        for (nuint i = 0; i < count; i++)
+        {
+            if (!enumerator.MoveNext())
+                return;
+            *destination = enumerator.Current;
+        }
+    }
+
+    public abstract IEnumerator<char> GetEnumerator();
+
+    public StringWrapper Clone() => this;
+
+    public override int GetHashCode() => ToString().GetHashCode();
+
+    public unsafe virtual char[] ToCharArray()
+    {
+        int length = Length;
+        if (length <= 0)
+            return Array.Empty<char>();
+        char[] result = new char[length];
+        fixed (char* ptr = result)
+            CopyToCore(ptr, 0, unchecked((nuint)length));
+        return result;
+    }
+
+    public override unsafe string ToString()
+    {
+        int length = Length;
+        if (length <= 0)
+            return string.Empty;
+        string result = StringHelper.AllocateRawString(length);
+        fixed (char* ptr = result)
+            CopyToCore(ptr, 0, unchecked((nuint)length));
+        return result;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public StringWrapper ToStringWrapper() => this;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public virtual unsafe StringWrapper ToStringWrapper(StringCreateOptions options)
+    {
+        switch (StringType)
+        {
+            case StringType.Empty:
+                return this;
+            case StringType.Ascii:
+                if (options.HasFlagFast(
+                    StringCreateOptions.UseAsciiCompression |
+                    StringCreateOptions.UseLatin1Compression |
+                    StringCreateOptions.UseUtf8Compression) ||
+                    (!options.HasFlagFast(StringCreateOptions._Force_Flag) && options.HasFlagFast(StringCreateOptions.UseUtf16Compression)))
+                    return this;
+                break;
+            case StringType.Latin1:
+                if (options.HasFlagFast(StringCreateOptions.UseLatin1Compression) ||
+                    (!options.HasFlagFast(StringCreateOptions._Force_Flag) && options.HasFlagFast(StringCreateOptions.UseUtf16Compression)))
+                    return this;
+                break;
+            case StringType.Utf8:
+                if (options.HasFlagFast(StringCreateOptions.UseUtf8Compression))
+                    return this;
+                break;
+            case StringType.Utf16:
+                if (options.HasFlagFast(StringCreateOptions.UseUtf16Compression))
+                    return this;
+                break;
+            default:
+                break;
+        }
+        nuint length = MathHelper.MakeUnsigned(Length);
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
+        try
+        {
+            char* ptr = buffer.NativePointer;
+            CopyToCore(ptr, 0, length);
+            return Create(ptr, 0, length, options);
+        }
+        finally
+        {
+            pool.Return(buffer);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public virtual unsafe StringWrapper ToStringWrapper(StringType type)
+    {
+        if (StringType == type)
+            return this;
+        switch (type)
+        {
+            case StringType.Empty:
+                return Empty;
+            case StringType.Utf16:
+                return CreateUtf16String(ToString());
+            default:
+                break;
+        }
+        StringCreateOptions options = type switch
+        {
+            StringType.Ascii => StringCreateOptions.ForceUseAscii,
+            StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
+            StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
+            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+        };
+        nuint length = MathHelper.MakeUnsigned(Length);
+        NativeMemoryPool pool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
+        try
+        {
+            char* ptr = buffer.NativePointer;
+            CopyToCore(ptr, 0, length);
+            return Create(ptr, 0, length, options);
+        }
+        finally
+        {
+            pool.Return(buffer);
+        }
+    }
+
+    #region Interface Implementations
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    object ICloneable.Clone() => this;
+    #endregion
 }

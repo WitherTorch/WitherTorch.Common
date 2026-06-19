@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 
-namespace WitherTorch.Common.Exceptions
+namespace WitherTorch.Common.Exceptions;
+
+public sealed class DebugException : Exception
 {
-    public sealed class DebugException : Exception
-    {
-        public DebugException(string? message) : base(message) { }
-    }
+    public DebugException(string? message) : base(message) { }
 }

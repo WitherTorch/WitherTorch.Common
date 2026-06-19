@@ -3,16 +3,15 @@ using System.Runtime.CompilerServices;
 
 using InlineMethod;
 
-namespace WitherTorch.Common.Extensions
+namespace WitherTorch.Common.Extensions;
+
+public static class TupleExtensions
 {
-    public static class TupleExtensions
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> _this, out TKey key, out TValue value)
     {
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Deconstruct<TKey, TValue>(this KeyValuePair<TKey, TValue> _this, out TKey key, out TValue value)
-        {
-            key = _this.Key;
-            value = _this.Value;
-        }
+        key = _this.Key;
+        value = _this.Value;
     }
 }

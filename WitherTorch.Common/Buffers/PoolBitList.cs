@@ -1,73 +1,72 @@
-﻿using System;
+using System;
 
 using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Buffers
+namespace WitherTorch.Common.Buffers;
+
+public sealed class PooledBitList : BitListBase, IDisposable
 {
-    public sealed class PooledBitList : BitListBase, IDisposable
+    private readonly ArrayPool<nuint> _pool;
+    private bool _disposed;
+
+    public PooledBitList() : this(ArrayPool<nuint>.Shared) { }
+
+    public PooledBitList(int capacity) : this(ArrayPool<nuint>.Shared, capacity) { }
+
+    public PooledBitList(ArrayPool<nuint> pool) : base(pool.Rent())
     {
-        private readonly ArrayPool<nuint> _pool;
-        private bool _disposed;
+        _pool = pool;
+        _disposed = false;
+    }
 
-        public PooledBitList() : this(ArrayPool<nuint>.Shared) { }
+    public PooledBitList(ArrayPool<nuint> pool, int capacity) : base(pool.Rent(GetRequiredSectionCount(capacity)))
+    {
+        _pool = pool;
+        _disposed = false;
+    }
 
-        public PooledBitList(int capacity) : this(ArrayPool<nuint>.Shared, capacity) { }
+    protected override void EnsureCapacity()
+    {
+        nuint[] array = _array;
+        int capacity = _array.Length;
+        int count = _count;
+        if (count <= capacity * SectionSize)
+            return;
 
-        public PooledBitList(ArrayPool<nuint> pool) : base(pool.Rent())
+        int newCapacity;
+        if (capacity >= Limits.MaxArrayLength / 2)
         {
-            _pool = pool;
-            _disposed = false;
+            if (capacity >= Limits.MaxArrayLength)
+                throw new OutOfMemoryException();
+            newCapacity = Limits.MaxArrayLength;
         }
+        else
+            newCapacity = MathHelper.Max(capacity * 2, MathHelper.CeilDiv(count, SectionSize));
 
-        public PooledBitList(ArrayPool<nuint> pool, int capacity) : base(pool.Rent(GetRequiredSectionCount(capacity)))
-        {
-            _pool = pool;
-            _disposed = false;
-        }
+        ArrayPool<nuint> pool = _pool;
+        nuint[] newArray = pool.Rent(newCapacity);
+        Array.Copy(array, newArray, capacity);
+        pool.Return(array);
+        _array = newArray;
+    }
 
-        protected override void EnsureCapacity()
-        {
-            nuint[] array = _array;
-            int capacity = _array.Length;
-            int count = _count;
-            if (count <= capacity * SectionSize)
-                return;
+    ~PooledBitList() => DisposeCore();
 
-            int newCapacity;
-            if (capacity >= Limits.MaxArrayLength / 2)
-            {
-                if (capacity >= Limits.MaxArrayLength)
-                    throw new OutOfMemoryException();
-                newCapacity = Limits.MaxArrayLength;
-            }
-            else
-                newCapacity = MathHelper.Max(capacity * 2, MathHelper.CeilDiv(count, SectionSize));
+    public void Dispose()
+    {
+        DisposeCore();
+        GC.SuppressFinalize(this);
+    }
 
-            ArrayPool<nuint> pool = _pool;
-            nuint[] newArray = pool.Rent(newCapacity);
-            Array.Copy(array, newArray, capacity);
-            pool.Return(array);
-            _array = newArray;
-        }
+    private void DisposeCore()
+    {
+        if (_disposed)
+            return;
+        _disposed = true;
 
-        ~PooledBitList() => DisposeCore();
-
-        public void Dispose()
-        {
-            DisposeCore();
-            GC.SuppressFinalize(this);
-        }
-
-        private void DisposeCore()
-        {
-            if (_disposed)
-                return;
-            _disposed = true;
-
-            nuint[] array = _array;
-            _array = Array.Empty<nuint>();
-            _pool.Return(array);
-        }
+        nuint[] array = _array;
+        _array = Array.Empty<nuint>();
+        _pool.Return(array);
     }
 }

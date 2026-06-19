@@ -1,9 +1,8 @@
-﻿namespace WitherTorch.Common.Windows.ObjectModels
-{
-    public unsafe interface IWin32SequentialStream
-    {
-        ulong Read(byte* ptr, ulong length);
+namespace WitherTorch.Common.Windows.ObjectModels;
 
-        ulong Write(byte* ptr, ulong length);
-    }
+public unsafe interface IWin32SequentialStream
+{
+    ulong Read(byte* ptr, ulong length);
+
+    ulong Write(byte* ptr, ulong length);
 }

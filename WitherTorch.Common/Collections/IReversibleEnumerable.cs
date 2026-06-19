@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 
-namespace WitherTorch.Common.Collections
+namespace WitherTorch.Common.Collections;
+
+public interface IReversibleEnumerable<T> : IEnumerable<T>
 {
-    public interface IReversibleEnumerable<T> : IEnumerable<T>
-    {
-        IEnumerator<T> GetReversedEnumerator();
-    }
+    IEnumerator<T> GetReversedEnumerator();
 }

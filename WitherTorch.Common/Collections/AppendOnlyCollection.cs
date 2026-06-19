@@ -2,48 +2,47 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace WitherTorch.Common.Collections
-{
-    public static partial class AppendOnlyCollection
-    {
-        public static IAppendOnlyCollection<T> CreateLimitedCollection<T>(int capacity)
-        {
-            if (capacity < 0)
-                throw new ArgumentOutOfRangeException(nameof(capacity));
-            if (capacity == 0)
-                return EmptyAOCollection<T>.Instance;
-            return new LimitedAOCollection<T>(capacity);
-        }
+namespace WitherTorch.Common.Collections;
 
-        public static IAppendOnlyCollection<T> CreateUnlimitedCollection<T>() => new UnlimitedAOCollection<T>();
+public static partial class AppendOnlyCollection
+{
+    public static IAppendOnlyCollection<T> CreateLimitedCollection<T>(int capacity)
+    {
+        if (capacity < 0)
+            throw new ArgumentOutOfRangeException(nameof(capacity));
+        if (capacity == 0)
+            return EmptyAOCollection<T>.Instance;
+        return new LimitedAOCollection<T>(capacity);
     }
 
-    public interface IAppendOnlyCollection<T> : IReadOnlyList<T>, IReversibleEnumerable<T>
-    {
-        int Capacity { get; }
+    public static IAppendOnlyCollection<T> CreateUnlimitedCollection<T>() => new UnlimitedAOCollection<T>();
+}
 
-        new T this[int index] { get; set; }
+public interface IAppendOnlyCollection<T> : IReadOnlyList<T>, IReversibleEnumerable<T>
+{
+    int Capacity { get; }
 
-        void Append(T item);
+    new T this[int index] { get; set; }
 
-        void Append(IEnumerable<T> items);
+    void Append(T item);
 
-        int BinarySearch(T item);
+    void Append(IEnumerable<T> items);
 
-        int BinarySearch(T item, IComparer<T> comparer);
+    int BinarySearch(T item);
 
-        bool Contains(T item);
+    int BinarySearch(T item, IComparer<T> comparer);
 
-        bool Contains(T item, IEqualityComparer<T> comparer);
+    bool Contains(T item);
 
-        int IndexOf(T item);
+    bool Contains(T item, IEqualityComparer<T> comparer);
 
-        int IndexOf(T item, IEqualityComparer<T> comparer);
+    int IndexOf(T item);
 
-        void Clear();
+    int IndexOf(T item, IEqualityComparer<T> comparer);
+
+    void Clear();
 
 #if NET8_0_OR_GREATER
-        T IReadOnlyList<T>.this[int index] => this[index];
+    T IReadOnlyList<T>.this[int index] => this[index];
 #endif
-    }
 }

@@ -1,45 +1,44 @@
-﻿using System;
+using System;
 
 using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Collections
+namespace WitherTorch.Common.Collections;
+
+public sealed class BitList : BitListBase
 {
-    public sealed class BitList : BitListBase
+    public BitList() : base(new nuint[16]) { }
+
+    public BitList(int capacity) : base(GetRequiredSectionArray(capacity)) { }
+
+    [Inline(InlineBehavior.Remove)]
+    private static nuint[] GetRequiredSectionArray(int capacity)
     {
-        public BitList() : base(new nuint[16]) { }
+        capacity = GetRequiredSectionCount(capacity);
+        return capacity <= 0 ? Array.Empty<nuint>() : (new nuint[capacity]);
+    }
 
-        public BitList(int capacity) : base(GetRequiredSectionArray(capacity)) { }
+    protected override void EnsureCapacity()
+    {
+        nuint[] array = _array;
+        int capacity = _array.Length;
+        int count = _count;
+        if (count <= capacity * SectionSize)
+            return;
 
-        [Inline(InlineBehavior.Remove)]
-        private static nuint[] GetRequiredSectionArray(int capacity)
+        int newCapacity;
+        if (capacity >= Limits.MaxArrayLength / 2)
         {
-            capacity = GetRequiredSectionCount(capacity);
-            return capacity <= 0 ? Array.Empty<nuint>() : (new nuint[capacity]);
+            if (capacity >= Limits.MaxArrayLength)
+                throw new OutOfMemoryException();
+            newCapacity = Limits.MaxArrayLength;
         }
+        else
+            newCapacity = MathHelper.Max(capacity * 2, MathHelper.CeilDiv(count, SectionSize));
 
-        protected override void EnsureCapacity()
-        {
-            nuint[] array = _array;
-            int capacity = _array.Length;
-            int count = _count;
-            if (count <= capacity * SectionSize)
-                return;
-
-            int newCapacity;
-            if (capacity >= Limits.MaxArrayLength / 2)
-            {
-                if (capacity >= Limits.MaxArrayLength)
-                    throw new OutOfMemoryException();
-                newCapacity = Limits.MaxArrayLength;
-            }
-            else
-                newCapacity = MathHelper.Max(capacity * 2, MathHelper.CeilDiv(count, SectionSize));
-
-            nuint[] newArray = new nuint[newCapacity];
-            Array.Copy(array, newArray, capacity);
-            _array = newArray;
-        }
+        nuint[] newArray = new nuint[newCapacity];
+        Array.Copy(array, newArray, capacity);
+        _array = newArray;
     }
 }

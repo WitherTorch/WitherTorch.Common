@@ -1,26 +1,25 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace WitherTorch.Common.Helpers
+namespace WitherTorch.Common.Helpers;
+
+public static class StringHelperExtensions
 {
-    public static class StringHelperExtensions
+#if !NET8_0_OR_GREATER
+    extension(StringHelper)
     {
-#if !NET8_0_OR_GREATER
-        extension(StringHelper)
+#endif
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool ContainsAny(string str, params ReadOnlySpan<char> values)
         {
-#endif
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool ContainsAny(string str, params ReadOnlySpan<char> values)
+            for (int i = 0, valuesLength = values.Length; i < valuesLength; i++)
             {
-                for (int i = 0, valuesLength = values.Length; i < valuesLength; i++)
-                {
-                    if (StringHelper.Contains(str, values[i]))
-                        return true;
-                }
-                return false;
+                if (StringHelper.Contains(str, values[i]))
+                    return true;
             }
-#if !NET8_0_OR_GREATER
+            return false;
         }
-#endif
+#if !NET8_0_OR_GREATER
     }
+#endif
 }

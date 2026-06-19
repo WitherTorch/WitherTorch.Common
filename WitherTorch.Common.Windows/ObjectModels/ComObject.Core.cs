@@ -5,51 +5,50 @@ using InlineMethod;
 
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Windows.ObjectModels
+namespace WitherTorch.Common.Windows.ObjectModels;
+
+unsafe partial class ComObject
 {
-    unsafe partial class ComObject
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void* GetFunctionPointerCore(void* nativePointer, int offset)
-            => UnsafeHelper.PointerSizeConstant switch
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void* GetFunctionPointerCore(void* nativePointer, int offset)
+        => UnsafeHelper.PointerSizeConstant switch
+        {
+            sizeof(uint) => *(void**)(*(uint**)nativePointer + offset),
+            sizeof(ulong) => *(void**)(*(ulong**)nativePointer + offset),
+            UnsafeHelper.PointerSizeConstant_Indeterminate => UnsafeHelper.PointerSize switch
             {
                 sizeof(uint) => *(void**)(*(uint**)nativePointer + offset),
                 sizeof(ulong) => *(void**)(*(ulong**)nativePointer + offset),
-                UnsafeHelper.PointerSizeConstant_Indeterminate => UnsafeHelper.PointerSize switch
-                {
-                    sizeof(uint) => *(void**)(*(uint**)nativePointer + offset),
-                    sizeof(ulong) => *(void**)(*(ulong**)nativePointer + offset),
-                    _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSize} is not supported.")
-                },
-                _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSizeConstant} is not supported.")
-            };
+                _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSize} is not supported.")
+            },
+            _ => throw new NotSupportedException($"Pointer size {UnsafeHelper.PointerSizeConstant} is not supported.")
+        };
 
-        [Inline(InlineBehavior.Remove)]
-        internal static int QueryInterfaceCore(ref void* nativePointer, in Guid iid)
-        {
-            void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
-            return ((delegate* unmanaged[Stdcall]<void*, Guid*, void**, int>)functionPointer)(nativePointer, 
-                UnsafeHelper.AsPointerIn(in iid), UnsafeHelper.AsPointerRef(ref nativePointer));
-        }
+    [Inline(InlineBehavior.Remove)]
+    internal static int QueryInterfaceCore(ref void* nativePointer, in Guid iid)
+    {
+        void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.QueryInterface);
+        return ((delegate* unmanaged[Stdcall]<void*, Guid*, void**, int>)functionPointer)(nativePointer, 
+            UnsafeHelper.AsPointerIn(in iid), UnsafeHelper.AsPointerRef(ref nativePointer));
+    }
 
-        [Inline(InlineBehavior.Remove)]
-        internal static uint AddRefCore(void* nativePointer)
-        {
-            void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddRef);
-            return ((delegate* unmanaged
+    [Inline(InlineBehavior.Remove)]
+    internal static uint AddRefCore(void* nativePointer)
+    {
+        void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.AddRef);
+        return ((delegate* unmanaged
 #if NET8_0_OR_GREATER
-                [Stdcall, SuppressGCTransition]
+            [Stdcall, SuppressGCTransition]
 #else
-                [Stdcall]
+            [Stdcall]
 #endif
-                <void*, uint>)functionPointer)(nativePointer);
-        }
+            <void*, uint>)functionPointer)(nativePointer);
+    }
 
-        [Inline(InlineBehavior.Remove)]
-        internal static uint ReleaseCore(void* nativePointer)
-        {
-            void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Release);
-            return ((delegate* unmanaged[Stdcall]<void*, uint>)functionPointer)(nativePointer);
-        }
+    [Inline(InlineBehavior.Remove)]
+    internal static uint ReleaseCore(void* nativePointer)
+    {
+        void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Release);
+        return ((delegate* unmanaged[Stdcall]<void*, uint>)functionPointer)(nativePointer);
     }
 }

@@ -2,24 +2,23 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace WitherTorch.Common.Helpers
+namespace WitherTorch.Common.Helpers;
+
+partial class CollectionHelper
 {
-    partial class CollectionHelper
+    private sealed class EmptyEnumeratorImpl<T> : IEnumerator<T>
     {
-        private sealed class EmptyEnumeratorImpl<T> : IEnumerator<T>
-        {
-            public static readonly EmptyEnumeratorImpl<T> Instance = new EmptyEnumeratorImpl<T>();
+        public static readonly EmptyEnumeratorImpl<T> Instance = new EmptyEnumeratorImpl<T>();
 
-            public T Current => throw new InvalidOperationException();
+        public T Current => throw new InvalidOperationException();
 
-            object IEnumerator.Current => throw new InvalidOperationException();
+        object IEnumerator.Current => throw new InvalidOperationException();
 
-            public void Dispose() { }
+        public void Dispose() { }
 
-            public bool MoveNext() => false;
+        public bool MoveNext() => false;
 
-            public void Reset() { }
-        }
-
+        public void Reset() { }
     }
+
 }

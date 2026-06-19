@@ -1,11 +1,10 @@
 #if NET8_0_OR_GREATER
-namespace WitherTorch.Common
-{
-    partial class WTCommon
-    {
-        public static partial bool SystemBuffersExists => true;
+namespace WitherTorch.Common;
 
-        public static partial bool SystemMemoryExists => true;
-    }
+partial class WTCommon
+{
+    public static partial bool SystemBuffersExists => true;
+
+    public static partial bool SystemMemoryExists => true;
 }
 #endif

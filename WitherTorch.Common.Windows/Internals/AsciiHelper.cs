@@ -1,14 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
-namespace WitherTorch.Common.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals;
+
+internal static class AsciiHelper
 {
-    internal static class AsciiHelper
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ToAsciiUnchecked(byte[] destination, string source)
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ToAsciiUnchecked(byte[] destination, string source)
-        {
-            for (int i = 0, length = source.Length; i < length; i++)
-                destination[i] = unchecked((byte)source[i]);    
-        }
+        for (int i = 0, length = source.Length; i < length; i++)
+            destination[i] = unchecked((byte)source[i]);    
     }
 }

@@ -1,7 +1,6 @@
-namespace WitherTorch.Common.Buffers
+namespace WitherTorch.Common.Buffers;
+
+public interface IReadOnlyViewProvider<T> where T : unmanaged
 {
-    public interface IReadOnlyViewProvider<T> where T : unmanaged
-    {
-        ReadOnlyView<T> CreateView();
-    }
+    ReadOnlyView<T> CreateView();
 }

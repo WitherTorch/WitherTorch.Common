@@ -7,19 +7,18 @@
 
 using System.Runtime.CompilerServices;
 
-namespace System.Collections.Generic
+namespace System.Collections.Generic;
+
+/// <summary>
+/// Provides the <see cref="Create{TKey, TValue}(TKey, TValue)"/> factory method for <see cref="KeyValuePair{TKey, TValue}"/>.
+/// </summary>
+public static class KeyValuePair
 {
     /// <summary>
-    /// Provides the <see cref="Create{TKey, TValue}(TKey, TValue)"/> factory method for <see cref="KeyValuePair{TKey, TValue}"/>.
+    /// Creates a new <see cref="KeyValuePair{TKey, TValue}"/> from the given values.
     /// </summary>
-    public static class KeyValuePair
-    {
-        /// <summary>
-        /// Creates a new <see cref="KeyValuePair{TKey, TValue}"/> from the given values.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static KeyValuePair<TKey, TValue> Create<TKey, TValue>(TKey key, TValue value) =>
-            new KeyValuePair<TKey, TValue>(key, value);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static KeyValuePair<TKey, TValue> Create<TKey, TValue>(TKey key, TValue value) =>
+        new KeyValuePair<TKey, TValue>(key, value);
 }
 #endif

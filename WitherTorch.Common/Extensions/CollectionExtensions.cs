@@ -10,333 +10,332 @@ using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Collections;
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Extensions
+namespace WitherTorch.Common.Extensions;
+
+public static partial class CollectionExtensions
 {
-    public static partial class CollectionExtensions
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
+        => collection as IReadOnlyCollection<T> ?? new ReadOnlyCollectionAdapter<T>(collection);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IReadOnlyList<T> AsReadOnlyList<T>(this IList<T> collection)
+        => collection as IReadOnlyList<T> ?? new ReadOnlyListAdapter<T>(collection);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasNonNullItem<T>(this IEnumerable<T?> enumerable) where T : class
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IReadOnlyCollection<T> AsReadOnlyCollection<T>(this ICollection<T> collection)
-            => collection as IReadOnlyCollection<T> ?? new ReadOnlyCollectionAdapter<T>(collection);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IReadOnlyList<T> AsReadOnlyList<T>(this IList<T> collection)
-            => collection as IReadOnlyList<T> ?? new ReadOnlyListAdapter<T>(collection);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasNonNullItem<T>(this IEnumerable<T?> enumerable) where T : class
+        return enumerable switch
         {
-            return enumerable switch
+            T[] array => ArrayHelper.HasNonNullItem(array),
+            UnwrappableList<T> list => ArrayHelper.HasNonNullItem(list.Unwrap(), 0, list.Count),
+            _ => enumerable.AsParallel().Where(val => val is not null).Any()
+        };
+    }
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasAnyItem<T>(this IList<T> obj) => obj.Count > 0;
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasAnyItem<T>(this Stack<T> obj) => obj.Count > 0;
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool HasAnyItem<T>(this Queue<T> obj) => obj.Count > 0;
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? FirstOrDefault<T>(this T[] array) => FirstOrDefault(array, default);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? FirstOrDefault<T>(this T[] array, T? defaultValue) 
+        => array.Length > 0 ? array.AsUnsafeRef().FirstElement : defaultValue;
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? LastOrDefault<T>(this T[] array) => LastOrDefault(array, default);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? LastOrDefault<T>(this T[] array, T? defaultValue)
+    {
+        int length = array.Length;
+        return length > 0 ? array.AsUnsafeRef().LastElement : defaultValue;
+    }
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? FirstOrDefault<T>(this IList<T> list) => FirstOrDefault(list, default);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? FirstOrDefault<T>(this IList<T> list, T? defaultValue) => list.Count > 0 ? list[0] : defaultValue;
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? LastOrDefault<T>(this IList<T> list) => LastOrDefault(list, default);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T? LastOrDefault<T>(this IList<T> list, T? defaultValue)
+    {
+        int count = list.Count;
+        return count > 0 ? list[count - 1] : defaultValue;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T[] ToArray<T>(this ICollection<T> obj)
+    {
+        int count = obj.Count;
+        if (count <= 0)
+            return Array.Empty<T>();
+        T[] array = new T[count];
+        if (count > 0)
+            obj.CopyTo(array, 0);
+        return array;
+    }
+
+    [Inline(InlineBehavior.Keep, export: true)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Contains<T>(this T[] array, T value) where T : unmanaged
+        => SequenceHelper.Contains(array, value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool Contains<T>(this T[] array, T value, int startIndex, int length)
+        => SequenceHelper.Contains(array, value, startIndex, length);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryPop<T>(this Stack<T> obj, [MaybeNullWhen(false)] out T? value)
+    {
+        if (obj.Count > 0)
+        {
+            value = obj.Pop();
+            return true;
+        }
+        value = default;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TryDequeue<T>(this Queue<T> obj, [MaybeNullWhen(false)] out T? value)
+    {
+        if (obj.Count > 0)
+        {
+            value = obj.Dequeue();
+            return true;
+        }
+        value = default;
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TrueForAny<T>(this IList<T> obj, Func<T, bool> condiction)
+    {
+        int count = obj.Count;
+        if (count > 0)
+        {
+            for (int i = 0; i < count; i++)
             {
-                T[] array => ArrayHelper.HasNonNullItem(array),
-                UnwrappableList<T> list => ArrayHelper.HasNonNullItem(list.Unwrap(), 0, list.Count),
-                _ => enumerable.AsParallel().Where(val => val is not null).Any()
-            };
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasAnyItem<T>(this IList<T> obj) => obj.Count > 0;
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasAnyItem<T>(this Stack<T> obj) => obj.Count > 0;
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasAnyItem<T>(this Queue<T> obj) => obj.Count > 0;
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? FirstOrDefault<T>(this T[] array) => FirstOrDefault(array, default);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? FirstOrDefault<T>(this T[] array, T? defaultValue) 
-            => array.Length > 0 ? array.AsUnsafeRef().FirstElement : defaultValue;
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? LastOrDefault<T>(this T[] array) => LastOrDefault(array, default);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? LastOrDefault<T>(this T[] array, T? defaultValue)
-        {
-            int length = array.Length;
-            return length > 0 ? array.AsUnsafeRef().LastElement : defaultValue;
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? FirstOrDefault<T>(this IList<T> list) => FirstOrDefault(list, default);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? FirstOrDefault<T>(this IList<T> list, T? defaultValue) => list.Count > 0 ? list[0] : defaultValue;
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? LastOrDefault<T>(this IList<T> list) => LastOrDefault(list, default);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T? LastOrDefault<T>(this IList<T> list, T? defaultValue)
-        {
-            int count = list.Count;
-            return count > 0 ? list[count - 1] : defaultValue;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static T[] ToArray<T>(this ICollection<T> obj)
-        {
-            int count = obj.Count;
-            if (count <= 0)
-                return Array.Empty<T>();
-            T[] array = new T[count];
-            if (count > 0)
-                obj.CopyTo(array, 0);
-            return array;
-        }
-
-        [Inline(InlineBehavior.Keep, export: true)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Contains<T>(this T[] array, T value) where T : unmanaged
-            => SequenceHelper.Contains(array, value);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Contains<T>(this T[] array, T value, int startIndex, int length)
-            => SequenceHelper.Contains(array, value, startIndex, length);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryPop<T>(this Stack<T> obj, [MaybeNullWhen(false)] out T? value)
-        {
-            if (obj.Count > 0)
-            {
-                value = obj.Pop();
-                return true;
+                if (condiction(obj[i]))
+                    return true;
             }
-            value = default;
             return false;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TryDequeue<T>(this Queue<T> obj, [MaybeNullWhen(false)] out T? value)
+        else
         {
-            if (obj.Count > 0)
+            return true;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool TrueForAny<T>(this T[] obj, Func<T, bool> condiction)
+    {
+        int length = obj.Length;
+        if (length > 0)
+        {
+            for (int i = 0; i < length; i++)
             {
-                value = obj.Dequeue();
-                return true;
+                if (condiction(obj[i]))
+                    return true;
             }
-            value = default;
             return false;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TrueForAny<T>(this IList<T> obj, Func<T, bool> condiction)
+        else
         {
-            int count = obj.Count;
-            if (count > 0)
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    if (condiction(obj[i]))
-                        return true;
-                }
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+            return true;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void AddRange<T, TEnumerable>(this ICollection<T> _this, TEnumerable items) where TEnumerable : IEnumerable<T>
+    {
+        switch (_this)
+        {
+            case List<T> _list:
+                _list.AddRange(items);
+                return;
+            case IAddRangeCollectionGenerics<T> _list:
+                _list.AddRange(items);
+                return;
+            case IAddRangeCollection<T> _list:
+                _list.AddRange(items);
+                return;
+            default:
+                break;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool TrueForAny<T>(this T[] obj, Func<T, bool> condiction)
-        {
-            int length = obj.Length;
-            if (length > 0)
-            {
-                for (int i = 0; i < length; i++)
-                {
-                    if (condiction(obj[i]))
-                        return true;
-                }
-                return false;
-            }
-            else
-            {
-                return true;
-            }
-        }
+        T[] array;
+        int length;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void AddRange<T, TEnumerable>(this ICollection<T> _this, TEnumerable items) where TEnumerable : IEnumerable<T>
-        {
-            switch (_this)
-            {
-                case List<T> _list:
-                    _list.AddRange(items);
-                    return;
-                case IAddRangeCollectionGenerics<T> _list:
-                    _list.AddRange(items);
-                    return;
-                case IAddRangeCollection<T> _list:
-                    _list.AddRange(items);
-                    return;
-                default:
-                    break;
-            }
+        if (typeof(TEnumerable) == typeof(T[]))
+            goto IsArray;
+        if (typeof(TEnumerable) == typeof(UnwrappableList<T>))
+            goto IsUnwrappableList;
+        if (typeof(TEnumerable) == typeof(PooledList<T>))
+            goto IsPooledList;
+        if (typeof(TEnumerable) == typeof(IList<T>))
+            goto IsList;
+        if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+            goto IsReadOnlyList;
 
-            T[] array;
-            int length;
+        if (items is T[])
+            goto IsArray;
+        if (items is UnwrappableList<T>)
+            goto IsUnwrappableList;
+        if (items is PooledList<T>)
+            goto IsPooledList;
+        if (items is IList<T>)
+            goto IsList;
+        if (items is IReadOnlyList<T>)
+            goto IsReadOnlyList;
 
-            if (typeof(TEnumerable) == typeof(T[]))
-                goto IsArray;
-            if (typeof(TEnumerable) == typeof(UnwrappableList<T>))
-                goto IsUnwrappableList;
-            if (typeof(TEnumerable) == typeof(PooledList<T>))
-                goto IsPooledList;
-            if (typeof(TEnumerable) == typeof(IList<T>))
-                goto IsList;
-            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
-                goto IsReadOnlyList;
+        goto Fallback;
 
-            if (items is T[])
-                goto IsArray;
-            if (items is UnwrappableList<T>)
-                goto IsUnwrappableList;
-            if (items is PooledList<T>)
-                goto IsPooledList;
-            if (items is IList<T>)
-                goto IsList;
-            if (items is IReadOnlyList<T>)
-                goto IsReadOnlyList;
+    IsArray:
+        array = UnsafeHelper.As<TEnumerable, T[]>(items);
+        length = array.Length;
+        goto IsArray_Core;
 
-            goto Fallback;
+    IsUnwrappableList:
+        UnwrappableList<T> unwrappableList = UnsafeHelper.As<TEnumerable, UnwrappableList<T>>(items);
+        array = unwrappableList.Unwrap();
+        length = unwrappableList.Count;
+        goto IsArray_Core;
 
-        IsArray:
-            array = UnsafeHelper.As<TEnumerable, T[]>(items);
-            length = array.Length;
-            goto IsArray_Core;
+    IsPooledList:
+        PooledList<T> pooledList = UnsafeHelper.As<TEnumerable, PooledList<T>>(items);
+        array = pooledList.GetBuffer();
+        length = pooledList.Count;
+        goto IsArray_Core;
 
-        IsUnwrappableList:
-            UnwrappableList<T> unwrappableList = UnsafeHelper.As<TEnumerable, UnwrappableList<T>>(items);
-            array = unwrappableList.Unwrap();
-            length = unwrappableList.Count;
-            goto IsArray_Core;
-
-        IsPooledList:
-            PooledList<T> pooledList = UnsafeHelper.As<TEnumerable, PooledList<T>>(items);
-            array = pooledList.GetBuffer();
-            length = pooledList.Count;
-            goto IsArray_Core;
-
-        IsArray_Core:
-            if (length <= 0)
-                return;
-            ref T itemRef = ref UnsafeHelper.GetArrayDataReference(array);
-            for (nuint i = 0, limit = (nuint)length; i < limit; i++)
-                _this.Add(UnsafeHelper.AddTypedOffset(ref itemRef, i));
+    IsArray_Core:
+        if (length <= 0)
             return;
+        ref T itemRef = ref UnsafeHelper.GetArrayDataReference(array);
+        for (nuint i = 0, limit = (nuint)length; i < limit; i++)
+            _this.Add(UnsafeHelper.AddTypedOffset(ref itemRef, i));
+        return;
 
-        IsList:
-            IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
-            length = list.Count;
-            if (length <= 0)
-                return;
-            for (int i = 0; i < length; i++)
-                _this.Add(list[i]);
+    IsList:
+        IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
+        length = list.Count;
+        if (length <= 0)
             return;
+        for (int i = 0; i < length; i++)
+            _this.Add(list[i]);
+        return;
 
-        IsReadOnlyList:
-            IReadOnlyList<T> readOnlyList = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
-            length = readOnlyList.Count;
-            if (length <= 0)
-                return;
-            for (int i = 0; i < length; i++)
-                _this.Add(readOnlyList[i]);
+    IsReadOnlyList:
+        IReadOnlyList<T> readOnlyList = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
+        length = readOnlyList.Count;
+        if (length <= 0)
             return;
+        for (int i = 0; i < length; i++)
+            _this.Add(readOnlyList[i]);
+        return;
 
-        Fallback:
-            foreach (T item in items)
-                _this.Add(item);
-        }
+    Fallback:
+        foreach (T item in items)
+            _this.Add(item);
+    }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RemoveAll<T, TEnumerable>(this ICollection<T> _this, TEnumerable items) where TEnumerable : IEnumerable<T>
-        {
-            if (_this.IsReadOnly)
-                throw new InvalidOperationException("The collection is empty!");
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void RemoveAll<T, TEnumerable>(this ICollection<T> _this, TEnumerable items) where TEnumerable : IEnumerable<T>
+    {
+        if (_this.IsReadOnly)
+            throw new InvalidOperationException("The collection is empty!");
 
-            T[] array;
-            int length;
+        T[] array;
+        int length;
 
-            if (typeof(TEnumerable) == typeof(T[]))
-                goto IsArray;
-            if (typeof(TEnumerable) == typeof(UnwrappableList<T>))
-                goto IsUnwrappableList;
-            if (typeof(TEnumerable) == typeof(PooledList<T>))
-                goto IsPooledList;
-            if (typeof(TEnumerable) == typeof(IList<T>))
-                goto IsList;
-            if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
-                goto IsReadOnlyList;
+        if (typeof(TEnumerable) == typeof(T[]))
+            goto IsArray;
+        if (typeof(TEnumerable) == typeof(UnwrappableList<T>))
+            goto IsUnwrappableList;
+        if (typeof(TEnumerable) == typeof(PooledList<T>))
+            goto IsPooledList;
+        if (typeof(TEnumerable) == typeof(IList<T>))
+            goto IsList;
+        if (typeof(TEnumerable) == typeof(IReadOnlyList<T>))
+            goto IsReadOnlyList;
 
-            if (items is T[])
-                goto IsArray;
-            if (items is UnwrappableList<T>)
-                goto IsUnwrappableList;
-            if (items is PooledList<T>)
-                goto IsPooledList;
-            if (items is IList<T>)
-                goto IsList;
-            if (items is IReadOnlyList<T>)
-                goto IsReadOnlyList;
+        if (items is T[])
+            goto IsArray;
+        if (items is UnwrappableList<T>)
+            goto IsUnwrappableList;
+        if (items is PooledList<T>)
+            goto IsPooledList;
+        if (items is IList<T>)
+            goto IsList;
+        if (items is IReadOnlyList<T>)
+            goto IsReadOnlyList;
 
-            goto Fallback;
+        goto Fallback;
 
-        IsArray:
-            array = UnsafeHelper.As<TEnumerable, T[]>(items);
-            length = array.Length;
-            goto IsArray_Core;
+    IsArray:
+        array = UnsafeHelper.As<TEnumerable, T[]>(items);
+        length = array.Length;
+        goto IsArray_Core;
 
-        IsUnwrappableList:
-            UnwrappableList<T> unwrappableList = UnsafeHelper.As<TEnumerable, UnwrappableList<T>>(items);
-            array = unwrappableList.Unwrap();
-            length = unwrappableList.Count;
-            goto IsArray_Core;
+    IsUnwrappableList:
+        UnwrappableList<T> unwrappableList = UnsafeHelper.As<TEnumerable, UnwrappableList<T>>(items);
+        array = unwrappableList.Unwrap();
+        length = unwrappableList.Count;
+        goto IsArray_Core;
 
-        IsPooledList:
-            PooledList<T> pooledList = UnsafeHelper.As<TEnumerable, PooledList<T>>(items);
-            array = pooledList.GetBuffer();
-            length = pooledList.Count;
-            goto IsArray_Core;
+    IsPooledList:
+        PooledList<T> pooledList = UnsafeHelper.As<TEnumerable, PooledList<T>>(items);
+        array = pooledList.GetBuffer();
+        length = pooledList.Count;
+        goto IsArray_Core;
 
-        IsArray_Core:
-            if (length <= 0)
-                return;
-            ref T itemRef = ref UnsafeHelper.GetArrayDataReference(array);
-            for (nuint i = 0, limit = (nuint)length; i < limit; i++)
-                _this.Remove(UnsafeHelper.AddTypedOffset(ref itemRef, i));
+    IsArray_Core:
+        if (length <= 0)
             return;
+        ref T itemRef = ref UnsafeHelper.GetArrayDataReference(array);
+        for (nuint i = 0, limit = (nuint)length; i < limit; i++)
+            _this.Remove(UnsafeHelper.AddTypedOffset(ref itemRef, i));
+        return;
 
-        IsList:
-            IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
-            length = list.Count;
-            if (length <= 0)
-                return;
-            for (int i = 0; i < length; i++)
-                _this.Remove(list[i]);
+    IsList:
+        IList<T> list = UnsafeHelper.As<TEnumerable, IList<T>>(items);
+        length = list.Count;
+        if (length <= 0)
             return;
+        for (int i = 0; i < length; i++)
+            _this.Remove(list[i]);
+        return;
 
-        IsReadOnlyList:
-            IReadOnlyList<T> readOnlyList = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
-            length = readOnlyList.Count;
-            if (length <= 0)
-                return;
-            for (int i = 0; i < length; i++)
-                _this.Add(readOnlyList[i]);
+    IsReadOnlyList:
+        IReadOnlyList<T> readOnlyList = UnsafeHelper.As<TEnumerable, IReadOnlyList<T>>(items);
+        length = readOnlyList.Count;
+        if (length <= 0)
             return;
+        for (int i = 0; i < length; i++)
+            _this.Add(readOnlyList[i]);
+        return;
 
-        Fallback:
-            foreach (T item in items)
-                _this.Remove(item);
-        }
+    Fallback:
+        foreach (T item in items)
+            _this.Remove(item);
     }
 }

@@ -8,151 +8,150 @@ using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 
-namespace WitherTorch.Common.Collections
+namespace WitherTorch.Common.Collections;
+
+public static class UpdatableCollection
 {
-    public static class UpdatableCollection
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UpdatableCollection<T, List<T>> Create<T>()
+        => new UpdatableCollection<T, List<T>>(new List<T>());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UpdatableCollection<T, PooledList<T>> CreatePooled<T>()
+        => new UpdatableCollection<T, PooledList<T>>(new PooledList<T>());
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UpdatableCollection<T, UnwrappableList<T>> CreateUnwrapped<T>()
+        => new UpdatableCollection<T, UnwrappableList<T>>(new UnwrappableList<T>());
+}
+
+public sealed class UpdatableCollection<T, TList> : ICollection<T>, IDisposable where TList : IList<T>
+{
+    private readonly TList _list;
+    private readonly PooledList<T> _addList, _removeList;
+
+    private ulong _version, _oldVersion;
+    private bool _disposed;
+
+    public UpdatableCollection(TList list)
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UpdatableCollection<T, List<T>> Create<T>()
-            => new UpdatableCollection<T, List<T>>(new List<T>());
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UpdatableCollection<T, PooledList<T>> CreatePooled<T>()
-            => new UpdatableCollection<T, PooledList<T>>(new PooledList<T>());
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static UpdatableCollection<T, UnwrappableList<T>> CreateUnwrapped<T>()
-            => new UpdatableCollection<T, UnwrappableList<T>>(new UnwrappableList<T>());
+        if (list.IsReadOnly)
+            throw new ArgumentException("the list cannot be readonly!", nameof(list));
+        _list = list;
+        _addList = new PooledList<T>();
+        _removeList = new PooledList<T>();
+        _version = 0UL;
+        _oldVersion = 0UL;
     }
 
-    public sealed class UpdatableCollection<T, TList> : ICollection<T>, IDisposable where TList : IList<T>
+    public int Count => _list.Count;
+
+    public bool IsReadOnly => false;
+
+    public void Add(T item)
     {
-        private readonly TList _list;
-        private readonly PooledList<T> _addList, _removeList;
-
-        private ulong _version, _oldVersion;
-        private bool _disposed;
-
-        public UpdatableCollection(TList list)
+        PooledList<T> list = _addList;
+        lock (list)
         {
-            if (list.IsReadOnly)
-                throw new ArgumentException("the list cannot be readonly!", nameof(list));
-            _list = list;
-            _addList = new PooledList<T>();
-            _removeList = new PooledList<T>();
-            _version = 0UL;
-            _oldVersion = 0UL;
+            list.Add(item);
+            InterlockedHelper.Increment(ref _version);
         }
+    }
 
-        public int Count => _list.Count;
-
-        public bool IsReadOnly => false;
-
-        public void Add(T item)
+    public void AddRange(IEnumerable<T> items)
+    {
+        PooledList<T> list = _addList;
+        lock (list)
         {
-            PooledList<T> list = _addList;
-            lock (list)
-            {
-                list.Add(item);
-                InterlockedHelper.Increment(ref _version);
-            }
+            list.AddRange(items);
+            InterlockedHelper.Increment(ref _version);
         }
+    }
 
-        public void AddRange(IEnumerable<T> items)
+    public void Clear()
+    {
+        PooledList<T> list = _removeList;
+        lock (list)
         {
-            PooledList<T> list = _addList;
-            lock (list)
-            {
-                list.AddRange(items);
-                InterlockedHelper.Increment(ref _version);
-            }
+            list.AddRange(_list);
+            InterlockedHelper.Increment(ref _version);
         }
+    }
 
-        public void Clear()
+    public bool Contains(T item) => _list.Contains(item);
+
+    public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
+
+    public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
+
+    public bool Remove(T item)
+    {
+        if (!_list.Contains(item))
+            return false;
+
+        PooledList<T> list = _removeList;
+        lock (list)
         {
-            PooledList<T> list = _removeList;
-            lock (list)
-            {
-                list.AddRange(_list);
-                InterlockedHelper.Increment(ref _version);
-            }
+            list.Add(item);
+            InterlockedHelper.Increment(ref _version);
         }
+        return true;
+    }
 
-        public bool Contains(T item) => _list.Contains(item);
+    public void RemoveAt(int index)
+    {
+        T item = _list[index];
 
-        public void CopyTo(T[] array, int arrayIndex) => _list.CopyTo(array, arrayIndex);
-
-        public IEnumerator<T> GetEnumerator() => _list.GetEnumerator();
-
-        public bool Remove(T item)
+        PooledList<T> list = _removeList;
+        lock (list)
         {
-            if (!_list.Contains(item))
-                return false;
-
-            PooledList<T> list = _removeList;
-            lock (list)
-            {
-                list.Add(item);
-                InterlockedHelper.Increment(ref _version);
-            }
-            return true;
+            list.Add(item);
+            InterlockedHelper.Increment(ref _version);
         }
+    }
 
-        public void RemoveAt(int index)
-        {
-            T item = _list[index];
+    public TList Update()
+    {
+        TList list = _list;
 
-            PooledList<T> list = _removeList;
-            lock (list)
-            {
-                list.Add(item);
-                InterlockedHelper.Increment(ref _version);
-            }
-        }
-
-        public TList Update()
-        {
-            TList list = _list;
-
-            ulong newVersion = InterlockedHelper.Read(ref _version);
-            if (_oldVersion == newVersion)
-                return list;
-            _oldVersion = newVersion;
-            PooledList<T> addList = _addList;
-            PooledList<T> removeList = _removeList;
-            lock (addList)
-            {
-                list.AddRange(addList);
-                addList.Clear();
-            }
-            lock (removeList)
-            {
-                list.RemoveAll(removeList);
-                removeList.Clear();
-            }
+        ulong newVersion = InterlockedHelper.Read(ref _version);
+        if (_oldVersion == newVersion)
             return list;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
-
-        public void Dispose()
+        _oldVersion = newVersion;
+        PooledList<T> addList = _addList;
+        PooledList<T> removeList = _removeList;
+        lock (addList)
         {
-            if (_disposed)
-                return;
-            _disposed = true;
-
-            PooledList<T> pooledList = _addList;
-            lock (pooledList)
-                pooledList.Dispose();
-            pooledList = _removeList;
-            lock (pooledList)
-                pooledList.Dispose();
-
-            TList list = _list;
-            list.Clear();
-            (list as IDisposable)?.Dispose();
-
-            GC.SuppressFinalize(this);
+            list.AddRange(addList);
+            addList.Clear();
         }
+        lock (removeList)
+        {
+            list.RemoveAll(removeList);
+            removeList.Clear();
+        }
+        return list;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => _list.GetEnumerator();
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+        _disposed = true;
+
+        PooledList<T> pooledList = _addList;
+        lock (pooledList)
+            pooledList.Dispose();
+        pooledList = _removeList;
+        lock (pooledList)
+            pooledList.Dispose();
+
+        TList list = _list;
+        list.Clear();
+        (list as IDisposable)?.Dispose();
+
+        GC.SuppressFinalize(this);
     }
 }

@@ -2,19 +2,18 @@ using System;
 using System.Runtime.InteropServices;
 using System.Security;
 
-namespace WitherTorch.Common.Windows.Internals
+namespace WitherTorch.Common.Windows.Internals;
+
+[SuppressUnmanagedCodeSecurity]
+internal static unsafe class Ole32
 {
-    [SuppressUnmanagedCodeSecurity]
-    internal static unsafe class Ole32
-    {
-        private const string LibraryName = "ole32.dll";
+    private const string LibraryName = "ole32.dll";
 
-        [SuppressGCTransition]
-        [DllImport(LibraryName, EntryPoint = nameof(CoCreateInstance), CallingConvention = CallingConvention.Winapi)]
-        public static unsafe extern int CoCreateInstance(Guid* rclsid, void* pUnkOuter, ClassContextFlags dwClsContext, Guid* riid, void** ppv);
+    [SuppressGCTransition]
+    [DllImport(LibraryName, EntryPoint = nameof(CoCreateInstance), CallingConvention = CallingConvention.Winapi)]
+    public static unsafe extern int CoCreateInstance(Guid* rclsid, void* pUnkOuter, ClassContextFlags dwClsContext, Guid* riid, void** ppv);
 
-        [SuppressGCTransition]
-        [DllImport(LibraryName, EntryPoint = nameof(CoTaskMemFree), CallingConvention = CallingConvention.Winapi)]
-        public static unsafe extern void CoTaskMemFree(void* pv);
-    }
+    [SuppressGCTransition]
+    [DllImport(LibraryName, EntryPoint = nameof(CoTaskMemFree), CallingConvention = CallingConvention.Winapi)]
+    public static unsafe extern void CoTaskMemFree(void* pv);
 }
