@@ -31,9 +31,6 @@ public sealed partial class Lock
 
     internal const int UninitializedThreadId = 0;
 
-    [ThreadStatic]
-    private static int _threadId;
-
     // NOTE: Lock must not have a static (class) constructor, as Lock itself is used to synchronize
     // class construction.  If Lock has its own class constructor, this can lead to infinite recursion.
     // All static data in Lock must be lazy-initialized.
@@ -289,7 +286,7 @@ public sealed partial class Lock
     {
         Debug.Assert(timeoutMs >= -1);
 
-        int currentThreadId = _threadId;
+        int currentThreadId = ManagedThreadId.CurrentManagedThreadIdUnchecked;
         if (currentThreadId != UninitializedThreadId && State.TryLock(this))
         {
             Debug.Assert(_owningThreadId == UninitializedThreadId);
@@ -315,7 +312,7 @@ public sealed partial class Lock
     public void Exit()
     {
         var owningThreadId = _owningThreadId;
-        if (owningThreadId == UninitializedThreadId || owningThreadId != _threadId)
+        if (owningThreadId == UninitializedThreadId || owningThreadId != ManagedThreadId.CurrentManagedThreadIdUnchecked)
         {
             Throw();
         }
@@ -330,7 +327,7 @@ public sealed partial class Lock
     internal void Exit(int currentThreadId)
     {
         Debug.Assert(currentThreadId != UninitializedThreadId);
-        Debug.Assert(currentThreadId == _threadId);
+        Debug.Assert(currentThreadId == ManagedThreadId.CurrentManagedThreadIdUnchecked);
 
         if (_owningThreadId != currentThreadId)
         {
@@ -347,7 +344,7 @@ public sealed partial class Lock
     private void ExitImpl()
     {
         Debug.Assert(_owningThreadId != UninitializedThreadId);
-        Debug.Assert(_owningThreadId == _threadId);
+        Debug.Assert(_owningThreadId == ManagedThreadId.CurrentManagedThreadIdUnchecked);
         Debug.Assert(new State(this).IsLocked);
 
         if (_recursionCount == 0)
@@ -402,7 +399,7 @@ public sealed partial class Lock
         {
             // The thread info hasn't been initialized yet for this thread, and the fast path hasn't been tried yet. After
             // initializing the thread info, try the fast path first.
-            currentThreadId = (_threadId = Thread.CurrentThread.ManagedThreadId);
+            currentThreadId = ManagedThreadId.Current;
             Debug.Assert(_owningThreadId != currentThreadId);
             if (State.TryLock(this))
             {
