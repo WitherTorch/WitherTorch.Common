@@ -13,6 +13,9 @@ public static unsafe partial class NativeMethods
 {
     private static readonly INativeMethodInstance _methodInstance = GetOSDependedInstance();
 
+    [ThreadStatic]
+    private static uint _currentThreadId;
+
     [Inline(InlineBehavior.Remove)]
     private static INativeMethodInstance GetOSDependedInstance()
     {
@@ -24,7 +27,16 @@ public static unsafe partial class NativeMethods
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint GetCurrentThreadId() => _methodInstance switch
+    public static uint GetCurrentThreadId()
+    {
+        uint threadId = _currentThreadId;
+        if (threadId == 0)
+            _currentThreadId = threadId = GetCurrentThreadIdCore();
+        return threadId;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static uint GetCurrentThreadIdCore() => _methodInstance switch
     {
         Win32NativeMethodInstance inst => inst.GetCurrentThreadId(),
         UnixNativeMethodInstance inst => inst.GetCurrentThreadId(),
