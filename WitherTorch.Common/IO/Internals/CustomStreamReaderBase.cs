@@ -14,7 +14,7 @@ internal abstract partial class CustomStreamReaderBase : IStreamReader
 {
     private readonly Stream _stream;
     private readonly byte[] _buffer;
-    private readonly object _syncLock;
+    private readonly Lock _syncLock;
     private readonly bool _leaveOpen;
 
     protected nuint _bufferPos, _bufferLength;
@@ -29,7 +29,7 @@ internal abstract partial class CustomStreamReaderBase : IStreamReader
         _stream = stream;
         _buffer = new byte[bufferSize];
         _leaveOpen = leaveOpen;
-        _syncLock = new object();
+        _syncLock = new Lock();
 
         _bufferPos = 0;
         _bufferLength = 0;

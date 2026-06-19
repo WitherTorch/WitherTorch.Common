@@ -30,7 +30,7 @@ partial class NativeMethods
 
         [SuppressGCTransition]
         [DllImport("kernel32", CallingConvention = CallingConvention.StdCall, EntryPoint = nameof(GetCurrentThreadId))]
-        private static extern int GetCurrentThreadIdCore();
+        private static extern uint GetCurrentThreadIdCore();
 
         [SuppressGCTransition]
         [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
@@ -57,7 +57,7 @@ partial class NativeMethods
 
         [SuppressGCTransition]
         [DllImport("kernel32", CallingConvention = CallingConvention.StdCall)]
-        private static extern int GetCurrentProcessorNumber();
+        private static extern uint GetCurrentProcessorNumber();
 
         [DllImport("ntdll", CallingConvention = CallingConvention.StdCall)]
         private static extern void RtlMoveMemory(void* dest, void* src, nuint sizeInBytes);
@@ -121,9 +121,9 @@ partial class NativeMethods
             _process = GetCurrentProcess();
         }
 
-        public int GetCurrentThreadId() => GetCurrentThreadIdCore();
+        public uint GetCurrentThreadId() => GetCurrentThreadIdCore();
 
-        public int GetCurrentProcessorId() => GetCurrentProcessorNumber();
+        public uint GetCurrentProcessorId() => GetCurrentProcessorNumber();
 
         public ulong GetTicksForSystem()
         {

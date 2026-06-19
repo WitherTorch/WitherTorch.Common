@@ -1,12 +1,14 @@
+using System.Threading;
+
 namespace WitherTorch.Common.Threading;
 
 partial class Swapable
 {
     private sealed class PessimisticSwapable<T> : Swapable<T> where T : class
     {
-        private readonly object _syncLock;
+        private readonly Lock _syncLock;
 
-        public PessimisticSwapable(T front, T back) : base(front, back) => _syncLock = new object();
+        public PessimisticSwapable(T front, T back) : base(front, back) => _syncLock = new Lock();
 
         protected override T GetValueCore(ref readonly T valueRef)
         {

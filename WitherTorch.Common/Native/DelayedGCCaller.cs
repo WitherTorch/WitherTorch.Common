@@ -5,7 +5,7 @@ namespace WitherTorch.Common.Native;
 
 public sealed class DelayedGCCaller : DelayedCollectingObject
 {
-    private static readonly object _syncRoot = new object();
+    private static readonly Lock _syncRoot = new Lock();
     private static readonly DelayedGCCaller _secretGCCaller = new DelayedGCCaller();
 
     private static ulong _lastCollectingTime = 0UL;

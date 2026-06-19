@@ -13,13 +13,13 @@ partial class NativeMethods
 {
     private sealed unsafe class FallbackNativeMethodInstance : INativeMethodInstance
     {
-        public int GetCurrentThreadId() => Environment.CurrentManagedThreadId;
+        public uint GetCurrentThreadId() => (uint)Environment.CurrentManagedThreadId;
 
-        public int GetCurrentProcessorId() =>
+        public uint GetCurrentProcessorId() =>
 #if NET8_0_OR_GREATER
-            Thread.GetCurrentProcessorId();
+            (uint)Thread.GetCurrentProcessorId();
 #else
-            Thread.CurrentThread.ManagedThreadId;
+            (uint)Thread.CurrentThread.ManagedThreadId;
 #endif
 
 

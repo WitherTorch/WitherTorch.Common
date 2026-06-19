@@ -8,8 +8,8 @@ partial class NativeMethods
 {
     private unsafe interface INativeMethodInstance
     {
-        int GetCurrentThreadId();
-        int GetCurrentProcessorId();
+        uint GetCurrentThreadId();
+        uint GetCurrentProcessorId();
         ulong GetTicksForSystem();
         void* GetImportedMethodPointer(string? dllName, int methodIndex);
         void* GetImportedMethodPointer(string? dllName, string methodName);

@@ -115,9 +115,9 @@ partial class NativeMethods
         [DllImport("c", CallingConvention = CallingConvention.Cdecl)]
         private static extern int clock_nanosleep(int clk_id, int flags, TimeSpecification* t, TimeSpecification* remain);
 
-        public int GetCurrentThreadId() => gettid();
+        public uint GetCurrentThreadId() => (uint)gettid();
 
-        public int GetCurrentProcessorId() => sched_getcpu();
+        public uint GetCurrentProcessorId() => (uint)sched_getcpu();
 
         public ulong GetTicksForSystem()
         {

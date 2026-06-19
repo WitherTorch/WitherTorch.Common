@@ -24,7 +24,7 @@ public static unsafe partial class NativeMethods
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetCurrentThreadId() => _methodInstance switch
+    public static uint GetCurrentThreadId() => _methodInstance switch
     {
         Win32NativeMethodInstance inst => inst.GetCurrentThreadId(),
         UnixNativeMethodInstance inst => inst.GetCurrentThreadId(),
@@ -33,7 +33,7 @@ public static unsafe partial class NativeMethods
     };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static int GetCurrentProcessorId() => _methodInstance switch
+    public static uint GetCurrentProcessorId() => _methodInstance switch
     {
         Win32NativeMethodInstance inst => inst.GetCurrentProcessorId(),
         UnixNativeMethodInstance inst => inst.GetCurrentProcessorId(),
