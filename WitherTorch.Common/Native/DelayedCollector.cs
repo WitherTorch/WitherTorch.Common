@@ -15,6 +15,8 @@ internal sealed class DelayedCollector
 
     private static readonly DelayedCollector _instance = new DelayedCollector();
 
+    private static ulong _nowTime;
+
     private readonly Thread _thread;
     private readonly ConcurrentQueue<DelayedCollectingObject> _queue;
     private readonly HashSet<DelayedCollectingObject> _innerSet;
@@ -74,17 +76,17 @@ internal sealed class DelayedCollector
     {
         if (list.Count <= 0)
             return;
-        ulong now = NativeMethods.GetTicksForSystem();
+        _nowTime = NativeMethods.GetTicksForSystem();
 #if DEBUG
         int count =
 #endif
-        list.RemoveWhere(obj =>
+        list.RemoveWhere(static obj =>
         {
             if (obj.IsDisposed)
                 return true;
             if (obj.IsInReference)
                 return false;
-            if ((now - obj.LastDereferenceTime) > DelayedCollectingNoRefTime)
+            if ((_nowTime - obj.LastDereferenceTime) > DelayedCollectingNoRefTime)
             {
                 obj.RemoveObject();
                 return true;
