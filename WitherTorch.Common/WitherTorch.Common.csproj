@@ -78,7 +78,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<ExcludeAssets>runtime</ExcludeAssets>
 		</PackageReference>
-		<ProjectReference Include="$(SolutionDir)\RiceTea.Backport.System.Runtime.Intrinsics\System.Runtime.Intrinsics\System.Runtime.Intrinsics.csproj" />
+		<PackageReference Include="RiceTea.Backport.System.Runtime.Intrinsics" Version="1.0.13" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Platform)'=='AnyCPU'">
