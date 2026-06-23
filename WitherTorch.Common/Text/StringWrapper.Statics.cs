@@ -76,10 +76,8 @@ partial class StringWrapper
 
     public static unsafe StringWrapper Create(char* ptr, int startIndex, int count, StringCreateOptions options)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (count == 0)
             return Empty;
 
@@ -148,10 +146,8 @@ partial class StringWrapper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe StringWrapper CreateUtf16String(char* ptr, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         return CreateUtf16String(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
     }
 
@@ -175,10 +171,8 @@ partial class StringWrapper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe StringWrapper CreateLatin1String(byte* ptr, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         return CreateLatin1String(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
     }
 
@@ -202,10 +196,8 @@ partial class StringWrapper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe StringWrapper CreateAsciiString(byte* ptr, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         return CreateAsciiString(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
     }
 
@@ -229,10 +221,8 @@ partial class StringWrapper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe StringWrapper CreateUtf8String(byte* ptr, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         return CreateUtf8String(ptr, unchecked((nuint)startIndex), unchecked((nuint)count));
     }
 

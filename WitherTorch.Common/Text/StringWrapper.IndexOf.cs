@@ -22,10 +22,8 @@ partial class StringWrapper
     public bool Contains(char value, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
@@ -49,10 +47,8 @@ partial class StringWrapper
     public bool Contains(string value, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
@@ -81,10 +77,8 @@ partial class StringWrapper
     public bool Contains(StringWrapper value, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
@@ -108,10 +102,8 @@ partial class StringWrapper
     public int IndexOf(char value, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
@@ -135,10 +127,8 @@ partial class StringWrapper
     public int IndexOf(string value, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
@@ -167,10 +157,8 @@ partial class StringWrapper
     public int IndexOf(StringWrapper value, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)

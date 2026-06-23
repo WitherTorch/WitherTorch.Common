@@ -47,10 +47,8 @@ public readonly partial struct StringSlice : IStringWrapperConvertible
 
     public static StringSlice Create(StringWrapper original, int startIndex, int length)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (length < 0)
-            throw new ArgumentOutOfRangeException(nameof(length));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(length);
         if (startIndex + length > original.Length)
             throw new ArgumentOutOfRangeException(startIndex >= original.Length ? nameof(startIndex) : nameof(length));
         if (length == 0)
@@ -60,13 +58,11 @@ public readonly partial struct StringSlice : IStringWrapperConvertible
 
     public StringSlice Slice(int startIndex)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (startIndex == 0)
             return this;
         int length = _length;
-        if (startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startIndex, length);
         if (length == 0)
             return this;
         return new StringSlice(_original, _startIndex + startIndex, length - startIndex);
@@ -74,10 +70,8 @@ public readonly partial struct StringSlice : IStringWrapperConvertible
 
     public StringSlice Slice(int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = _length;
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));

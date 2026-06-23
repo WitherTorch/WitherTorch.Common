@@ -34,10 +34,8 @@ public static partial class ArrayHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool HasNullItem<T>(T[] array, int startIndex, int count) where T : class
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
@@ -54,10 +52,8 @@ public static partial class ArrayHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool HasNonNullItem<T>(T?[] array, int startIndex, int count) where T : class
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
@@ -77,10 +73,8 @@ public static partial class ArrayHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe T? FindFirstNullItem<T>(T?[] array, int startIndex, int count) where T : class
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
@@ -103,10 +97,8 @@ public static partial class ArrayHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe T? FindFirstNonNullItem<T>(T?[] array, int startIndex, int count) where T : class
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)

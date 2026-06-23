@@ -21,7 +21,7 @@ public static partial class StringExtensions
         int length = obj.Length;
         if (length <= 0)
             return defaultValue;
-        return UnsafeHelper.AddTypedOffset(in UnsafeHelper.GetStringDataReference(obj), length - 1);
+        return UnsafeHelper.AddTypedOffsetAsReadOnly(in UnsafeHelper.GetStringDataReference(obj), length - 1);
     }
 
 #if !NET8_0_OR_GREATER

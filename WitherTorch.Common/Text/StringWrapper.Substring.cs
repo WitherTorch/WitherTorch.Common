@@ -9,14 +9,12 @@ partial class StringWrapper
 {
     public StringWrapper Substring(int startIndex)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (startIndex == 0)
             return this;
 
         int length = Length;
-        if (startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startIndex, length);
         if (length == 0)
             return this;
 
@@ -25,10 +23,8 @@ partial class StringWrapper
 
     public StringWrapper Substring(int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
         int length = Length;
         if (startIndex + count > length)
@@ -51,24 +47,20 @@ partial class StringWrapper
 
     public StringWrapper Remove(int startIndex)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (startIndex == 0)
             return Empty;
 
         int length = Length;
-        if (startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startIndex, length);
 
         return RemoveCore((nuint)startIndex, (nuint)(length - startIndex));
     }
 
     public StringWrapper Remove(int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
         int length = Length;
         if (startIndex + count > length)

@@ -39,10 +39,8 @@ public static class ArrayExtensions
         public static unsafe void Clear<T>(T[] array, int index, int length)
         {
             int arrayLength = array.Length;
-            if (index < 0)
-                throw new ArgumentOutOfRangeException(nameof(index));
-            if (length < 0)
-                throw new ArgumentOutOfRangeException(nameof(length));
+            ArgumentOutOfRangeException.ThrowIfNegative(index);
+            ArgumentOutOfRangeException.ThrowIfNegative(length);
             if (index + length > arrayLength)
                 throw new ArgumentOutOfRangeException(index >= arrayLength ? nameof(index) : nameof(length));
             fixed (T* ptr = array)
@@ -66,10 +64,8 @@ public static class ArrayExtensions
         public static unsafe void Fill<T>(T[] array, T value, int startIndex, int count)
         {
             int length = array.Length;
-            if (startIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(startIndex));
-            if (count < 0)
-                throw new ArgumentOutOfRangeException(nameof(count));
+            ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+            ArgumentOutOfRangeException.ThrowIfNegative(count);
             int limit = startIndex + count;
             if (limit > length)
                 throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));

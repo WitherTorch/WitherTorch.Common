@@ -79,10 +79,8 @@ public readonly struct ReadOnlyView<T> : IEnumerable<T>, IReadOnlyList<T>, IPinn
 
     public readonly ReadOnlyView<T> Slice(int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if ((startIndex + count) >= _count)
             throw new ArgumentOutOfRangeException(startIndex >= _count ? nameof(startIndex) : nameof(count));
         if (startIndex == 0 && count == _count)

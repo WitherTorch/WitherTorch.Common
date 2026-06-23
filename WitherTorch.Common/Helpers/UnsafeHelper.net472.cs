@@ -571,9 +571,9 @@ public static unsafe partial class UnsafeHelper
 
     [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddByteOffset<T>(ref readonly T source, nint byteOffset)
+    public static partial ref T AddByteOffset<T>(ref T source, nint byteOffset)
     {
-        IL.PushInRef(in source);
+        IL.Push(ref source!);
         IL.Push(byteOffset);
         IL.Emit.Add();
         return ref IL.ReturnRef<T>();
@@ -581,9 +581,9 @@ public static unsafe partial class UnsafeHelper
 
     [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset)
+    public static partial ref T AddByteOffset<T>(ref T source, nuint byteOffset)
     {
-        IL.PushInRef(in source);
+        IL.Push(ref source!);
         IL.Push(byteOffset);
         IL.Emit.Add();
         return ref IL.ReturnRef<T>();
@@ -591,9 +591,9 @@ public static unsafe partial class UnsafeHelper
 
     [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddTypedOffset<T>(ref readonly T source, nint elementOffset)
+    public static partial ref T AddTypedOffset<T>(ref T source, nint elementOffset)
     {
-        IL.PushInRef(in source);
+        IL.Push(ref source!);
         IL.Push(elementOffset);
         IL.Emit.Sizeof(typeof(T));
         IL.Emit.Mul();
@@ -603,9 +603,9 @@ public static unsafe partial class UnsafeHelper
 
     [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddTypedOffset<T>(ref readonly T source, nuint elementOffset)
+    public static partial ref T AddTypedOffset<T>(ref T source, nuint elementOffset)
     {
-        IL.PushInRef(in source);
+        IL.Push(ref source!);
         IL.Push(elementOffset);
         IL.Emit.Sizeof(typeof(T));
         IL.Emit.Mul();

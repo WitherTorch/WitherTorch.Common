@@ -20,8 +20,7 @@ public sealed class UnwrappableList<T> : CustomListBase<T>
     [Inline(InlineBehavior.Remove)]
     private static T[] CreateArray(int capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return Array.Empty<T>();
         return new T[capacity];

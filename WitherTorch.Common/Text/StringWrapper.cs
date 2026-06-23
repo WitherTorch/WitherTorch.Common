@@ -50,12 +50,9 @@ public abstract partial class StringWrapper : IStringLike, IStringWrapperConvert
     public unsafe void CopyTo(char[] destination, int sourceStartIndex, int destStartIndex, int count)
     {
         int length = Length;
-        if (sourceStartIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(sourceStartIndex));
-        if (destStartIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(destStartIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(sourceStartIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(destStartIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (sourceStartIndex + count > length)
             throw new ArgumentOutOfRangeException(sourceStartIndex >= length ? nameof(sourceStartIndex) : nameof(count));
         if (destStartIndex + count > destination.Length)
@@ -77,10 +74,8 @@ public abstract partial class StringWrapper : IStringLike, IStringWrapperConvert
     public unsafe void CopyTo(char* destination, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)

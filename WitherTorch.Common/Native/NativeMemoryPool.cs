@@ -25,8 +25,7 @@ public abstract unsafe partial class NativeMemoryPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public NativeMemoryBlock Rent(int capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return NativeMemoryBlock.Empty;
         return RentCore(unchecked((nuint)capacity));
@@ -35,8 +34,7 @@ public abstract unsafe partial class NativeMemoryPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public NativeMemoryBlock Rent(long capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return NativeMemoryBlock.Empty;
         return RentCore(unchecked((nuint)capacity));
@@ -45,8 +43,7 @@ public abstract unsafe partial class NativeMemoryPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public NativeMemoryBlock Rent(nint capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return NativeMemoryBlock.Empty;
         return RentCore(unchecked((nuint)capacity));
@@ -87,8 +84,7 @@ public abstract unsafe partial class NativeMemoryPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TypedNativeMemoryBlock<T> Rent<T>(int capacity) where T : unmanaged
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return TypedNativeMemoryBlock<T>.Empty;
         return RentCore<T>(unchecked((nuint)capacity));
@@ -97,8 +93,7 @@ public abstract unsafe partial class NativeMemoryPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TypedNativeMemoryBlock<T> Rent<T>(long capacity) where T : unmanaged
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return TypedNativeMemoryBlock<T>.Empty;
         return RentCore<T>(unchecked((nuint)capacity));
@@ -107,8 +102,7 @@ public abstract unsafe partial class NativeMemoryPool
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public TypedNativeMemoryBlock<T> Rent<T>(nint capacity) where T : unmanaged
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return TypedNativeMemoryBlock<T>.Empty;
         return RentCore<T>(unchecked((nuint)capacity));

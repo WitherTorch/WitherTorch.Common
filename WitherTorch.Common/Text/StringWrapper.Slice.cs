@@ -6,11 +6,9 @@ partial class StringWrapper
 {
     public StringSlice Slice(int startIndex)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         int length = Length;
-        if (startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startIndex, length);
         if (length == 0)
             return StringSlice.Empty;
         return unchecked(new StringSlice(this, startIndex, length - startIndex));
@@ -18,10 +16,8 @@ partial class StringWrapper
 
     public StringSlice Slice(int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = Length;
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
@@ -36,8 +32,7 @@ partial class StringWrapper
         if (length <= 0)
             return StringSlice.Empty;
         nuint castedLength = unchecked((nuint)length);
-        if (startIndex >= castedLength)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startIndex, castedLength);
         return unchecked(new StringSlice(this, (int)startIndex, (int)(castedLength - startIndex)));
     }
 

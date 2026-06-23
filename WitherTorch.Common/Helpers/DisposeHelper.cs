@@ -39,21 +39,21 @@ public static class DisposeHelper
         nuint limit = length;
         for (nuint i = 0; limit >= 4; limit -= 4, i += 4)
         {
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i));
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 1));
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 2));
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 3));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i + 1));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i + 2));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i + 3));
         }
         switch (limit)
         {
             case 3:
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 3));
+                Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, length - 3));
                 goto case 2;
             case 2:
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 2));
+                Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, length - 2));
                 goto case 1;
             case 1:
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 1));
+                Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, length - 1));
                 break;
         }
 
@@ -77,21 +77,21 @@ public static class DisposeHelper
         nuint limit = length;
         for (nuint i = 0; limit >= 4; limit -= 4, i += 4)
         {
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i));
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 1));
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 2));
-            Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, i + 3));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i + 1));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i + 2));
+            Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, i + 3));
         }
         switch (limit)
         {
             case 3:
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 3));
+                Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, length - 3));
                 goto case 2;
             case 2:
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 2));
+                Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, length - 2));
                 goto case 1;
             case 1:
-                Dispose(UnsafeHelper.AddTypedOffset(in arrayReference, length - 1));
+                Dispose(UnsafeHelper.AddTypedOffsetAsReadOnly(in arrayReference, length - 1));
                 break;
         }
 

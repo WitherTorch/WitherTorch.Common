@@ -8,8 +8,7 @@ public static partial class AppendOnlyCollection
 {
     public static IAppendOnlyCollection<T> CreateLimitedCollection<T>(int capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return EmptyAOCollection<T>.Instance;
         return new LimitedAOCollection<T>(capacity);

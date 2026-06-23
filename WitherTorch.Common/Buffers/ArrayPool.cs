@@ -15,6 +15,7 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
     protected const uint MinimumArraySize = 16;
 
     private static readonly LazyTiny<ArrayPool<T>> _sharedLazy = new LazyTiny<ArrayPool<T>>(CreateSharedPool, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly bool _isUnmanagedType = UnsafeHelper.IsUnmanagedType<T>();
 
     public static ArrayPool<T> Empty => EmptyImpl.Instance;
     public static ArrayPool<T> Shared => _sharedLazy.Value;
@@ -26,8 +27,7 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] Rent(int capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return Array.Empty<T>();
         if (capacity > Limits.MaxArrayLength)
@@ -38,8 +38,7 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] Rent(long capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return Array.Empty<T>();
         if (capacity > Limits.MaxArrayLength)
@@ -50,8 +49,7 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] Rent(nint capacity)
     {
-        if (capacity < 0)
-            throw new ArgumentOutOfRangeException(nameof(capacity));
+        ArgumentOutOfRangeException.ThrowIfNegative(capacity);
         if (capacity == 0)
             return Array.Empty<T>();
         if (capacity > Limits.MaxArrayLength)
@@ -91,12 +89,12 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
 
     protected abstract T[] RentCore(nuint capacity);
 
-    public unsafe void Return(T[] array)
+    public void Return(T[] array)
     {
         int length = array.Length;
         if (length <= 0)
             return;
-        if (!UnsafeHelper.IsUnmanagedType<T>())
+        if (!_isUnmanagedType)
             Array.Clear(array, 0, length);
         ReturnCore(array);
     }
@@ -108,7 +106,7 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
             return;
         if (clearArray)
         {
-            if (UnsafeHelper.IsUnmanagedType<T>())
+            if (_isUnmanagedType)
             {
 #pragma warning disable CS8500
                 fixed (void* ptr = array)

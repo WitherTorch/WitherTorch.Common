@@ -6,6 +6,7 @@ using InlineIL;
 using InlineMethod;
 
 using WitherTorch.Common;
+using WitherTorch.Common.Extensions;
 using WitherTorch.Common.Helpers;
 
 #pragma warning disable IDE0130
@@ -128,9 +129,7 @@ public static class MathF
 
         if (Math.Abs(value) < RoundingLimit)
         {
-            float power10 = UnsafeHelper.AddTypedOffset(
-                in UnsafeHelper.GetArrayDataReference(_power10),
-                digits);
+            float power10 = _power10.AsUnsafeRef()[digits];
             value = Round(value * power10, mode) / power10;
         }
 

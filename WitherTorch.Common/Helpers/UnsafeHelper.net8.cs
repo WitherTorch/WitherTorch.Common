@@ -348,48 +348,28 @@ public static unsafe partial class UnsafeHelper
     public static partial nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target) => (nuint)Unsafe.ByteOffset(in origin, in target);
 
     /// <inheritdoc cref="Unsafe.AddByteOffset{T}(ref T, nint)"/>
+    [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddByteOffset<T>(ref readonly T source, nint byteOffset)
-    {
-        IL.PushInRef(in source);
-        IL.Push(byteOffset);
-        IL.Emit.Add();
-        return ref IL.ReturnRef<T>();
-    }
+    public static partial ref T AddByteOffset<T>(ref T source, nint byteOffset)
+        => ref Unsafe.AddByteOffset(ref source, byteOffset);
 
     /// <inheritdoc cref="Unsafe.AddByteOffset{T}(ref T, nuint)"/>
+    [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset)
-    {
-        IL.PushInRef(in source);
-        IL.Push(byteOffset);
-        IL.Emit.Add();
-        return ref IL.ReturnRef<T>();
-    }
+    public static partial ref T AddByteOffset<T>(ref T source, nuint byteOffset)
+        => ref Unsafe.AddByteOffset(ref source, byteOffset);
 
     /// <inheritdoc cref="Unsafe.Add{T}(ref T, nint)"/>
+    [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddTypedOffset<T>(ref readonly T source, nint elementOffset)
-    {
-        IL.PushInRef(in source);
-        IL.Push(elementOffset);
-        IL.Emit.Sizeof(typeof(T));
-        IL.Emit.Mul();
-        IL.Emit.Add();
-        return ref IL.ReturnRef<T>();
-    }
+    public static partial ref T AddTypedOffset<T>(ref T source, nint elementOffset)
+        => ref Unsafe.Add(ref source, elementOffset);
 
     /// <inheritdoc cref="Unsafe.Add{T}(ref T, nuint)"/>
+    [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static partial ref T AddTypedOffset<T>(ref readonly T source, nuint elementOffset)
-    {
-        IL.PushInRef(in source);
-        IL.Push(elementOffset);
-        IL.Emit.Sizeof(typeof(T));
-        IL.Emit.Mul();
-        IL.Emit.Add();
-        return ref IL.ReturnRef<T>();
-    }
+    public static partial ref T AddTypedOffset<T>(ref T source, nuint elementOffset)
+        => ref Unsafe.Add(ref source, elementOffset);
 
     /// <inheritdoc cref="Unsafe.SkipInit{T}(out T)"/>
     [Inline(InlineBehavior.Keep, export: true)]

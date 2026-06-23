@@ -5,23 +5,25 @@ using System.Runtime.Intrinsics;
 
 using InlineMethod;
 
+using WitherTorch.Common.Structures;
+
 namespace WitherTorch.Common.Helpers;
 
 partial class SequenceHelper
 {
     unsafe partial class FastCore<T>
     {
-        private static partial void VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperatorType method)
+        private static partial Unit VectorizedUnaryOperationCore(ref T* ptr, ref nuint length, UnaryOperatorType type)
         {
             if (Limits.UseVector512() && length >= (nuint)Vector512<T>.Count)
-                VectorizedUnaryOperationCore_512(ref ptr, ref length, method);
+                VectorizedUnaryOperationCore_512(ref ptr, ref length, type);
             else if (Limits.UseVector256() && length >= (nuint)Vector256<T>.Count)
-                VectorizedUnaryOperationCore_256(ref ptr, ref length, method);
+                VectorizedUnaryOperationCore_256(ref ptr, ref length, type);
             else if (Limits.UseVector128() && length >= (nuint)Vector128<T>.Count)
-                VectorizedUnaryOperationCore_128(ref ptr, ref length, method);
+                VectorizedUnaryOperationCore_128(ref ptr, ref length, type);
             else
-                VectorizedUnaryOperationCore_64(ref ptr, ref length, method);
-            ScalarizedUnaryOperationCore(ref ptr, ref length, method);
+                VectorizedUnaryOperationCore_64(ref ptr, ref length, type);
+            return ScalarizedUnaryOperationCore(ref ptr, ref length, type);
         }
 
         [Inline(InlineBehavior.Remove)]
@@ -209,7 +211,7 @@ partial class SequenceHelper
         [InlineParameter] UnaryOperatorType method)
         => method switch
         {
-                UnaryOperatorType.Identity => sourceVector,
+            UnaryOperatorType.Identity => sourceVector,
             UnaryOperatorType.Not => ~sourceVector,
             _ => throw new ArgumentOutOfRangeException(nameof(method)),
         };
@@ -243,6 +245,358 @@ partial class SequenceHelper
                 UnaryOperatorType.Not => ~sourceVector,
                 _ => throw new ArgumentOutOfRangeException(nameof(method)),
             };
+    }
+
+    unsafe partial class FastCoreOfBoolean
+    {
+        private static partial Unit VectorizedUnaryOperationCore(ref bool* ptr, ref nuint length, UnaryOperatorType type)
+        {
+            if (Limits.UseVector512() && length >= (nuint)Vector512<byte>.Count)
+                VectorizedUnaryOperationCore_512(ref ptr, ref length, type);
+            else if (Limits.UseVector256() && length >= (nuint)Vector256<byte>.Count)
+                VectorizedUnaryOperationCore_256(ref ptr, ref length, type);
+            else if (Limits.UseVector128() && length >= (nuint)Vector128<bool>.Count)
+                VectorizedUnaryOperationCore_128(ref ptr, ref length, type);
+            else
+                VectorizedUnaryOperationCore_64(ref ptr, ref length, type);
+            return FastCore.IsIdempotence(type) ? Unit.Default : ScalarizedUnaryOperationCore(ref ptr, ref length, type);
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private static void VectorizedUnaryOperationCore_512(ref bool* ptr, ref nuint length, [InlineParameter] UnaryOperatorType type)
+        {
+            nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector512<byte>>();
+            if (headRemainder == 0)
+                goto VectorizedLoop;
+            else
+            {
+                if (FastCore.IsIdempotence(type))
+                {
+                    Vector512<byte> sourceVector = Vector512.Load((byte*)ptr);
+                    DoOperation(sourceVector, type).Store((byte*)ptr);
+                    if (length > (nuint)Vector512<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector512<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else
+                    {
+                        ptr += (nuint)Vector512<byte>.Count;
+                        length -= (nuint)Vector512<byte>.Count;
+                        goto TailProcess_Special;
+                    }
+                }
+                else
+                {
+                    if (length > (nuint)Vector512<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector512<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, type);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector512<byte>.Count * 2)
+                    {
+                        bool* ptr2 = ptr + Vector512<byte>.Count;
+                        Vector512<byte> sourceVector = Vector512.Load((byte*)ptr);
+                        Vector512<byte> sourceVector2 = Vector512.Load((byte*)ptr2);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        DoOperation(sourceVector2, type).Store((byte*)ptr2);
+                    }
+                    else
+                    {
+                        Vector512<byte> sourceVector = Vector512.Load((byte*)ptr);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        ptr += (nuint)Vector512<byte>.Count;
+                        length -= (nuint)Vector512<byte>.Count;
+                    }
+                }
+            }
+
+        VectorizedLoop:
+            do
+            {
+                Vector512<byte> sourceVector = Vector512.Load((byte*)ptr);
+                DoOperation(sourceVector, type).StoreAligned((byte*)ptr);
+                ptr += (nuint)Vector512<byte>.Count;
+                length -= (nuint)Vector512<byte>.Count;
+            } while (length >= (nuint)Vector512<byte>.Count);
+
+        TailProcess_Special:
+            if (length > 0)
+            {
+                ptr = ptr + length - (nuint)Vector512<byte>.Count;
+                Vector512<byte> sourceVector = Vector512.Load((byte*)ptr);
+                DoOperation(sourceVector, type).Store((byte*)ptr);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector512<byte> Normalize(in Vector512<byte> sourceVector) => sourceVector & Vector512<byte>.One;
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector512<byte> DoOperation(in Vector512<byte> sourceVector, [InlineParameter] UnaryOperatorType method)
+                => method switch
+                {
+                    UnaryOperatorType.Identity => Normalize(sourceVector),
+                    UnaryOperatorType.Not => Vector512.Equals(sourceVector, Vector512<byte>.Zero),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                };
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private static void VectorizedUnaryOperationCore_256(ref bool* ptr, ref nuint length, [InlineParameter] UnaryOperatorType type)
+        {
+            nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector256<byte>>();
+            if (headRemainder == 0)
+                goto VectorizedLoop;
+            else
+            {
+                if (FastCore.IsIdempotence(type))
+                {
+                    Vector256<byte> sourceVector = Vector256.Load((byte*)ptr);
+                    DoOperation(sourceVector, type).Store((byte*)ptr);
+                    if (length > (nuint)Vector256<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector256<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else
+                    {
+                        ptr += (nuint)Vector256<byte>.Count;
+                        length -= (nuint)Vector256<byte>.Count;
+                        goto TailProcess_Special;
+                    }
+                }
+                else
+                {
+                    if (length > (nuint)Vector256<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector256<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, type);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector256<byte>.Count * 2)
+                    {
+                        bool* ptr2 = ptr + Vector256<byte>.Count;
+                        Vector256<byte> sourceVector = Vector256.Load((byte*)ptr);
+                        Vector256<byte> sourceVector2 = Vector256.Load((byte*)ptr2);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        DoOperation(sourceVector2, type).Store((byte*)ptr2);
+                    }
+                    else
+                    {
+                        Vector256<byte> sourceVector = Vector256.Load((byte*)ptr);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        ptr += (nuint)Vector256<byte>.Count;
+                        length -= (nuint)Vector256<byte>.Count;
+                    }
+                }
+            }
+
+        VectorizedLoop:
+            do
+            {
+                Vector256<byte> sourceVector = Vector256.Load((byte*)ptr);
+                DoOperation(sourceVector, type).StoreAligned((byte*)ptr);
+                ptr += (nuint)Vector256<byte>.Count;
+                length -= (nuint)Vector256<byte>.Count;
+            } while (length >= (nuint)Vector256<byte>.Count);
+
+        TailProcess_Special:
+            if (length > 0)
+            {
+                ptr = ptr + length - (nuint)Vector256<byte>.Count;
+                Vector256<byte> sourceVector = Vector256.Load((byte*)ptr);
+                DoOperation(sourceVector, type).Store((byte*)ptr);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector256<byte> Normalize(in Vector256<byte> sourceVector) => sourceVector & Vector256<byte>.One;
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector256<byte> DoOperation(in Vector256<byte> sourceVector, [InlineParameter] UnaryOperatorType method)
+                => method switch
+                {
+                    UnaryOperatorType.Identity => Normalize(sourceVector),
+                    UnaryOperatorType.Not => Vector256.Equals(sourceVector, Vector256<byte>.Zero),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                };
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private static void VectorizedUnaryOperationCore_128(ref bool* ptr, ref nuint length, [InlineParameter] UnaryOperatorType type)
+        {
+            nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector128<byte>>();
+            if (headRemainder == 0)
+                goto VectorizedLoop;
+            else
+            {
+                if (FastCore.IsIdempotence(type))
+                {
+                    Vector128<byte> sourceVector = Vector128.Load((byte*)ptr);
+                    DoOperation(sourceVector, type).Store((byte*)ptr);
+                    if (length > (nuint)Vector128<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector128<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else
+                    {
+                        ptr += (nuint)Vector128<byte>.Count;
+                        length -= (nuint)Vector128<byte>.Count;
+                        goto TailProcess_Special;
+                    }
+                }
+                else
+                {
+                    if (length > (nuint)Vector128<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector128<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, type);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector128<byte>.Count * 2)
+                    {
+                        bool* ptr2 = ptr + Vector128<byte>.Count;
+                        Vector128<byte> sourceVector = Vector128.Load((byte*)ptr);
+                        Vector128<byte> sourceVector2 = Vector128.Load((byte*)ptr2);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        DoOperation(sourceVector2, type).Store((byte*)ptr2);
+                    }
+                    else
+                    {
+                        Vector128<byte> sourceVector = Vector128.Load((byte*)ptr);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        ptr += (nuint)Vector128<byte>.Count;
+                        length -= (nuint)Vector128<byte>.Count;
+                    }
+                }
+            }
+
+        VectorizedLoop:
+            do
+            {
+                Vector128<byte> sourceVector = Vector128.Load((byte*)ptr);
+                DoOperation(sourceVector, type).StoreAligned((byte*)ptr);
+                ptr += (nuint)Vector128<byte>.Count;
+                length -= (nuint)Vector128<byte>.Count;
+            } while (length >= (nuint)Vector128<byte>.Count);
+
+        TailProcess_Special:
+            if (length > 0)
+            {
+                ptr = ptr + length - (nuint)Vector128<byte>.Count;
+                Vector128<byte> sourceVector = Vector128.Load((byte*)ptr);
+                DoOperation(sourceVector, type).Store((byte*)ptr);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector128<byte> Normalize(in Vector128<byte> sourceVector) => sourceVector & Vector128<byte>.One;
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector128<byte> DoOperation(in Vector128<byte> sourceVector, [InlineParameter] UnaryOperatorType method)
+                => method switch
+                {
+                    UnaryOperatorType.Identity => Normalize(sourceVector),
+                    UnaryOperatorType.Not => Vector128.Equals(sourceVector, Vector128<byte>.Zero),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                };
+        }
+
+        [Inline(InlineBehavior.Remove)]
+        private static void VectorizedUnaryOperationCore_64(ref bool* ptr, ref nuint length, [InlineParameter] UnaryOperatorType type)
+        {
+            nuint headRemainder = (nuint)ptr % UnsafeHelper.SizeOf<Vector64<byte>>();
+            if (headRemainder == 0)
+                goto VectorizedLoop;
+            else
+            {
+                if (FastCore.IsIdempotence(type))
+                {
+                    Vector64<byte> sourceVector = Vector64.Load((byte*)ptr);
+                    DoOperation(sourceVector, type).Store((byte*)ptr);
+                    if (length > (nuint)Vector64<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector64<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else
+                    {
+                        ptr += (nuint)Vector64<byte>.Count;
+                        length -= (nuint)Vector64<byte>.Count;
+                        goto TailProcess_Special;
+                    }
+                }
+                else
+                {
+                    if (length > (nuint)Vector64<byte>.Count * 2)
+                    {
+                        headRemainder = (UnsafeHelper.SizeOf<Vector64<byte>>() - headRemainder) / UnsafeHelper.SizeOf<bool>(); // 取得數量
+                        ScalarizedUnaryOperationCore(ref ptr, ref headRemainder, type);
+                        ptr += headRemainder;
+                        length -= headRemainder;
+                        goto VectorizedLoop;
+                    }
+                    else if (length == (nuint)Vector64<byte>.Count * 2)
+                    {
+                        bool* ptr2 = ptr + Vector64<byte>.Count;
+                        Vector64<byte> sourceVector = Vector64.Load((byte*)ptr);
+                        Vector64<byte> sourceVector2 = Vector64.Load((byte*)ptr2);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        DoOperation(sourceVector2, type).Store((byte*)ptr2);
+                    }
+                    else
+                    {
+                        Vector64<byte> sourceVector = Vector64.Load((byte*)ptr);
+                        DoOperation(sourceVector, type).Store((byte*)ptr);
+                        ptr += (nuint)Vector64<byte>.Count;
+                        length -= (nuint)Vector64<byte>.Count;
+                    }
+                }
+            }
+
+        VectorizedLoop:
+            do
+            {
+                Vector64<byte> sourceVector = Vector64.Load((byte*)ptr);
+                DoOperation(sourceVector, type).StoreAligned((byte*)ptr);
+                ptr += (nuint)Vector64<byte>.Count;
+                length -= (nuint)Vector64<byte>.Count;
+            } while (length >= (nuint)Vector64<byte>.Count);
+
+        TailProcess_Special:
+            if (length > 0)
+            {
+                ptr = ptr + length - (nuint)Vector64<byte>.Count;
+                Vector64<byte> sourceVector = Vector64.Load((byte*)ptr);
+                DoOperation(sourceVector, type).Store((byte*)ptr);
+            }
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector64<byte> Normalize(in Vector64<byte> sourceVector) => sourceVector & Vector64<byte>.One;
+
+            [Inline(InlineBehavior.Remove)]
+            static Vector64<byte> DoOperation(in Vector64<byte> sourceVector, [InlineParameter] UnaryOperatorType method)
+                => method switch
+                {
+                    UnaryOperatorType.Identity => Normalize(sourceVector),
+                    UnaryOperatorType.Not => Vector64.Equals(sourceVector, Vector64<byte>.Zero),
+                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                };
+        }
     }
 }
 #endif

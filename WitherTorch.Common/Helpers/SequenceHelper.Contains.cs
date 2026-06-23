@@ -28,10 +28,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Contains(string str, char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
             throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
@@ -59,10 +57,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool Contains<T>(T[] array, T value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
@@ -95,10 +91,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsExclude(string str, char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
             throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
@@ -126,10 +120,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsExclude<T>(T[] array, T value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
@@ -162,10 +154,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsGreaterThan(string str, char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
             throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
@@ -193,10 +183,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsGreaterThan<T>(T[] array, T value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
@@ -229,10 +217,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsGreaterThanOrEquals(string str, char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
             throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
@@ -260,10 +246,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsGreaterThanOrEquals<T>(T[] array, T value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
@@ -296,10 +280,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsLessThan(string str, char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
             throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
@@ -327,10 +309,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsLessThan<T>(T[] array, T value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
@@ -363,10 +343,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsLessThanOrEquals(string str, char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
             throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
@@ -394,10 +372,8 @@ unsafe partial class SequenceHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool ContainsLessThanOrEquals<T>(T[] array, T value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
             throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));

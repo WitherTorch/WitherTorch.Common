@@ -22,18 +22,18 @@ public readonly ref struct UnsafeStringRef
     public ref readonly char LastElement
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref UnsafeHelper.AddTypedOffset(in UnsafeHelper.GetStringDataReference(_str), _str.Length - 1);
+        get => ref UnsafeHelper.AddTypedOffsetAsReadOnly(in UnsafeHelper.GetStringDataReference(_str), _str.Length - 1);
     }
 
     public ref readonly char this[nint index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref UnsafeHelper.AddTypedOffset(in UnsafeHelper.GetStringDataReference(_str), index);
+        get => ref UnsafeHelper.AddTypedOffsetAsReadOnly(in UnsafeHelper.GetStringDataReference(_str), index);
     }
 
     public ref readonly char this[nuint index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => ref UnsafeHelper.AddTypedOffset(in UnsafeHelper.GetStringDataReference(_str), index);
+        get => ref UnsafeHelper.AddTypedOffsetAsReadOnly(in UnsafeHelper.GetStringDataReference(_str), index);
     }
 }

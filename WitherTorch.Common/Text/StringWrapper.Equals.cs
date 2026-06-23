@@ -71,8 +71,7 @@ partial class StringWrapper
     {
         int length = Length;
         int otherLength = other.Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (otherLength == 0)
             return true;
         if (otherLength > length)
@@ -85,8 +84,7 @@ partial class StringWrapper
     public bool PartiallyEquals(string other, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (count < 0 || count > other.Length)
             throw new ArgumentOutOfRangeException(nameof(count));
         if (startIndex + count > length)
@@ -100,8 +98,7 @@ partial class StringWrapper
     {
         int length = Length;
         int otherLength = other.Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (otherLength == 0)
             return true;
         if (otherLength > length)
@@ -114,8 +111,7 @@ partial class StringWrapper
     public bool PartiallyEquals(StringWrapper other, int startIndex, int count)
     {
         int length = Length;
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (count < 0 || count > other.Length)
             throw new ArgumentOutOfRangeException(nameof(count));
         if (startIndex + count > length)

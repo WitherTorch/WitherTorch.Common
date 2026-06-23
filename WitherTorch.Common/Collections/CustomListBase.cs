@@ -178,10 +178,8 @@ public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAd
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void AddRange(T* ptr, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (count == 0)
             return;
 
@@ -247,8 +245,7 @@ public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAd
         int count = _count;
         if (count <= 0)
             return;
-        if (arrayIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(arrayIndex);
         if (_isUnmanagedType)
         {
             SequenceHelper.Copy(_array, 0, array, (nuint)arrayIndex, (nuint)count);

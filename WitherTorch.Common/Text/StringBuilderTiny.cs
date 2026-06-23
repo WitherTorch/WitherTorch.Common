@@ -151,8 +151,7 @@ public unsafe ref partial struct StringBuilderTiny : IStringWrapperConvertible, 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Append(string value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         int valueLength = value.Length;
         if (valueLength <= 0)
             return;
@@ -165,8 +164,7 @@ public unsafe ref partial struct StringBuilderTiny : IStringWrapperConvertible, 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Append(StringWrapper value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         int valueLength = value.Length;
         if (valueLength <= 0)
             return;
@@ -498,8 +496,7 @@ public unsafe ref partial struct StringBuilderTiny : IStringWrapperConvertible, 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Remove(int startIndex, int length)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (length <= 0)
             return;
         StringBuilder? builder = _builderLazy.GetValueDirectly();

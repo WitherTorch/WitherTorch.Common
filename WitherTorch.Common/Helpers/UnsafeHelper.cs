@@ -139,13 +139,13 @@ public static unsafe partial class UnsafeHelper
 
     public static partial nuint ByteOffsetUnsigned<T>(ref readonly T origin, ref readonly T target);
 
-    public static partial ref T AddByteOffset<T>(ref readonly T source, nint byteOffset);
+    public static partial ref T AddByteOffset<T>(ref T source, nint byteOffset);
 
-    public static partial ref T AddByteOffset<T>(ref readonly T source, nuint byteOffset);
+    public static partial ref T AddByteOffset<T>(ref T source, nuint byteOffset);
 
-    public static partial ref T AddTypedOffset<T>(ref readonly T source, nint elementOffset);
+    public static partial ref T AddTypedOffset<T>(ref T source, nint elementOffset);
 
-    public static partial ref T AddTypedOffset<T>(ref readonly T source, nuint elementOffset);
+    public static partial ref T AddTypedOffset<T>(ref T source, nuint elementOffset);
 
     public static partial void SkipInit<T>(out T value);
 
@@ -178,6 +178,22 @@ public static unsafe partial class UnsafeHelper
     public static partial int SizeOfSigned<T>();
 
     public static partial uint SizeOf<T>();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly T AddByteOffsetAsReadOnly<T>(ref readonly T source, nint byteOffset)
+        => ref AddByteOffset(ref AsRefIn(in source), byteOffset);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly T AddByteOffsetAsReadOnly<T>(ref readonly T source, nuint byteOffset)
+        => ref AddByteOffset(ref AsRefIn(in source), byteOffset);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly T AddTypedOffsetAsReadOnly<T>(ref readonly T source, nint elementOffset)
+        => ref AddTypedOffset(ref AsRefIn(in source), elementOffset);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref readonly T AddTypedOffsetAsReadOnly<T>(ref readonly T source, nuint elementOffset)
+        => ref AddTypedOffset(ref AsRefIn(in source), elementOffset);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsIntegerType<T>() => IsSignedIntegerType<T>() || IsUnsignedIntegerType<T>();

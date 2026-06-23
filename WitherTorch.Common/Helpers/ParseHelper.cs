@@ -71,10 +71,8 @@ public static unsafe partial class ParseHelper
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ParseToInt32_Other(StringWrapper input, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = input.Length;
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));

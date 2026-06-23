@@ -9,10 +9,8 @@ partial struct StringSlice : IStringLike
 
     public bool Contains(char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         return _original.Contains(value, _startIndex + startIndex, count);
@@ -23,10 +21,8 @@ partial struct StringSlice : IStringLike
 
     public bool Contains(string value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         return _original.Contains(value, _startIndex + startIndex, count);
@@ -37,10 +33,8 @@ partial struct StringSlice : IStringLike
 
     public bool Contains(StringWrapper value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         return _original.Contains(value, _startIndex + startIndex, count);
@@ -83,10 +77,8 @@ partial struct StringSlice : IStringLike
 
     public int IndexOf(char value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         int offset = _startIndex;
@@ -103,10 +95,8 @@ partial struct StringSlice : IStringLike
 
     public int IndexOf(string value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         int offset = _startIndex;
@@ -123,10 +113,8 @@ partial struct StringSlice : IStringLike
 
     public int IndexOf(StringWrapper value, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         int offset = _startIndex;
@@ -143,10 +131,8 @@ partial struct StringSlice : IStringLike
 
     public bool PartiallyEquals(string other, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         return _original.PartiallyEquals(other, _startIndex + startIndex, count);
@@ -161,10 +147,8 @@ partial struct StringSlice : IStringLike
 
     public bool PartiallyEquals(StringWrapper other, int startIndex, int count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > _length)
             throw new ArgumentOutOfRangeException(startIndex >= _length ? nameof(startIndex) : nameof(count));
         return _original.PartiallyEquals(other, _startIndex + startIndex, count);
@@ -175,8 +159,7 @@ partial struct StringSlice : IStringLike
         if (startIndex == 0)
             return this;
         nuint length = (nuint)_length;
-        if (startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(startIndex, length);
         if (length == 0)
             return this;
         return new StringSlice(_original, _startIndex + (int)startIndex, (int)(length - startIndex));
@@ -184,10 +167,8 @@ partial struct StringSlice : IStringLike
 
     public StringSlice Slice(nuint startIndex, nuint count)
     {
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         nuint length = (nuint)_length;
         if (startIndex + count > length)
             throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
