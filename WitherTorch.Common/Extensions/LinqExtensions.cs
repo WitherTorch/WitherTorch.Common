@@ -109,10 +109,10 @@ public static class LinqExtensions
         return first.Concat(second);
 
     ReturnSecond:
-        return second ?? throw new ArgumentNullException(nameof(second));
+        return NullSafetyHelper.ThrowIfNull(second);
 
     ReturnFirst:
-        return first ?? throw new ArgumentNullException(nameof(first));
+        return NullSafetyHelper.ThrowIfNull(first);
     }
 
     /// <inheritdoc cref="Enumerable.Concat{TSource}(IEnumerable{TSource}, IEnumerable{TSource})"/>

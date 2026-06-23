@@ -184,7 +184,7 @@ internal sealed class Condition
         return wasSignaled;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw() => throw new ArgumentOutOfRangeException(nameof(millisecondsTimeout));
+        static void Throw() => ArgumentOutOfRangeException.Throw(nameof(millisecondsTimeout));
     }
 
     public void SignalAll()

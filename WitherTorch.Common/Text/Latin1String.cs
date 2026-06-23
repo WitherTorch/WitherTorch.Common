@@ -120,7 +120,7 @@ internal sealed partial class Latin1String : AsciiLikeString, IPinnableReference
             StringType.Latin1 => this,
             StringType.Utf8 => ToStringWrapper_Utf8(),
             StringType.Utf16 => CreateUtf16String(ToString()),
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            _ => ArgumentOutOfRangeException.Throw<StringWrapper>(nameof(type))
         };
 
     private unsafe AsciiString ToStringWrapper_Ascii()

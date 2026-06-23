@@ -35,7 +35,7 @@ internal sealed class AutoResetEventLite : CriticalFinalizerObject, IDisposable
             return NativeMethods.WaitForWaitingHandle(_handle, (uint)millisecondsTimeout);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw() => throw new ArgumentOutOfRangeException(nameof(millisecondsTimeout));
+        static void Throw() => ArgumentOutOfRangeException.Throw(nameof(millisecondsTimeout));
     }
 
     private void DisposeCore()

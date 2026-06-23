@@ -25,7 +25,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return false;
         return unchecked(ContainsCore(value, (nuint)startIndex, (nuint)length));
@@ -50,7 +50,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return false;
         length = value.Length;
@@ -80,7 +80,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return false;
         length = value.Length;
@@ -105,7 +105,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return -1;
         return unchecked(IndexOfCore(value, (nuint)startIndex, (nuint)count));
@@ -130,7 +130,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return -1;
         length = value.Length;
@@ -160,7 +160,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return -1;
         length = value.Length;

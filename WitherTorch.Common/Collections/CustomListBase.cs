@@ -19,16 +19,14 @@ public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAd
 
     public CustomListBase(T[] array)
     {
-        if (array is null)
-            throw new ArgumentNullException(nameof(array));
+        ArgumentNullException.ThrowIfNull(array);
         _array = array;
         _count = array.Length;
     }
 
     public CustomListBase(T[] array, int initialCount)
     {
-        if (array is null)
-            throw new ArgumentNullException(nameof(array));
+        ArgumentNullException.ThrowIfNull(array);
         _array = array;
         _count = MathHelper.Clamp(initialCount, 0, array.Length);
     }

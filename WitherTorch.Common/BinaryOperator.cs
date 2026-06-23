@@ -73,7 +73,7 @@ public abstract class BinaryOperator<T> : IBinaryOperator<T>
             BinaryOperatorType.Divide => Divide,
             BinaryOperatorType.Min => Min,
             BinaryOperatorType.Max => Max,
-            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            _ => ArgumentOutOfRangeException.Throw<BinaryOperator<T>>(nameof(type)),
         };
 
     public abstract T Operate(T a, T b);

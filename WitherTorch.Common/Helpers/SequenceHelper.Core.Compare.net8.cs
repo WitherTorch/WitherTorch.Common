@@ -20,7 +20,7 @@ partial class SequenceHelper
             CompareMethod.GreaterThanOrEquals => Vector512.GreaterThanOrEqual(sourceVector, valueVector),
             CompareMethod.LessThan => Vector512.LessThan(sourceVector, valueVector),
             CompareMethod.LessThanOrEquals => Vector512.LessThanOrEqual(sourceVector, valueVector),
-            _ => throw new ArgumentOutOfRangeException(nameof(method)),
+            _ => ArgumentOutOfRangeException.Throw<Vector512<T>>(nameof(method)),
         };
 
         [Inline(InlineBehavior.Remove)]
@@ -33,7 +33,7 @@ partial class SequenceHelper
                 CompareMethod.GreaterThanOrEquals => Vector256.GreaterThanOrEqual(sourceVector, valueVector),
                 CompareMethod.LessThan => Vector256.LessThan(sourceVector, valueVector),
                 CompareMethod.LessThanOrEquals => Vector256.LessThanOrEqual(sourceVector, valueVector),
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector256<T>>(nameof(method)),
             };
 
         [Inline(InlineBehavior.Remove)]
@@ -46,7 +46,7 @@ partial class SequenceHelper
                 CompareMethod.GreaterThanOrEquals => Vector128.GreaterThanOrEqual(sourceVector, valueVector),
                 CompareMethod.LessThan => Vector128.LessThan(sourceVector, valueVector),
                 CompareMethod.LessThanOrEquals => Vector128.LessThanOrEqual(sourceVector, valueVector),
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector128<T>>(nameof(method)),
             };
 
         [Inline(InlineBehavior.Remove)]
@@ -59,7 +59,7 @@ partial class SequenceHelper
                 CompareMethod.GreaterThanOrEquals => Vector64.GreaterThanOrEqual(sourceVector, valueVector),
                 CompareMethod.LessThan => Vector64.LessThan(sourceVector, valueVector),
                 CompareMethod.LessThanOrEquals => Vector64.LessThanOrEqual(sourceVector, valueVector),
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector64<T>>(nameof(method)),
             };
     }
 }

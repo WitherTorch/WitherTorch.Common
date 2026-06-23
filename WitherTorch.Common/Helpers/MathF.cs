@@ -115,7 +115,7 @@ public static class MathF
         {
             MidpointRounding.AwayFromZero => Truncate(value + CopySign(0.49999997f, value)),
             MidpointRounding.ToEven => Round(value),
-            _ => throw new ArgumentOutOfRangeException(nameof(mode)),
+            _ => ArgumentOutOfRangeException.Throw<float>(nameof(mode)),
         };
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -125,7 +125,7 @@ public static class MathF
         const float RoundingLimit = 1e8f;
 
         if (digits > MaxRoundingDigits)
-            return Throw();
+            return ArgumentOutOfRangeException.Throw<float>(nameof(digits));
 
         if (Math.Abs(value) < RoundingLimit)
         {
@@ -134,9 +134,6 @@ public static class MathF
         }
 
         return value;
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        static float Throw() => throw new ArgumentOutOfRangeException(nameof(digits));
     }
 
     [Inline(InlineBehavior.Keep, export: true)]

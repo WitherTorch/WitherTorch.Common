@@ -37,7 +37,7 @@ public static partial class ArrayHelper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return SequenceHelper.Contains((nint*)ptr + startIndex, unchecked((nuint)count), 0);
     }
@@ -55,7 +55,7 @@ public static partial class ArrayHelper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return SequenceHelper.ContainsExclude((nint*)ptr + startIndex, unchecked((nuint)count), 0);
     }
@@ -76,7 +76,7 @@ public static partial class ArrayHelper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
         {
             int index = SequenceHelper.IndexOf((nint*)ptr + startIndex, count, 0);
@@ -100,7 +100,7 @@ public static partial class ArrayHelper
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
         {
             int index = SequenceHelper.IndexOfExclude((nint*)ptr + startIndex, count, 0);

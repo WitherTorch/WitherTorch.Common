@@ -77,7 +77,7 @@ partial class StringWrapper
         if (otherLength > length)
             return false;
         if (startIndex + otherLength > length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         return unchecked(PartiallyEqualsCore(other, (nuint)startIndex, (nuint)otherLength));
     }
 
@@ -86,9 +86,9 @@ partial class StringWrapper
         int length = Length;
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (count < 0 || count > other.Length)
-            throw new ArgumentOutOfRangeException(nameof(count));
+            ArgumentOutOfRangeException.Throw(nameof(count));
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return true;
         return unchecked(PartiallyEqualsCore(other, (nuint)startIndex, (nuint)count));
@@ -104,7 +104,7 @@ partial class StringWrapper
         if (otherLength > length)
             return false;
         if (startIndex + otherLength > length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         return unchecked(PartiallyEqualsCore(other, (nuint)startIndex, (nuint)otherLength));
     }
 
@@ -113,9 +113,9 @@ partial class StringWrapper
         int length = Length;
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         if (count < 0 || count > other.Length)
-            throw new ArgumentOutOfRangeException(nameof(count));
+            ArgumentOutOfRangeException.Throw(nameof(count));
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return true;
         return unchecked(PartiallyEqualsCore(other, (nuint)startIndex, (nuint)count));

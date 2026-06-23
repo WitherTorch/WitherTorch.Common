@@ -50,7 +50,7 @@ public readonly partial struct StringSlice : IStringWrapperConvertible
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(length);
         if (startIndex + length > original.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= original.Length ? nameof(startIndex) : nameof(length));
+            ArgumentOutOfRangeException.Throw(startIndex >= original.Length ? nameof(startIndex) : nameof(length));
         if (length == 0)
             return Empty;
         return new StringSlice(original, startIndex, length);
@@ -74,7 +74,7 @@ public readonly partial struct StringSlice : IStringWrapperConvertible
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = _length;
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return Empty;
         if (startIndex == 0 && startIndex + count == length)

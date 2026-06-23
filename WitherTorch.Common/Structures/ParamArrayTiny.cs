@@ -76,7 +76,7 @@ public readonly ref struct ParamArrayTiny<T>
         {
             int length = _length;
             if (index < 0 || index >= length)
-                throw new ArgumentOutOfRangeException(nameof(index));
+                return IndexOutOfRangeException.Throw<T>();
             if (length > 3)
                 return _array![index];
             return index switch
@@ -84,7 +84,7 @@ public readonly ref struct ParamArrayTiny<T>
                 0 => _tinyArray._item1!,
                 1 => _tinyArray._item2!,
                 2 => _tinyArray._item3!,
-                _ => throw new ArgumentOutOfRangeException(nameof(index)),
+                _ => IndexOutOfRangeException.Throw<T>()
             };
         }
     }

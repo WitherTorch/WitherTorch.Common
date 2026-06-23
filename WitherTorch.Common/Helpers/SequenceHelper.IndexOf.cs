@@ -20,7 +20,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOf(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -32,7 +32,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOf(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -49,7 +49,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOf(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -61,7 +61,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOf(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -88,7 +88,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -100,7 +100,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -117,7 +117,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -129,7 +129,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfExclude(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -156,7 +156,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -168,7 +168,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -185,7 +185,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -197,7 +197,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfGreaterThan(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -224,7 +224,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -236,7 +236,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -253,7 +253,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -265,7 +265,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfGreaterThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -292,7 +292,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -304,7 +304,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -321,7 +321,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -333,7 +333,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfLessThan(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -360,7 +360,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -372,7 +372,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
     }
@@ -389,7 +389,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value), ptr);
     }
@@ -401,7 +401,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ConvertToIndex32(PointerIndexOfLessThanOrEquals(ptr + startIndex, unchecked((uint)count), value), ptr);
     }

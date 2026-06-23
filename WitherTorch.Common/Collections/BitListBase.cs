@@ -45,13 +45,13 @@ public abstract class BitListBase : IList<bool>, IReadOnlyList<bool>
         get
         {
             if (index < 0 || index >= _count)
-                throw new ArgumentOutOfRangeException(nameof(index));
+                ArgumentOutOfRangeException.Throw(nameof(index));
             return GetBit(index);
         }
         set
         {
             if (index < 0 || index >= _count)
-                throw new ArgumentOutOfRangeException(nameof(index));
+                ArgumentOutOfRangeException.Throw(nameof(index));
             SetBit(index, value);
         }
     }
@@ -109,7 +109,7 @@ public abstract class BitListBase : IList<bool>, IReadOnlyList<bool>
     {
         int count = _count;
         if (arrayIndex < 0 || arrayIndex + count > array.Length)
-            throw new ArgumentOutOfRangeException(nameof(arrayIndex));
+            ArgumentOutOfRangeException.Throw(nameof(arrayIndex));
         int fullSections = MathHelper.DivRem(count, SectionSize, out int lastSectionBits);
         fixed (nuint* ptr = _array)
         {
@@ -148,7 +148,7 @@ public abstract class BitListBase : IList<bool>, IReadOnlyList<bool>
     {
         int oldCount = _count;
         if (index < 0 || index > oldCount)
-            throw new ArgumentOutOfRangeException(nameof(index));
+            ArgumentOutOfRangeException.Throw(nameof(index));
         _count = oldCount + 1;
         EnsureCapacity();
         if (index == oldCount)
@@ -171,7 +171,7 @@ public abstract class BitListBase : IList<bool>, IReadOnlyList<bool>
     public void RemoveAt(int index)
     {
         if (index < 0 || index >= _count)
-            throw new ArgumentOutOfRangeException(nameof(index));
+            ArgumentOutOfRangeException.Throw(nameof(index));
         RemoveAtCore(index);
     }
 

@@ -28,7 +28,7 @@ public abstract unsafe partial class NativeObject : CriticalFinalizerObject, ICh
         {
             ReferenceType.NeedBinding => null,
             ReferenceType.Owned or ReferenceType.Weak => nativePointer,
-            _ => throw new ArgumentException("Invalid reference type!", nameof(referenceType)),
+            _ => (void*)ArgumentException.Throw<nuint>("Invalid reference type!", nameof(referenceType)),
         };
         _referenceType = referenceType;
     }

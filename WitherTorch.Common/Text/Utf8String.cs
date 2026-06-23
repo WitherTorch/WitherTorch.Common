@@ -161,7 +161,7 @@ internal sealed partial class Utf8String : StringWrapper, IPinnableReference<byt
             StringType.Latin1 => ToStringWrapper_Latin1(),
             StringType.Utf8 => this,
             StringType.Utf16 => CreateUtf16String(ToString()),
-            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            _ => ArgumentOutOfRangeException.Throw<StringWrapper>(nameof(type)),
         };
 
     ref readonly byte IPinnableReference<byte>.GetPinnableReference()

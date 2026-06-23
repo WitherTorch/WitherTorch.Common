@@ -99,6 +99,6 @@ internal sealed partial class AsciiString : AsciiLikeString, IPinnableReference<
             StringType.Empty => Empty,
             StringType.Ascii or StringType.Latin1 or StringType.Utf8 => this,
             StringType.Utf16 => CreateUtf16String(ToString()),
-            _ => throw new ArgumentOutOfRangeException(nameof(type))
+            _ => ArgumentOutOfRangeException.Throw<StringWrapper>(nameof(type))
         };
 }

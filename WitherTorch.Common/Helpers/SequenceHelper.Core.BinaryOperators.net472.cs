@@ -136,7 +136,7 @@ partial class SequenceHelper
                     BinaryOperatorType.Divide => sourceVector / valueVector,
                     BinaryOperatorType.Min => Vector.Min(sourceVector, valueVector),
                     BinaryOperatorType.Max => Vector.Max(sourceVector, valueVector),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector<T>>(nameof(method)),
                 };
         }
     }
@@ -259,7 +259,7 @@ partial class SequenceHelper
                     BinaryOperatorType.Or or BinaryOperatorType.Max => Normalize(sourceVector) | valueVector,
                     BinaryOperatorType.And or BinaryOperatorType.Multiply or BinaryOperatorType.Min => sourceVector & valueVector,
                     BinaryOperatorType.Xor or BinaryOperatorType.Add or BinaryOperatorType.Subtract => Normalize(sourceVector) ^ valueVector,
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector<byte>>(nameof(method)),
                 };
         }
     }

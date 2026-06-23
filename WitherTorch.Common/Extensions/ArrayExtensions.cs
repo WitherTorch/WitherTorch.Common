@@ -42,7 +42,7 @@ public static class ArrayExtensions
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfNegative(length);
             if (index + length > arrayLength)
-                throw new ArgumentOutOfRangeException(index >= arrayLength ? nameof(index) : nameof(length));
+                ArgumentOutOfRangeException.Throw(index >= arrayLength ? nameof(index) : nameof(length));
             fixed (T* ptr = array)
                 UnsafeHelper.InitBlockUnaligned(ptr + index, default, unchecked((nuint)length) * UnsafeHelper.SizeOf<T>());
         }
@@ -68,7 +68,7 @@ public static class ArrayExtensions
             ArgumentOutOfRangeException.ThrowIfNegative(count);
             int limit = startIndex + count;
             if (limit > length)
-                throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+                ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
             if (typeof(T) == typeof(byte) || typeof(T) == typeof(sbyte))
             {
                 fixed (T* ptr = array)

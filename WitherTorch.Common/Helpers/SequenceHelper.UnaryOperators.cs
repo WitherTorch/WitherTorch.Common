@@ -22,7 +22,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             NotCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex));
     }
@@ -34,7 +34,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             NotCore(ptr + startIndex, unchecked((nuint)count));
     }
@@ -63,7 +63,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             OperateCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), @operator);
     }
@@ -73,7 +73,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             OperateCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), operation);
     }
@@ -85,7 +85,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             OperateCore(ptr + startIndex, unchecked((nuint)count), @operator);
     }
@@ -97,7 +97,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             OperateCore(ptr + startIndex, unchecked((nuint)count), operation);
     }

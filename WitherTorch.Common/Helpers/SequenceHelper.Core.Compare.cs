@@ -30,7 +30,7 @@ partial class SequenceHelper
                 CompareMethod.GreaterThanOrEquals => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsGreaterThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsGreaterThanOrEquals(item, value),
                 CompareMethod.LessThan => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsLessThanUnsigned(item, value) : UnsafeHelper.IsLessThan(item, value),
                 CompareMethod.LessThanOrEquals => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.IsLessThanOrEqualsUnsigned(item, value) : UnsafeHelper.IsLessThanOrEquals(item, value),
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<bool>(nameof(method)),
             };
     }
 
@@ -42,7 +42,7 @@ partial class SequenceHelper
             {
                 CompareMethod.Include => comparer.Equals(item, value),
                 CompareMethod.Exclude => !comparer.Equals(item, value),
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<bool>(nameof(method)),
             };
 
         [Inline(InlineBehavior.Remove)]
@@ -55,7 +55,7 @@ partial class SequenceHelper
                 CompareMethod.GreaterThanOrEquals => result >= 0,
                 CompareMethod.LessThan => result < 0,
                 CompareMethod.LessThanOrEquals => result <= 0,
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<bool>(nameof(method)),
             };
         }
     }

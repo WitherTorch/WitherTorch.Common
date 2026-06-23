@@ -38,7 +38,7 @@ unsafe partial class SequenceHelper
             StringComparison.InvariantCultureIgnoreCase => CultureInfo.InvariantCulture.CompareInfo.Compare(a, b, CompareOptions.IgnoreCase) == 0,
             StringComparison.OrdinalIgnoreCase => EqualsIgnoreCaseCore(a, b),
             StringComparison.Ordinal => EqualsCore(a, b),
-            _ => throw new ArgumentOutOfRangeException(nameof(comparisonType))
+            _ => ArgumentOutOfRangeException.Throw<bool>(nameof(comparisonType))
         };
     }
 

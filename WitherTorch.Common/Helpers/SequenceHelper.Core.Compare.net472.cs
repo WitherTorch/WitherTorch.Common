@@ -20,7 +20,7 @@ partial class SequenceHelper
                 CompareMethod.GreaterThanOrEquals => Vector.GreaterThanOrEqual(sourceVector, valueVector),
                 CompareMethod.LessThan => Vector.LessThan(sourceVector, valueVector),
                 CompareMethod.LessThanOrEquals => Vector.LessThanOrEqual(sourceVector, valueVector),
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector<T>>(nameof(method)),
             };
     }
 }

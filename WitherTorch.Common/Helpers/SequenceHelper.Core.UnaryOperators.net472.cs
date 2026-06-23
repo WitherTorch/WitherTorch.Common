@@ -115,7 +115,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => sourceVector,
                     UnaryOperatorType.Not => ~sourceVector,
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector<T>>(nameof(method)),
                 };
         }
     }
@@ -207,7 +207,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => Normalize(sourceVector),
                     UnaryOperatorType.Not => Vector.Equals(sourceVector, Vector<byte>.Zero),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector<byte>>(nameof(method)),
                 };
         }
     }

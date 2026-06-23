@@ -127,7 +127,7 @@ partial class SequenceHelper
                     BinaryOperatorType.Divide => VectorizedDivide(ptr, length, value),
                     BinaryOperatorType.Min => VectorizedMin(ptr, length, value),
                     BinaryOperatorType.Max => VectorizedMax(ptr, length, value),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Unit>(nameof(method)),
                 };
             }
             return ScalarizedBinaryOperationCore(ref ptr, ref length, value, method);
@@ -177,7 +177,7 @@ partial class SequenceHelper
                     BinaryOperatorType.Divide => UnsafeHelper.IsUnsignedIntegerType<T>() ? UnsafeHelper.DivideUnsigned(item, value) : UnsafeHelper.Divide(item, value),
                     BinaryOperatorType.Min => UnsafeHelper.Min(item, value),
                     BinaryOperatorType.Max => UnsafeHelper.Max(item, value),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<T>(nameof(method)),
                 };
         }
     }
@@ -205,7 +205,7 @@ partial class SequenceHelper
             => BinaryOperationCore(ref ptr, ref length, value, BinaryOperatorType.Xor);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Unit Divide(bool* ptr, nuint length, bool value) 
+        public static Unit Divide(bool* ptr, nuint length, bool value)
             => value ? Left(ptr, length, value) : FastCore.ThrowDivideByZeroException();
 
         [LocalsInit(false)]
@@ -246,7 +246,7 @@ partial class SequenceHelper
                     BinaryOperatorType.Or => VectorizedOr(ptr, length, value),
                     BinaryOperatorType.And => VectorizedAnd(ptr, length, value),
                     BinaryOperatorType.Xor => VectorizedXor(ptr, length, value),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Unit>(nameof(method)),
                 };
 
             }
@@ -296,7 +296,7 @@ partial class SequenceHelper
                     BinaryOperatorType.Or or BinaryOperatorType.Max => UnsafeHelper.Or(Normalize(item), value),
                     BinaryOperatorType.And or BinaryOperatorType.Multiply or BinaryOperatorType.Min => UnsafeHelper.And(item, value),
                     BinaryOperatorType.Xor or BinaryOperatorType.Add or BinaryOperatorType.Subtract => UnsafeHelper.Xor(Normalize(item), value),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<bool>(nameof(method)),
                 };
             }
         }
@@ -362,7 +362,7 @@ partial class SequenceHelper
                 BinaryOperatorType.Divide => BinaryOperator<T>.Divide,
                 BinaryOperatorType.Min => BinaryOperator<T>.Min,
                 BinaryOperatorType.Max => BinaryOperator<T>.Max,
-                _ => throw new ArgumentOutOfRangeException(nameof(operatorType))
+                _ => ArgumentOutOfRangeException.Throw<BinaryOperator<T>>(nameof(operatorType))
             });
         }
 

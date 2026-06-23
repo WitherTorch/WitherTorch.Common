@@ -40,13 +40,11 @@ public static unsafe partial class ParseHelper
 #if NET5_0_OR_GREATER
         return int.Parse(input.AsSpan(startIndex, count));
 #else
-        if (startIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = input.Length;
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = input)
             return ParseToInt32(ptr + startIndex, count);
 #endif
@@ -75,7 +73,7 @@ public static unsafe partial class ParseHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = input.Length;
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         return ParseToInt32_OtherChecked(input, unchecked((nuint)startIndex), unchecked((nuint)count));
     }
 

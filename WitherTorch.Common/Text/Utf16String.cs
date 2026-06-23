@@ -97,7 +97,7 @@ internal sealed partial class Utf16String : StringWrapper, IPinnableReference<ch
                 StringType.Ascii => StringCreateOptions.ForceUseAscii,
                 StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
                 StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
-                _ => throw new ArgumentOutOfRangeException(nameof(type)),
+                _ => ArgumentOutOfRangeException.Throw<StringCreateOptions>(nameof(type)),
             })
         };
 

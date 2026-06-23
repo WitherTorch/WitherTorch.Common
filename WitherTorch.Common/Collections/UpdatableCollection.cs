@@ -36,7 +36,7 @@ public sealed class UpdatableCollection<T, TList> : ICollection<T>, IDisposable 
     public UpdatableCollection(TList list)
     {
         if (list.IsReadOnly)
-            throw new ArgumentException("the list cannot be readonly!", nameof(list));
+            ArgumentException.Throw("the list cannot be readonly!", nameof(list));
         _list = list;
         _addList = new PooledList<T>();
         _removeList = new PooledList<T>();

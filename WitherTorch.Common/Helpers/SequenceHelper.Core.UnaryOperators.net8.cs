@@ -213,7 +213,7 @@ partial class SequenceHelper
         {
             UnaryOperatorType.Identity => sourceVector,
             UnaryOperatorType.Not => ~sourceVector,
-            _ => throw new ArgumentOutOfRangeException(nameof(method)),
+            _ => ArgumentOutOfRangeException.Throw<Vector512<T>>(nameof(method)),
         };
 
         [Inline(InlineBehavior.Remove)]
@@ -223,7 +223,7 @@ partial class SequenceHelper
             {
                 UnaryOperatorType.Identity => sourceVector,
                 UnaryOperatorType.Not => ~sourceVector,
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector256<T>>(nameof(method)),
             };
 
         [Inline(InlineBehavior.Remove)]
@@ -233,7 +233,7 @@ partial class SequenceHelper
             {
                 UnaryOperatorType.Identity => sourceVector,
                 UnaryOperatorType.Not => ~sourceVector,
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector128<T>>(nameof(method)),
             };
 
         [Inline(InlineBehavior.Remove)]
@@ -243,7 +243,7 @@ partial class SequenceHelper
             {
                 UnaryOperatorType.Identity => sourceVector,
                 UnaryOperatorType.Not => ~sourceVector,
-                _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                _ => ArgumentOutOfRangeException.Throw<Vector64<T>>(nameof(method)),
             };
     }
 
@@ -342,7 +342,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => Normalize(sourceVector),
                     UnaryOperatorType.Not => Vector512.Equals(sourceVector, Vector512<byte>.Zero),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector512<byte>>(nameof(method)),
                 };
         }
 
@@ -426,7 +426,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => Normalize(sourceVector),
                     UnaryOperatorType.Not => Vector256.Equals(sourceVector, Vector256<byte>.Zero),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector256<byte>>(nameof(method)),
                 };
         }
 
@@ -510,7 +510,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => Normalize(sourceVector),
                     UnaryOperatorType.Not => Vector128.Equals(sourceVector, Vector128<byte>.Zero),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector128<byte>>(nameof(method)),
                 };
         }
 
@@ -594,7 +594,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => Normalize(sourceVector),
                     UnaryOperatorType.Not => Vector64.Equals(sourceVector, Vector64<byte>.Zero),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Vector64<byte>>(nameof(method)),
                 };
         }
     }

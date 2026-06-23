@@ -20,7 +20,7 @@ partial class StringWrapper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = Length;
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return StringSlice.Empty;
         return unchecked(new StringSlice(this, startIndex, count));
@@ -43,7 +43,7 @@ partial class StringWrapper
             return StringSlice.Empty;
         nuint castedLength = unchecked((nuint)length);
         if (startIndex + count > castedLength)
-            throw new ArgumentOutOfRangeException(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return StringSlice.Empty;
         return unchecked(new StringSlice(this, (int)startIndex, (int)count));

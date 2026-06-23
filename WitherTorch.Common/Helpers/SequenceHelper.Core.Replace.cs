@@ -446,7 +446,8 @@ partial class SequenceHelper
                         VectorizedReplaceLessThanOrEquals(ptr, length, filter, replacement);
                         break;
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(method));
+                        ArgumentOutOfRangeException.Throw(nameof(method));
+                        break;
                 }
             }
 

@@ -17,7 +17,7 @@ unsafe partial class SequenceHelper
         if (length <= 0 || ReferenceEquals(sourceArray, destinationArray))
             return;
         if (destinationArray.Length < length)
-            throw new ArgumentException($"Cannot copy {sourceArray}'s items into ${destinationArray}!", nameof(destinationArray));
+            ArgumentException.Throw($"Cannot copy {sourceArray}'s items into ${destinationArray}!", nameof(destinationArray));
         fixed (T* source = sourceArray, destination = destinationArray)
             CopyCore(source, destination, unchecked((nuint)length));
     }
@@ -73,12 +73,12 @@ unsafe partial class SequenceHelper
     private static void ThrowIfArgumentGroupGreaterThanLimit(nuint startIndex, nuint length, int limit, string argumentName1, string argumentName2)
     {
         if (limit < 0)
-            throw new ArgumentOutOfRangeException(argumentName1);
+            ArgumentOutOfRangeException.Throw(argumentName1);
         nuint castedLimit = (nuint)limit;
         if (castedLimit <= startIndex)
-            throw new ArgumentOutOfRangeException(argumentName1);
+            ArgumentOutOfRangeException.Throw(argumentName1);
         castedLimit -= startIndex;
         if (castedLimit < length)
-            throw new ArgumentOutOfRangeException(argumentName2);
+            ArgumentOutOfRangeException.Throw(argumentName2);
     }
 }

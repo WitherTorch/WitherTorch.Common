@@ -80,7 +80,7 @@ partial class SequenceHelper
                     CompareMethod.GreaterThanOrEquals => VectorizedCountOfGreaterThanOrEquals(ptr, length, value),
                     CompareMethod.LessThan => VectorizedCountOfLessThan(ptr, length, value),
                     CompareMethod.LessThanOrEquals => VectorizedCountOfLessThanOrEquals(ptr, length, value),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method))
+                    _ => ArgumentOutOfRangeException.Throw<nuint>(nameof(method))
                 };
 
             return ScalarizedCountOfCore(ref ptr, ref length, value, method);

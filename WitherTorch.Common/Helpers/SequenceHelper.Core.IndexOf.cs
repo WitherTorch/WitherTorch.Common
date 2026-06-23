@@ -134,7 +134,7 @@ partial class SequenceHelper
                     CompareMethod.GreaterThanOrEquals => accurateResult ? VectorizedPointerIndexOfGreaterThanOrEquals(ptr, length, value) : VectorizedContainsGreaterThanOrEquals(ptr, length, value),
                     CompareMethod.LessThan => accurateResult ? VectorizedPointerIndexOfLessThan(ptr, length, value) : VectorizedContainsLessThan(ptr, length, value),
                     CompareMethod.LessThanOrEquals => accurateResult ? VectorizedPointerIndexOfLessThanOrEquals(ptr, length, value) : VectorizedContainsLessThanOrEquals(ptr, length, value),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method))
+                    _ => (T*)ArgumentOutOfRangeException.Throw<nuint>(nameof(method))
                 };
 
             return ScalarizedPointerIndexOfCore(ref ptr, ref length, value, method, accurateResult);

@@ -44,7 +44,7 @@ public abstract class UnaryOperator<T> : IUnaryOperator<T>
         {
             UnaryOperatorType.Identity => Identity,
             UnaryOperatorType.Not => Not,
-            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            _ => ArgumentOutOfRangeException.Throw<UnaryOperator<T>>(nameof(type)),
         };
 
     public abstract T Operate(T value);

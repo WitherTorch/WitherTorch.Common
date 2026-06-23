@@ -54,9 +54,9 @@ public abstract partial class StringWrapper : IStringLike, IStringWrapperConvert
         ArgumentOutOfRangeException.ThrowIfNegative(destStartIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (sourceStartIndex + count > length)
-            throw new ArgumentOutOfRangeException(sourceStartIndex >= length ? nameof(sourceStartIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(sourceStartIndex >= length ? nameof(sourceStartIndex) : nameof(count));
         if (destStartIndex + count > destination.Length)
-            throw new ArgumentOutOfRangeException(destStartIndex >= destination.Length ? nameof(destStartIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(destStartIndex >= destination.Length ? nameof(destStartIndex) : nameof(count));
         if (count == 0)
             return;
         fixed (char* ptr = destination)
@@ -77,7 +77,7 @@ public abstract partial class StringWrapper : IStringLike, IStringWrapperConvert
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return;
         CopyToCore(destination, unchecked((nuint)startIndex), unchecked((nuint)count));
@@ -90,7 +90,7 @@ public abstract partial class StringWrapper : IStringLike, IStringWrapperConvert
             return;
         nuint castedLength = unchecked((nuint)length);
         if (startIndex + count > castedLength)
-            throw new ArgumentOutOfRangeException(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= castedLength ? nameof(startIndex) : nameof(count));
         if (count == 0)
             return;
         CopyToCore(destination, startIndex, count);
@@ -203,7 +203,7 @@ public abstract partial class StringWrapper : IStringLike, IStringWrapperConvert
             StringType.Ascii => StringCreateOptions.ForceUseAscii,
             StringType.Latin1 => StringCreateOptions.ForceUseLatin1,
             StringType.Utf8 => StringCreateOptions.ForceUseUtf8,
-            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+            _ => ArgumentOutOfRangeException.Throw<StringCreateOptions>(nameof(type)),
         };
         nuint length = MathHelper.MakeUnsigned(Length);
         NativeMemoryPool pool = NativeMemoryPool.Shared;

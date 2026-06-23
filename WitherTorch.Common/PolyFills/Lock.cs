@@ -245,7 +245,7 @@ public sealed partial class Lock
         return TryEnter_Outlined(millisecondsTimeout);
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw() => throw new ArgumentOutOfRangeException(nameof(millisecondsTimeout));
+        static void Throw() => ArgumentOutOfRangeException.Throw(nameof(millisecondsTimeout));
     }
 
     /// <summary>
@@ -1554,6 +1554,6 @@ public sealed partial class Lock
         return (int)timeoutMilliseconds;
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        static void Throw() => throw new ArgumentOutOfRangeException(nameof(timeout));
+        static void Throw() => ArgumentOutOfRangeException.Throw(nameof(timeout));
     }
 }

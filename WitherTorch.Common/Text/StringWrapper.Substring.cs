@@ -28,7 +28,7 @@ partial class StringWrapper
 
         int length = Length;
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (startIndex == 0 && count == length)
             return this;
         if (count == 0)
@@ -64,7 +64,7 @@ partial class StringWrapper
 
         int length = Length;
         if (startIndex + count > length)
-            throw new ArgumentOutOfRangeException(startIndex >= length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= length ? nameof(startIndex) : nameof(count));
         if (startIndex == 0 && count == length)
             return Empty;
         if (count == 0)

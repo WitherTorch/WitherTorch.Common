@@ -71,7 +71,7 @@ public readonly struct ReadOnlyView<T> : IEnumerable<T>, IReadOnlyList<T>, IPinn
     public readonly ReadOnlyView<T> Slice(int startIndex)
     {
         if (startIndex < 0 || startIndex >= _count)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            return ArgumentOutOfRangeException.Throw<ReadOnlyView<T>>(nameof(startIndex));
         if (startIndex == 0)
             return this;
         return new ReadOnlyView<T>(_source, _startIndex + startIndex, _count - startIndex);
@@ -82,7 +82,7 @@ public readonly struct ReadOnlyView<T> : IEnumerable<T>, IReadOnlyList<T>, IPinn
         ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         if ((startIndex + count) >= _count)
-            throw new ArgumentOutOfRangeException(startIndex >= _count ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= _count ? nameof(startIndex) : nameof(count));
         if (startIndex == 0 && count == _count)
             return this;
         if (count == 0)

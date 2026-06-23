@@ -180,14 +180,14 @@ unsafe partial struct StringBuilderTiny
             {
                 int argIndex = ParseHelper.ParseToInt32(format, indexOfLeft + 1, count);
                 if (argIndex < 0 || argIndex >= argc)
-                    throw new ArgumentOutOfRangeException(nameof(args));
+                    ArgumentOutOfRangeException.Throw(nameof(args));
                 Append(args[argIndex].ToString() ?? "null");
             }
             else
             {
                 int argIndex = ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1);
                 if (argIndex < 0 || argIndex >= argc)
-                    throw new ArgumentOutOfRangeException(nameof(args));
+                    ArgumentOutOfRangeException.Throw(nameof(args));
                 T arg = args[argIndex];
                 if (arg is IFormattable formattable)
                 {
@@ -321,14 +321,14 @@ unsafe partial struct StringBuilderTiny
             {
                 int argIndex = ParseHelper.ParseToInt32(format, indexOfLeft + 1, count);
                 if (argIndex < 0 || argIndex >= argc)
-                    throw new ArgumentOutOfRangeException(nameof(args));
+                    ArgumentOutOfRangeException.Throw(nameof(args));
                 Append(args[argIndex].ToString() ?? "null");
             }
             else
             {
                 int argIndex = ParseHelper.ParseToInt32(format, indexOfLeft + 1, delimiterIndex - indexOfLeft - 1);
                 if (argIndex < 0 || argIndex >= argc)
-                    throw new ArgumentOutOfRangeException(nameof(args));
+                    ArgumentOutOfRangeException.Throw(nameof(args));
                 T arg = args[argIndex];
                 if (arg is IFormattable formattable)
                 {

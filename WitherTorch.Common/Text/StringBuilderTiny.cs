@@ -156,7 +156,7 @@ public unsafe ref partial struct StringBuilderTiny : IStringWrapperConvertible, 
         if (valueLength <= 0)
             return;
         if (startIndex + count > valueLength)
-            throw new ArgumentOutOfRangeException(startIndex >= valueLength ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= valueLength ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = value)
             AppendCore(ptr + startIndex, count);
     }
@@ -169,7 +169,7 @@ public unsafe ref partial struct StringBuilderTiny : IStringWrapperConvertible, 
         if (valueLength <= 0)
             return;
         if (startIndex + count > valueLength)
-            throw new ArgumentOutOfRangeException(startIndex >= valueLength ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= valueLength ? nameof(startIndex) : nameof(count));
         AppendCore(value, unchecked((nuint)startIndex), unchecked((nuint)count));
     }
 

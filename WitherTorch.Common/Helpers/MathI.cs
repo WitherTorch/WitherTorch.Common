@@ -54,7 +54,7 @@ public static class MathI
             MidpointRounding.ToNegativeInfinity => Floor(value),
             MidpointRounding.ToPositiveInfinity => Ceiling(value),
 #endif
-            _ => throw new ArgumentOutOfRangeException(nameof(mode)),
+            _ => ArgumentOutOfRangeException.Throw<int>(nameof(mode)),
         };
 
     [Inline(InlineBehavior.Keep, export: true)]

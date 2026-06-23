@@ -20,7 +20,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ContainsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -32,7 +32,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ContainsCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -49,7 +49,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ContainsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -61,7 +61,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ContainsCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -83,7 +83,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ContainsExcludeCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -95,7 +95,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ContainsExcludeCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -112,7 +112,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ContainsExcludeCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -124,7 +124,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ContainsExcludeCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -146,7 +146,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ContainsGreaterThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -158,7 +158,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ContainsGreaterThanCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -175,7 +175,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ContainsGreaterThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -187,7 +187,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ContainsGreaterThanCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -209,7 +209,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ContainsGreaterThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -221,7 +221,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ContainsGreaterThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -238,7 +238,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ContainsGreaterThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -250,7 +250,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ContainsGreaterThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -272,7 +272,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ContainsLessThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -284,7 +284,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ContainsLessThanCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -301,7 +301,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ContainsLessThanCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -313,7 +313,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ContainsLessThanCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -335,7 +335,7 @@ unsafe partial class SequenceHelper
     {
         int length = str.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (char* ptr = str)
             return ContainsLessThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -347,7 +347,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > str.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= str.Length ? nameof(startIndex) : nameof(count));
         fixed (char* ptr = str)
             return ContainsLessThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
     }
@@ -364,7 +364,7 @@ unsafe partial class SequenceHelper
     {
         int length = array.Length;
         if (startIndex < 0 || startIndex >= length)
-            throw new ArgumentOutOfRangeException(nameof(startIndex));
+            ArgumentOutOfRangeException.Throw(nameof(startIndex));
         fixed (T* ptr = array)
             return ContainsLessThanOrEqualsCore(ptr + startIndex, MathHelper.MakeUnsigned(length - startIndex), value);
     }
@@ -376,7 +376,7 @@ unsafe partial class SequenceHelper
         ArgumentOutOfRangeException.ThrowIfNegative(count);
         int length = startIndex + count;
         if (length > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         fixed (T* ptr = array)
             return ContainsLessThanOrEqualsCore(ptr + startIndex, unchecked((nuint)length), value);
     }

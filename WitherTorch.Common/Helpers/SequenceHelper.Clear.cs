@@ -29,7 +29,7 @@ partial class SequenceHelper
         if (count <= 0)
             return;
         if (startIndex + count > array.Length)
-            throw new ArgumentOutOfRangeException(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
+            ArgumentOutOfRangeException.Throw(startIndex >= array.Length ? nameof(startIndex) : nameof(count));
         if (UnsafeHelper.IsUnmanagedType<T>())
         {
             fixed (void* ptr = array)

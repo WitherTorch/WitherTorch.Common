@@ -42,7 +42,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => VectorizedIdentity(ptr, length),
                     UnaryOperatorType.Not => VectorizedOr(ptr, length),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Unit>(nameof(method)),
                 };
             }
             return ScalarizedUnaryOperationCore(ref ptr, ref length, method);
@@ -83,7 +83,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => item,
                     UnaryOperatorType.Not => UnsafeHelper.Not(item),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<T>(nameof(method)),
                 };
         }
     }
@@ -117,7 +117,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => VectorizedIdentity(ptr, length),
                     UnaryOperatorType.Not => VectorizedNot(ptr, length),
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<Unit>(nameof(method)),
                 };
 
             }
@@ -163,7 +163,7 @@ partial class SequenceHelper
                 {
                     UnaryOperatorType.Identity => Normalize(item),
                     UnaryOperatorType.Not => item == default,
-                    _ => throw new ArgumentOutOfRangeException(nameof(method)),
+                    _ => ArgumentOutOfRangeException.Throw<bool>(nameof(method)),
                 };
             }
         }
@@ -188,7 +188,7 @@ partial class SequenceHelper
             {
                 UnaryOperatorType.Identity => UnaryOperator<T>.Identity,
                 UnaryOperatorType.Not => UnaryOperator<T>.Not,
-                _ => throw new ArgumentOutOfRangeException(nameof(operatorType))
+                _ => ArgumentOutOfRangeException.Throw<UnaryOperator<T>>(nameof(operatorType))
             });
         }
 
