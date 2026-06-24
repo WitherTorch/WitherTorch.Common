@@ -20,6 +20,12 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
     public static ArrayPool<T> Empty => EmptyImpl.Instance;
     public static ArrayPool<T> Shared => _sharedLazy.Value;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public RentScope EnterRentScope() => new RentScope(this, Array.Empty<T>(), count: 0);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public RentScope EnterRentScope(int capacity) => new RentScope(this, Rent(capacity), count: capacity);
+
     [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] Rent() => Rent(MinimumArraySize);
