@@ -16,7 +16,7 @@ namespace WitherTorch.Common.Extensions;
 public static class ArrayPoolExtensions
 {
     public static ArrayPool<T>.RentScope EnterRentScopeAndCapture<T, TEnumerable>(this ArrayPool<T> _this, TEnumerable enumerable)
-        where T : class where TEnumerable : IEnumerable<T>
+        where T : class? where TEnumerable : IEnumerable<T>
     {
         // direct type check (for dead code ellimination)
         if (typeof(TEnumerable) == typeof(T[]))

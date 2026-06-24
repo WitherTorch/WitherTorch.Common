@@ -78,7 +78,7 @@ partial class ArrayPool<T>
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly ref readonly T GetReferenceOfFirstElement()
-            => ref UnsafeHelper.GetArrayDataReference<T>(NullSafetyHelper.ThrowIfNull(_array));
+            => ref UnsafeHelper.GetArrayDataReference(NullSafetyHelper.ThrowIfNull(_array));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public readonly void Clear()
@@ -146,7 +146,7 @@ partial class ArrayPool<T>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Resize(int newCount, bool moveArray = true)
         {
-            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(newCount);
+            ArgumentOutOfRangeException.ThrowIfNegative(newCount);
 
             int count = _count;
             if (newCount == count)
