@@ -11,6 +11,13 @@ using System.Threading;
 using WitherTorch.Common.Buffers;
 using WitherTorch.Common.Helpers;
 
+using Microsoft.VisualBasic;
+
+
+#if NET8_0_OR_GREATER
+using System.Collections.Immutable;
+#endif
+
 namespace WitherTorch.Common.Extensions;
 
 public static class ArrayPoolExtensions
@@ -24,6 +31,19 @@ public static class ArrayPoolExtensions
         if (typeof(TEnumerable) == typeof(ReadOnlyCollection<T>))
             return FromReadOnlyCollection(_this, UnsafeHelper.As<TEnumerable, ReadOnlyCollection<T>>(enumerable));
 
+#if NET8_0_OR_GREATER
+        if (typeof(TEnumerable) == typeof(ImmutableArray<T>))
+            return FromImmutableArray(_this, ref UnsafeHelper.As<TEnumerable, ImmutableArray<T>>(ref enumerable));
+        if (typeof(TEnumerable) == typeof(ImmutableList<T>))
+            return FromImmutableList(_this, UnsafeHelper.As<TEnumerable, ImmutableList<T>>(enumerable));
+        if (typeof(TEnumerable) == typeof(ImmutableHashSet<T>))
+            return FromImmutableSet(_this, UnsafeHelper.As<TEnumerable, ImmutableHashSet<T>>(enumerable));
+        if (typeof(TEnumerable) == typeof(ImmutableSortedSet<T>))
+            return FromImmutableSet(_this, UnsafeHelper.As<TEnumerable, ImmutableSortedSet<T>>(enumerable));
+        if (typeof(TEnumerable) == typeof(ImmutableStack<T>) || typeof(TEnumerable) == typeof(ImmutableQueue<T>))
+            return FromEnumerable_Core(_this, enumerable);
+#endif
+
         // indirect type cast and check
         return IndirectDispatch(_this, enumerable);
 
@@ -34,6 +54,9 @@ public static class ArrayPoolExtensions
                 T[] array => FromArray(_this, array),
                 ReadOnlyCollection<T> collection => FromReadOnlyCollection(_this, collection),
                 ICollection<T> collection => FromCollection(_this, collection),
+#if NET8_0_OR_GREATER
+                IImmutableStack<T> _ or IImmutableQueue<T> _ => FromEnumerable_Core(_this, enumerable),
+#endif
                 ILockable lockable => FromEnumerable_ModernLock(_this, enumerable, lockable),
                 _ => FromEnumerable_MonitorLock(_this, enumerable)
             };
@@ -42,7 +65,7 @@ public static class ArrayPoolExtensions
         static ArrayPool<T>.RentScope FromArray(ArrayPool<T> _this, T[] array)
         {
             ArrayPool<T>.RentScope scope = _this.EnterRentScope();
-            scope.Resize(array.Length);
+            scope.Resize(array.Length, moveArray: false);
             scope.CopyFrom(array, startIndex: 0);
             return scope;
         }
@@ -63,6 +86,11 @@ public static class ArrayPoolExtensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static ArrayPool<T>.RentScope FromCollection(ArrayPool<T> _this, ICollection<T> collection)
         {
+#if NET8_0_OR_GREATER
+            if (collection is IImmutableList<T> || collection is IImmutableSet<T>)
+                return FromNormalCollection_Core(_this, collection);
+#endif
+
             if (collection is IProducerConsumerCollection<T>)
                 goto Atomic;
 
@@ -80,7 +108,6 @@ public static class ArrayPoolExtensions
 
         Atomic:
             return FromAtomicCollection(_this, collection);
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,7 +117,7 @@ public static class ArrayPoolExtensions
             int count = collection.Count;
             do
             {
-                scope.Resize(count);
+                scope.Resize(count, moveArray: false);
                 try
                 {
                     scope.CopyFrom(collection, startIndex: 0);
@@ -141,7 +168,7 @@ public static class ArrayPoolExtensions
         {
             ArrayPool<T>.RentScope scope = _this.EnterRentScope();
             int count = collection.Count;
-            scope.Resize(count);
+            scope.Resize(count, moveArray: false);
             try
             {
                 scope.CopyFrom(collection, startIndex: 0);
@@ -181,6 +208,50 @@ public static class ArrayPoolExtensions
             (T[] array, int count) = list;
             return new ArrayPool<T>.RentScope(_this, array, count);
         }
+
+#if NET8_0_OR_GREATER
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ArrayPool<T>.RentScope FromImmutableArray(ArrayPool<T> _this, scoped ref ImmutableArray<T> array)
+        {
+            if (array.IsDefaultOrEmpty)
+                return _this.EnterRentScope();
+            return FromArray(_this, UnsafeHelper.As<ImmutableArray<T>, T[]>(ref array));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ArrayPool<T>.RentScope FromImmutableList<TList>(ArrayPool<T> _this, TList list) where TList : IImmutableList<T>, ICollection<T>
+        {
+            ArrayPool<T>.RentScope scope = _this.EnterRentScope();
+            scope.Resize(((ICollection<T>)list).Count, moveArray: false);
+            try
+            {
+                scope.CopyFrom(list, startIndex: 0);
+            }
+            catch (Exception)
+            {
+                scope.Dispose();
+                throw;
+            }
+            return scope;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static ArrayPool<T>.RentScope FromImmutableSet<TSet>(ArrayPool<T> _this, TSet set) where TSet : IImmutableSet<T>, ICollection<T>
+        {
+            ArrayPool<T>.RentScope scope = _this.EnterRentScope();
+            scope.Resize(((ICollection<T>)set).Count, moveArray: false);
+            try
+            {
+                scope.CopyFrom(set, startIndex: 0);
+            }
+            catch (Exception)
+            {
+                scope.Dispose();
+                throw;
+            }
+            return scope;
+        }
+#endif
     }
 
     private static unsafe class ReadOnlyCollectionUnwrapper<T>
