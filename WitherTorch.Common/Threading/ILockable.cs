@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace WitherTorch.Common;
+namespace WitherTorch.Common.Threading;
 
 public interface ILockable
 {

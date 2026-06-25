@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -635,11 +636,64 @@ public static class LinqExtensions
         return enumerator.MoveNext() ? 1 : 0;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static nuint NativeCount<TSource>(this IEnumerable<TSource> _this)
     {
         nuint i = 0;
         using IEnumerator<TSource> enumerator = _this.GetEnumerator();
         while (enumerator.MoveNext() && ++i != 0) ;
         return i;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static LockableEnumerable<TSource> AsLockable<TSource>(this IEnumerable<TSource> _this, Lock @lock)
+        => new LockableEnumerable<TSource>(_this, @lock);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ILockableEnumerable<TSource> AsLockable<TSource>(this IEnumerable<TSource> _this, ILockable lockable)
+        => new EnumerableWithLockable<TSource>(_this, lockable);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static MonitorLockableEnumerable<TSource> AsMonitorLockable<TSource>(this IEnumerable<TSource> _this, object lockObj)
+        => new MonitorLockableEnumerable<TSource>(_this, lockObj);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IMonitorLockableEnumerable<TSource> AsMonitorLockable<TSource>(this IEnumerable<TSource> _this, IMonitorLockable lockable)
+        => new EnumerableWithMonitorLockable<TSource>(_this, lockable);
+
+    private sealed class EnumerableWithLockable<T> : ILockableEnumerable<T>
+    {
+        private readonly IEnumerable<T> _items;
+        private readonly ILockable _lockable;
+
+        public EnumerableWithLockable(IEnumerable<T> items, ILockable lockable)
+        {
+            _items = items;
+            _lockable = lockable;
+        }
+
+        public Lock.Scope EnterLockScope() => _lockable.EnterLockScope();
+
+        public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
+    }
+
+    private sealed class EnumerableWithMonitorLockable<T> : IMonitorLockableEnumerable<T>
+    {
+        private readonly IEnumerable<T> _items;
+        private readonly IMonitorLockable _lockable;
+
+        public EnumerableWithMonitorLockable(IEnumerable<T> items, IMonitorLockable lockable)
+        {
+            _items = items;
+            _lockable = lockable;
+        }
+
+        public MonitorLockScope EnterLockScope() => _lockable.EnterLockScope();
+
+        public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => _items.GetEnumerator();
     }
 }
