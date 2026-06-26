@@ -73,7 +73,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-	  <ProjectReference Include="$(SolutionDir)\RiceTea.Core\RiceTea.Core.csproj" />
+	  <ProjectReference Include="..\RiceTea.Core\RiceTea.Core.csproj" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Platform)'=='AnyCPU'">

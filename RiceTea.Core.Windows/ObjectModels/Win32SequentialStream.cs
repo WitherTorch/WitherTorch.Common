@@ -26,7 +26,7 @@ public unsafe class Win32SequentialStream : ComObject, IWin32SequentialStream
     }
 
     [LocalsInit(false)]
-    public unsafe ulong Read(byte* ptr, ulong length)
+    public ulong Read(byte* ptr, ulong length)
     {
         ulong result;
         ThrowHelper.ThrowExceptionForHR(ReadCore(ptr, length, &result));
@@ -34,21 +34,21 @@ public unsafe class Win32SequentialStream : ComObject, IWin32SequentialStream
     }
 
     [LocalsInit(false)]
-    public unsafe ulong Write(byte* ptr, ulong length)
+    public ulong Write(byte* ptr, ulong length)
     {
         ulong result;
         ThrowHelper.ThrowExceptionForHR(WriteCore(ptr, length, &result));
         return result;
     }
 
-    public unsafe bool TryRead(byte* ptr, ulong length, out ulong byteRead) 
+    public bool TryRead(byte* ptr, ulong length, out ulong byteRead) 
         => ReadCore(ptr, length, UnsafeHelper.AsPointerOut(out byteRead)) >= 0;
 
-    public unsafe bool TryWrite(byte* ptr, ulong length, out ulong byteWritten)
+    public bool TryWrite(byte* ptr, ulong length, out ulong byteWritten)
         => WriteCore(ptr, length, UnsafeHelper.AsPointerOut(out byteWritten)) >= 0;
 
     [Inline(InlineBehavior.Remove)]
-    private unsafe int ReadCore(byte* ptr, ulong length, ulong* pByteRead)
+    private int ReadCore(byte* ptr, ulong length, ulong* pByteRead)
     {
         void* nativePointer = NativePointer;
         void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Read);
@@ -57,7 +57,7 @@ public unsafe class Win32SequentialStream : ComObject, IWin32SequentialStream
     }
 
     [Inline(InlineBehavior.Remove)]
-    private unsafe int WriteCore(byte* ptr, ulong length, ulong* pByteWritten)
+    private int WriteCore(byte* ptr, ulong length, ulong* pByteWritten)
     {
         void* nativePointer = NativePointer;
         void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.Write);

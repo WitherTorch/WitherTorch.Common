@@ -11,9 +11,9 @@ internal static unsafe class Ole32
 
     [SuppressGCTransition]
     [DllImport(LibraryName, EntryPoint = nameof(CoCreateInstance), CallingConvention = CallingConvention.Winapi)]
-    public static unsafe extern int CoCreateInstance(Guid* rclsid, void* pUnkOuter, ClassContextFlags dwClsContext, Guid* riid, void** ppv);
+    public static extern int CoCreateInstance(Guid* rclsid, void* pUnkOuter, ClassContextFlags dwClsContext, Guid* riid, void** ppv);
 
     [SuppressGCTransition]
     [DllImport(LibraryName, EntryPoint = nameof(CoTaskMemFree), CallingConvention = CallingConvention.Winapi)]
-    public static unsafe extern void CoTaskMemFree(void* pv);
+    public static extern void CoTaskMemFree(void* pv);
 }

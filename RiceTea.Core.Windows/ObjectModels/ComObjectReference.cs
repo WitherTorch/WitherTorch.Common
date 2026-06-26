@@ -29,7 +29,7 @@ public unsafe ref struct ComObjectReference<T> : IUnknown where T : ComObject, n
         return ComObject.AddRefCore(handle);
     }
 
-    public readonly unsafe void* GetWin32Handle() => _handle;
+    public readonly void* GetWin32Handle() => _handle;
 
     public readonly uint Release()
     {

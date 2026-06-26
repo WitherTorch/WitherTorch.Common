@@ -8,9 +8,11 @@
 //
 // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+using System;
 using System.Diagnostics;
+using System.Threading;
 
-namespace System.Threading;
+namespace RiceTea.Core.PolyFills;
 
 internal class ManagedThreadId
 {

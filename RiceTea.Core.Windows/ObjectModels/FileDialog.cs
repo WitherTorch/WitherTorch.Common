@@ -114,7 +114,7 @@ public unsafe sealed class FileDialog : ModalWindow
         return result;
     }
 
-    public unsafe void SetOptions(FileOpenDialogOptions fos)
+    public void SetOptions(FileOpenDialogOptions fos)
     {
         void* nativePointer = NativePointer;
         void* functionPointer = GetFunctionPointerOrThrow(nativePointer, (int)MethodTable.SetOptions);

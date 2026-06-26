@@ -106,7 +106,7 @@ public unsafe partial class ComObject : NativeObject, IUnknown, IWin32HandleHold
 
     protected override void AfterPointerCopied() => AddRefCore(NativePointer);
 
-    protected override unsafe void ReleasePointer(void* pointer) => ReleaseCore(pointer);
+    protected override void ReleasePointer(void* pointer) => ReleaseCore(pointer);
 
-    unsafe void* IWin32HandleHolder.GetWin32Handle() => NativePointer;
+    void* IWin32HandleHolder.GetWin32Handle() => NativePointer;
 }
