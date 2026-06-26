@@ -1,0 +1,248 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+using InlineMethod;
+
+using RiceTea.Core.Buffers;
+using RiceTea.Core.Extensions;
+using RiceTea.Core.Native;
+using RiceTea.Core.Threading;
+
+namespace RiceTea.Core.Text;
+
+partial class StringWrapper
+{
+    public StringWrapper[] Split(char separator) => Split(separator, StringSplitOptions.None);
+
+    public StringWrapper[] Split(char separator, StringSplitOptions options)
+    {
+        ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
+        SplitRange[]? rangeBuffer = null;
+        try
+        {
+            nuint splitCount = GetSplitCount(separator, rangePool, out rangeBuffer);
+            if (ShouldRemoveEmptyEntries(options))
+                return SplitCore_RemoveEmptyEntries(rangeBuffer, splitCount);
+            return SplitCore(rangeBuffer, splitCount);
+        }
+        finally
+        {
+            if (rangeBuffer is not null)
+                rangePool.Return(rangeBuffer);
+        }
+    }
+
+    public StringWrapper[] Split(string separator) => Split(separator, StringSplitOptions.None);
+
+    public StringWrapper[] Split(string separator, StringSplitOptions options)
+    {
+        int separatorLength = separator.Length;
+        if (separatorLength <= 0)
+            return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringWrapper>() : [this];
+
+        ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
+        SplitRange[]? rangeBuffer = null;
+        try
+        {
+            nuint splitCount = GetSplitCount(separator, unchecked((nuint)separatorLength), rangePool, out rangeBuffer);
+            if (ShouldRemoveEmptyEntries(options))
+                return SplitCore_RemoveEmptyEntries(rangeBuffer, splitCount);
+            return SplitCore(rangeBuffer, splitCount);
+        }
+        finally
+        {
+            if (rangeBuffer is not null)
+                rangePool.Return(rangeBuffer);
+        }
+    }
+
+    public StringWrapper[] Split(StringWrapper separator) => Split(separator, StringSplitOptions.None);
+
+    public StringWrapper[] Split(StringWrapper separator, StringSplitOptions options)
+    {
+        int separatorLength = separator.Length;
+        if (separatorLength <= 0)
+            return Length <= 0 && ShouldRemoveEmptyEntries(options) ? Array.Empty<StringWrapper>() : [this];
+
+        ArrayPool<SplitRange> rangePool = ArrayPool<SplitRange>.Shared;
+        SplitRange[]? rangeBuffer = null;
+        try
+        {
+            nuint splitCount = GetSplitCount(separator, unchecked((nuint)separatorLength), rangePool, out rangeBuffer);
+            if (ShouldRemoveEmptyEntries(options))
+                return SplitCore_RemoveEmptyEntries(rangeBuffer, splitCount);
+            return SplitCore(rangeBuffer, splitCount);
+        }
+        finally
+        {
+            if (rangeBuffer is not null)
+                rangePool.Return(rangeBuffer);
+        }
+    }
+
+    private StringWrapper[] SplitCore(SplitRange[]? rangeBuffer, nuint count)
+    {
+        if (count < 2 || rangeBuffer is null)
+            return [this];
+
+        StringWrapper[] result = new StringWrapper[count];
+        for (nuint i = 0; i < count; i++)
+        {
+            SplitRange range = rangeBuffer[i];
+            result[i] = SubstringCore(range.StartIndex, range.Count);
+        }
+        return result;
+    }
+
+    private StringWrapper[] SplitCore_RemoveEmptyEntries(SplitRange[]? rangeBuffer, nuint count)
+    {
+        if (count < 2 || rangeBuffer is null)
+        {
+            if (Length <= 0)
+                return Array.Empty<StringWrapper>();
+            return [this];
+        }
+        ArrayPool<StringWrapper?> pool = ArrayPool<StringWrapper?>.Shared;
+        StringWrapper?[] buffer = pool.Rent(count);
+        nuint resultLength = 0;
+        try
+        {
+            for (nuint i = 0; i < count; i++)
+            {
+                SplitRange range = rangeBuffer[i];
+                StringWrapper slicedString = SubstringCore(range.StartIndex, range.Count);
+                if (IsNullOrEmpty(slicedString))
+                {
+                    buffer[i] = null;
+                    continue;
+                }
+                buffer[i] = slicedString;
+                resultLength++;
+            }
+            if (count == 0)
+                return Array.Empty<StringWrapper>();
+            StringWrapper[] result = new StringWrapper[resultLength];
+            for (nuint i = 0, j = 0; i < count && j < resultLength; i++)
+            {
+                StringWrapper? item = buffer[i];
+                if (item is null)
+                    continue;
+                result[j++] = item;
+            }
+            return result;
+        }
+        finally
+        {
+            pool.Return(buffer);
+        }
+    }
+
+    protected virtual nuint GetSplitCount(char separator, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        IEnumerable<nuint> indexes = this.WithNativeIndex().WhereEqualsTo(separator).Select(static item => item.Index);
+        LazyTinyRef<PooledList<SplitRange>> listLazy = new(() => new PooledList<SplitRange>(pool));
+        nuint start = 0, counter = 1;
+        foreach (nuint index in indexes)
+        {
+            listLazy.Value.Add(new SplitRange(start, index - start));
+            start = index + 1;
+            counter++;
+        }
+        PooledList<SplitRange>? list = listLazy.GetValueDirectly();
+        if (list is null)
+        {
+            rangeBuffer = null;
+            return 1;
+        }
+        list.Add(new SplitRange(start, unchecked((nuint)Length) - start));
+        (rangeBuffer, _) = list;
+        return counter;
+    }
+
+    protected virtual unsafe nuint GetSplitCount(string separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        if (separatorLength == 1)
+            return GetSplitCount(separator[0], pool, out rangeBuffer);
+
+        fixed (char* ptr = separator)
+            return GetSplitCount_Fallback(ptr, separatorLength, pool, out rangeBuffer);
+    }
+
+    protected virtual unsafe nuint GetSplitCount(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        if (separatorLength == 1)
+            return GetSplitCount(separator.GetCharAt(0), pool, out rangeBuffer);
+
+        if (separator is Utf16String utf16)
+        {
+            fixed (char* ptr = utf16.GetInternalRepresentation())
+                return GetSplitCount_Fallback(ptr, separatorLength, pool, out rangeBuffer);
+        }
+
+        return GetSplitCount_Fallback(separator, separatorLength, pool, out rangeBuffer);
+    }
+
+    [Inline(InlineBehavior.Remove)]
+    private static bool ShouldRemoveEmptyEntries(StringSplitOptions options)
+        => (options & StringSplitOptions.RemoveEmptyEntries) == StringSplitOptions.RemoveEmptyEntries;
+
+    private unsafe nuint GetSplitCount_Fallback(char* separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        NativeMemoryPool bufferPool = NativeMemoryPool.Shared;
+        nuint length = unchecked((nuint)Length);
+        TypedNativeMemoryBlock<char> buffer = bufferPool.Rent<char>(length);
+        try
+        {
+            char* temp = buffer.NativePointer;
+            CopyToCore(temp, 0, length);
+            return GetSplitCount_Fallback(temp, length, separator, separatorLength, pool, out rangeBuffer);
+        }
+        finally
+        {
+            bufferPool.Return(buffer);
+        }
+    }
+
+    private unsafe nuint GetSplitCount_Fallback(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        NativeMemoryPool bufferPool = NativeMemoryPool.Shared;
+        TypedNativeMemoryBlock<char> buffer = bufferPool.Rent<char>(separatorLength);
+        try
+        {
+            char* temp = buffer.NativePointer;
+            separator.CopyToCore(temp, 0, separatorLength);
+            return GetSplitCount_Fallback(temp, separatorLength, pool, out rangeBuffer);
+        }
+        finally
+        {
+            bufferPool.Return(buffer);
+        }
+    }
+
+    private static unsafe nuint GetSplitCount_Fallback(char* source, nuint sourceLength, char* separator, nuint separatorLength,
+        ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        nuint result = 1;
+        using PooledList<SplitRange> list = new PooledList<SplitRange>(pool);
+
+        char* previous = source, iterator = source, ptrEnd = source + sourceLength;
+        while ((iterator = InternalSequenceHelper.PointerIndexOf(iterator, ptrEnd, separator, separatorLength)) != null)
+        {
+            unchecked
+            {
+                list.Add(new SplitRange((nuint)(previous - source), (nuint)(iterator - previous)));
+            }
+            result++;
+            previous = iterator;
+            iterator += separatorLength;
+        }
+        unchecked
+        {
+            list.Add(new SplitRange((nuint)(previous - source), (nuint)(ptrEnd - previous)));
+        }
+
+        (rangeBuffer, _) = list;
+        return result;
+    }
+}

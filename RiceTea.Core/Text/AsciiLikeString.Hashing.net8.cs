@@ -1,0 +1,80 @@
+#if NET8_0_OR_GREATER
+using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+using RiceTea.Core.Buffers;
+using RiceTea.Core.Helpers;
+using RiceTea.Core.Native;
+
+namespace RiceTea.Core.Text;
+
+unsafe partial class AsciiLikeString
+{
+    private static class HashingHelper
+    {
+        private static readonly delegate* managed<ReadOnlySpan<byte>, ulong, int> _computeHash32Func;
+        private static readonly delegate* managed<AsciiLikeString, int> _hashingFunc;
+        private static readonly ulong _hashingSeed;
+
+        static HashingHelper()
+        {
+            Type? marvinType = Type.GetType("System.Marvin");
+            if (marvinType is null)
+            {
+                Debug.WriteLine("System.Marvin type not found, using slower hashing route! (=> string.GetHashCode() )");
+                goto Failed;
+            }
+
+            nint seedGetterFunc = ReflectionHelper.GetPropertyGetterPointer(marvinType, "DefaultSeed", typeof(ulong), BindingFlags.Static | BindingFlags.Public);
+            if (seedGetterFunc == 0)
+            {
+                Debug.WriteLine("Cannot getting hashing seed in System.Marvin type, using slower hashing route! (=> string.GetHashCode() )");
+                goto Failed;
+            }
+            _hashingSeed = ((delegate* managed<ulong>)seedGetterFunc)();
+
+            nint hashingFunc = ReflectionHelper.GetMethodPointer(marvinType, "ComputeHash32", [typeof(ReadOnlySpan<byte>), typeof(ulong)], typeof(int));
+            if (hashingFunc == 0)
+            {
+                Debug.WriteLine("Cannot getting hashing function in System.Marvin type, using slower hashing route! (=> string.GetHashCode() )");
+                goto Failed;
+            }
+
+            _computeHash32Func = (delegate* managed<ReadOnlySpan<byte>, ulong, int>)hashingFunc;
+            _hashingFunc = &MarvinHashingFunction;
+            return;
+
+        Failed:
+            _hashingSeed = 0UL;
+            _computeHash32Func = null;
+            _hashingFunc = &FallbackHashingFunction;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetHashCode(AsciiLikeString str) => _hashingFunc(str);
+
+        private static int FallbackHashingFunction(AsciiLikeString str) => str.ToString().GetHashCode();
+
+        private static int MarvinHashingFunction(AsciiLikeString str)
+        {
+            int length = str._length;
+            if (length <= 0)
+                return string.Empty.GetHashCode();
+            NativeMemoryPool pool = NativeMemoryPool.Shared;
+            TypedNativeMemoryBlock<char> buffer = pool.Rent<char>(length);
+            try
+            {
+                char* destination = buffer.NativePointer;
+                str.CopyToCore(destination, 0, unchecked((nuint)length));
+                return _computeHash32Func(new ReadOnlySpan<byte>(destination, length * sizeof(char)), _hashingSeed);
+            }
+            finally
+            {
+                pool.Return(buffer);
+            }
+        }
+    }
+}
+#endif

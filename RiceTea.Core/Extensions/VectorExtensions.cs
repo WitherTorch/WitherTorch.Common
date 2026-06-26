@@ -1,0 +1,10 @@
+using System.Numerics;
+using System.Runtime.CompilerServices;
+
+namespace RiceTea.Core.Extensions;
+
+public static partial class VectorExtensions
+{
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static partial ulong ExtractMostSignificantBits<T>(this Vector<T> _this) where T : struct;
+}

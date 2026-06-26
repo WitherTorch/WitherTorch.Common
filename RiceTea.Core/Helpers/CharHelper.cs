@@ -1,0 +1,23 @@
+using System.Runtime.CompilerServices;
+
+using RiceTea.Core.Text;
+
+namespace RiceTea.Core.Helpers;
+
+public static class CharHelper
+{
+    /// <inheritdoc cref="char.IsWhiteSpace(char)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsWhiteSpace(char c)
+        => Utf16StringHelper.IsWhiteSpaceCharacter(c);
+
+    /// <inheritdoc cref="char.IsWhiteSpace(string, int)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsWhiteSpace(string s, int index)
+        => Utf16StringHelper.IsWhiteSpaceCharacter(s[index]);
+
+    /// <inheritdoc cref="char.IsWhiteSpace(char)"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsWhiteSpace(byte c)
+        => AsciiLikeStringHelper.IsWhiteSpaceCharacter(c);
+}

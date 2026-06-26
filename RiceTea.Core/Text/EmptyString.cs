@@ -1,0 +1,100 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+using RiceTea.Core.Buffers;
+using RiceTea.Core.Helpers;
+
+namespace RiceTea.Core.Text;
+
+internal sealed partial class EmptyString : StringWrapper, IPinnableReference<char>, IPinnableReference<byte>, IReadOnlyViewProvider<char>, IReadOnlyViewProvider<byte>
+{
+    private static readonly EmptyString _instance = new EmptyString();
+
+    public static EmptyString Instance => _instance;
+
+    private readonly char _zeroChar = '\0';
+
+    public override StringType StringType => StringType.Empty;
+    public override int Length => 0;
+
+    private EmptyString() { }
+
+    public override bool IsSpecificEncoding(Encoding encoding) => true;
+
+    protected internal override char GetCharAt(nuint index) => throw new IndexOutOfRangeException();
+
+    protected override bool IsFullyWhitespaced() => true;
+
+    protected internal override unsafe void CopyToCore(char* destination, nuint startIndex, nuint count) { }
+
+    protected override bool PartiallyEqualsCore(string other, nuint startIndex, nuint count) => false;
+
+    protected override bool PartiallyEqualsCore(StringWrapper other, nuint startIndex, nuint count) => false;
+
+    protected override int IndexOfCore(char value, nuint startIndex, nuint count) => -1;
+
+    protected override int IndexOfCore(string value, nuint valueLength, nuint startIndex, nuint count) => -1;
+
+    protected override int IndexOfCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count) => -1;
+
+    protected override bool ContainsCore(char value, nuint startIndex, nuint count) => false;
+
+    protected override bool ContainsCore(string value, nuint valueLength, nuint startIndex, nuint count) => false;
+
+    protected override bool ContainsCore(StringWrapper value, nuint valueLength, nuint startIndex, nuint count) => false;
+
+    protected internal override StringWrapper SubstringCore(nuint startIndex, nuint count) => this;
+
+    protected override StringWrapper RemoveCore(nuint startIndex, nuint count) => this;
+
+    protected override nuint GetSplitCount(char separator, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        rangeBuffer = null;
+        return 1;
+    }
+
+    protected override nuint GetSplitCount(string separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        rangeBuffer = null;
+        return 1;
+    }
+
+    protected override nuint GetSplitCount(StringWrapper separator, nuint separatorLength, ArrayPool<SplitRange> pool, out SplitRange[]? rangeBuffer)
+    {
+        rangeBuffer = null;
+        return 1;
+    }
+
+    public override IEnumerator<char> GetEnumerator() => EnumeratorHelper.CreateEmptyEnumerator<char>();
+
+    public override int GetHashCode() => string.Empty.GetHashCode();
+
+    protected override int CompareToCore(string other, nuint length) => 0;
+
+    protected override int CompareToCore(StringWrapper other, nuint length) => 0;
+
+    protected override bool EqualsCore(string other, nuint length) => true;
+
+    protected override bool EqualsCore(StringWrapper other, nuint length) => true;
+
+    public override char[] ToCharArray() => Array.Empty<char>();
+
+    public override string ToString() => string.Empty;
+
+    public override StringWrapper ToStringWrapper(StringCreateOptions options) => this;
+
+    public override StringWrapper ToStringWrapper(StringType type) => this;
+
+    ref readonly char IPinnableReference<char>.GetPinnableReference() => ref _zeroChar;
+
+    nuint IPinnableReference<char>.GetPinnedLength() => 0;
+
+    ref readonly byte IPinnableReference<byte>.GetPinnableReference() => ref UnsafeHelper.As<char, byte>(ref UnsafeHelper.AsRefIn(in _zeroChar));
+
+    nuint IPinnableReference<byte>.GetPinnedLength() => 0;
+
+    ReadOnlyView<char> IReadOnlyViewProvider<char>.CreateView() => ReadOnlyView<char>.Empty;
+
+    ReadOnlyView<byte> IReadOnlyViewProvider<byte>.CreateView() => ReadOnlyView<byte>.Empty;
+}

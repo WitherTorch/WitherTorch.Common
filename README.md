@@ -1,2 +1,2 @@
-# WitherTorch.Common
-Common library for WitherTorch UIs
+# RiceTea.Core
+Core library for RiceTea's projects
