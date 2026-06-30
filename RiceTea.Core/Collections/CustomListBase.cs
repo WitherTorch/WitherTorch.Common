@@ -473,10 +473,7 @@ public abstract unsafe class CustomListBase<T> : IList<T>, IReadOnlyList<T>, IAd
             return false;
         }
 
-        public void Reset()
-        {
-            _index = 0;
-        }
+        public void Reset() => _index = -1;
     }
 
     public struct ReversedEnumerator : IEnumerator<T>

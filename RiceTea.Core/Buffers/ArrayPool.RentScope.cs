@@ -276,11 +276,10 @@ partial class ArrayPool<T>
         public ref struct Enumerator : IEnumerator<T>
         {
             private readonly T[] _array;
-            private readonly int _count;
+            private int _count, _index;
 
-            private int _index;
-
-            public Enumerator(T[] array, int count)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal Enumerator(T[] array, int count)
             {
                 _array = array;
                 _count = count;
@@ -289,6 +288,7 @@ partial class ArrayPool<T>
 
             public readonly T Current
             {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get
                 {
                     int index = _index;
@@ -300,8 +300,14 @@ partial class ArrayPool<T>
 
             readonly object? IEnumerator.Current => Current;
 
-            public readonly void Dispose() { }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose()
+            {
+                _index = -1;
+                _count = 0;
+            }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
                 int index = _index + 1;
@@ -314,10 +320,7 @@ partial class ArrayPool<T>
                 return false;
             }
 
-            public void Reset()
-            {
-                _index = 0;
-            }
+            public void Reset() => _index = -1;
         }
     }
 }
