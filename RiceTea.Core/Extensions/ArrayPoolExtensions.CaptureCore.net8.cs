@@ -1,5 +1,6 @@
 #if NET8_0_OR_GREATER
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
@@ -25,10 +26,9 @@ partial class ArrayPoolExtensions
         public static ArrayPool<T>.RentScope FromImmutableList<TList>(ArrayPool<T> _this, TList list) where TList : IImmutableList<T>, ICollection<T>
         {
             ArrayPool<T>.RentScope scope = _this.EnterRentScope();
-            scope.Resize(((ICollection<T>)list).Count, moveArray: false);
             try
             {
-                scope.CopyFrom(list, startIndex: 0);
+                scope.CopyFrom(list, startIndex: 0, count: ((ICollection<T>)list).Count);
             }
             catch (Exception)
             {
@@ -42,10 +42,9 @@ partial class ArrayPoolExtensions
         public static ArrayPool<T>.RentScope FromImmutableSet<TSet>(ArrayPool<T> _this, TSet set) where TSet : IImmutableSet<T>, ICollection<T>
         {
             ArrayPool<T>.RentScope scope = _this.EnterRentScope();
-            scope.Resize(((ICollection<T>)set).Count, moveArray: false);
             try
             {
-                scope.CopyFrom(set, startIndex: 0);
+                scope.CopyFrom(set, startIndex: 0, count: ((ICollection<T>)set).Count);
             }
             catch (Exception)
             {

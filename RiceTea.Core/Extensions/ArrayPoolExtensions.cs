@@ -4,6 +4,9 @@ using System.Collections.ObjectModel;
 using RiceTea.Core.Buffers;
 using RiceTea.Core.Helpers;
 using RiceTea.Core.Threading;
+using RiceTea.Core.Collections;
+using System.Runtime.CompilerServices;
+
 
 #if NET8_0_OR_GREATER
 using System.Collections.Immutable;
@@ -13,12 +16,15 @@ namespace RiceTea.Core.Extensions;
 
 public static partial class ArrayPoolExtensions
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ArrayPool<T>.RentScope EnterRentScopeAndCapture<T, TEnumerable>(this ArrayPool<T> _this, TEnumerable enumerable)
         where T : class? where TEnumerable : IEnumerable<T>
     {
         // direct type check (for dead code ellimination)
         if (typeof(TEnumerable) == typeof(T[]))
             return CaptureCore<T>.FromArray(_this, UnsafeHelper.As<TEnumerable, T[]>(enumerable));
+        if (typeof(TEnumerable) == typeof(LimitedImmutableArrayView<T>))
+            return CaptureCore<T>.FromLimitedImmutableArrayView(_this, UnsafeHelper.As<TEnumerable, LimitedImmutableArrayView<T>>(enumerable));
         if (typeof(TEnumerable) == typeof(ReadOnlyCollection<T>))
             return CaptureCore<T>.FromReadOnlyCollection(_this, UnsafeHelper.As<TEnumerable, ReadOnlyCollection<T>>(enumerable));
         if (typeof(TEnumerable) == typeof(LockableEnumerable<T>))

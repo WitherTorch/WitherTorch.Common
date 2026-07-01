@@ -8,6 +8,8 @@ using System.Threading;
 
 using RiceTea.Core.Buffers;
 using RiceTea.Core.Threading;
+using RiceTea.Core.Collections;
+
 
 #if NET8_0_OR_GREATER
 using System.Collections.Immutable;
@@ -25,6 +27,7 @@ partial class ArrayPoolExtensions
                => enumerable switch
                {
                    T[] array => FromArray(_this, array),
+                   LimitedImmutableArrayView<T> view => FromLimitedImmutableArrayView(_this, view),
                    ReadOnlyCollection<T> collection => FromReadOnlyCollection(_this, collection),
                    LockableEnumerable<T> lockable => FromLockableEnumerable(_this, lockable),
                    MonitorLockableEnumerable<T> lockable => FromMonitorLockableEnumerable(_this, lockable),
@@ -42,8 +45,15 @@ partial class ArrayPoolExtensions
         public static ArrayPool<T>.RentScope FromArray(ArrayPool<T> _this, T[] array)
         {
             ArrayPool<T>.RentScope scope = _this.EnterRentScope();
-            scope.Resize(array.Length, moveArray: false);
-            scope.CopyFrom(array, startIndex: 0);
+            scope.CopyFrom(array, startIndex: 0, count: array.Length);
+            return scope;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ArrayPool<T>.RentScope FromLimitedImmutableArrayView(ArrayPool<T> _this, LimitedImmutableArrayView<T> view)
+        {
+            ArrayPool<T>.RentScope scope = _this.EnterRentScope();
+            view.CopyTo(ref scope);
             return scope;
         }
 
@@ -108,10 +118,9 @@ partial class ArrayPoolExtensions
             int count = collection.Count;
             do
             {
-                scope.Resize(count, moveArray: false);
                 try
                 {
-                    scope.CopyFrom(collection, startIndex: 0);
+                    scope.CopyFrom(collection, startIndex: 0, count: count);
                 }
                 catch (ArgumentException)
                 {
@@ -159,10 +168,9 @@ partial class ArrayPoolExtensions
         {
             ArrayPool<T>.RentScope scope = _this.EnterRentScope();
             int count = collection.Count;
-            scope.Resize(count, moveArray: false);
             try
             {
-                scope.CopyFrom(collection, startIndex: 0);
+                scope.CopyFrom(collection, startIndex: 0, count: count);
             }
             catch (Exception)
             {

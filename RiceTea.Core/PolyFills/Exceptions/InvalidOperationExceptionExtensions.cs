@@ -15,5 +15,13 @@ public static partial class InvalidOperationExceptionExtensions
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DoesNotReturn]
         public static T Throw<T>() => throw new InvalidOperationException();
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static void Throw(string? message) => throw new InvalidOperationException(message);
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static T Throw<T>(string? message) => throw new InvalidOperationException(message);
     }
 }

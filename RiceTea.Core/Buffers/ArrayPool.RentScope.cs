@@ -102,17 +102,36 @@ partial class ArrayPool<T>
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void CopyFrom(T[] source, int startIndex)
+        public void CopyFrom(T[] source, int startIndex)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
-            Array.Copy(source, 0, NullSafetyHelper.ThrowIfNull(_array), startIndex, source.Length);
+            CopyFromCore(source, startIndex, source.Length);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void CopyFrom<TCollection>(TCollection source, int startIndex) where TCollection : ICollection<T>
+        public void CopyFrom(T[] source, int startIndex, int count)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
-            source.CopyTo(NullSafetyHelper.ThrowIfNull(_array), startIndex);
+            CopyFromCore(source, startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void CopyFromCore(T[] source, int startIndex, int count)
+        {
+            Resize(startIndex + count, moveArray: startIndex != 0);
+            T[]? array = _array;
+            DebugHelper.ThrowIf(array is null);
+            Array.Copy(source, 0, array, startIndex, count);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyFrom<TCollection>(TCollection source, int startIndex, int count) where TCollection : ICollection<T>
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(startIndex);
+            Resize(startIndex + count, moveArray: startIndex != 0);
+            T[]? array = _array;
+            DebugHelper.ThrowIf(array is null);
+            source.CopyTo(array, startIndex);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
