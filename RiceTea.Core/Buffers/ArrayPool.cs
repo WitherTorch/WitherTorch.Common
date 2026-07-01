@@ -1,12 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 using InlineMethod;
 
 using RiceTea.Core.Collections;
 using RiceTea.Core.Helpers;
-using RiceTea.Core.Threading;
 
 namespace RiceTea.Core.Buffers;
 
@@ -14,11 +12,11 @@ public abstract partial class ArrayPool<T> : IPool<T[]>
 {
     protected const uint MinimumArraySize = 16;
 
-    private static readonly LazyTiny<ArrayPool<T>> _sharedLazy = new LazyTiny<ArrayPool<T>>(CreateSharedPool, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly ArrayPool<T> _shared = CreateSharedPool();
     private static readonly bool _isUnmanagedType = UnsafeHelper.IsUnmanagedType<T>();
 
     public static ArrayPool<T> Empty => EmptyImpl.Instance;
-    public static ArrayPool<T> Shared => _sharedLazy.Value;
+    public static ArrayPool<T> Shared => _shared;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RentScope EnterRentScope() => new RentScope(this, Array.Empty<T>(), count: 0);

@@ -1,11 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 using InlineMethod;
 
 using RiceTea.Core.Helpers;
-using RiceTea.Core.Threading;
 
 namespace RiceTea.Core.Native;
 
@@ -13,10 +11,10 @@ public abstract unsafe partial class NativeMemoryPool
 {
     protected const uint MinimumMemoryBlockSize = 16;
 
-    private static readonly LazyTiny<NativeMemoryPool> _sharedLazy = new LazyTiny<NativeMemoryPool>(CreateSharedPool, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly NativeMemoryPool _shared = CreateSharedPool();
 
     public static NativeMemoryPool Empty => EmptyImpl.Instance;
-    public static NativeMemoryPool Shared => _sharedLazy.Value;
+    public static NativeMemoryPool Shared => _shared;
 
     [Inline(InlineBehavior.Keep, export: true)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

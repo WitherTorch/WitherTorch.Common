@@ -1,8 +1,8 @@
 #if NET472_OR_GREATER
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 using RiceTea.Core.Extensions;
@@ -16,104 +16,57 @@ partial class ArrayPool<T>
 {
     private sealed partial class SharedImpl : ArrayPool<T>
     {
-        private const int LocalArrayQueuePreserveCount = 4;
-        private const int GlobalArrayQueuePreserveCount = 1;
+        private const int GenerationNull = 0;
+        private const int GenerationEden = 1;
+        private const int MaxLocalGeneration = 3;
+        private const int GlobalArrayStackPreserveCount = 1;
 
-        private const int LocalArrayQueueCount = 4;
-        private const int LocalArraySizeLimit = 1 << (LocalArrayQueueCount + 3);
-        private const int GlobalArrayQueueCount = 20 - LocalArrayQueueCount - 3;
-        private const int GlobalArraySizeLimit = 1 << 20;
+        private const int LocalBucketCount = 4;
+        private const int LocalArraySizeLimit = 1 << (LocalBucketCount + 3);
+        private const int GlobalBucketCount = 17;
+        private const int GlobalArraySizeLimit = 1 << (GlobalBucketCount + 3);
 
-        private readonly ProcessorLocal<ArrayQueue>[] _localArrayQueues;
-        private readonly LazyTiny<ConcurrentArrayQueue>[] _globalArrayQueues;
+        [ThreadStatic]
+        private static LocalArray[]? _localArrayBuckets;
+        [ThreadStatic]
+        private static GlobalArrayStack[]? _globalArrayStackBuckets;
 
-        public SharedImpl()
+        private readonly HashSet<GCHandle> _localArrayCollectSet = new();
+        private readonly ProcessorLocal<GlobalArrayStack[]> _globalArrayStacksGroup = new(CreateGlobalArrayStacks);
+        private readonly Lock _syncLock = new();
+
+        private ulong _lastTrimTimestamp = 0;
+
+        public SharedImpl() => LocalArrayTrimCaller.Register(this);
+
+        private static GlobalArrayStack[] CreateGlobalArrayStacks()
         {
-            ProcessorLocal<ArrayQueue>[] localArrayQueues = new ProcessorLocal<ArrayQueue>[LocalArrayQueueCount];
-            localArrayQueues[0] = new(static () => CreateLocalArrayQueue(16));
-            localArrayQueues[1] = new(static () => CreateLocalArrayQueue(32));
-            localArrayQueues[2] = new(static () => CreateLocalArrayQueue(64));
-            localArrayQueues[3] = new(static () => CreateLocalArrayQueue(128));
-            LazyTiny<ConcurrentArrayQueue>[] globalArrayQueues = new LazyTiny<ConcurrentArrayQueue>[GlobalArrayQueueCount];
-            for (int i = 0; i < GlobalArrayQueueCount; i++)
+            GlobalArrayStack[] stacks = new GlobalArrayStack[GlobalBucketCount];
+            ref GlobalArrayStack stackRef = ref UnsafeHelper.GetArrayDataReference(stacks);
+            for (int i = 16, j = 0; i <= GlobalArraySizeLimit; i <<= 1, j++)
+                UnsafeHelper.AddTypedOffset(ref stackRef, j) = new GlobalArrayStack(i);
+            return stacks;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private LocalArray[]? GetLocalArrayBucketsOrNull() => _localArrayBuckets;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private LocalArray[] GetOrCreateLocalArrayBuckets()
+        {
+            LocalArray[]? buckets = _localArrayBuckets;
+            if (buckets is null)
             {
-                globalArrayQueues[i] = new LazyTiny<ConcurrentArrayQueue>(CreateGlobalArrayQueue, LazyThreadSafetyMode.ExecutionAndPublication);
+                buckets = new LocalArray[LocalBucketCount];
+                _localArrayBuckets = buckets;
+                lock (_syncLock)
+                    _localArrayCollectSet.Add(GCHandle.Alloc(buckets, GCHandleType.Weak));
             }
-            _localArrayQueues = localArrayQueues;
-            _globalArrayQueues = globalArrayQueues;
+            return buckets;
         }
 
-        private static ArrayQueue CreateLocalArrayQueue(int arraySize)
-        {
-            Queue<T[]> queue = new Queue<T[]>(LocalArrayQueuePreserveCount);
-            for (int i = 0; i < LocalArrayQueuePreserveCount; i++)
-                queue.Enqueue(new T[arraySize]);
-            StrongBox<nuint> readerCountBox = new StrongBox<nuint>(0);
-            Lock writerLock = new Lock();
-            DelayedCall call = new DelayedCall(() =>
-            {
-                ref nuint readerCount = ref readerCountBox.Value;
-                int generation = 0;
-
-                SpinWait waiter = new SpinWait();
-                while (true)
-                {
-                    while (InterlockedHelper.Read(ref readerCount) != 0)
-                        waiter.SpinOnce();
-                    lock (writerLock)
-                    {
-                        while (InterlockedHelper.Read(ref readerCount) != 0)
-                        {
-                            waiter.Reset();
-                            continue;
-                        }
-                        int count = queue.Count;
-                        if (count <= LocalArrayQueuePreserveCount)
-                            return;
-                        for (int i = LocalArrayQueuePreserveCount; i < count; i++)
-                            generation = MathHelper.Max(generation, GC.GetGeneration(queue.Dequeue()));
-                        break;
-                    }
-                }
-                GC.Collect(generation, GCCollectionMode.Optimized, blocking: false, compacting: false);
-            });
-            return new ArrayQueue(call, queue, readerCountBox, writerLock);
-        }
-
-        private static ConcurrentArrayQueue CreateGlobalArrayQueue()
-        {
-            ConcurrentQueue<T[]> queue = new ConcurrentQueue<T[]>(); 
-            StrongBox<nuint> readerCountBox = new StrongBox<nuint>(0);
-            Lock writerLock = new Lock();
-            DelayedCall call = new DelayedCall(() =>
-            {
-                ref nuint readerCount = ref readerCountBox.Value;
-                int generation = 0;
-
-                SpinWait waiter = new SpinWait();
-                while (true)
-                {
-                    while (InterlockedHelper.Read(ref readerCount) != 0)
-                        waiter.SpinOnce();
-                    lock (writerLock)
-                    {
-                        while (InterlockedHelper.Read(ref readerCount) != 0)
-                        {
-                            waiter.Reset();
-                            continue;
-                        }
-                        int count = queue.Count;
-                        if (count <= GlobalArrayQueuePreserveCount)
-                            return;
-                        for (int i = GlobalArrayQueuePreserveCount; i < count && queue.TryDequeue(out T[] array); i++)
-                            generation = MathHelper.Max(generation, GC.GetGeneration(array));
-                        break;
-                    }
-                }
-                GC.Collect(generation, GCCollectionMode.Optimized, blocking: false, compacting: false);
-            });
-            return new ConcurrentArrayQueue(call, queue, readerCountBox, writerLock);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private GlobalArrayStack GetGlobalArrayStack(int index) => (_globalArrayStackBuckets ??= _globalArrayStacksGroup.Value).AsUnsafeRef()[index];
 
         protected override T[] RentCore(nuint capacity)
         {
@@ -124,42 +77,47 @@ partial class ArrayPool<T>
             int index = MathHelper.Log2(capacity);
             index += MathHelper.BooleanToInt32(capacity >= (1U << index));
 
-            DelayedCall call;
             T[]? array;
-            if (index < LocalArrayQueueCount)
-            {
-                ArrayQueue queue = _localArrayQueues.AsUnsafeRef()[index].Value;
-                ref nuint readerCount = ref queue.ReaderCountBox.Value;
-                lock (queue.WriterLock)
-                    InterlockedHelper.Increment(ref readerCount);
-                try
-                {
-                    queue.Queue.TryDequeue(out array);
-                }
-                finally
-                {
-                    InterlockedHelper.Decrement(ref readerCount);
-                }
-                call = queue.Call;
-            }
+            if (index < LocalBucketCount)
+                goto Local;
             else
+                goto Global;
+
+        Local:
+            LocalArray[]? localBuckets = GetLocalArrayBucketsOrNull();
+            if (localBuckets is null)
+                goto GlobalTemporarily;
+
+            ref LocalArray localBucket = ref localBuckets.AsUnsafeRef()[index];
+            while (InterlockedHelper.CompareExchange(ref localBucket.Barrier, 1, 0) != 0)
             {
-                ConcurrentArrayQueue queue = _globalArrayQueues.AsUnsafeRef()[index - LocalArrayQueueCount].Value;
-                ref nuint readerCount = ref queue.ReaderCountBox.Value;
-                lock (queue.WriterLock)
-                    InterlockedHelper.Increment(ref readerCount);
-                try
-                {
-                    queue.Queue.TryDequeue(out array);
-                }
-                finally
-                {
-                    InterlockedHelper.Decrement(ref readerCount);
-                }
-                call = queue.Call;
+                SpinWait spin = new SpinWait();
+                while (InterlockedHelper.Read(ref localBucket.Barrier) != 0)
+                    spin.SpinOnce();
             }
-            call.AddRef();
-            return array ?? new T[MinimumArraySize << index];
+            try
+            {
+                array = ReferenceHelper.Exchange(ref localBucket.Array, null);
+                if (array is not null)
+                {
+                    localBucket.Generation = GenerationEden;
+                    Thread.MemoryBarrier();
+                    return array;
+                }
+                if (localBucket.Generation == GenerationEden)
+                    goto Global;
+                return new T[1 << (index + 4)];
+            }
+            finally
+            {
+                InterlockedHelper.Write(ref localBucket.Barrier, 0);
+            }
+
+        Global:
+            return GetGlobalArrayStack(index).Pop();
+
+        GlobalTemporarily:
+            return GetGlobalArrayStack(index).Pop();
         }
 
         protected override void ReturnCore(T[] array)
@@ -168,55 +126,116 @@ partial class ArrayPool<T>
             if (length < 16 || length > GlobalArraySizeLimit || !MathHelper.IsPow2(length))
                 return;
             int index = MathHelper.Log2((uint)length) - 4;
-            DelayedCall call;
-            if (index < LocalArrayQueueCount)
-            {
-                ArrayQueue queue = _localArrayQueues.AsUnsafeRef()[index].Value;
-                ref nuint readerCount = ref queue.ReaderCountBox.Value;
-                lock (queue.WriterLock)
-                    InterlockedHelper.Increment(ref readerCount);
-                try
-                {
-                    queue.Queue.Enqueue(array);
-                }
-                finally
-                {
-                    InterlockedHelper.Decrement(ref readerCount);
-                }
-                call = queue.Call;
-            }
+            if (index < LocalBucketCount)
+                goto Local;
             else
+                goto Global;
+
+        Local:
+            ref LocalArray localBucket = ref GetOrCreateLocalArrayBuckets().AsUnsafeRef()[index];
+            if (InterlockedHelper.Read(ref localBucket.Generation) != GenerationNull || InterlockedHelper.Read(ref localBucket.Array) is not null)
+                goto Global;
+            while (InterlockedHelper.CompareExchange(ref localBucket.Barrier, 1, 0) != 0)
             {
-                ConcurrentArrayQueue queue = _globalArrayQueues.AsUnsafeRef()[index - LocalArrayQueueCount].Value;
-                ref nuint readerCount = ref queue.ReaderCountBox.Value;
-                lock (queue.WriterLock)
-                    InterlockedHelper.Increment(ref readerCount);
-                try
-                {
-                    queue.Queue.Enqueue(array);
-                }
-                finally
-                {
-                    InterlockedHelper.Decrement(ref readerCount);
-                }
-                call = queue.Call;
+                SpinWait spin = new SpinWait();
+                while (InterlockedHelper.Read(ref localBucket.Barrier) != 0)
+                    spin.SpinOnce();
             }
-            call.RemoveRef();
+            try
+            {
+                localBucket.Array = array;
+                localBucket.Generation = GenerationEden;
+                Thread.MemoryBarrier();
+            }
+            finally
+            {
+                InterlockedHelper.Write(ref localBucket.Barrier, 0);
+            }
+            return;
+
+        Global:
+            GetGlobalArrayStack(index).Push(array);
         }
 
-        private sealed record class ArrayQueue(
-            DelayedCall Call,
-            Queue<T[]> Queue,
-            StrongBox<nuint> ReaderCountBox,
-            Lock WriterLock
-            );
+        private void TrimLocals()
+        {
+            const ulong MinimumTrimPeriod = 10 * TimeSpan.TicksPerSecond;
 
-        private sealed record class ConcurrentArrayQueue(
-            DelayedCall Call,
-            ConcurrentQueue<T[]> Queue,
-            StrongBox<nuint> ReaderCountBox,
-            Lock WriterLock
-            );
+            Lock syncLock = _syncLock;
+            try
+            {
+                if (!syncLock.TryEnter())
+                    return;
+                try
+                {
+                    ulong now = NativeMethods.GetTicksForSystem();
+                    if (now - _lastTrimTimestamp < MinimumTrimPeriod)
+                        return;
+                    _lastTrimTimestamp = now;
+
+                    _localArrayCollectSet.RemoveWhere(static (GCHandle handle) =>
+                    {
+                        if (handle.Target is not LocalArray[] buckets)
+                            return true;
+
+                        ref LocalArray bucketRef = ref UnsafeHelper.GetArrayDataReference(buckets);
+                        for (int i = 0; i < LocalBucketCount; i++)
+                        {
+                            ref LocalArray bucket = ref UnsafeHelper.AddTypedOffset(ref bucketRef, i);
+                            while (InterlockedHelper.CompareExchange(ref bucket.Barrier, 1, 0) != 0)
+                            {
+                                SpinWait spin = new SpinWait();
+                                while (InterlockedHelper.Read(ref bucket.Barrier) != 0)
+                                    spin.SpinOnce();
+                            }
+                            try
+                            {
+                                if (bucket.Array is null || ++bucket.Generation <= MaxLocalGeneration)
+                                    continue;
+                                bucket.Generation = GenerationEden;
+                                bucket.Array = null;
+                                Thread.MemoryBarrier();
+                            }
+                            finally
+                            {
+                                InterlockedHelper.Write(ref bucket.Barrier, 0);
+                            }
+                        }
+
+                        return false;
+                    });
+                }
+                finally
+                {
+                    syncLock.Exit();
+                }
+            }
+            finally
+            {
+                LocalArrayTrimCaller.Register(this);
+            }
+        }
+
+        [StructLayout(LayoutKind.Auto)]
+        private struct LocalArray
+        {
+            public T[]? Array;
+            public nuint Generation;
+            public nuint Barrier;
+        }
+
+        private sealed class LocalArrayTrimCaller
+        {
+            private readonly SharedImpl _owner;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private LocalArrayTrimCaller(SharedImpl owner) => _owner = owner;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Register(SharedImpl owner) => new LocalArrayTrimCaller(owner);
+
+            ~LocalArrayTrimCaller() => _owner.TrimLocals();
+        }
     }
 }
 #endif
