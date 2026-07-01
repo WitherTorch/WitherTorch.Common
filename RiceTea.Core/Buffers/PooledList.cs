@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 
 using RiceTea.Core.Collections;
 using RiceTea.Core.Helpers;
@@ -48,6 +49,13 @@ public sealed class PooledList<T> : CustomListBase<T>, IDisposable
         Array.Copy(array, newArray, capacity);
         _array = newArray;
         pool.Return(array);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public void Deconstruct(out ArrayPool<T> pool, out T[] array, out int count)
+    {
+        pool = _pool;
+        Deconstruct(out array, out count);
     }
 
     public void Deconstruct(out T[] array, out int count)

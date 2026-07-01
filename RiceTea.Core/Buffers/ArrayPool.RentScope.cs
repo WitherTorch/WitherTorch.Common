@@ -258,6 +258,31 @@ partial class ArrayPool<T>
                 return Array.IndexOf(array, item, 0, count);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Deconstruct(out ArrayPool<T> pool, out T[] array, out int count)
+        {
+            pool = _pool ?? ObjectDisposedException.Throw<ArrayPool<T>>(nameof(RentScope));
+            Deconstruct(out array, out count);
+        }
+
+        public void Deconstruct(out T[] array, out int count)
+        {
+            ArrayPool<T>? pool = _pool;
+            if (pool is null)
+            {
+                array = Array.Empty<T>();
+                count = 0;
+                return;
+            }
+
+            T[]? selfArray = _array;
+            DebugHelper.ThrowIf(selfArray is null);
+
+            _pool = null;
+            (_array, array) = (null, selfArray);
+            (_count, count) = (0, _count);
+        }
+
         public void Dispose()
         {
             ArrayPool<T>? pool = _pool;

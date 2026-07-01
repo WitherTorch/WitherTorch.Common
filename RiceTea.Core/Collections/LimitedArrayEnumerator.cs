@@ -7,7 +7,7 @@ using RiceTea.Core.Extensions;
 
 namespace RiceTea.Core.Collections;
 
-internal sealed class LimitedArrayEnumerator<T> : IEnumerator<T>
+public sealed class LimitedArrayEnumerator<T> : IEnumerator<T>
 {
     private readonly T[] _array;
     private readonly int _count;
