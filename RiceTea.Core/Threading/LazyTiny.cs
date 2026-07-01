@@ -11,7 +11,7 @@ public sealed class LazyTiny<T> where T : class
 {
     private readonly bool _isThreadSafe;
     private readonly Func<T>? _factory;
-    private readonly object? _syncLock;
+    private readonly Lock? _syncLock;
 
     private T? _value;
 
@@ -25,11 +25,11 @@ public sealed class LazyTiny<T> where T : class
     public LazyTiny(Func<T>? factory) : this(factory, false, null) { }
 
     /// <inheritdoc cref="Lazy{T}.Lazy(Func{T}, bool)"/>
-    public LazyTiny(Func<T>? factory, bool isThreadSafe) : this(factory, isThreadSafe, isThreadSafe ? new object() : null) { }
+    public LazyTiny(Func<T>? factory, bool isThreadSafe) : this(factory, isThreadSafe, isThreadSafe ? new Lock() : null) { }
 
     /// <inheritdoc cref="Lazy{T}.Lazy(Func{T}, LazyThreadSafetyMode)"/>
     public LazyTiny(Func<T>? factory, LazyThreadSafetyMode mode) :
-        this(factory, mode != LazyThreadSafetyMode.None, mode == LazyThreadSafetyMode.ExecutionAndPublication ? new object() : null)
+        this(factory, mode != LazyThreadSafetyMode.None, mode == LazyThreadSafetyMode.ExecutionAndPublication ? new Lock() : null)
     { }
 
     public LazyTiny(T value)
@@ -40,11 +40,11 @@ public sealed class LazyTiny<T> where T : class
         _value = value;
     }
 
-    private LazyTiny(Func<T>? factory, bool isThreadSafe, object? syncRoot)
+    private LazyTiny(Func<T>? factory, bool isThreadSafe, Lock? syncLock)
     {
         _isThreadSafe = isThreadSafe;
         _factory = factory;
-        _syncLock = syncRoot;
+        _syncLock = syncLock;
         _value = null;
     }
 
@@ -73,19 +73,14 @@ public sealed class LazyTiny<T> where T : class
         else
         {
             T? result = _value;
-            if (result is null)
-            {
-                object? syncLock = _syncLock;
-                if (syncLock is null)
-                    result = Volatile.Read(ref _value);
-                else
-                {
-                    Monitor.Enter(syncLock);
-                    result = _value;
-                    Monitor.Exit(syncLock);
-                }
-            }
-            return result;
+            if (result is not null)
+                return result;
+            Lock? syncLock = _syncLock;
+            if (syncLock is null)
+                return Volatile.Read(ref _value);
+            else
+                lock (syncLock)
+                    return _value;
         }
     }
 

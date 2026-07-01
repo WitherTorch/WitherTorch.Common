@@ -9,7 +9,7 @@ namespace RiceTea.Core.Threading;
 internal static class LazyTinyHelper
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static T InitializeAndReturn<T>(ref T? location, Func<T>? factory, bool threadSafe, object? syncLock) where T : class
+    public static T InitializeAndReturn<T>(ref T? location, Func<T>? factory, bool threadSafe, Lock? syncLock) where T : class
     {
         T? result;
         if (!threadSafe) // 對應 LazyThreadSafetyMode.None
@@ -34,22 +34,15 @@ internal static class LazyTinyHelper
             return result;
         }
         // 對應 LazyThreadSafetyMode.ExecutionAndPublication
-        Monitor.Enter(syncLock);
-        result = location;
-        if (result is null)
+        lock (syncLock)
         {
-            try
+            result = location;
+            if (result is null)
             {
                 result = InitializeOrThrow(factory);
+                location = result;
             }
-            catch (Exception)
-            {
-                Monitor.Exit(syncLock);
-                throw;
-            }
-            location = result;
         }
-        Monitor.Exit(syncLock);
         return result;
     }
 

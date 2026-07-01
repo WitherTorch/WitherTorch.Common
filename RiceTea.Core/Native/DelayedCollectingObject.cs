@@ -29,10 +29,9 @@ public abstract class DelayedCollectingObject : ICheckableDisposable
 
     public void AddRef()
     {
-        if (CheckDisposed() || InterlockedHelper.LimitedIncrement(ref _refCount, ulong.MaxValue) != 1)
+        if (CheckDisposed() || InterlockedHelper.LimitedIncrement(ref _refCount, ulong.MaxValue) != 1 || !TryGenerateObject())
             return;
         DelayedCollector.Instance.AddObject(this);
-        TryGenerateObject();
     }
 
     public void RemoveRef()
@@ -50,11 +49,12 @@ public abstract class DelayedCollectingObject : ICheckableDisposable
     }
 
     [Inline(InlineBehavior.Remove)]
-    private void TryGenerateObject()
+    private bool TryGenerateObject()
     {
         if (InterlockedHelper.Exchange(ref _created, ulong.MaxValue) != 0)
-            return;
+            return false;
         GenerateObject();
+        return true;
     }
 
     [Inline(InlineBehavior.Remove)]

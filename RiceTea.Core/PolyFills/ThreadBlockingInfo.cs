@@ -1,10 +1,10 @@
 #pragma warning disable IDE0130
+#pragma warning disable CS8500
 
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using RiceTea.Core.Helpers;
@@ -87,11 +87,11 @@ internal unsafe struct ThreadBlockingInfo
             switch (_objectKind)
             {
                 case ObjectKind.Lock:
-                    return ((Lock)Unsafe.AsRef<object>(_objectPtr)).OwningManagedThreadId;
+                    return ((Lock)UnsafeHelper.AsRef((object*)_objectPtr)).OwningManagedThreadId;
 
                 case ObjectKind.Condition:
                     Debug.Assert(_objectKind == ObjectKind.Condition);
-                    return ((Condition)Unsafe.AsRef<object>(_objectPtr)).AssociatedLock.OwningManagedThreadId;
+                    return ((Condition)UnsafeHelper.AsRef((object*)_objectPtr)).AssociatedLock.OwningManagedThreadId;
 
                 default:
                     throw new Exception("Unreachable.");
@@ -113,7 +113,7 @@ internal unsafe struct ThreadBlockingInfo
         private Scope(object obj, ObjectKind objectKind, int timeoutMs)
         {
             _object = obj;
-            _blockingInfo.Push(Unsafe.AsPointer(ref _object), objectKind, timeoutMs);
+            _blockingInfo.Push(UnsafeHelper.AsPointerRef(ref _object), objectKind, timeoutMs);
         }
 
         public void Dispose()

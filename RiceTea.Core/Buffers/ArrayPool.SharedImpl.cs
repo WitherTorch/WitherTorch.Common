@@ -16,7 +16,7 @@ partial class ArrayPool<T>
 {
     private sealed partial class SharedImpl : ArrayPool<T>
     {
-        private const int LocalArrayQueuePreserveCount = 1;
+        private const int LocalArrayQueuePreserveCount = 4;
         private const int GlobalArrayQueuePreserveCount = 1;
 
         private const int LocalArrayQueueCount = 4;
@@ -48,34 +48,71 @@ partial class ArrayPool<T>
             Queue<T[]> queue = new Queue<T[]>(LocalArrayQueuePreserveCount);
             for (int i = 0; i < LocalArrayQueuePreserveCount; i++)
                 queue.Enqueue(new T[arraySize]);
-            StrongBox<nuint> barrierBox = new StrongBox<nuint>(0);
+            StrongBox<nuint> readerCountBox = new StrongBox<nuint>(0);
+            Lock writerLock = new Lock();
             DelayedCall call = new DelayedCall(() =>
             {
-                InterlockedHelper.Write(ref barrierBox.Value, (nuint)queue.Count);
-                try
+                ref nuint readerCount = ref readerCountBox.Value;
+                int generation = 0;
+
+                SpinWait waiter = new SpinWait();
+                while (true)
                 {
-                    int count = queue.Count;
-                    for (int i = LocalArrayQueuePreserveCount; i < count; i++)
-                        queue.Dequeue();
+                    while (InterlockedHelper.Read(ref readerCount) != 0)
+                        waiter.SpinOnce();
+                    lock (writerLock)
+                    {
+                        while (InterlockedHelper.Read(ref readerCount) != 0)
+                        {
+                            waiter.Reset();
+                            continue;
+                        }
+                        int count = queue.Count;
+                        if (count <= LocalArrayQueuePreserveCount)
+                            return;
+                        for (int i = LocalArrayQueuePreserveCount; i < count; i++)
+                            generation = MathHelper.Max(generation, GC.GetGeneration(queue.Dequeue()));
+                        break;
+                    }
                 }
-                finally
-                {
-                    InterlockedHelper.Write(ref barrierBox.Value, 0);
-                }
+                GC.Collect(generation, GCCollectionMode.Optimized, blocking: false, compacting: false);
             });
-            return new ArrayQueue(call, queue, barrierBox);
+            return new ArrayQueue(call, queue, readerCountBox, writerLock);
         }
 
         private static ConcurrentArrayQueue CreateGlobalArrayQueue()
         {
-            ConcurrentQueue<T[]> queue = new ConcurrentQueue<T[]>();
+            ConcurrentQueue<T[]> queue = new ConcurrentQueue<T[]>(); 
+            StrongBox<nuint> readerCountBox = new StrongBox<nuint>(0);
+            Lock writerLock = new Lock();
             DelayedCall call = new DelayedCall(() =>
             {
-                int count = queue.Count;
-                for (int i = GlobalArrayQueuePreserveCount; i < count; i++)
-                    queue.TryDequeue(out _);
+                ref nuint readerCount = ref readerCountBox.Value;
+                int generation = 0;
+
+                SpinWait waiter = new SpinWait();
+                while (true)
+                {
+                    while (InterlockedHelper.Read(ref readerCount) != 0)
+                        waiter.SpinOnce();
+                    lock (writerLock)
+                    {
+                        while (InterlockedHelper.Read(ref readerCount) != 0)
+                        {
+                            waiter.Reset();
+                            continue;
+                        }
+                        int count = queue.Count;
+                        if (count <= GlobalArrayQueuePreserveCount)
+                            return;
+                        for (int i = GlobalArrayQueuePreserveCount; i < count && queue.TryDequeue(out T[] array); i++)
+                            generation = MathHelper.Max(generation, GC.GetGeneration(array));
+                        break;
+                    }
+                }
+                GC.Collect(generation, GCCollectionMode.Optimized, blocking: false, compacting: false);
             });
-            return new ConcurrentArrayQueue(call, queue);
+            return new ConcurrentArrayQueue(call, queue, readerCountBox, writerLock);
         }
 
         protected override T[] RentCore(nuint capacity)
@@ -91,17 +128,34 @@ partial class ArrayPool<T>
             T[]? array;
             if (index < LocalArrayQueueCount)
             {
-                ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
-                if (InterlockedHelper.Read(ref queue.BarrierBox.Value) == 0)
+                ArrayQueue queue = _localArrayQueues.AsUnsafeRef()[index].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
                     queue.Queue.TryDequeue(out array);
-                else
-                    array = null;
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 call = queue.Call;
             }
             else
             {
-                ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_globalArrayQueues), index - LocalArrayQueueCount).Value;
-                queue.Queue.TryDequeue(out array);
+                ConcurrentArrayQueue queue = _globalArrayQueues.AsUnsafeRef()[index - LocalArrayQueueCount].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
+                    queue.Queue.TryDequeue(out array);
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 call = queue.Call;
             }
             call.AddRef();
@@ -117,14 +171,34 @@ partial class ArrayPool<T>
             DelayedCall call;
             if (index < LocalArrayQueueCount)
             {
-                ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
-                queue.Queue.Enqueue(array);
+                ArrayQueue queue = _localArrayQueues.AsUnsafeRef()[index].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
+                    queue.Queue.Enqueue(array);
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 call = queue.Call;
             }
             else
             {
-                ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_globalArrayQueues), index - LocalArrayQueueCount).Value;
-                queue.Queue.Enqueue(array);
+                ConcurrentArrayQueue queue = _globalArrayQueues.AsUnsafeRef()[index - LocalArrayQueueCount].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
+                    queue.Queue.Enqueue(array);
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 call = queue.Call;
             }
             call.RemoveRef();
@@ -133,12 +207,15 @@ partial class ArrayPool<T>
         private sealed record class ArrayQueue(
             DelayedCall Call,
             Queue<T[]> Queue,
-            StrongBox<nuint> BarrierBox
+            StrongBox<nuint> ReaderCountBox,
+            Lock WriterLock
             );
 
         private sealed record class ConcurrentArrayQueue(
             DelayedCall Call,
-            ConcurrentQueue<T[]> Queue
+            ConcurrentQueue<T[]> Queue,
+            StrongBox<nuint> ReaderCountBox,
+            Lock WriterLock
             );
     }
 }

@@ -15,7 +15,7 @@ unsafe partial class NativeMemoryPool
 
     private sealed partial class SharedImpl : NativeMemoryPool
     {
-        private const int LocalArrayQueuePreserveCount = 1;
+        private const int LocalArrayQueuePreserveCount = 4;
         private const int GlobalArrayQueuePreserveCount = 1;
 
         private const int LocalArrayQueueCount = 6;
@@ -49,37 +49,63 @@ unsafe partial class NativeMemoryPool
             Queue<NativeMemoryBlock> queue = new Queue<NativeMemoryBlock>(LocalArrayQueuePreserveCount);
             for (int i = 0; i < LocalArrayQueuePreserveCount; i++)
                 queue.Enqueue(NativeMethods.AllocMemoryBlock(blockSize));
-            StrongBox<nuint> barrierBox = new StrongBox<nuint>(0);
+            StrongBox<nuint> readerCountBox = new StrongBox<nuint>(0);
+            Lock writerLock = new Lock();
             DelayedCall call = new DelayedCall(() =>
             {
-                InterlockedHelper.Write(ref barrierBox.Value, UnsafeHelper.GetMaxValue<nuint>());
-                try
+                ref nuint readerCount = ref readerCountBox.Value;
+
+                SpinWait waiter = new SpinWait();
+                while (true)
                 {
-                    int count = queue.Count;
-                    for (int i = LocalArrayQueuePreserveCount; i < count; i++)
-                        NativeMethods.FreeMemoryBlock(queue.Dequeue());
-                }
-                finally
-                {
-                    InterlockedHelper.Write(ref barrierBox.Value, 0);
+                    while (InterlockedHelper.Read(ref readerCount) != 0)
+                        waiter.SpinOnce();
+                    lock (writerLock)
+                    {
+                        while (InterlockedHelper.Read(ref readerCount) != 0)
+                        {
+                            waiter.Reset();
+                            continue;
+                        }
+                        int count = queue.Count;
+                        for (int i = LocalArrayQueuePreserveCount; i < count; i++)
+                            NativeMethods.FreeMemoryBlock(queue.Dequeue());
+                        break;
+                    }
                 }
             });
-            return new ArrayQueue(call, queue, barrierBox);
+            return new ArrayQueue(call, queue, readerCountBox, writerLock);
         }
 
         private static ConcurrentArrayQueue CreateGlobalArrayQueue()
         {
             ConcurrentQueue<NativeMemoryBlock> queue = new ConcurrentQueue<NativeMemoryBlock>();
+            StrongBox<nuint> readerCountBox = new StrongBox<nuint>(0);
+            Lock writerLock = new Lock();
             DelayedCall call = new DelayedCall(() =>
             {
-                int count = queue.Count;
-                for (int i = GlobalArrayQueuePreserveCount; i < count; i++)
+                ref nuint readerCount = ref readerCountBox.Value;
+
+                SpinWait waiter = new SpinWait();
+                while (true)
                 {
-                    if (queue.TryDequeue(out NativeMemoryBlock block))
-                        NativeMethods.FreeMemoryBlock(block);
+                    while (InterlockedHelper.Read(ref readerCount) != 0)
+                        waiter.SpinOnce();
+                    lock (writerLock)
+                    {
+                        while (InterlockedHelper.Read(ref readerCount) != 0)
+                        {
+                            waiter.Reset();
+                            continue;
+                        }
+                        int count = queue.Count;
+                        for (int i = GlobalArrayQueuePreserveCount; i < count && queue.TryDequeue(out NativeMemoryBlock block); i++)
+                            NativeMethods.FreeMemoryBlock(block);
+                        break;
+                    }
                 }
             });
-            return new ConcurrentArrayQueue(call, queue);
+            return new ConcurrentArrayQueue(call, queue, readerCountBox, writerLock);
         }
 
         protected override void* RentCore(ref nuint capacity)
@@ -95,23 +121,35 @@ unsafe partial class NativeMemoryPool
             NativeMemoryBlock memoryBlock;
             if (index < LocalArrayQueueCount)
             {
-                ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
-                if (InterlockedHelper.Read(ref queue.BarrierBox.Value) == 0)
+                ArrayQueue queue = _localArrayQueues.AsUnsafeRef()[index].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
                 {
                     queue.Queue.TryDequeue(out memoryBlock);
-                    capacity = memoryBlock.Length;
                 }
-                else
+                finally
                 {
-                    memoryBlock = default;
-                    capacity = 0;
+                    InterlockedHelper.Decrement(ref readerCount);
                 }
+                capacity = memoryBlock.Length;
                 call = queue.Call;
             }
             else
             {
-                ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_globalArrayQueues), index - LocalArrayQueueCount).Value;
-                queue.Queue.TryDequeue(out memoryBlock);
+                ConcurrentArrayQueue queue = _globalArrayQueues.AsUnsafeRef()[index - LocalArrayQueueCount].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
+                    queue.Queue.TryDequeue(out memoryBlock);
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 capacity = memoryBlock.Length;
                 call = queue.Call;
             }
@@ -134,28 +172,51 @@ unsafe partial class NativeMemoryPool
             DelayedCall call;
             if (index < LocalArrayQueueCount)
             {
-                ArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_localArrayQueues), index).Value;
-                queue.Queue.Enqueue(new NativeMemoryBlock(ptr, length));
+                ArrayQueue queue = _localArrayQueues.AsUnsafeRef()[index].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
+                    queue.Queue.Enqueue(new NativeMemoryBlock(ptr, length));
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 call = queue.Call;
             }
             else
             {
-                ConcurrentArrayQueue queue = UnsafeHelper.AddTypedOffset(ref UnsafeHelper.GetArrayDataReference(_globalArrayQueues), index - LocalArrayQueueCount).Value;
-                queue.Queue.Enqueue(new NativeMemoryBlock(ptr, length));
+                ConcurrentArrayQueue queue = _globalArrayQueues.AsUnsafeRef()[index - LocalArrayQueueCount].Value;
+                ref nuint readerCount = ref queue.ReaderCountBox.Value;
+                lock (queue.WriterLock)
+                    InterlockedHelper.Increment(ref readerCount);
+                try
+                {
+                    queue.Queue.Enqueue(new NativeMemoryBlock(ptr, length));
+                }
+                finally
+                {
+                    InterlockedHelper.Decrement(ref readerCount);
+                }
                 call = queue.Call;
             }
             call.RemoveRef();
         }
-
-        private sealed record class ArrayQueue(
-            DelayedCall Call,
-            Queue<NativeMemoryBlock> Queue,
-            StrongBox<nuint> BarrierBox
-            );
-
-        private sealed record class ConcurrentArrayQueue(
-            DelayedCall Call,
-            ConcurrentQueue<NativeMemoryBlock> Queue
-            );
     }
+
+    private sealed record class ArrayQueue(
+        DelayedCall Call,
+            Queue<NativeMemoryBlock> Queue,
+            StrongBox<nuint> ReaderCountBox,
+            Lock WriterLock
+        );
+
+    private sealed record class ConcurrentArrayQueue(
+        DelayedCall Call,
+        ConcurrentQueue<NativeMemoryBlock> Queue,
+        StrongBox<nuint> ReaderCountBox,
+        Lock WriterLock
+        );
 }

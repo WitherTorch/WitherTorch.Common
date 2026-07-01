@@ -1,10 +1,12 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 
 using InlineMethod;
+
+using RiceTea.Core.Extensions;
+using RiceTea.Core.Helpers;
 
 namespace RiceTea.Core.Native;
 
@@ -18,16 +20,18 @@ internal sealed class DelayedCollector
     private static ulong _nowTime;
 
     private readonly Thread _thread;
-    private readonly ConcurrentQueue<DelayedCollectingObject> _queue;
+    private readonly Queue<DelayedCollectingObject> _queue;
     private readonly HashSet<DelayedCollectingObject> _innerSet;
+    private readonly Lock _lock;
     private readonly IntPtr _waitingEventHandle;
 
     public static DelayedCollector Instance => _instance;
 
     private DelayedCollector()
     {
+        _lock = new Lock();
         _innerSet = new HashSet<DelayedCollectingObject>();
-        _queue = new ConcurrentQueue<DelayedCollectingObject>();
+        _queue = new Queue<DelayedCollectingObject>();
         _waitingEventHandle = NativeMethods.CreateWaitingHandle(autoReset: true);
         _thread = new Thread(DoTick)
         {
@@ -40,22 +44,28 @@ internal sealed class DelayedCollector
 
     public void AddObject(DelayedCollectingObject obj)
     {
-        _queue.Enqueue(obj);
+        lock (_lock)
+            _queue.Enqueue(obj);
         NativeMethods.SetWaitingHandle(_waitingEventHandle);
     }
 
     private void DoTick()
     {
         HashSet<DelayedCollectingObject> innerSet = _innerSet;
-        ConcurrentQueue<DelayedCollectingObject> bag = _queue;
+        Queue<DelayedCollectingObject> queue = _queue;
+        Lock @lock = _lock;
+
         IntPtr waitingEventHandle = _waitingEventHandle;
         NativeMethods.WaitForWaitingHandle(waitingEventHandle);
         while (true)
         {
             ulong predictedTicks = NativeMethods.GetTicksForSystem() + DelayedCollectingPeriod;
 
-            while (bag.TryDequeue(out DelayedCollectingObject? obj))
-                innerSet.Add(obj);
+            lock (@lock)
+            {
+                while (queue.TryDequeue(out DelayedCollectingObject? obj))
+                    innerSet.Add(obj!);
+            }
 
             DoLifeCheck(innerSet);
 
@@ -86,7 +96,9 @@ internal sealed class DelayedCollector
                 return true;
             if (obj.IsInReference)
                 return false;
-            if ((_nowTime - obj.LastDereferenceTime) > DelayedCollectingNoRefTime)
+            ulong nowTime = _nowTime;
+            ulong deRefTime = obj.LastDereferenceTime;
+            if (nowTime > deRefTime && (nowTime - deRefTime) > DelayedCollectingNoRefTime)
             {
                 obj.RemoveObject();
                 return true;
