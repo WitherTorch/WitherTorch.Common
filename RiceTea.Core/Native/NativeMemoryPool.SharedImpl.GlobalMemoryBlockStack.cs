@@ -6,7 +6,6 @@ namespace RiceTea.Core.Native;
 
 unsafe partial class NativeMemoryPool
 {
-
     partial class SharedImpl
     {
         private sealed class GlobalMemoryBlockStack
@@ -15,21 +14,30 @@ unsafe partial class NativeMemoryPool
             private readonly Lock _lock;
             private readonly nuint _blockSize;
 
+            private bool _hasTrimCaller = false;
             private ulong _lastTrimTimestamp = 0;
 
             public GlobalMemoryBlockStack(nuint blockSize)
             {
-                _stack = new Stack<nuint>(GlobalArrayStackPreserveCount);
+                _stack = new Stack<nuint>(GlobalMemoryBlockStackPreserveCount);
                 _lock = new Lock();
                 _blockSize = blockSize;
 
-                DelayedTrimCaller.Register(this);
+                TrimCaller.Register(this);
             }
 
             public void Push(void* ptr)
             {
                 lock (_lock)
-                    _stack.Push((nuint)ptr);
+                {
+                    Stack<nuint> stack = _stack;
+                    stack.Push((nuint)ptr);
+                    if (!_hasTrimCaller && stack.Count > GlobalMemoryBlockStackPreserveCount)
+                    {
+                        TrimCaller.Register(this);
+                        _hasTrimCaller = true;
+                    }
+                }
             }
 
             public void* Pop()
@@ -51,45 +59,43 @@ unsafe partial class NativeMemoryPool
                 const ulong MinimumTrimPeriod = 60 * TimeSpan.TicksPerSecond;
 
                 Lock @lock = _lock;
+                if (!@lock.TryEnter())
+                {
+                    TrimCaller.Register(this);
+                    return;
+                }
                 try
                 {
-                    if (!@lock.TryEnter())
-                        return;
-                    try
-                    {
-                        ulong now = NativeMethods.GetTicksForSystem();
-                        if (now - _lastTrimTimestamp < MinimumTrimPeriod)
-                            return;
-                        _lastTrimTimestamp = now;
+                    _hasTrimCaller = false;
 
-                        Stack<nuint> stack = _stack;
-                        int count = stack.Count;
-                        if (count <= GlobalArrayStackPreserveCount)
-                            return;
-                        nuint size = _blockSize;
-                        for (int i = GlobalArrayStackPreserveCount; i < count; i++)
-                            NativeMethods.FreeMemoryBlock(new NativeMemoryBlock((void*)stack.Pop(), size));
-                    }
-                    finally
-                    {
-                        @lock.Exit();
-                    }
+                    ulong now = NativeMethods.GetTicksForSystem();
+                    if (now - _lastTrimTimestamp < MinimumTrimPeriod)
+                        return;
+                    _lastTrimTimestamp = now;
+
+                    Stack<nuint> stack = _stack;
+                    int count = stack.Count;
+                    if (count <= GlobalMemoryBlockStackPreserveCount)
+                        return;
+                    nuint size = _blockSize;
+                    for (int i = GlobalMemoryBlockStackPreserveCount; i < count; i++)
+                        NativeMethods.FreeMemoryBlock(new NativeMemoryBlock((void*)stack.Pop(), size));
                 }
                 finally
                 {
-                    DelayedTrimCaller.Register(this);
+                    @lock.Exit();
                 }
             }
 
-            private sealed class DelayedTrimCaller
+            private sealed class TrimCaller
             {
                 private readonly GlobalMemoryBlockStack _owner;
 
-                public DelayedTrimCaller(GlobalMemoryBlockStack owner) => _owner = owner;
+                public TrimCaller(GlobalMemoryBlockStack owner) => _owner = owner;
 
-                public static void Register(GlobalMemoryBlockStack owner) => new DelayedTrimCaller(owner);
+                public static void Register(GlobalMemoryBlockStack owner) => new TrimCaller(owner);
 
-                ~DelayedTrimCaller() => _owner.Trim();
+                ~TrimCaller() => _owner.Trim();
             }
         }
     }

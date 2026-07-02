@@ -92,9 +92,4 @@ public sealed class LazyTiny<T> where T : class
         else
             DisposeHelper.SwapDisposeWeak(ref _value);
     }
-
-    ~LazyTiny()
-    {
-        (_value as IDisposable)?.Dispose();
-    }
 }

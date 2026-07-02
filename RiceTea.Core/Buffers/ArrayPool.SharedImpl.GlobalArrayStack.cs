@@ -19,6 +19,7 @@ partial class ArrayPool<T>
             private readonly Lock _lock;
             private readonly int _arraySize;
 
+            private bool _hasTrimCaller = false;
             private ulong _lastTrimTimestamp = 0;
 
             public GlobalArrayStack(int arraySize)
@@ -26,15 +27,23 @@ partial class ArrayPool<T>
                 _stack = new Stack<T[]>(GlobalArrayStackPreserveCount);
                 _lock = new Lock();
                 _arraySize = arraySize;
-                TrimCaller.Register(this);
             }
 
             public void Push(T[] array)
             {
                 DebugHelper.ThrowIf(array.Length != _arraySize, "Array size mismatch.");
                 lock (_lock)
-                    _stack.Push(array);
+                {
+                    Stack<T[]> stack = _stack;
+                    stack.Push(array);
+                    if (!_hasTrimCaller && stack.Count > GlobalArrayStackPreserveCount)
+                    {
+                        TrimCaller.Register(this);
+                        _hasTrimCaller = true;
+                    }
+                }
             }
+
 
             public T[] Pop()
             {
@@ -58,32 +67,30 @@ partial class ArrayPool<T>
                 const ulong MinimumTrimPeriod = 60 * TimeSpan.TicksPerSecond;
 
                 Lock @lock = _lock;
+                if (!@lock.TryEnter())
+                {
+                    TrimCaller.Register(this);
+                    return;
+                }
                 try
                 {
-                    if (!@lock.TryEnter())
-                        return;
-                    try
-                    {
-                        ulong now = NativeMethods.GetTicksForSystem();
-                        if (now - _lastTrimTimestamp < MinimumTrimPeriod)
-                            return;
-                        _lastTrimTimestamp = now;
+                    _hasTrimCaller = false;
 
-                        Stack<T[]> stack = _stack;
-                        int count = stack.Count;
-                        if (count <= GlobalArrayStackPreserveCount)
-                            return;
-                        for (int i = GlobalArrayStackPreserveCount; i < count; i++)
-                            stack.Pop();
-                    }
-                    finally
-                    {
-                        @lock.Exit();
-                    }
+                    ulong now = NativeMethods.GetTicksForSystem();
+                    if (now - _lastTrimTimestamp < MinimumTrimPeriod)
+                        return;
+                    _lastTrimTimestamp = now;
+
+                    Stack<T[]> stack = _stack;
+                    int count = stack.Count;
+                    if (count <= GlobalArrayStackPreserveCount)
+                        return;
+                    for (int i = GlobalArrayStackPreserveCount; i < count; i++)
+                        stack.Pop();
                 }
                 finally
                 {
-                    TrimCaller.Register(this);
+                    @lock.Exit();
                 }
             }
 

@@ -1,6 +1,7 @@
 #if NET472_OR_GREATER
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -16,8 +17,7 @@ partial class ArrayPool<T>
 {
     private sealed partial class SharedImpl : ArrayPool<T>
     {
-        private const int GenerationNull = 0;
-        private const int GenerationEden = 1;
+        private const int GenerationEden = 0;
         private const int MaxLocalGeneration = 3;
         private const int GlobalArrayStackPreserveCount = 1;
 
@@ -35,9 +35,8 @@ partial class ArrayPool<T>
         private readonly ProcessorLocal<GlobalArrayStack[]> _globalArrayStacksGroup = new(CreateGlobalArrayStacks);
         private readonly Lock _syncLock = new();
 
+        private GCHandle _trimCallerHandle = GCHandle.Alloc(null, GCHandleType.Weak);
         private ulong _lastTrimTimestamp = 0;
-
-        public SharedImpl() => LocalArrayTrimCaller.Register(this);
 
         private static GlobalArrayStack[] CreateGlobalArrayStacks()
         {
@@ -86,37 +85,26 @@ partial class ArrayPool<T>
         Local:
             LocalArray[]? localBuckets = GetLocalArrayBucketsOrNull();
             if (localBuckets is null)
-                goto GlobalTemporarily;
+                goto Global;
 
             ref LocalArray localBucket = ref localBuckets.AsUnsafeRef()[index];
-            while (InterlockedHelper.CompareExchange(ref localBucket.Barrier, 1, 0) != 0)
-            {
-                SpinWait spin = new SpinWait();
-                while (InterlockedHelper.Read(ref localBucket.Barrier) != 0)
-                    spin.SpinOnce();
-            }
+            if (InterlockedHelper.Read(ref localBucket.Array) is null)
+                goto Global;
+            localBucket.EnterBarrier();
             try
             {
                 array = ReferenceHelper.Exchange(ref localBucket.Array, null);
-                if (array is not null)
-                {
-                    localBucket.Generation = GenerationEden;
-                    Thread.MemoryBarrier();
-                    return array;
-                }
-                if (localBucket.Generation == GenerationEden)
+                if (array is null)
                     goto Global;
-                return new T[1 << (index + 4)];
+                Thread.MemoryBarrier();
+                return array;
             }
             finally
             {
-                InterlockedHelper.Write(ref localBucket.Barrier, 0);
+                localBucket.ExitBarrier();
             }
 
         Global:
-            return GetGlobalArrayStack(index).Pop();
-
-        GlobalTemporarily:
             return GetGlobalArrayStack(index).Pop();
         }
 
@@ -133,23 +121,29 @@ partial class ArrayPool<T>
 
         Local:
             ref LocalArray localBucket = ref GetOrCreateLocalArrayBuckets().AsUnsafeRef()[index];
-            if (InterlockedHelper.Read(ref localBucket.Generation) != GenerationNull || InterlockedHelper.Read(ref localBucket.Array) is not null)
+            if (InterlockedHelper.Read(ref localBucket.Array) is not null)
                 goto Global;
-            while (InterlockedHelper.CompareExchange(ref localBucket.Barrier, 1, 0) != 0)
-            {
-                SpinWait spin = new SpinWait();
-                while (InterlockedHelper.Read(ref localBucket.Barrier) != 0)
-                    spin.SpinOnce();
-            }
+            localBucket.EnterBarrier();
             try
             {
+                if (localBucket.Array is not null)
+                    goto Global;
                 localBucket.Array = array;
                 localBucket.Generation = GenerationEden;
                 Thread.MemoryBarrier();
             }
             finally
             {
-                InterlockedHelper.Write(ref localBucket.Barrier, 0);
+                localBucket.ExitBarrier();
+            }
+            ref GCHandle trimCallerHandle = ref _trimCallerHandle;
+            if (trimCallerHandle.Target is null)
+            {
+                lock (_syncLock)
+                {
+                    if (trimCallerHandle.Target is null)
+                        trimCallerHandle.Target = LocalArrayTrimCaller.Register(this);
+                }
             }
             return;
 
@@ -162,57 +156,46 @@ partial class ArrayPool<T>
             const ulong MinimumTrimPeriod = 10 * TimeSpan.TicksPerSecond;
 
             Lock syncLock = _syncLock;
+            if (!syncLock.TryEnter())
+                return;
             try
             {
-                if (!syncLock.TryEnter())
+                ulong now = NativeMethods.GetTicksForSystem();
+                if (now - _lastTrimTimestamp < MinimumTrimPeriod)
                     return;
-                try
-                {
-                    ulong now = NativeMethods.GetTicksForSystem();
-                    if (now - _lastTrimTimestamp < MinimumTrimPeriod)
-                        return;
-                    _lastTrimTimestamp = now;
+                _lastTrimTimestamp = now;
 
-                    _localArrayCollectSet.RemoveWhere(static (GCHandle handle) =>
+                _localArrayCollectSet.RemoveWhere(static (GCHandle handle) =>
+                {
+                    if (handle.Target is not LocalArray[] buckets)
+                        return true;
+
+                    ref LocalArray bucketRef = ref UnsafeHelper.GetArrayDataReference(buckets);
+                    for (int i = 0; i < LocalBucketCount; i++)
                     {
-                        if (handle.Target is not LocalArray[] buckets)
-                            return true;
-
-                        ref LocalArray bucketRef = ref UnsafeHelper.GetArrayDataReference(buckets);
-                        for (int i = 0; i < LocalBucketCount; i++)
+                        ref LocalArray bucket = ref UnsafeHelper.AddTypedOffset(ref bucketRef, i);
+                        if (!bucket.TryEnterBarrier())
+                            continue;
+                        try
                         {
-                            ref LocalArray bucket = ref UnsafeHelper.AddTypedOffset(ref bucketRef, i);
-                            while (InterlockedHelper.CompareExchange(ref bucket.Barrier, 1, 0) != 0)
-                            {
-                                SpinWait spin = new SpinWait();
-                                while (InterlockedHelper.Read(ref bucket.Barrier) != 0)
-                                    spin.SpinOnce();
-                            }
-                            try
-                            {
-                                if (bucket.Array is null || ++bucket.Generation <= MaxLocalGeneration)
-                                    continue;
-                                bucket.Generation = GenerationEden;
-                                bucket.Array = null;
-                                Thread.MemoryBarrier();
-                            }
-                            finally
-                            {
-                                InterlockedHelper.Write(ref bucket.Barrier, 0);
-                            }
+                            if (bucket.Array is null || ++bucket.Generation < MaxLocalGeneration)
+                                continue;
+                            bucket.Generation = GenerationEden;
+                            bucket.Array = null;
+                            Thread.MemoryBarrier();
                         }
+                        finally
+                        {
+                            bucket.ExitBarrier();
+                        }
+                    }
 
-                        return false;
-                    });
-                }
-                finally
-                {
-                    syncLock.Exit();
-                }
+                    return false;
+                });
             }
             finally
             {
-                LocalArrayTrimCaller.Register(this);
+                syncLock.Exit();
             }
         }
 
@@ -221,7 +204,26 @@ partial class ArrayPool<T>
         {
             public T[]? Array;
             public nuint Generation;
-            public nuint Barrier;
+            private nuint _barrier;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool TryEnterBarrier() => InterlockedHelper.Exchange(ref _barrier, 1) == 0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void EnterBarrier()
+            {
+                ref nuint barrierRef = ref _barrier;
+
+                while (InterlockedHelper.Exchange(ref barrierRef, 1) != 0)
+                {
+                    SpinWait spin = new SpinWait();
+                    while (InterlockedHelper.Read(ref barrierRef) != 0)
+                        spin.SpinOnce();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void ExitBarrier() => InterlockedHelper.Write(ref _barrier, 0);
         }
 
         private sealed class LocalArrayTrimCaller
@@ -232,7 +234,7 @@ partial class ArrayPool<T>
             private LocalArrayTrimCaller(SharedImpl owner) => _owner = owner;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Register(SharedImpl owner) => new LocalArrayTrimCaller(owner);
+            public static LocalArrayTrimCaller Register(SharedImpl owner) => new LocalArrayTrimCaller(owner);
 
             ~LocalArrayTrimCaller() => _owner.TrimLocals();
         }

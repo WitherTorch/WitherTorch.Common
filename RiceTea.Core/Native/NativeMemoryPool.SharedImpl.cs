@@ -1,6 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -17,12 +17,11 @@ unsafe partial class NativeMemoryPool
 
     private sealed partial class SharedImpl : NativeMemoryPool
     {
-        private const int GenerationNull = 0;
-        private const int GenerationEden = 1;
+        private const int GenerationEden = 0;
         private const int MaxLocalGeneration = 3;
-        private const int GlobalArrayStackPreserveCount = 1;
+        private const int GlobalMemoryBlockStackPreserveCount = 1;
 
-        private const int LocalBucketCount = 6;
+        private const int LocalBucketCount = 9;
         private const int LocalMemoryBlockSizeLimit = 1 << (LocalBucketCount + 3);
         private const int GlobalBucketCount = 17;
         private const int GlobalMemoryBlockSizeLimit = 1 << (GlobalBucketCount + 3);
@@ -36,9 +35,8 @@ unsafe partial class NativeMemoryPool
         private readonly ProcessorLocal<GlobalMemoryBlockStack[]> _globalArrayStacksGroup = new(CreateGlobalArrayStacks);
         private readonly Lock _syncLock = new();
 
+        private GCHandle _trimCallerHandle = GCHandle.Alloc(null, GCHandleType.Weak);
         private ulong _lastTrimTimestamp = 0;
-
-        public SharedImpl() => LocalMemoryBlockTrimCaller.Register(this);
 
         private static GlobalMemoryBlockStack[] CreateGlobalArrayStacks()
         {
@@ -91,37 +89,26 @@ unsafe partial class NativeMemoryPool
         Local:
             LocalMemoryBlock[]? localBuckets = GetLocalArrayBucketsOrNull();
             if (localBuckets is null)
-                goto GlobalTemporarily;
+                goto Global;
 
             LocalMemoryBlock localBucket = localBuckets.AsUnsafeRef()[index];
-            while (InterlockedHelper.CompareExchange(ref localBucket.Barrier, 1, 0) != 0)
-            {
-                SpinWait spin = new SpinWait();
-                while (InterlockedHelper.Read(ref localBucket.Barrier) != 0)
-                    spin.SpinOnce();
-            }
+            if (InterlockedHelper.Read(ref localBucket.Pointer) == default)
+                goto Global;
+            localBucket.EnterBarrier();
             try
             {
                 result = (void*)ReferenceHelper.Exchange(ref localBucket.Pointer, default);
-                if (result is not null)
-                {
-                    localBucket.Generation = GenerationEden;
-                    Thread.MemoryBarrier();
-                    return result;
-                }
-                if (localBucket.Generation == GenerationEden)
+                if (result is null)
                     goto Global;
-                return NativeMethods.AllocMemoryBlock(capacity).NativePointer;
+                Thread.MemoryBarrier();
+                return result;
             }
             finally
             {
-                InterlockedHelper.Write(ref localBucket.Barrier, 0);
+                localBucket.ExitBarrier();
             }
 
         Global:
-            return GetGlobalArrayStack(index).Pop();
-
-        GlobalTemporarily:
             return GetGlobalArrayStack(index).Pop();
         }
 
@@ -137,22 +124,29 @@ unsafe partial class NativeMemoryPool
 
         Local:
             LocalMemoryBlock localBucket = GetOrCreateLocalArrayBuckets().AsUnsafeRef()[index];
-            if (InterlockedHelper.Read(ref localBucket.Generation) != GenerationNull || InterlockedHelper.Read(ref localBucket.Pointer) != default)
+            if (InterlockedHelper.Read(ref localBucket.Pointer) != default)
                 goto Global;
-            while (InterlockedHelper.CompareExchange(ref localBucket.Barrier, 1, 0) != 0)
-            {
-                SpinWait spin = new SpinWait();
-                while (InterlockedHelper.Read(ref localBucket.Barrier) != 0)
-                    spin.SpinOnce();
-            }
+            localBucket.EnterBarrier();
             try
             {
+                if (localBucket.Pointer != default)
+                    goto Global;
                 localBucket.Pointer = (nuint)ptr;
                 localBucket.Generation = GenerationEden;
+                Thread.MemoryBarrier();
             }
             finally
             {
-                InterlockedHelper.Write(ref localBucket.Barrier, 0);
+                localBucket.ExitBarrier();
+            }
+            ref GCHandle trimCallerHandle = ref _trimCallerHandle;
+            if (trimCallerHandle.Target is null)
+            {
+                lock (_syncLock)
+                {
+                    if (trimCallerHandle.Target is null)
+                        trimCallerHandle.Target = LocalMemoryBlockTrimCaller.Register(this);
+                }
             }
             return;
 
@@ -165,57 +159,46 @@ unsafe partial class NativeMemoryPool
             const ulong MinimumTrimPeriod = 10 * TimeSpan.TicksPerSecond;
 
             Lock syncLock = _syncLock;
+            if (!syncLock.TryEnter())
+                return;
             try
             {
-                if (!syncLock.TryEnter())
+                ulong now = NativeMethods.GetTicksForSystem();
+                if (now - _lastTrimTimestamp < MinimumTrimPeriod)
                     return;
-                try
+                _lastTrimTimestamp = now;
+                _localArrayCollectSet.RemoveWhere(static (GCHandle handle) =>
                 {
-                    ulong now = NativeMethods.GetTicksForSystem();
-                    if (now - _lastTrimTimestamp < MinimumTrimPeriod)
-                        return;
-                    _lastTrimTimestamp = now;
-                    _localArrayCollectSet.RemoveWhere(static (GCHandle handle) =>
+                    if (handle.Target is not LocalMemoryBlock[] buckets)
+                        return true;
+
+                    ref LocalMemoryBlock bucketRef = ref UnsafeHelper.GetArrayDataReference(buckets);
+                    for (int i = 0; i < LocalBucketCount; i++)
                     {
-                        if (handle.Target is not LocalMemoryBlock[] buckets)
-                            return true;
-
-                        ref LocalMemoryBlock bucketRef = ref UnsafeHelper.GetArrayDataReference(buckets);
-                        for (int i = 0; i < LocalBucketCount; i++)
+                        LocalMemoryBlock bucket = UnsafeHelper.AddTypedOffset(ref bucketRef, i);
+                        if (!bucket.TryEnterBarrier())
+                            continue;
+                        try
                         {
-                            LocalMemoryBlock bucket = UnsafeHelper.AddTypedOffset(ref bucketRef, i);
-                            while (InterlockedHelper.CompareExchange(ref bucket.Barrier, 1, 0) != 0)
-                            {
-                                SpinWait spin = new SpinWait();
-                                while (InterlockedHelper.Read(ref bucket.Barrier) != 0)
-                                    spin.SpinOnce();
-                            }
-                            try
-                            {
-                                if (bucket.Pointer == default || ++bucket.Generation <= MaxLocalGeneration)
-                                    continue;
-                                bucket.Generation = GenerationEden;
-                                nuint pointer = InterlockedHelper.Exchange(ref bucket.Pointer, default);
-                                if (pointer != default)
-                                    NativeMethods.FreeMemoryBlock(new NativeMemoryBlock((void*)pointer, 1U << (i + 4)));
-                            }
-                            finally
-                            {
-                                InterlockedHelper.Write(ref bucket.Barrier, 0);
-                            }
+                            if (bucket.Pointer == default || ++bucket.Generation < MaxLocalGeneration)
+                                continue;
+                            bucket.Generation = GenerationEden;
+                            nuint pointer = InterlockedHelper.Exchange(ref bucket.Pointer, default);
+                            if (pointer != default)
+                                NativeMethods.FreeMemoryBlock(new NativeMemoryBlock((void*)pointer, 1U << (i + 4)));
                         }
+                        finally
+                        {
+                            bucket.ExitBarrier();
+                        }
+                    }
 
-                        return false;
-                    });
-                }
-                finally
-                {
-                    syncLock.Exit();
-                }
+                    return false;
+                });
             }
             finally
             {
-                LocalMemoryBlockTrimCaller.Register(this);
+                syncLock.Exit();
             }
         }
 
@@ -225,9 +208,29 @@ unsafe partial class NativeMemoryPool
 
             public nuint Pointer;
             public nuint Generation;
-            public nuint Barrier;
+
+            private nuint _barrier;
 
             public LocalMemoryBlock(nuint blockSize) => _blockSize = blockSize;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool TryEnterBarrier() => InterlockedHelper.Exchange(ref _barrier, 1) == 0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void EnterBarrier()
+            {
+                ref nuint barrierRef = ref _barrier;
+
+                while (InterlockedHelper.Exchange(ref barrierRef, 1) != 0)
+                {
+                    SpinWait spin = new SpinWait();
+                    while (InterlockedHelper.Read(ref barrierRef) != 0)
+                        spin.SpinOnce();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void ExitBarrier() => InterlockedHelper.Write(ref _barrier, 0);
 
             ~LocalMemoryBlock() => NativeMethods.FreeMemoryBlock(new NativeMemoryBlock((void*)Pointer, _blockSize));
         }
@@ -240,7 +243,7 @@ unsafe partial class NativeMemoryPool
             private LocalMemoryBlockTrimCaller(SharedImpl owner) => _owner = owner;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void Register(SharedImpl owner) => new LocalMemoryBlockTrimCaller(owner);
+            public static LocalMemoryBlockTrimCaller Register(SharedImpl owner) => new LocalMemoryBlockTrimCaller(owner);
 
             ~LocalMemoryBlockTrimCaller() => _owner.TrimLocals();
         }
