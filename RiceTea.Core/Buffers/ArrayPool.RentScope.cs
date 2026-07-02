@@ -338,7 +338,7 @@ partial class ArrayPool<T>
                     int index = _index;
                     if (index < 0 || index >= _count)
                         return InvalidOperationException.Throw<T>();
-                    return _array[index];
+                    return _array.AsUnsafeRef()[index];
                 }
             }
 
